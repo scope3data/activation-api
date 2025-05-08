@@ -18,6 +18,22 @@ npm run dev
 > [!NOTE]
 > If you are starting a new project, you may want to fork [fastmcp-boilerplate](https://github.com/punkpeye/fastmcp-boilerplate) and start from there.
 
+### Start the server
+
+If you simply want to start the server, you can use the `start` script.
+
+```bash
+npm run start
+```
+
+However, you can also interact with the server using the `dev` script.
+
+```bash
+npm run dev
+```
+
+This will start the server and allow you to interact with it using CLI.
+
 ### Testing
 
 A good MCP server should have tests. However, you don't need to test the MCP server itself, but rather the tools you implement.

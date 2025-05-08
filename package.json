@@ -4,6 +4,8 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
+    "start": "tsx src/server.ts",
+    "dev": "fastmcp dev src/server.ts",
     "lint": "prettier --check . && eslint . && tsc --noEmit",
     "test": "vitest run",
     "format": "prettier --write . && eslint --fix ."
@@ -22,7 +24,7 @@
   "license": "MIT",
   "description": "A boilerplate for FastMCP",
   "dependencies": {
-    "fastmcp": "^1.27.0",
+    "fastmcp": "^1.27.3",
     "zod": "^3.24.4"
   },
   "release": {
@@ -44,6 +46,7 @@
     "jiti": "^2.4.2",
     "prettier": "^3.5.3",
     "semantic-release": "^24.2.3",
+    "tsx": "^4.19.4",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.32.0",
     "vitest": "^3.1.3"
