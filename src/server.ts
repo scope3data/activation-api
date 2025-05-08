@@ -1,5 +1,6 @@
 import { FastMCP } from "fastmcp";
 import { z } from "zod";
+
 import { add } from "./add.js";
 
 const server = new FastMCP({
