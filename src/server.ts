@@ -65,7 +65,7 @@ const AGENTS_QUERY = `
 `;
 
 // Helper function to make GraphQL requests to Scope3
-async function makeScope3GraphQLRequest<T = unknown>(
+export async function makeScope3GraphQLRequest<T = unknown>(
   query: string,
   variables = {},
   apiKey?: string,
