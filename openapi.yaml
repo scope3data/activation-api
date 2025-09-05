@@ -100,9 +100,7 @@ paths:
                   description: Natural language description of campaign objectives and targeting
                   example: "Reach millennials interested in sustainable fashion in major US cities, emphasize our eco-friendly materials"
                 budget:
-                  type: integer
-                  description: Total campaign budget in cents
-                  example: 5000000
+                  $ref: "#/components/schemas/Budget"
                 brief:
                   type: object
                   description: Optional structured brief for get_products calls
@@ -129,11 +127,19 @@ paths:
               simple:
                 value:
                   prompt: "Target young professionals interested in productivity apps"
-                  budget: 1000000
+                  budget:
+                    total: 10000
+                    currency: "USD"
+                    daily_cap: 500
+                    pacing: "even"
               detailed:
                 value:
                   prompt: "Holiday campaign for electronics, focus on gift-givers, emphasize deals"
-                  budget: 5000000
+                  budget:
+                    total: 50000
+                    currency: "USD"
+                    daily_cap: 2500
+                    pacing: "accelerated"
                   brief:
                     categories: ["electronics", "gifts"]
                     geo_targets: ["US", "CA"]
@@ -172,8 +178,8 @@ paths:
                           publisher: "TechNews"
                           name: "Professional Audience - Native"
                           estimated_reach: 500000
-                          cpm: 1200
-                          recommended_budget: 100000
+                          cpm: 12.00
+                          recommended_budget: 1000
 
   /campaigns/{campaign_id}:
     put:
@@ -204,8 +210,7 @@ paths:
                   type: string
                   description: Updated campaign objectives
                 budget:
-                  type: integer
-                  description: Updated total budget in cents
+                  $ref: "#/components/schemas/Budget"
                 creatives:
                   type: array
                   items:
@@ -218,7 +223,11 @@ paths:
             examples:
               update_budget:
                 value:
-                  budget: 7500000
+                  budget:
+                    total: 75000
+                    currency: "USD"
+                    daily_cap: 3500
+                    pacing: "asap"
               update_creative:
                 value:
                   creatives:
@@ -262,8 +271,7 @@ paths:
                   campaign_id:
                     type: string
                   total_budget:
-                    type: integer
-                    description: Total campaign budget in cents
+                    $ref: "#/components/schemas/Budget"
                   allocated_budget:
                     type: integer
                     description: Sum of all package allocations
@@ -275,14 +283,18 @@ paths:
                 multi_package:
                   value:
                     campaign_id: "camp_123"
-                    total_budget: 5000000
-                    allocated_budget: 4500000
+                    total_budget:
+                      total: 50000
+                      currency: "USD"
+                      daily_cap: 2500
+                      pacing: "even"
+                    allocated_budget: 45000
                     packages:
                       - package_id: "pkg_001"
                         publisher: "NewsNetwork"
                         name: "Premium Inventory"
-                        allocated_budget: 2000000
-                        spent: 1500000
+                        allocated_budget: 20000
+                        spent: 15000
                         fcap: 3
                         pacing: "even"
                         performance:
@@ -292,8 +304,8 @@ paths:
                       - package_id: "pkg_002"
                         publisher: "TechBlog"
                         name: "Tech Enthusiasts"
-                        allocated_budget: 2500000
-                        spent: 2000000
+                        allocated_budget: 25000
+                        spent: 20000
                         fcap: 5
                         pacing: "asap"
 
@@ -333,8 +345,8 @@ paths:
                         type: string
                         description: Package identifier
                       budget:
-                        type: integer
-                        description: Budget allocation for this package in cents
+                        type: number
+                        description: Budget allocation for this package
                       fcap:
                         type: integer
                         description: Frequency cap (impressions per user per day)
@@ -352,11 +364,11 @@ paths:
                 value:
                   packages:
                     - package_id: "pkg_001"
-                      budget: 3000000
+                      budget: 30000
                       fcap: 5
                       pacing: "even"
                     - package_id: "pkg_002"
-                      budget: 1000000
+                      budget: 10000
                       fcap: 3
                       pacing: "even"
                     - package_id: "pkg_003"
@@ -376,10 +388,34 @@ paths:
                     items:
                       $ref: "#/components/schemas/PackageAllocation"
                   total_allocated:
-                    type: integer
+                    type: number
 
 components:
   schemas:
+    Budget:
+      type: object
+      description: Budget configuration for a media buy or campaign
+      properties:
+        total:
+          type: number
+          description: Total budget amount
+          minimum: 0
+        currency:
+          type: string
+          description: ISO 4217 currency code
+          pattern: "^[A-Z]{3}$"
+        daily_cap:
+          type: number
+          description: Daily budget cap
+          minimum: 0
+        pacing:
+          type: string
+          enum: [even, asap, accelerated]
+          description: Budget pacing strategy
+      required:
+        - total
+        - currency
+
     Campaign:
       type: object
       properties:
@@ -393,10 +429,9 @@ components:
           type: string
           description: Natural language objectives and targeting
         budget:
-          type: integer
-          description: Total budget in cents
+          $ref: "#/components/schemas/Budget"
         spent:
-          type: integer
+          type: number
           description: Amount spent so far
         status:
           type: string
@@ -520,8 +555,8 @@ components:
         available_impressions:
           type: integer
         floor_cpm:
-          type: integer
-          description: Minimum CPM in cents
+          type: number
+          description: Minimum CPM
 
     PricingGuide:
       type: object
@@ -529,18 +564,18 @@ components:
         hard_floors:
           type: object
           additionalProperties:
-            type: integer
+            type: number
         quartiles:
           type: object
           properties:
             q1:
-              type: integer
+              type: number
             q2:
-              type: integer
+              type: number
             q3:
-              type: integer
+              type: number
             q4:
-              type: integer
+              type: number
 
     Product:
       type: object
@@ -554,9 +589,9 @@ components:
         estimated_reach:
           type: integer
         cpm:
-          type: integer
+          type: number
         recommended_budget:
-          type: integer
+          type: number
 
     PackageAllocation:
       type: object
@@ -568,9 +603,9 @@ components:
         name:
           type: string
         allocated_budget:
-          type: integer
+          type: number
         spent:
-          type: integer
+          type: number
         fcap:
           type: integer
         pacing:
