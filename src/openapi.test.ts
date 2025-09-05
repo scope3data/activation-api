@@ -1,39 +1,55 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import SwaggerParser from "@apidevtools/swagger-parser";
+import { execSync } from "child_process";
+import { readFileSync } from "fs";
 import { join } from "path";
 import { describe, expect, it } from "vitest";
+import { parse } from "yaml";
 
 describe("OpenAPI Specification", () => {
-  it("should be valid OpenAPI 3.0 spec", async () => {
+  const getSpec = () => {
     const specPath = join(process.cwd(), "openapi.yaml");
-    const api = await SwaggerParser.validate(specPath);
+    const content = readFileSync(specPath, "utf8");
+    return parse(content) as any;
+  };
+
+  it("should be valid OpenAPI 3.1 spec", () => {
+    const api = getSpec();
 
     expect(api).toBeDefined();
-    expect((api as any).openapi).toBe("3.0.0");
+    expect(api.openapi).toBe("3.1.0");
     expect(api.info.title).toBe("Scope3 Agentic Campaign Management API");
   });
 
-  it("should have all required info fields", async () => {
+  it("should pass Redocly validation", () => {
     const specPath = join(process.cwd(), "openapi.yaml");
-    const api = await SwaggerParser.validate(specPath);
+
+    // This will throw if validation fails
+    expect(() => {
+      execSync(`npx @redocly/cli lint "${specPath}"`, {
+        encoding: "utf8",
+        stdio: "pipe",
+      });
+    }).not.toThrow();
+  });
+
+  it("should have all required info fields", () => {
+    const api = getSpec();
 
     expect(api.info.title).toBeDefined();
     expect(api.info.version).toBeDefined();
     expect(api.info.description).toBeDefined();
   });
 
-  it("should have security scheme defined", async () => {
-    const specPath = join(process.cwd(), "openapi.yaml");
-    const api = await SwaggerParser.validate(specPath);
+  it("should have security scheme defined", () => {
+    const api = getSpec();
 
-    expect((api as any).components?.securitySchemes).toBeDefined();
-    expect((api as any).components?.securitySchemes?.bearerAuth).toBeDefined();
-    expect((api as any).security).toBeDefined();
+    expect(api.components?.securitySchemes).toBeDefined();
+    expect(api.components?.securitySchemes?.bearerAuth).toBeDefined();
+    expect(api.security).toBeDefined();
   });
 
-  it("should have all paths with operation IDs", async () => {
-    const specPath = join(process.cwd(), "openapi.yaml");
-    const api = await SwaggerParser.validate(specPath);
+  it("should have all paths with operation IDs", () => {
+    const api = getSpec();
 
     if (api.paths) {
       for (const [, methods] of Object.entries(api.paths)) {
@@ -56,9 +72,8 @@ describe("OpenAPI Specification", () => {
     }
   });
 
-  it("should have LLM hints for all operations", async () => {
-    const specPath = join(process.cwd(), "openapi.yaml");
-    const api = await SwaggerParser.validate(specPath);
+  it("should have LLM hints for all operations", () => {
+    const api = getSpec();
 
     if (api.paths) {
       for (const [, methods] of Object.entries(api.paths)) {
@@ -83,9 +98,8 @@ describe("OpenAPI Specification", () => {
     }
   });
 
-  it("should have examples for all responses", async () => {
-    const specPath = join(process.cwd(), "openapi.yaml");
-    const api = await SwaggerParser.validate(specPath);
+  it("should have examples for all responses", () => {
+    const api = getSpec();
 
     const missingExamples: string[] = [];
 
@@ -126,17 +140,19 @@ describe("OpenAPI Specification", () => {
     expect(missingExamples.length).toBeLessThan(20); // Allow some missing for now
   });
 
-  it("should have all referenced schemas defined", async () => {
-    const specPath = join(process.cwd(), "openapi.yaml");
-    const api = await SwaggerParser.dereference(specPath);
+  it("should have Budget schema defined", () => {
+    const api = getSpec();
 
-    // If dereference succeeds, all refs are valid
-    expect(api).toBeDefined();
+    expect(api.components?.schemas?.Budget).toBeDefined();
+    expect(api.components.schemas.Budget.type).toBe("object");
+    expect(api.components.schemas.Budget.properties.total).toBeDefined();
+    expect(api.components.schemas.Budget.properties.currency).toBeDefined();
+    expect(api.components.schemas.Budget.required).toContain("total");
+    expect(api.components.schemas.Budget.required).toContain("currency");
   });
 
-  it("should have consistent schema naming", async () => {
-    const specPath = join(process.cwd(), "openapi.yaml");
-    const api = await SwaggerParser.validate(specPath);
+  it("should have consistent schema naming", () => {
+    const api = getSpec();
 
     if ((api as any).components?.schemas) {
       for (const schemaName of Object.keys((api as any).components.schemas)) {
