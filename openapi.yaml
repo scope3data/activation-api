@@ -1,0 +1,597 @@
+openapi: 3.0.0
+info:
+  title: Scope3 Agentic Campaign Management API
+  version: 1.0.0
+  description: |
+    API for managing agentic advertising campaigns executed via AdCP using Scope3 media quality, synthetic audience, cross-publisher frequency capping, custom signals integration, and intelligent allocation.
+
+    ## Key Concepts
+    - **Campaign**: Contains prompt-based objectives, creatives, and allocation algorithms
+    - **Package**: A buyable unit of ad inventory with pricing information
+    - **Allocation**: The distribution of budget across packages
+
+    ## LLM Usage Notes
+    to do!
+
+servers:
+  - url: https://aapi.scope3.com/v1/rest
+    description: Scope3 Agentic API Server (REST endpoint)
+
+paths:
+  /campaigns:
+    get:
+      operationId: listCampaigns
+      summary: List all active campaigns
+      description: |
+        Returns all active campaigns for the authenticated principal.
+        Use this to understand what campaigns have been created, whether they are active, whether there are any errors or warnings that need to be addressed.
+      x-llm-hints:
+        - "Call this when user asks about 'current', 'active', or 'running' campaigns"
+        - "Use before updating to verify campaign exists"
+        - "Results include campaign IDs needed for other operations"
+      parameters:
+        - name: brand_agent_id
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by specific brand agent ID (defaults to all)
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [active, paused, completed, draft]
+            default: active
+          description: Filter campaigns by status
+      responses:
+        "200":
+          description: List of campaigns
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  campaigns:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Campaign"
+              examples:
+                basic:
+                  value:
+                    campaigns:
+                      - id: "camp_123"
+                        name: "Holiday Sale 2024"
+                        prompt: "Target users interested in electronics with holiday shopping intent"
+                        budget: 50000
+                        status: "active"
+                        created_at: "2024-11-01T00:00:00Z"
+
+  /campaigns/create:
+    post:
+      operationId: createCampaign
+      summary: Create a new campaign
+      description: |
+        Creates a campaign from a natural language prompt and budget.
+        Returns a complete plan including targeting, signals, creative formats, and sample products.
+
+        This endpoint:
+        1. Analyzes the prompt to extract objectives and targeting
+        2. Calls get_products on all publishers (with optional brief)
+        3. Saves matching products
+        4. Generates an initial allocation plan
+      x-llm-hints:
+        - "Use when user wants to 'create', 'start', 'launch', or 'set up' a campaign"
+        - "The prompt should capture all user requirements in natural language"
+        - "Budget is in cents (multiply dollars by 100)"
+        - "Returns a plan for user approval before activation"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - prompt
+                - budget
+              properties:
+                prompt:
+                  type: string
+                  description: Natural language description of campaign objectives and targeting
+                  example: "Reach millennials interested in sustainable fashion in major US cities, emphasize our eco-friendly materials"
+                budget:
+                  type: integer
+                  description: Total campaign budget in cents
+                  example: 5000000
+                brief:
+                  type: object
+                  description: Optional structured brief for get_products calls
+                  properties:
+                    categories:
+                      type: array
+                      items:
+                        type: string
+                    geo_targets:
+                      type: array
+                      items:
+                        type: string
+                    demographics:
+                      type: object
+                start_date:
+                  type: string
+                  format: date-time
+                  description: Campaign start date (defaults to immediate)
+                end_date:
+                  type: string
+                  format: date-time
+                  description: Campaign end date (optional)
+            examples:
+              simple:
+                value:
+                  prompt: "Target young professionals interested in productivity apps"
+                  budget: 1000000
+              detailed:
+                value:
+                  prompt: "Holiday campaign for electronics, focus on gift-givers, emphasize deals"
+                  budget: 5000000
+                  brief:
+                    categories: ["electronics", "gifts"]
+                    geo_targets: ["US", "CA"]
+                  start_date: "2024-11-15T00:00:00Z"
+                  end_date: "2024-12-31T23:59:59Z"
+      responses:
+        "200":
+          description: Campaign plan created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CampaignPlan"
+              examples:
+                full_plan:
+                  value:
+                    campaign_id: "camp_456"
+                    status: "draft"
+                    plan:
+                      targeting:
+                        interests: ["productivity", "technology", "business"]
+                        demographics:
+                          age_range: "25-45"
+                          income: "50k+"
+                      signals:
+                        - type: "intent"
+                          value: "app_downloads"
+                        - type: "behavioral"
+                          value: "business_tools_usage"
+                      creative_formats:
+                        - format: "native"
+                          recommended: true
+                        - format: "video"
+                          recommended: false
+                      sample_products:
+                        - package_id: "pkg_789"
+                          publisher: "TechNews"
+                          name: "Professional Audience - Native"
+                          estimated_reach: 500000
+                          cpm: 1200
+                          recommended_budget: 100000
+
+  /campaigns/{campaign_id}:
+    put:
+      operationId: updateCampaign
+      summary: Update campaign settings
+      description: |
+        Updates campaign configuration including creatives, targeting, budget, or prompt.
+        Partial updates are supported - only include fields you want to change.
+      x-llm-hints:
+        - "Use when user wants to 'change', 'modify', 'update', or 'adjust' campaign"
+        - "Can update individual fields without affecting others"
+        - "Changes take effect immediately for active campaigns"
+      parameters:
+        - name: campaign_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Campaign identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+                  description: Updated campaign objectives
+                budget:
+                  type: integer
+                  description: Updated total budget in cents
+                creatives:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/Creative"
+                targeting:
+                  $ref: "#/components/schemas/Targeting"
+                status:
+                  type: string
+                  enum: [active, paused, completed]
+            examples:
+              update_budget:
+                value:
+                  budget: 7500000
+              update_creative:
+                value:
+                  creatives:
+                    - id: "creative_001"
+                      type: "image"
+                      url: "https://cdn.example.com/new-creative.jpg"
+                      headline: "New Year, New You"
+      responses:
+        "200":
+          description: Campaign updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+
+  /campaigns/{campaign_id}/allocation:
+    get:
+      operationId: getCampaignAllocation
+      summary: Get current budget allocation
+      description: |
+        Returns list of all packages with active budget for this campaign.
+        Shows how the campaign budget is distributed across different ad inventory.
+      x-llm-hints:
+        - "Use when user asks 'where is budget going' or 'show allocation'"
+        - "Call before update_campaign_allocation to see current state"
+        - "Returns actual spend data if campaign is active"
+      parameters:
+        - name: campaign_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Current allocation details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  campaign_id:
+                    type: string
+                  total_budget:
+                    type: integer
+                    description: Total campaign budget in cents
+                  allocated_budget:
+                    type: integer
+                    description: Sum of all package allocations
+                  packages:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/PackageAllocation"
+              examples:
+                multi_package:
+                  value:
+                    campaign_id: "camp_123"
+                    total_budget: 5000000
+                    allocated_budget: 4500000
+                    packages:
+                      - package_id: "pkg_001"
+                        publisher: "NewsNetwork"
+                        name: "Premium Inventory"
+                        allocated_budget: 2000000
+                        spent: 1500000
+                        fcap: 3
+                        pacing: "even"
+                        performance:
+                          impressions: 1250000
+                          clicks: 15000
+                          ctr: 0.012
+                      - package_id: "pkg_002"
+                        publisher: "TechBlog"
+                        name: "Tech Enthusiasts"
+                        allocated_budget: 2500000
+                        spent: 2000000
+                        fcap: 5
+                        pacing: "asap"
+
+    put:
+      operationId: updateCampaignAllocation
+      summary: Update package allocations
+      description: |
+        Updates how budget is allocated across packages.
+        Can set budget, frequency cap, and pacing for each package.
+        Use to optimize campaign performance based on package results.
+      x-llm-hints:
+        - "Use when user wants to 'shift budget', 'change allocation', or 'optimize spend'"
+        - "Can add new packages or remove existing ones"
+        - "Setting budget to 0 effectively pauses a package"
+        - "Call get_campaign_allocation first to see current state"
+      parameters:
+        - name: campaign_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                packages:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - package_id
+                    properties:
+                      package_id:
+                        type: string
+                        description: Package identifier
+                      budget:
+                        type: integer
+                        description: Budget allocation for this package in cents
+                      fcap:
+                        type: integer
+                        description: Frequency cap (impressions per user per day)
+                        minimum: 1
+                        maximum: 20
+                      pacing:
+                        type: string
+                        enum: [even, asap, accelerated]
+                        description: How quickly to spend the budget
+                      status:
+                        type: string
+                        enum: [active, paused, removed]
+            examples:
+              rebalance:
+                value:
+                  packages:
+                    - package_id: "pkg_001"
+                      budget: 3000000
+                      fcap: 5
+                      pacing: "even"
+                    - package_id: "pkg_002"
+                      budget: 1000000
+                      fcap: 3
+                      pacing: "even"
+                    - package_id: "pkg_003"
+                      status: "removed"
+      responses:
+        "200":
+          description: Allocation updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  campaign_id:
+                    type: string
+                  updated_packages:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/PackageAllocation"
+                  total_allocated:
+                    type: integer
+
+components:
+  schemas:
+    Campaign:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique campaign identifier
+        name:
+          type: string
+          description: Human-readable campaign name
+        prompt:
+          type: string
+          description: Natural language objectives and targeting
+        budget:
+          type: integer
+          description: Total budget in cents
+        spent:
+          type: integer
+          description: Amount spent so far
+        status:
+          type: string
+          enum: [draft, active, paused, completed]
+        creatives:
+          type: array
+          items:
+            $ref: "#/components/schemas/Creative"
+        measurement_tool:
+          type: string
+          description: ID or name of measurement tool/agent
+        catalog:
+          $ref: "#/components/schemas/Catalog"
+        allocation_algorithm:
+          type: string
+          description: Algorithm used for budget allocation
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CampaignPlan:
+      type: object
+      properties:
+        campaign_id:
+          type: string
+        status:
+          type: string
+        plan:
+          type: object
+          properties:
+            targeting:
+              $ref: "#/components/schemas/Targeting"
+            signals:
+              type: array
+              items:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  value:
+                    type: string
+            creative_formats:
+              type: array
+              items:
+                type: object
+                properties:
+                  format:
+                    type: string
+                  recommended:
+                    type: boolean
+            sample_products:
+              type: array
+              items:
+                $ref: "#/components/schemas/Product"
+
+    Creative:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [image, video, native, html5]
+        url:
+          type: string
+        headline:
+          type: string
+        body:
+          type: string
+        cta:
+          type: string
+          description: Call-to-action text
+
+    Targeting:
+      type: object
+      properties:
+        interests:
+          type: array
+          items:
+            type: string
+        demographics:
+          type: object
+          properties:
+            age_range:
+              type: string
+            gender:
+              type: string
+            income:
+              type: string
+        geo_targets:
+          type: array
+          items:
+            type: string
+
+    Catalog:
+      type: object
+      properties:
+        packages:
+          type: array
+          items:
+            $ref: "#/components/schemas/Package"
+        pricing_guide:
+          $ref: "#/components/schemas/PricingGuide"
+
+    Package:
+      type: object
+      properties:
+        id:
+          type: string
+        publisher:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        inventory_type:
+          type: string
+        available_impressions:
+          type: integer
+        floor_cpm:
+          type: integer
+          description: Minimum CPM in cents
+
+    PricingGuide:
+      type: object
+      properties:
+        hard_floors:
+          type: object
+          additionalProperties:
+            type: integer
+        quartiles:
+          type: object
+          properties:
+            q1:
+              type: integer
+            q2:
+              type: integer
+            q3:
+              type: integer
+            q4:
+              type: integer
+
+    Product:
+      type: object
+      properties:
+        package_id:
+          type: string
+        publisher:
+          type: string
+        name:
+          type: string
+        estimated_reach:
+          type: integer
+        cpm:
+          type: integer
+        recommended_budget:
+          type: integer
+
+    PackageAllocation:
+      type: object
+      properties:
+        package_id:
+          type: string
+        publisher:
+          type: string
+        name:
+          type: string
+        allocated_budget:
+          type: integer
+        spent:
+          type: integer
+        fcap:
+          type: integer
+        pacing:
+          type: string
+        performance:
+          type: object
+          properties:
+            impressions:
+              type: integer
+            clicks:
+              type: integer
+            ctr:
+              type: number
+            conversions:
+              type: integer
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []
