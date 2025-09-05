@@ -4,12 +4,12 @@ info:
   version: 1.0.0
   description: |
     API for managing agentic advertising campaigns executed via AdCP using Scope3 media quality, synthetic audience, cross-publisher frequency capping, custom signals integration, and intelligent allocation.
-    
+
     ## Key Concepts
     - **Campaign**: Contains prompt-based objectives, creatives, and allocation algorithms
     - **Package**: A buyable unit of ad inventory with pricing information
     - **Allocation**: The distribution of budget across packages
-    
+
     ## LLM Usage Notes
     to do!
 
@@ -45,7 +45,7 @@ paths:
             default: active
           description: Filter campaigns by status
       responses:
-        '200':
+        "200":
           description: List of campaigns
           content:
             application/json:
@@ -55,7 +55,7 @@ paths:
                   campaigns:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Campaign'
+                      $ref: "#/components/schemas/Campaign"
               examples:
                 basic:
                   value:
@@ -74,7 +74,7 @@ paths:
       description: |
         Creates a campaign from a natural language prompt and budget.
         Returns a complete plan including targeting, signals, creative formats, and sample products.
-        
+
         This endpoint:
         1. Analyzes the prompt to extract objectives and targeting
         2. Calls get_products on all publishers (with optional brief)
@@ -140,12 +140,12 @@ paths:
                   start_date: "2024-11-15T00:00:00Z"
                   end_date: "2024-12-31T23:59:59Z"
       responses:
-        '200':
+        "200":
           description: Campaign plan created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CampaignPlan'
+                $ref: "#/components/schemas/CampaignPlan"
               examples:
                 full_plan:
                   value:
@@ -209,9 +209,9 @@ paths:
                 creatives:
                   type: array
                   items:
-                    $ref: '#/components/schemas/Creative'
+                    $ref: "#/components/schemas/Creative"
                 targeting:
-                  $ref: '#/components/schemas/Targeting'
+                  $ref: "#/components/schemas/Targeting"
                 status:
                   type: string
                   enum: [active, paused, completed]
@@ -227,12 +227,12 @@ paths:
                       url: "https://cdn.example.com/new-creative.jpg"
                       headline: "New Year, New You"
       responses:
-        '200':
+        "200":
           description: Campaign updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Campaign'
+                $ref: "#/components/schemas/Campaign"
 
   /campaigns/{campaign_id}/allocation:
     get:
@@ -252,7 +252,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Current allocation details
           content:
             application/json:
@@ -270,7 +270,7 @@ paths:
                   packages:
                     type: array
                     items:
-                      $ref: '#/components/schemas/PackageAllocation'
+                      $ref: "#/components/schemas/PackageAllocation"
               examples:
                 multi_package:
                   value:
@@ -362,7 +362,7 @@ paths:
                     - package_id: "pkg_003"
                       status: "removed"
       responses:
-        '200':
+        "200":
           description: Allocation updated successfully
           content:
             application/json:
@@ -374,7 +374,7 @@ paths:
                   updated_packages:
                     type: array
                     items:
-                      $ref: '#/components/schemas/PackageAllocation'
+                      $ref: "#/components/schemas/PackageAllocation"
                   total_allocated:
                     type: integer
 
@@ -404,12 +404,12 @@ components:
         creatives:
           type: array
           items:
-            $ref: '#/components/schemas/Creative'
+            $ref: "#/components/schemas/Creative"
         measurement_tool:
           type: string
           description: ID or name of measurement tool/agent
         catalog:
-          $ref: '#/components/schemas/Catalog'
+          $ref: "#/components/schemas/Catalog"
         allocation_algorithm:
           type: string
           description: Algorithm used for budget allocation
@@ -431,7 +431,7 @@ components:
           type: object
           properties:
             targeting:
-              $ref: '#/components/schemas/Targeting'
+              $ref: "#/components/schemas/Targeting"
             signals:
               type: array
               items:
@@ -453,7 +453,7 @@ components:
             sample_products:
               type: array
               items:
-                $ref: '#/components/schemas/Product'
+                $ref: "#/components/schemas/Product"
 
     Creative:
       type: object
@@ -500,9 +500,9 @@ components:
         packages:
           type: array
           items:
-            $ref: '#/components/schemas/Package'
+            $ref: "#/components/schemas/Package"
         pricing_guide:
-          $ref: '#/components/schemas/PricingGuide'
+          $ref: "#/components/schemas/PricingGuide"
 
     Package:
       type: object
