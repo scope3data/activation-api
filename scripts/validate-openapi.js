@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import SwaggerParser from "@apidevtools/swagger-parser";
+import { execSync } from "child_process";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -10,68 +10,46 @@ const specPath = join(__dirname, "..", "openapi.yaml");
 
 async function validateSpec() {
   try {
-    console.log("🔍 Validating OpenAPI specification...");
+    console.log("🔍 Validating OpenAPI specification with Redocly...");
 
-    // Parse and validate the OpenAPI spec
-    const api = await SwaggerParser.validate(specPath);
-
-    console.log("✅ OpenAPI spec is valid!");
-    console.log(`📋 API: ${api.info.title} v${api.info.version}`);
-    console.log(`🔗 Paths: ${Object.keys(api.paths).length} endpoints`);
-    console.log(
-      `📦 Components: ${Object.keys(api.components?.schemas || {}).length} schemas`,
+    // Use Redocly CLI to lint and validate the OpenAPI spec
+    const result = execSync(
+      `npx @redocly/cli lint "${specPath}" --format=stylish`,
+      {
+        encoding: "utf8",
+        stdio: "pipe",
+      },
     );
 
-    // Additional checks
-    const warnings = [];
+    console.log("✅ OpenAPI spec is valid!");
 
-    // Check for missing examples
-    const pathsWithoutExamples = [];
-    for (const [path, methods] of Object.entries(api.paths)) {
-      for (const [method, operation] of Object.entries(methods)) {
-        if (typeof operation === "object" && operation.responses) {
-          for (const [status, response] of Object.entries(
-            operation.responses,
-          )) {
-            if (
-              response.content &&
-              !response.content["application/json"]?.examples
-            ) {
-              pathsWithoutExamples.push(
-                `${method.toUpperCase()} ${path} (${status})`,
-              );
-            }
-          }
-        }
-      }
+    // Show any warnings or recommendations
+    if (result.trim()) {
+      console.log("\n📋 Redocly output:");
+      console.log(result);
     }
 
-    if (pathsWithoutExamples.length > 0) {
-      warnings.push(
-        `Missing examples in responses: ${pathsWithoutExamples.slice(0, 3).join(", ")}${pathsWithoutExamples.length > 3 ? "..." : ""}`,
+    // Get basic spec info using Redocly's stats command
+    try {
+      const statsResult = execSync(
+        `npx @redocly/cli stats "${specPath}" --format=json`,
+        {
+          encoding: "utf8",
+          stdio: "pipe",
+        },
       );
-    }
 
-    // Check for missing descriptions
-    const operationsWithoutDescriptions = [];
-    for (const [path, methods] of Object.entries(api.paths)) {
-      for (const [method, operation] of Object.entries(methods)) {
-        if (typeof operation === "object" && !operation.description) {
-          operationsWithoutDescriptions.push(`${method.toUpperCase()} ${path}`);
-        }
-      }
-    }
-
-    if (operationsWithoutDescriptions.length > 0) {
-      warnings.push(
-        `Operations missing descriptions: ${operationsWithoutDescriptions.slice(0, 2).join(", ")}${operationsWithoutDescriptions.length > 2 ? "..." : ""}`,
+      const stats = JSON.parse(statsResult);
+      console.log(
+        `📋 API: ${stats.info?.title || "Unknown"} v${stats.info?.version || "Unknown"}`,
       );
-    }
-
-    // Display warnings
-    if (warnings.length > 0) {
-      console.log("\n⚠️  Recommendations:");
-      warnings.forEach((warning) => console.log(`   • ${warning}`));
+      console.log(`🔗 Paths: ${stats.paths?.count || 0} endpoints`);
+      console.log(
+        `📦 Components: ${stats.components?.schemas?.count || 0} schemas`,
+      );
+    } catch (statsError) {
+      // Stats command is optional, continue if it fails
+      console.log("📊 Stats not available");
     }
 
     console.log("\n🎉 Validation complete!");
@@ -79,17 +57,13 @@ async function validateSpec() {
   } catch (error) {
     console.error("❌ OpenAPI validation failed:");
 
-    if (error.details) {
-      // Swagger parser provides detailed error information
-      console.error(`\n📍 Error details:`);
-      error.details.forEach((detail, index) => {
-        console.error(`   ${index + 1}. ${detail.message}`);
-        if (detail.path) {
-          console.error(`      Path: ${detail.path}`);
-        }
-      });
+    // Redocly CLI provides detailed error information in stderr
+    if (error.stderr) {
+      console.error(error.stderr.toString());
+    } else if (error.stdout) {
+      console.error(error.stdout.toString());
     } else {
-      console.error(`\n💥 ${error.message}`);
+      console.error(error.message);
     }
 
     process.exit(1);
