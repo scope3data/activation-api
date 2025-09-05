@@ -42,7 +42,7 @@ For MCP specifically, follow the protocol's tool description format but enhance 
   "usage_examples": [
     {
       "user_says": "Find our recent performance metrics",
-      "tool_call": {"query": "performance metrics recent"}
+      "tool_call": { "query": "performance metrics recent" }
     }
   ]
 }
@@ -55,20 +55,24 @@ Create markdown files that work for both audiences:
 # Document Search Tool
 
 ## Overview
+
 Searches through available documents using semantic search to find relevant content.
 
 ## When to Use
+
 - User asks to "find", "search for", or "look up" information
 - User references documents they don't have direct access to
 - User needs information that might be in stored documents
 
 ## Parameters
+
 - `query` (string, required): Natural language description of what to search for
   - Keep queries concise (3-7 words optimal)
   - Use key terms from the user's request
   - Avoid filler words like "please find"
 
 ## Examples
+
 User: "What did we discuss about the product roadmap?"
 Call: search_documents(query="product roadmap discussion")
 ```
@@ -78,6 +82,7 @@ Add sections specifically for LLM behavior:
 
 ```markdown
 ## LLM Usage Guidelines
+
 - Always search before claiming information is unavailable
 - If initial search returns no results, try broadening the query
 - Combine multiple tool calls for complex research questions

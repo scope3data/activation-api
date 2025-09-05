@@ -1,24 +1,7 @@
 import { FastMCP } from "fastmcp";
-import { fetch } from "undici";
 import { z } from "zod";
 
-interface Agent {
-  customerId: number;
-  id: string;
-  models: AgentModel[];
-  name: string;
-  type: string;
-}
-
-// GraphQL response interfaces
-interface AgentModel {
-  id: string;
-  name: string;
-}
-
-interface AgentsData {
-  agents: Agent[];
-}
+import { Scope3ApiClient } from "./scope3-client.js";
 
 // Define the authentication type - can be undefined for unauthenticated sessions
 type AuthContext =
@@ -28,11 +11,6 @@ type AuthContext =
       userId?: string;
     }
   | undefined;
-
-interface GraphQLResponse<T = unknown> {
-  data?: T;
-  errors?: Array<{ [key: string]: unknown; message: string }>;
-}
 
 // Configuration interface for better maintainability
 interface ServerConfig {
@@ -48,72 +26,8 @@ const config: ServerConfig = {
     process.env.SCOPE3_GRAPHQL_URL || "https://api.scope3.com/api/graphql",
 };
 
-// GraphQL query for Agents (using the pattern from existing working code)
-const AGENTS_QUERY = `
-  query Agents($where: AgentWhereInput) {
-    agents(where: $where) {
-      type
-      id
-      customerId
-      name
-      models {
-        id
-        name
-      }
-    }
-  }
-`;
-
-// Helper function to make GraphQL requests to Scope3
-export async function makeScope3GraphQLRequest<T = unknown>(
-  query: string,
-  variables = {},
-  apiKey?: string,
-): Promise<GraphQLResponse<T>> {
-  if (!apiKey) {
-    throw new Error("Scope3 API key is required for this operation");
-  }
-
-  const headers = {
-    Authorization: `Bearer ${apiKey}`,
-    "Content-Type": "application/json",
-    "User-Agent": "MCP-Scope3-Server/1.0.0",
-  };
-
-  try {
-    const response = await fetch(config.scope3GraphQLUrl, {
-      body: JSON.stringify({ query, variables }),
-      headers,
-      method: "POST",
-    });
-
-    if (!response.ok) {
-      // Sanitize error response to prevent information disclosure
-      if (response.status === 401 || response.status === 403) {
-        throw new Error("Authentication failed - please check your API key");
-      } else if (response.status >= 500) {
-        throw new Error("External service temporarily unavailable");
-      } else {
-        throw new Error("Request failed - please verify your parameters");
-      }
-    }
-
-    const result = (await response.json()) as GraphQLResponse<T>;
-
-    if (result.errors) {
-      // Sanitize GraphQL errors to prevent information disclosure
-      throw new Error("Invalid request parameters or query");
-    }
-
-    return result;
-  } catch (error) {
-    if (error instanceof Error) {
-      // Re-throw the sanitized error without exposing internal details
-      throw error;
-    }
-    throw new Error("Request processing failed");
-  }
-}
+// Create a shared instance of the Scope3 API client
+const scope3Client = new Scope3ApiClient(config.scope3GraphQLUrl);
 
 const server = new FastMCP<AuthContext>({
   authenticate: async (request) => {
@@ -227,14 +141,10 @@ server.addTool({
 
     try {
       // Let the API key determine what data the user can access
-      const result = await makeScope3GraphQLRequest<AgentsData>(
-        AGENTS_QUERY,
-        { where: {} },
-        apiKey,
-      );
+      const agents = await scope3Client.getAgents(apiKey, {});
       return JSON.stringify({
         authenticated: true,
-        data: result.data,
+        data: { agents },
         success: true,
       });
     } catch (error) {
@@ -262,11 +172,13 @@ server.addTool({
   parameters: z.object({}),
 });
 
-// Start the server with configurable options
-server.start({
-  httpStream: {
-    endpoint: config.endpoint as `/${string}`,
-    port: config.port,
-  },
-  transportType: "httpStream",
-});
+// Start the server with configurable options (skip in test environment)
+if (process.env.NODE_ENV !== "test") {
+  server.start({
+    httpStream: {
+      endpoint: config.endpoint as `/${string}`,
+      port: config.port,
+    },
+    transportType: "httpStream",
+  });
+}
