@@ -1,0 +1,226 @@
+// Inventory Options types - manages publisher products with targeting strategies
+
+// Budget allocation for an inventory option
+export interface BudgetAllocation {
+  amount: number;
+  currency: string;
+  dailyCap?: number;
+  pacing: "asap" | "even" | "front_loaded";
+  percentage?: number; // % of total campaign budget
+}
+
+// Creative format types
+export type CreativeFormat = "audio" | "display" | "html5" | "native" | "video";
+
+// Pricing after signal costs are applied
+export interface EffectivePricing {
+  cpm: number; // Base CPM from publisher
+  currency: string;
+  signalCost?: number; // Additional cost for data signals
+  totalCpm: number; // Final effective CPM
+}
+
+// Campaign inventory management configuration
+export interface InventoryManagement {
+  // Auto-discovery settings
+  autoDiscoverProducts?: boolean;
+  autoOptimize?: boolean;
+  // Budget constraints
+  budgetSplit?: {
+    guaranteed: number; // percentage
+    nonGuaranteed: number; // percentage
+  };
+  discoveryCriteria?: ProductDiscoveryQuery;
+
+  inventoryOptions?: InventoryOption[];
+
+  mode: "hybrid" | "scope3_managed" | "user_managed";
+
+  optimizationGoal?:
+    | "clicks"
+    | "conversions"
+    | "cost_efficiency"
+    | "impressions";
+  // Signal preferences
+  preferredSignals?: ("buyer" | "scope3" | "third_party")[];
+}
+
+// Our inventory option (product + targeting)
+export interface InventoryOption {
+  // Budget allocation for this option
+  budgetAllocation: BudgetAllocation;
+  campaignId: string;
+  // Metadata
+  createdAt: Date;
+  description?: string;
+
+  // Effective pricing (may differ based on signal type)
+  effectivePricing: EffectivePricing;
+
+  id: string;
+
+  // The underlying publisher product
+  mediaProduct: PublisherMediaProduct;
+
+  name: string; // e.g., "Hulu Premium + Scope3 Signals"
+
+  performance?: InventoryPerformance;
+  // Status and performance
+  status: "active" | "completed" | "draft" | "paused";
+
+  // Our targeting layer
+  targeting: TargetingStrategy;
+  updatedAt: Date;
+}
+
+export interface InventoryOptionInput {
+  budgetAllocation: BudgetAllocation;
+  campaignId: string;
+  description?: string;
+  mediaProductId: string; // Reference to existing publisher product
+  name: string;
+  targeting: TargetingStrategy;
+}
+
+export interface InventoryOptionsData {
+  inventoryOptions: InventoryOption[];
+}
+
+export interface InventoryOptionUpdateInput {
+  budgetAllocation?: Partial<BudgetAllocation>;
+  description?: string;
+  name?: string;
+  status?: "active" | "completed" | "draft" | "paused";
+  targeting?: Partial<TargetingStrategy>;
+}
+
+// Performance metrics for an inventory option
+export interface InventoryPerformance {
+  clicks?: number;
+  conversions?: number;
+  cpa?: number; // Cost per acquisition
+  cpc?: number; // Cost per click
+  cpm: number; // Actual CPM achieved
+  ctr?: number; // Click-through rate
+  cvr?: number; // Conversion rate
+  impressions: number;
+  lastUpdated: Date;
+  spend: number;
+}
+
+// Optimization types
+export type OptimizationGoal =
+  | "clicks"
+  | "conversions"
+  | "cost_efficiency"
+  | "frequency"
+  | "impressions"
+  | "reach";
+
+export interface OptimizationRecommendations {
+  generatedAt: Date;
+  goal: OptimizationGoal;
+  projectedImprovement: {
+    currentValue: number;
+    improvement: number; // percentage
+    metric: string;
+    projectedValue: number;
+  };
+  suggestions: OptimizationSuggestion[];
+}
+
+export interface OptimizationSuggestion {
+  confidence: number; // 0-1 scale
+  currentOptionId: string;
+  expectedImpact: string;
+  reason: string;
+  suggestedBudgetChange: number; // positive = increase, negative = decrease
+}
+
+// Query parameters for discovering publisher products
+export interface ProductDiscoveryQuery {
+  campaignBrief?: string; // Natural language description
+  deliveryType?: "guaranteed" | "non_guaranteed";
+  formats?: CreativeFormat[];
+  inventoryType?: "premium" | "run_of_site" | "targeted_package";
+  maxCpm?: number;
+  minCpm?: number;
+  publisherIds?: string[];
+  supportedSignals?: ("buyer" | "scope3" | "third_party")[];
+  targetingRequirements?: string[];
+}
+
+// Publisher's raw media product from AdCP
+export interface PublisherMediaProduct {
+  // Base pricing (before our signals)
+  basePricing: {
+    fixedCpm?: number;
+    floorCpm?: number;
+    model: "auction" | "fixed_cpm";
+    targetCpm?: number; // Price guidance for auction
+  };
+  // Metadata
+  createdAt: Date;
+  deliveryType: "guaranteed" | "non_guaranteed";
+  description: string;
+  // Product characteristics
+  formats: CreativeFormat[];
+  id: string;
+
+  inventoryType: "premium" | "run_of_site" | "targeted_package";
+  name: string;
+  productId: string; // Publisher's internal product ID
+
+  publisherId: string;
+
+  publisherName: string;
+
+  // Available targeting dimensions this product supports
+  supportedTargeting?: string[];
+  updatedAt: Date;
+}
+
+// Input types for creating inventory options
+export interface PublisherMediaProductInput {
+  basePricing: {
+    fixedCpm?: number;
+    floorCpm?: number;
+    model: "auction" | "fixed_cpm";
+    targetCpm?: number;
+  };
+  deliveryType: "guaranteed" | "non_guaranteed";
+  description: string;
+  formats: CreativeFormat[];
+  inventoryType: "premium" | "run_of_site" | "targeted_package";
+  name: string;
+  productId: string;
+  publisherId: string;
+  supportedTargeting?: string[];
+}
+
+// Response types
+export interface PublisherMediaProductsData {
+  publisherMediaProducts: PublisherMediaProduct[];
+}
+
+// Signal configuration for targeting
+export interface SignalConfiguration {
+  audienceIds?: string[];
+  customParameters?: Record<string, unknown>;
+  segments?: string[];
+}
+
+// Targeting strategy applied to a media product
+export interface TargetingStrategy {
+  // Additional targeting from campaign
+  inheritFromCampaign: boolean;
+  overrides?: {
+    demographics?: Record<string, unknown>;
+    geo?: string[];
+    interests?: string[];
+  };
+  signalConfiguration?: SignalConfiguration;
+
+  signalProvider?: string; // e.g., "LiveRamp", "Scope3", etc.
+  signalType: "buyer" | "none" | "scope3" | "third_party";
+}

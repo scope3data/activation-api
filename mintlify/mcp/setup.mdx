@@ -1,0 +1,388 @@
+---
+title: MCP Setup Guide
+description: "Configure the Scope3 MCP server with Claude Desktop and other AI platforms"
+---
+
+This guide walks you through setting up the Scope3 MCP server for natural language campaign management.
+
+## Prerequisites
+
+<Steps>
+  <Step title="Get API Access">
+    [Request a Scope3 API key](mailto:api@scope3.com) and join our beta program
+  </Step>
+  <Step title="Install Node.js">
+    Ensure you have **Node.js 18+** installed on your system
+  </Step>
+  <Step title="Choose Integration">
+    Decide between Claude Desktop (easiest) or custom integration
+  </Step>
+</Steps>
+
+## Claude Desktop Integration
+
+### 1. Install the Scope3 MCP Server
+
+<Tabs>
+  <Tab title="NPM Installation">
+    ```bash
+    npm install -g @scope3/campaign-mcp-server
+    ```
+  </Tab>
+  <Tab title="Local Development">
+    ```bash
+    # Clone the repository
+    git clone https://github.com/scope3/campaign-mcp-server.git
+    cd campaign-mcp-server
+    
+    # Install dependencies
+    npm install
+    
+    # Build the server
+    npm run build
+    ```
+  </Tab>
+</Tabs>
+
+### 2. Configure Claude Desktop
+
+Add the Scope3 MCP server to your Claude Desktop configuration:
+
+**On macOS/Linux:**
+```json
+// ~/.config/claude/claude_desktop_config.json
+{
+  "mcpServers": {
+    "scope3-campaigns": {
+      "command": "node",
+      "args": ["/path/to/scope3-campaign-mcp-server/dist/server.js"],
+      "env": {
+        "SCOPE3_API_KEY": "your-api-key-here",
+        "SCOPE3_API_URL": "https://api.scope3.com"
+      }
+    }
+  }
+}
+```
+
+**On Windows:**
+```json
+// %APPDATA%\Claude\claude_desktop_config.json
+{
+  "mcpServers": {
+    "scope3-campaigns": {
+      "command": "node",
+      "args": ["C:\\path\\to\\scope3-campaign-mcp-server\\dist\\server.js"],
+      "env": {
+        "SCOPE3_API_KEY": "your-api-key-here",
+        "SCOPE3_API_URL": "https://api.scope3.com"
+      }
+    }
+  }
+}
+```
+
+<Warning>
+**Security Note:** Never commit your API key to version control. Consider using environment variables or secure credential storage.
+</Warning>
+
+### 3. Restart Claude Desktop
+
+After updating your configuration:
+1. Completely quit Claude Desktop
+2. Restart the application
+3. Look for the MCP server connection indicator
+
+### 4. Test Your Setup
+
+Try these commands in Claude Desktop to verify the integration:
+
+```
+You: "Check if I'm authenticated with Scope3"
+Claude: → check_auth()
+
+You: "Show me all my brand agents"
+Claude: → list_brand_agents()
+
+You: "Create a test brand agent called 'Demo Company'"
+Claude: → create_brand_agent({ name: "Demo Company" })
+```
+
+## Alternative Installation Methods
+
+### Docker Setup
+
+Run the MCP server in a Docker container:
+
+```bash
+# Pull the official image
+docker pull scope3/campaign-mcp-server
+
+# Run the server
+docker run -d \
+  -p 3001:3001 \
+  -e SCOPE3_API_KEY=your-api-key \
+  -e SCOPE3_API_URL=https://api.scope3.com \
+  --name scope3-mcp \
+  scope3/campaign-mcp-server
+```
+
+Update your Claude Desktop config to use the HTTP endpoint:
+
+```json
+{
+  "mcpServers": {
+    "scope3-campaigns": {
+      "transport": {
+        "type": "http",
+        "uri": "http://localhost:3001/mcp"
+      }
+    }
+  }
+}
+```
+
+### NPX Quick Start
+
+For one-time usage or testing:
+
+```bash
+# Start the server directly
+npx @scope3/campaign-mcp-server --port 3001
+
+# In another terminal, set your API key
+export SCOPE3_API_KEY=your-api-key-here
+```
+
+## Configuration Options
+
+### Environment Variables
+
+| Variable | Required | Description | Default |
+|----------|----------|-------------|---------|
+| `SCOPE3_API_KEY` | Yes | Your Scope3 API key | - |
+| `SCOPE3_API_URL` | No | API endpoint URL | `https://api.scope3.com` |
+| `MCP_SERVER_PORT` | No | Server port (HTTP mode) | `3001` |
+| `LOG_LEVEL` | No | Logging verbosity | `info` |
+| `CACHE_TTL` | No | Response cache duration | `300` seconds |
+
+### Server Modes
+
+<Tabs>
+  <Tab title="Stdio Mode (Recommended)">
+    Direct process communication - most reliable for Claude Desktop:
+    
+    ```json
+    {
+      "command": "node",
+      "args": ["/path/to/server.js"]
+    }
+    ```
+  </Tab>
+  
+  <Tab title="HTTP Mode">
+    Network-based communication - better for multiple clients:
+    
+    ```json
+    {
+      "transport": {
+        "type": "http", 
+        "uri": "http://localhost:3001/mcp"
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Custom AI Agent Integration
+
+### For Custom Applications
+
+Connect any MCP-compatible client:
+
+```python
+import mcp
+
+# Connect to Scope3 MCP server
+client = mcp.Client("http://localhost:3001/mcp")
+
+# Set authentication headers
+client.set_header("x-scope3-api-key", "your-api-key")
+
+# Execute campaign creation
+result = await client.call_tool("create_campaign", {
+    "brandAgentId": "ba_123",
+    "name": "AI-Managed Campaign",
+    "prompt": "Optimize for brand awareness among tech professionals",
+    "budget": {"total": 50000, "currency": "USD"}
+})
+```
+
+### Multi-Agent Setup
+
+Configure different agents for specialized tasks:
+
+```json
+{
+  "mcpServers": {
+    "scope3-creative-agent": {
+      "command": "node",
+      "args": ["/path/to/server.js"],
+      "env": {
+        "SCOPE3_API_KEY": "creative-agent-key",
+        "AGENT_ROLE": "creative"
+      }
+    },
+    "scope3-campaign-agent": {
+      "command": "node", 
+      "args": ["/path/to/server.js"],
+      "env": {
+        "SCOPE3_API_KEY": "campaign-agent-key",
+        "AGENT_ROLE": "campaign"
+      }
+    }
+  }
+}
+```
+
+## Troubleshooting
+
+### Common Issues
+
+<AccordionGroup>
+  <Accordion title="Server Not Connecting">
+    **Symptoms:** Claude Desktop shows "MCP server disconnected"
+    
+    **Solutions:**
+    - Verify Node.js is installed and accessible
+    - Check file paths in configuration
+    - Ensure API key is valid
+    - Review Claude Desktop logs
+  </Accordion>
+
+  <Accordion title="Authentication Failures">
+    **Symptoms:** "Invalid API key" or "Unauthorized" errors
+    
+    **Solutions:**
+    - Verify your API key is correct
+    - Check API key hasn't expired
+    - Ensure proper environment variable setup
+    - Contact support for API key issues
+  </Accordion>
+
+  <Accordion title="Tool Calls Failing">
+    **Symptoms:** Tools return errors or unexpected results
+    
+    **Solutions:**
+    - Check network connectivity
+    - Verify API endpoint URL
+    - Review tool parameters
+    - Enable debug logging
+  </Accordion>
+</AccordionGroup>
+
+### Debug Mode
+
+Enable detailed logging for troubleshooting:
+
+```json
+{
+  "mcpServers": {
+    "scope3-campaigns": {
+      "command": "node",
+      "args": ["/path/to/server.js"],
+      "env": {
+        "SCOPE3_API_KEY": "your-api-key",
+        "LOG_LEVEL": "debug"
+      }
+    }
+  }
+}
+```
+
+### Health Check
+
+Verify server health:
+
+```bash
+# For HTTP mode
+curl http://localhost:3001/health
+
+# Should return: {"status": "ok"}
+```
+
+## Security Best Practices
+
+<Note>
+**API Key Security:**
+- Store API keys in secure environment variables
+- Never commit keys to version control
+- Rotate keys regularly
+- Use different keys for development/production
+- Monitor API key usage
+</Note>
+
+### Secure Configuration
+
+Use environment variables instead of hardcoding credentials:
+
+```bash
+# Set environment variables
+export SCOPE3_API_KEY="your-api-key"
+export SCOPE3_API_URL="https://api.scope3.com"
+
+# Reference in Claude Desktop config
+{
+  "mcpServers": {
+    "scope3-campaigns": {
+      "command": "node",
+      "args": ["/path/to/server.js"],
+      "env": {
+        "SCOPE3_API_KEY": "${SCOPE3_API_KEY}",
+        "SCOPE3_API_URL": "${SCOPE3_API_URL}"
+      }
+    }
+  }
+}
+```
+
+## Next Steps
+
+Once your MCP server is configured:
+
+<CardGroup cols={2}>
+  <Card
+    title="Learn Natural Language Patterns"
+    icon="comments"
+    href="/mcp/natural-language"
+  >
+    Master conversational campaign management
+  </Card>
+  <Card
+    title="Explore Advanced Workflows"
+    icon="workflow"
+    href="/mcp/advanced-workflows"
+  >
+    Multi-agent coordination and automation
+  </Card>
+  <Card
+    title="Quick Start Tutorial"
+    icon="rocket"
+    href="/quickstart/first-campaign"
+  >
+    Create your first campaign through natural language
+  </Card>
+  <Card
+    title="API Reference"
+    icon="code"
+    href="/api-reference/overview"
+  >
+    Detailed documentation for all available tools
+  </Card>
+</CardGroup>
+
+---
+
+<Tip>
+**Setup Complete?** Test your integration by asking Claude: "Show me all available Scope3 campaign tools"
+</Tip>

@@ -38,6 +38,16 @@ npm run lint
 echo "🧪 Running tests..."
 npm test
 
+# Check documentation links (requires Mintlify CLI)
+echo "📖 Checking documentation links..."
+if command -v mintlify >/dev/null 2>&1; then
+  npm run docs:validate:links
+  echo "✅ Documentation links checked"
+else
+  echo "⚠️  Mintlify CLI not found - skipping documentation link check"
+  echo "   Install with: npm install -g mintlify"
+fi
+
 # Check for OpenAPI drift
 echo "📋 Checking OpenAPI consistency..."
 ORIGINAL_OPENAPI=$(cat openapi.yaml)

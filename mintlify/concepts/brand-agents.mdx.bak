@@ -210,7 +210,9 @@ A Brand Agent is exactly like your Advertiser account - it's the top-level conta
         └── Nike Internal Analytics
     ```
   </Tab>
+</Tabs>
 
+<Tabs>
 <Tab title="The Trade Desk Structure">
   ``` Advertiser: Nike Global ├── Campaign: Summer 2024 │ ├── Line Item: Running
   Shoes ($25K) │ │ ├── Creatives: Running Video, Shoe Images │ │ └── Audiences:

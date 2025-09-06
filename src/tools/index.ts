@@ -21,6 +21,12 @@ import { updateBrandAgentTool } from "./brand-agents/core/update-brand-agent.js"
 import { createBrandAgentCreativeTool } from "./brand-agents/creatives/create-creative.js";
 import { listBrandAgentCreativesTool } from "./brand-agents/creatives/list-creatives.js";
 import { updateBrandAgentCreativeTool } from "./brand-agents/creatives/update-creative.js";
+// Brand Agent inventory tools
+import { adjustInventoryAllocationTool } from "./brand-agents/inventory/adjust-inventory-allocation.js";
+import { analyzeInventoryPerformanceTool } from "./brand-agents/inventory/analyze-inventory-performance.js";
+import { createInventoryOptionTool } from "./brand-agents/inventory/create-inventory-option.js";
+import { discoverPublisherProductsTool } from "./brand-agents/inventory/discover-publisher-products.js";
+import { listInventoryOptionsTool } from "./brand-agents/inventory/list-inventory-options.js";
 // Brand Agent measurement tools
 import { addMeasurementSourceTool } from "./brand-agents/measurement/add-measurement-source.js";
 import { listMeasurementSourcesTool } from "./brand-agents/measurement/list-measurement-sources.js";
@@ -56,6 +62,13 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(updateBrandAgentCreativeTool(client));
   server.addTool(listBrandAgentCreativesTool(client));
 
+  // Brand Agent inventory tools
+  server.addTool(discoverPublisherProductsTool(client));
+  server.addTool(createInventoryOptionTool(client));
+  server.addTool(listInventoryOptionsTool(client));
+  server.addTool(adjustInventoryAllocationTool(client));
+  server.addTool(analyzeInventoryPerformanceTool(client));
+
   // Brand Agent standards tools
   server.addTool(setBrandStandardsTool(client));
   server.addTool(getBrandStandardsTool(client));
@@ -73,6 +86,9 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
 export {
   // Brand Agent measurement tools
   addMeasurementSourceTool,
+  // Brand Agent inventory tools
+  adjustInventoryAllocationTool,
+  analyzeInventoryPerformanceTool,
   // Original tools
   checkAuthTool,
   // Brand Agent campaign tools
@@ -83,15 +99,18 @@ export {
   // Brand Agent core tools
   createBrandAgentTool,
   createCampaignTool,
+  createInventoryOptionTool,
   // Brand Agent audience tools
   createSyntheticAudienceTool,
   deleteBrandAgentTool,
+  discoverPublisherProductsTool,
   getAmpAgentsTool,
   getBrandAgentTool,
   getBrandStandardsTool,
   listBrandAgentCampaignsTool,
   listBrandAgentCreativesTool,
   listBrandAgentsTool,
+  listInventoryOptionsTool,
   listMeasurementSourcesTool,
   listSyntheticAudiencesTool,
   // Brand Agent standards tools

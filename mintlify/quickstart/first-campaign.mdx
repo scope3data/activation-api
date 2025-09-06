@@ -1,23 +1,24 @@
 ---
 title: "Create Your First Campaign"
-description: "Launch an agentic campaign in 5 minutes with natural language"
+description: "Launch a campaign in 5 minutes with built-in optimization"
 icon: "rocket"
 ---
 
-# Your First Agentic Campaign
+# Your First Campaign
 
-This tutorial will walk you through creating your first AI-powered campaign using natural language. You'll go from API key to live campaign in under 5 minutes.
+This tutorial will walk you through creating your first campaign on the Scope3 Ad Platform. You'll experience our **built-in optimization** approach - where you focus on strategy and AI handles tactical execution.
 
 <Note>
 **What You'll Build**
 
 By the end of this guide, you'll have:
 
-- A brand agent (advertiser account) set up
-- A creative asset uploaded
-- An agentic campaign running with AI optimization
-- Real-time performance tracking configured
-  </Note>
+- A **brand agent** (advertiser account) set up
+- A **creative asset** uploaded to your shared library  
+- A **campaign running** with built-in optimization
+- Experience with **natural language** campaign management
+- Understanding of **allocation-focused** advertising
+</Note>
 
 ## Prerequisites
 
@@ -28,9 +29,10 @@ By the end of this guide, you'll have:
   </Step>
 
   <Step title="Choose Your Method">
-    You can follow this tutorial using: - **Python SDK** (recommended for
-    developers) - **cURL commands** (for testing and exploration) - **Claude
-    Desktop MCP** (for conversational campaign management)
+    You can follow this tutorial using:
+    - **Claude Desktop MCP** (recommended for natural language)
+    - **Python SDK** (for developers building integrations)
+    - **cURL commands** (for API testing and exploration)
   </Step>
 </Steps>
 
@@ -139,27 +141,23 @@ Upload a video creative called "Eco Products Hero Video" to my brand agent. The 
   </Accordion>
 </AccordionGroup>
 
-## Step 3: Launch Your Agentic Campaign
+## Step 3: Launch Your Campaign
 
-Now for the magic - create your campaign using natural language. The AI will handle all the complex targeting and optimization setup.
+Now create your campaign using natural language. Our built-in optimization will handle inventory selection, targeting, and budget allocation automatically.
 
 <CodeGroup>
 ```python Python
-# Create campaign with natural language prompt
+# Create campaign with built-in optimization
 campaign = client.create_campaign(
     brand_agent_id=brand_agent_id,
-    name="Eco Products Launch",
-    prompt="""
-    Launch our eco-friendly product line to environmentally conscious consumers 
-    aged 25-45 who shop online and care about sustainability. Focus on urban 
-    areas with higher environmental awareness. Budget $10,000 over 2 weeks 
-    with emphasis on video content to showcase product quality and environmental impact.
-    """,
+    name="Summer Sale 2024", 
+    prompt="Reach eco-conscious millennials interested in sustainable fashion",
     budget={
-        "total": 1000000,  # $10,000 in cents
-        "currency": "USD",
-        "pacing": "even"
+        "total": 50000,
+        "currency": "USD"
     },
+    start_date="2024-06-01",
+    end_date="2024-08-31", 
     creative_ids=[creative_id]
 )
 
@@ -174,35 +172,36 @@ curl -X POST https://api.agentic.scope3.com/campaigns \
   -H "Content-Type: application/json" \
   -d '{
     "brandAgentId": "ba_your_brand_agent_id",
-    "name": "Eco Products Launch",
-    "prompt": "Launch our eco-friendly product line to environmentally conscious consumers aged 25-45 who shop online and care about sustainability. Focus on urban areas with higher environmental awareness. Budget $10,000 over 2 weeks with emphasis on video content to showcase product quality and environmental impact.",
+    "name": "Summer Sale 2024",
+    "prompt": "Reach eco-conscious millennials interested in sustainable fashion",
     "budget": {
-      "total": 1000000,
-      "currency": "USD",
-      "pacing": "even"
+      "total": 50000,
+      "currency": "USD"
     },
+    "startDate": "2024-06-01",
+    "endDate": "2024-08-31",
     "creativeIds": ["cr_your_creative_id"]
   }'
 ````
 
 ```claude MCP in Claude Desktop
-Create a campaign called "Eco Products Launch" targeting environmentally conscious consumers aged 25-45 who shop online and care about sustainability. Focus on urban areas with higher environmental awareness. Budget $10,000 over 2 weeks with emphasis on video content to showcase product quality and environmental impact. Use the eco products video creative I just uploaded.
+Create a campaign called "Summer Sale 2024" for my brand agent. The campaign should reach eco-conscious millennials interested in sustainable fashion. Set the budget to $50,000 USD, running from June 1st to August 31st, 2024. Use the eco products video creative I just uploaded.
 ```
 
 </CodeGroup>
 
 <Info>
-**What Happens Behind the Scenes**
+**Built-in Optimization in Action**
 
-When you create an agentic campaign, Scope3's AI:
+When you create a campaign with built-in optimization, Scope3 automatically:
 
-1. **Analyzes your prompt** to extract targeting intent and goals
-2. **Creates synthetic audiences** based on your description
-3. **Optimizes targeting parameters** for your objectives
-4. **Sets up bidding strategy** based on budget and goals
-5. **Begins real-time optimization** using performance signals
-6. **Automatically adjusts** creative delivery and budget allocation
-   </Info>
+1. **Analyzes your prompt** to understand targeting goals and audience intent
+2. **Selects optimal inventory mix** from premium and programmatic sources
+3. **Chooses appropriate signals** (contextual, audience, first-party data)
+4. **Allocates budget strategically** across selected inventory options
+5. **Monitors performance** and adjusts allocation in real-time
+6. **Optimizes for your goals** while maintaining brand safety standards
+</Info>
 
 ## Step 4: Monitor Performance
 
@@ -342,9 +341,9 @@ Congratulations! You've successfully:
 
 ✅ **Created a brand agent** - Your advertiser account container  
 ✅ **Uploaded a creative** - Added to your shared creative library  
-✅ **Launched an agentic campaign** - Using natural language targeting  
-✅ **Set up performance monitoring** - Track real-time optimization  
-✅ **Learned optimization patterns** - Ready to scale and improve
+✅ **Launched a campaign** - Using built-in optimization and natural language  
+✅ **Experienced allocation-focused advertising** - Portfolio thinking vs bidding  
+✅ **Ready to scale** - Explore granular control or create more campaigns
 
 ## Key Differences from Traditional DSPs
 
@@ -361,13 +360,13 @@ Congratulations! You've successfully:
     8. Make manual optimizations based on performance
   </Tab>
 
-  <Tab title="Scope3 Agentic Process"> 
-    **Agentic Campaign Setup (5 minutes):**
+  <Tab title="Scope3 Platform Process"> 
+    **Scope3 Campaign Setup (5 minutes):**
     1. Describe your campaign goals in natural language
-    2. Upload creatives once to shared library
-    3. AI handles all targeting and optimization automatically
-    4. Real-time performance optimization without manual intervention
-    5. Easy scaling and iteration with conversational updates
+    2. Upload creatives once to shared library  
+    3. Built-in optimization handles inventory allocation automatically
+    4. Focus on allocation strategy rather than bidding mechanics
+    5. Scale and iterate through conversational management
   </Tab>
 </Tabs>
 
@@ -375,25 +374,24 @@ Congratulations! You've successfully:
 
 <CardGroup cols={2}>
   <Card
-    title="Advanced Campaign Features"
-    icon="settings"
-    href="/concepts/campaigns"
+    title="Try Granular Control"
+    icon="sliders"
+    href="/concepts/optimization-modes"
   >
-    Learn about audience targeting, budget optimization, and advanced prompt
-    techniques
+    Learn advanced portfolio management and custom inventory allocation
   </Card>
-  <Card title="Creative Best Practices" icon="image" href="/concepts/creatives">
-    Optimize your creative library for maximum performance across campaigns
+  <Card title="Platform Philosophy" icon="brain" href="/concepts/philosophy">
+    Understand allocation-focused advertising and human-AI collaboration  
   </Card>
-  <Card title="Set Up MCP Server" icon="robot" href="/quickstart/mcp-setup">
-    Manage campaigns conversationally through Claude Desktop
+  <Card title="Set Up MCP Server" icon="comments" href="/mcp/setup">
+    Configure natural language campaign management through Claude Desktop
   </Card>
   <Card
-    title="Migration from Other Platforms"
-    icon="arrow-right-arrow-left"
+    title="Platform Integration"
+    icon="link"
     href="/migration/overview"
   >
-    Migrate existing campaigns from TTD, DV360, or other DSPs
+    See how Scope3 complements your existing advertising stack
   </Card>
 </CardGroup>
 
@@ -434,4 +432,4 @@ Congratulations! You've successfully:
 
 ---
 
-**Ready to scale?** Now that you have the basics down, explore our [advanced campaign strategies](/concepts/campaigns) or learn how to [migrate existing campaigns](/migration/overview) from your current platform.
+**Ready to scale?** Now that you've experienced built-in optimization, explore [granular control](/concepts/optimization-modes) for advanced strategies or learn how Scope3 [complements your existing platforms](/migration/overview).

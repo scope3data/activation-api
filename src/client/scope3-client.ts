@@ -22,6 +22,17 @@ import type {
   SyntheticAudiencesData,
 } from "../types/brand-agent.js";
 import type {
+  InventoryOption,
+  InventoryOptionInput,
+  InventoryOptionsData,
+  InventoryOptionUpdateInput,
+  InventoryPerformance,
+  OptimizationGoal,
+  OptimizationRecommendations,
+  ProductDiscoveryQuery,
+  PublisherMediaProduct,
+} from "../types/inventory-options.js";
+import type {
   Agent,
   AgentsData,
   AgentWhereInput,
@@ -70,15 +81,26 @@ import {
   UPDATE_ONE_STRATEGY_MUTATION,
 } from "./queries/campaigns.js";
 import {
+  CREATE_INVENTORY_OPTION_MUTATION,
+  DELETE_INVENTORY_OPTION_MUTATION,
+  GET_INVENTORY_PERFORMANCE_QUERY,
+  GET_OPTIMIZATION_RECOMMENDATIONS_QUERY,
+  LIST_INVENTORY_OPTIONS_QUERY,
+  UPDATE_INVENTORY_OPTION_MUTATION,
+} from "./queries/inventory-options.js";
+import {
   CREATE_BITMAP_TARGETING_PROFILE_MUTATION,
   GET_TARGETING_DIMENSIONS_QUERY,
 } from "./queries/targeting.js";
+import { ProductDiscoveryService } from "./services/product-discovery.js";
 
 export class Scope3ApiClient {
   private graphqlUrl: string;
+  private productDiscovery: ProductDiscoveryService;
 
   constructor(graphqlUrl: string) {
     this.graphqlUrl = graphqlUrl;
+    this.productDiscovery = new ProductDiscoveryService(graphqlUrl);
   }
 
   // Measurement Source methods (stub)
@@ -302,6 +324,49 @@ export class Scope3ApiClient {
     return result.data.createBrandAgentCreative;
   }
 
+  // Create inventory option (product + targeting)
+  async createInventoryOption(
+    apiKey: string,
+    input: InventoryOptionInput,
+  ): Promise<InventoryOption> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: CREATE_INVENTORY_OPTION_MUTATION,
+        variables: { input },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication failed");
+      }
+      if (response.status >= 500) {
+        throw new Error("External service temporarily unavailable");
+      }
+      throw new Error("Request failed");
+    }
+
+    const result = (await response.json()) as GraphQLResponse<{
+      createInventoryOption: InventoryOption;
+    }>;
+
+    if (result.errors && result.errors.length > 0) {
+      throw new Error("Invalid request parameters or query");
+    }
+
+    if (!result.data?.createInventoryOption) {
+      throw new Error("No data received");
+    }
+
+    return result.data.createInventoryOption;
+  }
+
   async createStrategy(
     apiKey: string,
     input: CreateStrategyInput,
@@ -446,6 +511,57 @@ export class Scope3ApiClient {
     }
 
     return result.data.deleteBrandAgent.success;
+  }
+
+  // Delete inventory option
+  async deleteInventoryOption(
+    apiKey: string,
+    optionId: string,
+  ): Promise<boolean> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: DELETE_INVENTORY_OPTION_MUTATION,
+        variables: { id: optionId },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication failed");
+      }
+      if (response.status >= 500) {
+        throw new Error("External service temporarily unavailable");
+      }
+      throw new Error("Request failed");
+    }
+
+    const result = (await response.json()) as GraphQLResponse<{
+      deleteInventoryOption: { success: boolean };
+    }>;
+
+    if (result.errors && result.errors.length > 0) {
+      throw new Error("Invalid request parameters or query");
+    }
+
+    if (!result.data?.deleteInventoryOption) {
+      throw new Error("No data received");
+    }
+
+    return result.data.deleteInventoryOption.success;
+  }
+
+  // Discover publisher media products
+  async discoverPublisherProducts(
+    apiKey: string,
+    query: ProductDiscoveryQuery,
+  ): Promise<PublisherMediaProduct[]> {
+    return this.productDiscovery.discoverProducts(apiKey, query);
   }
 
   async generateUpdatedStrategyPrompt(
@@ -649,6 +765,140 @@ export class Scope3ApiClient {
     return result.data.getAPIAccessKeys.tokens[0].customerId;
   }
 
+  // Get inventory performance metrics
+  async getInventoryPerformance(
+    apiKey: string,
+    campaignId: string,
+  ): Promise<{
+    campaign: { id: string; name: string };
+    options: Array<{
+      option: InventoryOption;
+      performance: InventoryPerformance;
+    }>;
+    summary: {
+      averageCpm: number;
+      totalClicks?: number;
+      totalConversions?: number;
+      totalImpressions: number;
+      totalSpend: number;
+    };
+  }> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: GET_INVENTORY_PERFORMANCE_QUERY,
+        variables: { campaignId },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication failed");
+      }
+      if (response.status >= 500) {
+        throw new Error("External service temporarily unavailable");
+      }
+      throw new Error("Request failed");
+    }
+
+    const result = (await response.json()) as GraphQLResponse<{
+      inventoryPerformance: {
+        campaign: { id: string; name: string };
+        options: Array<{
+          option: InventoryOption;
+          performance: InventoryPerformance;
+        }>;
+        summary: {
+          averageCpm: number;
+          totalClicks?: number;
+          totalConversions?: number;
+          totalImpressions: number;
+          totalSpend: number;
+        };
+      };
+    }>;
+
+    if (result.errors && result.errors.length > 0) {
+      throw new Error("Invalid request parameters or query");
+    }
+
+    if (!result.data?.inventoryPerformance) {
+      throw new Error("No data received");
+    }
+
+    return result.data.inventoryPerformance;
+  }
+
+  // Get optimization recommendations
+  async getOptimizationRecommendations(
+    apiKey: string,
+    campaignId: string,
+    goal: OptimizationGoal,
+  ): Promise<OptimizationRecommendations> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: GET_OPTIMIZATION_RECOMMENDATIONS_QUERY,
+        variables: { campaignId, goal },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication failed");
+      }
+      if (response.status >= 500) {
+        throw new Error("External service temporarily unavailable");
+      }
+      throw new Error("Request failed");
+    }
+
+    const result = (await response.json()) as GraphQLResponse<{
+      optimizationRecommendations: OptimizationRecommendations;
+    }>;
+
+    if (result.errors && result.errors.length > 0) {
+      throw new Error("Invalid request parameters or query");
+    }
+
+    if (!result.data?.optimizationRecommendations) {
+      throw new Error("No data received");
+    }
+
+    return result.data.optimizationRecommendations;
+  }
+
+  // Get product recommendations
+  async getProductRecommendations(
+    apiKey: string,
+    params: {
+      budget: number;
+      campaignBrief: string;
+      preferredFormats?: string[];
+      targetSignals?: ("buyer" | "scope3" | "third_party")[];
+    },
+  ): Promise<{
+    guaranteed: PublisherMediaProduct[];
+    nonGuaranteed: PublisherMediaProduct[];
+    recommendations: {
+      product: PublisherMediaProduct;
+      reason: string;
+      signalTypes: string[];
+    }[];
+  }> {
+    return this.productDiscovery.getRecommendedProducts(apiKey, params);
+  }
+
   // Targeting methods
   async getTargetingDimensions(apiKey: string): Promise<TargetingDimension[]> {
     const response = await fetch(this.graphqlUrl, {
@@ -811,6 +1061,49 @@ export class Scope3ApiClient {
     return result.data.brandAgents;
   }
 
+  // List inventory options for a campaign
+  async listInventoryOptions(
+    apiKey: string,
+    campaignId: string,
+  ): Promise<InventoryOption[]> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: LIST_INVENTORY_OPTIONS_QUERY,
+        variables: { campaignId },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication failed");
+      }
+      if (response.status >= 500) {
+        throw new Error("External service temporarily unavailable");
+      }
+      throw new Error("Request failed");
+    }
+
+    const result = (await response.json()) as GraphQLResponse<{
+      inventoryOptions: InventoryOptionsData;
+    }>;
+
+    if (result.errors && result.errors.length > 0) {
+      throw new Error("Invalid request parameters or query");
+    }
+
+    if (!result.data?.inventoryOptions) {
+      throw new Error("No data received");
+    }
+
+    return result.data.inventoryOptions.inventoryOptions;
+  }
+
   async listMeasurementSources(
     apiKey: string,
     brandAgentId: string,
@@ -851,6 +1144,8 @@ export class Scope3ApiClient {
 
     return result.data.measurementSources;
   }
+
+  // Inventory Option Management Methods
 
   async listSyntheticAudiences(
     apiKey: string,
@@ -1106,6 +1401,50 @@ export class Scope3ApiClient {
     }
 
     return result.data.updateBrandAgentCreative;
+  }
+
+  // Update inventory option
+  async updateInventoryOption(
+    apiKey: string,
+    optionId: string,
+    input: InventoryOptionUpdateInput,
+  ): Promise<InventoryOption> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: UPDATE_INVENTORY_OPTION_MUTATION,
+        variables: { id: optionId, input },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication failed");
+      }
+      if (response.status >= 500) {
+        throw new Error("External service temporarily unavailable");
+      }
+      throw new Error("Request failed");
+    }
+
+    const result = (await response.json()) as GraphQLResponse<{
+      updateInventoryOption: InventoryOption;
+    }>;
+
+    if (result.errors && result.errors.length > 0) {
+      throw new Error("Invalid request parameters or query");
+    }
+
+    if (!result.data?.updateInventoryOption) {
+      throw new Error("No data received");
+    }
+
+    return result.data.updateInventoryOption;
   }
 
   async updateOneStrategy(

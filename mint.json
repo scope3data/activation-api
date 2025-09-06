@@ -1,0 +1,85 @@
+{
+  "name": "Scope3 Ad Platform",
+  "logo": {
+    "dark": "/logo/dark.svg",
+    "light": "/logo/light.svg"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#16a34a",
+    "light": "#22c55e", 
+    "dark": "#15803d"
+  },
+  "topbarLinks": [
+    {
+      "name": "API Console",
+      "url": "https://api.agentic.scope3.com"
+    }
+  ],
+  "tabs": [],
+  "anchors": [
+    {
+      "name": "GitHub",
+      "icon": "github",
+      "url": "https://github.com/conductor/activation-api"
+    },
+    {
+      "name": "Community",
+      "icon": "discord",
+      "url": "https://discord.gg/scope3"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Get Started",
+      "pages": [
+        "mintlify/introduction",
+        "mintlify/quickstart/authentication",
+        "mintlify/quickstart/first-campaign"
+      ]
+    },
+    {
+      "group": "Core Concepts",
+      "pages": [
+        "mintlify/concepts/philosophy",
+        "mintlify/concepts/optimization-modes"
+      ]
+    },
+    {
+      "group": "MCP Integration",
+      "pages": [
+        "mintlify/mcp/overview",
+        "mintlify/mcp/setup"
+      ]
+    },
+    {
+      "group": "Platform Migration",
+      "pages": [
+        "mintlify/migration/overview",
+        "mintlify/migration/concept-mapping"
+      ]
+    },
+    {
+      "group": "Resources",
+      "pages": [
+        "mintlify/resources/glossary"
+      ]
+    }
+  ],
+  "api": {
+    "baseUrl": "https://api.agentic.scope3.com",
+    "auth": {
+      "method": "bearer",
+      "name": "x-scope3-api-key"
+    },
+    "playground": {
+      "mode": "show"
+    }
+  },
+  "openapi": "/openapi.yaml",
+  "footerSocials": {
+    "twitter": "https://twitter.com/scope3data",
+    "github": "https://github.com/conductor/activation-api",
+    "linkedin": "https://linkedin.com/company/scope3"
+  }
+}
