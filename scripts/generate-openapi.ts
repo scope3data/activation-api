@@ -431,6 +431,17 @@ For detailed guides, see our [documentation](https://docs.scope3.com).
     writeFileSync(outputPath, yamlContent, "utf8");
     console.log(`✅ OpenAPI specification written to: ${outputPath}`);
 
+    // Format the generated file with Prettier to ensure consistency
+    try {
+      execSync(`npx prettier --write "${outputPath}"`, {
+        encoding: "utf8",
+        stdio: "pipe",
+      });
+      console.log(`✅ Formatted OpenAPI specification with Prettier`);
+    } catch (error) {
+      console.warn(`⚠️ Warning: Could not format with Prettier: ${error}`);
+    }
+
     // Validate the generated spec
     try {
       execSync(`npx @redocly/cli lint "${outputPath}"`, {
