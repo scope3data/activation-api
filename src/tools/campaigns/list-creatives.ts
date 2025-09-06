@@ -82,21 +82,11 @@ export const campaignListCreativesTool = (client: Scope3ApiClient) => ({
         response += `   📋 Creative ID: ${creative.creativeId}\n`;
         response += `   ⚡ Status: ${creative.status}\n`;
 
-        // Show primary asset info if requested
-        if (args.includeAssets !== false && creative.assets?.length) {
-          const primaryAsset = creative.assets.find(a => a.assetRole === 'primary') || creative.assets[0];
-          response += `   🎯 Primary Asset: ${primaryAsset.assetName} (${primaryAsset.assetType}`;
-          
-          if (primaryAsset.widthPixels && primaryAsset.heightPixels) {
-            response += `, ${primaryAsset.widthPixels}×${primaryAsset.heightPixels}`;
-          }
-          if (primaryAsset.durationSeconds) {
-            response += `, ${primaryAsset.durationSeconds}s`;
-          }
-          response += `)\n`;
-
-          if (creative.assets.length > 1) {
-            response += `   📎 Additional Assets: ${creative.assets.length - 1} more assets\n`;
+        // Show asset info if requested
+        if (args.includeAssets !== false && creative.assetIds?.length) {
+          response += `   📊 Asset IDs: ${creative.assetIds.join(', ')}\n`;
+          if (creative.assetIds.length > 1) {
+            response += `   📎 Total Assets: ${creative.assetIds.length}\n`;
           }
         }
 
@@ -106,19 +96,11 @@ export const campaignListCreativesTool = (client: Scope3ApiClient) => ({
           response += `   📅 Assigned: ${new Date(assignment.assignedDate).toLocaleDateString()}\n`;
           response += `   🔄 Active: ${assignment.isActive ? 'Yes' : 'No'}\n`;
 
-          // Show performance if requested and available
-          if (args.includePerformance !== false && assignment.performance) {
-            response += `   📈 Performance:\n`;
-            response += `      • Impressions: ${assignment.performance.impressions.toLocaleString()}\n`;
-            response += `      • Clicks: ${assignment.performance.clicks.toLocaleString()}\n`;
-            response += `      • CTR: ${(assignment.performance.clickThroughRate * 100).toFixed(2)}%\n`;
-          }
+          // Performance data would be fetched separately in production
+          // For now, performance metrics are not included in the assignment object
         }
 
-        // Show advertiser domains
-        if (creative.advertiserDomains?.length) {
-          response += `   🌐 Domains: ${creative.advertiserDomains.slice(0, 2).join(', ')}${creative.advertiserDomains.length > 2 ? '...' : ''}\n`;
-        }
+        // Advertiser domains are now stored at the brand agent level
 
         // Show target audience if available
         if (creative.targetAudience) {
@@ -133,15 +115,9 @@ export const campaignListCreativesTool = (client: Scope3ApiClient) => ({
         c.campaignAssignments?.some(a => a.campaignId === args.campaignId && a.isActive)
       ).length;
 
-      const totalImpressions = creatives.reduce((sum, c) => {
-        const assignment = c.campaignAssignments?.find(a => a.campaignId === args.campaignId);
-        return sum + (assignment?.performance?.impressions || 0);
-      }, 0);
-
-      const totalClicks = creatives.reduce((sum, c) => {
-        const assignment = c.campaignAssignments?.find(a => a.campaignId === args.campaignId);
-        return sum + (assignment?.performance?.clicks || 0);
-      }, 0);
+      // Performance metrics would be fetched separately from analytics API
+      const totalImpressions = 0; // Placeholder - would fetch from analytics
+      const totalClicks = 0; // Placeholder - would fetch from analytics
 
       response += `📈 **Campaign Creative Summary**\n`;
       response += `• Active Creatives: ${activeCreatives} / ${creatives.length}\n`;
@@ -152,17 +128,7 @@ export const campaignListCreativesTool = (client: Scope3ApiClient) => ({
         response += `• Overall CTR: ${((totalClicks / totalImpressions) * 100).toFixed(2)}%\n`;
       }
 
-      // Count asset types
-      const assetTypeCounts = creatives.reduce((counts, creative) => {
-        creative.assets?.forEach(asset => {
-          counts[asset.assetType] = (counts[asset.assetType] || 0) + 1;
-        });
-        return counts;
-      }, {} as Record<string, number>);
-
-      if (Object.keys(assetTypeCounts).length > 0) {
-        response += `• Asset Types: ${Object.entries(assetTypeCounts).map(([type, count]) => `${type} (${count})`).join(', ')}\n`;
-      }
+      // Asset type counts would require fetching full asset details
 
       response += `\n💡 **Campaign Creative Management**\n`;
       response += `• Add more creatives: \`campaign/attach_creative\`\n`;

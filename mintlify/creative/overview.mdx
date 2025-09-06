@@ -1,23 +1,23 @@
 ---
-title: "Creative Management: Critical Integration Guide"
-description: "REQUIRED module for campaign success - Complete developer integration guide"
-icon: "rocket"
+title: "Creatives: Integration Guide"
+description: "Complete developer integration guide for creative workflows"
+icon: "image"
 ---
 
-<Warning>
-**Developer Alert**: Creative Management is **NOT optional** - it's a **core platform requirement**. This module accounts for 47% of campaign performance. Attempting to deploy campaigns without proper creative integration results in 60-70% higher failure rates.
-</Warning>
+<Info>
+**Developer Note**: Creatives are an important part of campaign setup. Proper creative integration improves campaign performance and reduces operational overhead.
+</Info>
 
 <Tip>
-**Integration Priority**: This is the **#1 most important integration** after brand agent setup. You must implement creative management before launching any production campaigns.
+**Integration Tip**: Setting up creatives after brand agents provides a solid foundation for campaign management workflows.
 </Tip>
 
-## Why Creative Management is Mission-Critical for Developers
+## Why Creatives Matter for Developers
 
-### The Performance Reality
+### The Business Case
 
-- **47% of campaign success** depends on creative quality
-- **60-80% cost reduction** through reusable asset management
+- **Campaign success** significantly depends on creative quality
+- **Cost reduction** through reusable asset management
 - **90% automation** of manual creative workflows
 - **Zero creative bottlenecks** in campaign deployment
 
@@ -111,49 +111,119 @@ graph TD
 </Step>
 </Steps>
 
-## Creative Management API Tools
-
-### Creative-Centric Integration (Core APIs)
+## 🏗️ MCP Orchestration + REST Upload Architecture
 
 <Warning>
-**Developer Note**: These are the **primary APIs** you'll integrate with. Start with `creative/create` and `creative/list` - they handle 80% of creative management use cases.
+**CRITICAL ARCHITECTURE CHANGE**: Creative management now uses a **two-layer architecture** separating MCP orchestration from file uploads. This enables real-world enterprise workflows while maintaining conversational simplicity.
+</Warning>
+
+### Why This Architecture?
+
+**The Problem**: MCP protocol isn't designed for file uploads:
+- ❌ Binary data requires base64 encoding (performance issues)
+- ❌ Large files cause protocol timeouts
+- ❌ Real-world use cases need third-party ad tags, not file uploads
+
+**The Solution**: Two-layer architecture:
+- ✅ **MCP Layer**: Orchestration via natural language (creative/create, list_creative_formats)
+- ✅ **REST Layer**: File uploads and bulk operations (presigned URLs, CDN uploads)
+- ✅ **Real Workflows**: HTML snippets, JavaScript tags, VAST tags, asset references
+
+### Enterprise Creative Workflows (What Actually Happens)
+
+<CardGroup cols={2}>
+
+<Card title="🏢 Most Common (80%)" icon="building">
+**Third-Party Ad Server Tags**
+- HTML5 creative snippets from DCM/GAM
+- JavaScript ad tags from Sizmek/Flashtalking
+- VAST video tags from video platforms
+- Pre-assembled creative packages
+
+**Integration**: `creative/create` with content.htmlSnippet
+</Card>
+
+<Card title="🎯 Asset Assembly (15%)" icon="puzzle">
+**Asset ID References**
+- Images/videos uploaded via REST API
+- Assets referenced by ID in creatives
+- Publisher/creative agent assembly
+- Multi-format creative packages
+
+**Integration**: `assets/add` → `creative/create` with content.assetIds
+</Card>
+
+<Card title="🤖 Dynamic Generation (5%)" icon="robot">
+**Product Page Extraction**
+- Creative agents extract from URLs
+- AI-powered creative generation
+- Dynamic personalization code
+- Real-time creative assembly
+
+**Integration**: `creative/create` with content.productUrl
+</Card>
+
+<Card title="📐 Format Discovery" icon="search">
+**Creative Format Standards**
+- AdCP standard formats
+- Publisher-specific formats
+- Creative agent capabilities
+- Assembly method requirements
+
+**Integration**: `list_creative_formats` → `creative/create`
+</Card>
+
+</CardGroup>
+
+## Creative Management MCP Tools
+
+### Core Orchestration APIs (6 Tools)
+
+<Warning>
+**Developer Note**: These are **orchestration-only** tools. No file uploads via MCP. Use REST endpoints for actual file transfers.
 </Warning>
 
 <AccordionGroup>
 
-<Accordion title="creative/create - PRIMARY API [REQUIRED]" icon="star">
+<Accordion title="creative/create - ORCHESTRATION API [REQUIRED]" icon="star">
 
-**Most Important API**: Create a creative with multiple assets following AdCP structure.
+**Most Important API**: Create creatives with format specification and content sources. **This is orchestration only - no file uploads via MCP.**
 
 **Developer Integration Notes:**
-- **API Complexity**: ⭐⭐⭐ (3/5) - Moderate complexity, high business value
-- **Performance Impact**: Direct correlation with campaign success
-- **Caching**: Results are automatically cached for campaign reuse
-- **Scaling**: Handles enterprise-level asset volumes
+- **API Complexity**: ⭐⭐⭐⭐ (4/5) - Advanced orchestration, handles real-world workflows
+- **Architecture**: MCP orchestration + REST upload separation
+- **Real-World Focus**: Handles HTML snippets, JavaScript tags, VAST tags, asset references
+- **Enterprise Ready**: Built for actual advertising workflows, not toy examples
 
 **Core Parameters:**
 - `buyerAgentId`: Database partition key and security boundary
-- `creativeName`: Human-readable identifier for management UIs
-- `assets[]`: Array supporting images, videos, text, audio (all formats)
+- `creativeName`: Human-readable identifier for management UIs  
+- `format`: { type: 'adcp'|'publisher'|'creative_agent', formatId: 'display_banner' }
+- `content`: HTML snippets, JS tags, VAST tags, asset IDs, product URLs
 - `advertiserDomains[]`: Click destination validation (required for compliance)
-- `assignToCampaignIds[]`: Optional immediate campaign deployment
+- `assemblyMethod`: 'publisher'|'creative_agent'|'pre_assembled'
 
-**Production Examples:**
-```typescript
-// Enterprise brand campaign
-"Create a creative called 'Q1 Brand Campaign' for buyer agent ba_nike with hero video and companion text assets"
+**Real-World Examples:**
+```bash
+# Most common: Third-party ad server tags
+"Create creative with HTML snippet from Google Ad Manager for buyer agent ba_nike"
+"Create creative with JavaScript tag from Sizmek for buyer agent ba_agency"
+"Create creative with VAST tag from video platform for buyer agent ba_media"
 
-// Performance marketing
-"Make a conversion-optimized creative with product image, headline 'Save 50%', and CTA 'Shop Now' for buyer agent ba_ecommerce"
+# Asset assembly workflows  
+"Create creative using asset IDs img_123, video_456 with publisher assembly for buyer agent ba_brand"
+"Create creative from product page URL with creative agent assembly for buyer agent ba_ecommerce"
 
-// Multi-format campaign
-"Generate responsive creative package with desktop banner, mobile native, and video assets for buyer agent ba_startup"
+# Format-specific creation
+"Create adcp/display_banner creative with HTML snippet for buyer agent ba_startup"
 ```
 
 **Integration Tips:**
+- Use `list_creative_formats` first to discover available formats
+- Specify `format.type` and `format.formatId` for proper publisher routing
+- Use `content.htmlSnippet` for most enterprise use cases
+- Use `content.assetIds` when you need assembly from uploaded assets
 - Always include `advertiserDomains` for compliance
-- Use descriptive `creativeName` for team collaboration
-- Consider immediate campaign assignment for streamlined workflows
 
 </Accordion>
 
@@ -196,19 +266,42 @@ graph TD
 
 </Accordion>
 
-<Accordion title="creative/upload_asset - Upload Individual Asset" icon="upload">
+<Accordion title="creative/update - MODIFY EXISTING [NEW]" icon="edit">
 
-Upload assets that can be used in multiple creatives.
+**Creative Update API**: Update existing creative properties including name, status, and content sources. Creates new version while preserving campaign assignments.
 
-**Key Parameters:**
-- `buyerAgentId`: Asset owner
-- `assetName`: Human-readable name
-- `assetType`: image, video, text, audio, html, native_component
-- `fileUrl` or `fileContent`: Asset location or base64 data
+**Developer Integration Notes:**
+- **API Complexity**: ⭐⭐⭐ (3/5) - Versioned updates with campaign safety
+- **Safe Updates**: New versions created, active campaigns unaffected
+- **Content Updates**: HTML snippets, JS tags, VAST tags, asset references
+- **Preserves Assignments**: Campaign relationships maintained across updates
 
-**Natural Language Examples:**
-- "Upload a logo image for buyer agent ba_123"
-- "Add headline text 'Best Deals Ever' as a text asset"
+**Core Parameters:**
+- `creativeId`: ID of creative to update
+- `updates.name`: New creative name
+- `updates.status`: 'draft'|'pending_review'|'active'|'paused'|'archived'|'rejected'
+- `updates.content`: Updated HTML snippets, JS tags, VAST tags, asset IDs
+- `updates.advertiserDomains`: Updated click destination domains
+
+**Real-World Examples:**
+```bash
+# Update third-party ad tag
+"Update creative cr_123 with new JavaScript tag from updated campaign"
+
+# Change creative status
+"Set creative cr_456 status to active for campaign launch"
+
+# Update asset references
+"Update creative cr_789 to use new product images img_001, img_002"
+
+# Update advertiser domains
+"Update creative cr_999 to use new landing page domains"
+```
+
+**Version Safety:**
+- Updates create new versions (v1.0 → v1.1)
+- Active campaigns continue with assigned version
+- Update campaign assignments explicitly when ready
 
 </Accordion>
 
@@ -236,6 +329,76 @@ Remove a creative from a campaign.
 
 **Natural Language Examples:**
 - "Remove creative cr_456 from campaign camp_789"
+
+</Accordion>
+
+<Accordion title="assets/add - REFERENCE MANAGEMENT [NEW]" icon="link">
+
+**Asset Reference API**: Add assets via reference management (URLs, upload IDs, CDN URLs). **No file uploads via MCP - use REST endpoints for actual uploads.**
+
+**Developer Integration Notes:**
+- **API Complexity**: ⭐⭐ (2/5) - Simple reference management
+- **Reference-Based**: Works with URLs, upload IDs, CDN URLs (no MCP file transfers)
+- **Reusable**: Assets can be referenced in unlimited creatives
+- **REST Integration**: Pairs with REST upload endpoints for actual files
+
+**Core Parameters:**
+- `buyerAgentId`: Asset owner and security boundary
+- `assetName`: Human-readable name for management
+- `assetType`: 'image'|'video'|'text'|'audio'|'html'|'native_component'
+- `assetUrl`: URL to asset (CDN, presigned URL, etc.)
+- `uploadId`: Reference to REST API upload
+- `metadata`: Technical specs, tags, dimensions
+
+**Real-World Examples:**
+```bash
+# Reference uploaded assets
+"Add asset reference for logo uploaded via REST API with upload ID up_123"
+"Add asset reference for video at CDN URL https://cdn.example.com/video.mp4"
+
+# Reference external assets
+"Add asset reference for image hosted at https://images.client.com/hero.jpg"
+"Add text asset with headline 'Best Deals Ever' and CTA 'Shop Now'"
+```
+
+**Integration Pattern:**
+1. Upload files via REST API (get upload ID or CDN URL)
+2. Use `assets/add` to create asset references 
+3. Use asset IDs in `creative/create` with `content.assetIds`
+
+</Accordion>
+
+<Accordion title="list_creative_formats - FORMAT DISCOVERY [NEW]" icon="search">
+
+**Format Discovery API**: List all available creative formats from AdCP standards, publishers, and creative agents. Essential for understanding what formats can be created.
+
+**Developer Integration Notes:**
+- **API Complexity**: ⭐ (1/5) - Simple read-only discovery
+- **Performance**: Fast response, cached format definitions
+- **Essential**: Use before creating creatives to understand format options
+- **Real-Time**: Shows current publisher and creative agent capabilities
+
+**Core Parameters:**
+- `type`: 'adcp'|'publisher'|'creative_agent' (optional filter)
+- `search`: Search in format names and descriptions
+- `assemblyCapable`: Filter formats that can assemble from assets
+- `acceptsThirdPartyTags`: Filter formats accepting ad server tags
+
+**Real-World Examples:**
+```bash
+# Discover all formats
+"List all creative formats available"
+
+# Find specific capabilities
+"Show me publisher formats that accept JavaScript ad tags"
+"List creative agent formats for dynamic product ads"
+"Show AdCP formats that can assemble from individual assets"
+```
+
+**Integration Pattern:**
+1. Use `list_creative_formats` to discover available formats
+2. Choose appropriate format based on content type and assembly needs
+3. Use format specification in `creative/create` calls
 
 </Accordion>
 

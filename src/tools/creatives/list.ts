@@ -65,7 +65,7 @@ export const creativeListTool = (client: Scope3ApiClient) => ({
         args.includeCampaigns ?? true
       );
 
-      if (response.items.length === 0) {
+      if (response.creatives.length === 0) {
         return createMCPResponse({
           message: `📦 No creatives found for buyer agent ${args.buyerAgentId}
 
@@ -81,29 +81,22 @@ ${args.filter ? '🔍 **Applied Filters:**\n' + Object.entries(args.filter).map(
       }
 
       let output = `📦 **Creatives for Buyer Agent ${args.buyerAgentId}**\n\n`;
-      output += `Found ${response.totalCount} creatives${response.pageInfo.hasNextPage ? ` (showing ${response.items.length})` : ''}:\n\n`;
+      output += `Found ${response.totalCount} creatives${response.hasMore ? ` (showing ${response.creatives.length})` : ''}:\n\n`;
 
       // List each creative with details
-      for (const creative of response.items) {
+      for (const creative of response.creatives) {
         output += `🎨 **${creative.creativeName}** (v${creative.version})\n`;
         output += `   📋 ID: ${creative.creativeId}\n`;
         output += `   ⚡ Status: ${creative.status}\n`;
         
-        // Show assets if requested
-        if ((args.includeAssets ?? true) && creative.assets?.length) {
-          output += `   🎯 Assets (${creative.assets.length}):\n`;
-          for (const asset of creative.assets.slice(0, 3)) { // Show first 3 assets
-            output += `     • ${asset.assetName} (${asset.assetType}`;
-            if (asset.widthPixels && asset.heightPixels) {
-              output += `, ${asset.widthPixels}×${asset.heightPixels}`;
-            }
-            if (asset.durationSeconds) {
-              output += `, ${asset.durationSeconds}s`;
-            }
-            output += `)\n`;
+        // Show asset IDs if requested
+        if ((args.includeAssets ?? true) && creative.assetIds?.length) {
+          output += `   🎯 Asset IDs (${creative.assetIds.length}):\n`;
+          for (const assetId of creative.assetIds.slice(0, 3)) { // Show first 3 asset IDs
+            output += `     • ${assetId}\n`;
           }
-          if (creative.assets.length > 3) {
-            output += `     • ... and ${creative.assets.length - 3} more assets\n`;
+          if (creative.assetIds.length > 3) {
+            output += `     • ... and ${creative.assetIds.length - 3} more assets\n`;
           }
         }
         
@@ -111,11 +104,7 @@ ${args.filter ? '🔍 **Applied Filters:**\n' + Object.entries(args.filter).map(
         if ((args.includeCampaigns ?? true) && creative.campaignAssignments?.length) {
           output += `   📊 Campaigns (${creative.campaignAssignments.length}):\n`;
           for (const assignment of creative.campaignAssignments.slice(0, 2)) { // Show first 2 campaigns
-            output += `     • ${assignment.campaignName} (${assignment.isActive ? 'Active' : 'Inactive'})`;
-            if (assignment.performance) {
-              output += ` - ${assignment.performance.impressions.toLocaleString()} impressions`;
-            }
-            output += `\n`;
+            output += `     • ${assignment.campaignName} (${assignment.isActive ? 'Active' : 'Inactive'})\n`;
           }
           if (creative.campaignAssignments.length > 2) {
             output += `     • ... and ${creative.campaignAssignments.length - 2} more campaigns\n`;
@@ -125,10 +114,6 @@ ${args.filter ? '🔍 **Applied Filters:**\n' + Object.entries(args.filter).map(
         }
 
         // Show key metadata
-        if (creative.advertiserDomains?.length) {
-          output += `   🌐 Domains: ${creative.advertiserDomains.slice(0, 2).join(', ')}${creative.advertiserDomains.length > 2 ? '...' : ''}\n`;
-        }
-        
         if (creative.targetAudience) {
           output += `   👥 Audience: ${creative.targetAudience.substring(0, 50)}${creative.targetAudience.length > 50 ? '...' : ''}\n`;
         }
@@ -140,22 +125,15 @@ ${args.filter ? '🔍 **Applied Filters:**\n' + Object.entries(args.filter).map(
       if (response.summary) {
         output += `📈 **Summary Statistics**\n`;
         output += `• Total Creatives: ${response.summary.totalCreatives}\n`;
-        
-        if (Object.keys(response.summary.byStatus).length > 0) {
-          output += `• By Status: ${Object.entries(response.summary.byStatus).map(([status, count]) => `${status} (${count})`).join(', ')}\n`;
-        }
-        
-        if (Object.keys(response.summary.byAssetType).length > 0) {
-          output += `• By Asset Type: ${Object.entries(response.summary.byAssetType).map(([type, count]) => `${type} (${count})`).join(', ')}\n`;
-        }
-        
-        output += `• Total Campaigns Using Creatives: ${response.summary.totalCampaigns}\n`;
-        output += `• Average Assets per Creative: ${response.summary.averageAssetsPerCreative.toFixed(1)}\n\n`;
+        output += `• Active Creatives: ${response.summary.activeCreatives}\n`;
+        output += `• Draft Creatives: ${response.summary.draftCreatives}\n`;
+        output += `• Assigned to Campaigns: ${response.summary.assignedCreatives}\n`;
+        output += `• Unassigned: ${response.summary.unassignedCreatives}\n\n`;
       }
 
       // Pagination info
-      if (response.pageInfo.hasNextPage) {
-        output += `📄 **Pagination**: Use offset=${(args.offset || 0) + (args.limit || 20)} to see more results.\n\n`;
+      if (response.hasMore) {
+        output += `📄 **Pagination**: Use offset=${response.nextOffset || ((args.offset || 0) + (args.limit || 20))} to see more results.\n\n`;
       }
 
       output += `🔄 **[STUB]** This will query AdCP publishers when backend is implemented.`;

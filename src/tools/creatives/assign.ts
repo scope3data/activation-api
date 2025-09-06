@@ -61,10 +61,10 @@ export const creativeAssignTool = (client: Scope3ApiClient) => ({
 • Campaign ID: ${args.campaignId}
 • Buyer Agent: ${args.buyerAgentId}
 
-${result.assignment ? `📊 **Campaign Information**
-• Campaign Name: ${result.assignment.campaignName}
-• Assignment Date: ${new Date(result.assignment.assignedDate).toLocaleDateString()}
-• Status: ${result.assignment.isActive ? '🟢 Active' : '🔴 Inactive'}` : ''}
+📊 **Assignment Information**
+• Assignment Status: ${result.success ? '✅ Success' : '❌ Failed'}
+• Assignment Date: ${new Date().toLocaleDateString()}
+• Message: ${result.message}
 
 💡 **What this means:**
 • The creative is now available for use in this campaign

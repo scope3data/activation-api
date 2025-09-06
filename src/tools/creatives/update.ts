@@ -1,0 +1,186 @@
+import { z } from "zod";
+
+import type { Scope3ApiClient } from "../../client/scope3-client.js";
+import type { MCPToolExecuteContext } from "../../types/mcp.js";
+
+import {
+  createAuthErrorResponse,
+  createErrorResponse,
+  createMCPResponse,
+} from "../../utils/error-handling.js";
+
+/**
+ * Update existing creative properties
+ * Orchestration tool for modifying creative metadata and content
+ */
+export const creativeUpdateTool = (client: Scope3ApiClient) => ({
+  annotations: {
+    category: "creative-management",
+    dangerLevel: "medium",
+    openWorldHint: true,
+    readOnlyHint: false,
+    title: "Update Creative",
+  },
+
+  description:
+    "Update existing creative properties including name, status, content sources, and advertiser domains. Creates new version while preserving campaign assignments. This is orchestration only - no file uploads.",
+
+  execute: async (
+    args: {
+      creativeId: string;
+      updates: {
+        name?: string;
+        status?: 'draft' | 'pending_review' | 'active' | 'paused' | 'archived' | 'rejected';
+        content?: {
+          htmlSnippet?: string;
+          javascriptTag?: string;
+          vastTag?: string;
+          assetIds?: string[];
+          productUrl?: string;
+        };
+        advertiserDomains?: string[];
+      };
+    },
+    context: MCPToolExecuteContext,
+  ): Promise<string> => {
+    // Check authentication
+    let apiKey = context.session?.scope3ApiKey;
+
+    if (!apiKey) {
+      apiKey = process.env.SCOPE3_API_KEY;
+    }
+
+    if (!apiKey) {
+      return createAuthErrorResponse();
+    }
+
+    try {
+      // Validate that at least one update is provided
+      const { name, status, content, advertiserDomains } = args.updates;
+      if (!name && !status && !content && !advertiserDomains) {
+        return createErrorResponse(
+          "At least one update field must be provided: name, status, content, or advertiserDomains",
+          new Error("No updates provided")
+        );
+      }
+
+      // Update creative through orchestration
+      const updatedCreative = await client.updateCreative(apiKey, {
+        creativeId: args.creativeId,
+        updates: args.updates,
+      });
+
+      // Create human-readable response
+      let response = `🎨 **Creative updated successfully!**
+
+📦 **Creative Details**
+• Creative ID: ${updatedCreative.creativeId}
+• Name: ${updatedCreative.creativeName}
+• Version: ${updatedCreative.version} (updated)
+• Status: ${updatedCreative.status}
+• Buyer Agent: ${updatedCreative.buyerAgentId}
+
+🔧 **Changes Applied:**`;
+
+      // Show what was updated
+      if (name) {
+        response += `
+• Name updated to: ${name}`;
+      }
+      
+      if (status) {
+        response += `
+• Status changed to: ${status}`;
+      }
+      
+      if (content) {
+        const contentUpdates: string[] = [];
+        if (content.htmlSnippet) contentUpdates.push("HTML Snippet");
+        if (content.javascriptTag) contentUpdates.push("JavaScript Tag");
+        if (content.vastTag) contentUpdates.push("VAST Tag");
+        if (content.assetIds?.length) contentUpdates.push(`${content.assetIds.length} Asset References`);
+        if (content.productUrl) contentUpdates.push("Product URL");
+        
+        if (contentUpdates.length > 0) {
+          response += `
+• Content updated: ${contentUpdates.join(', ')}`;
+        }
+      }
+      
+      if (advertiserDomains) {
+        response += `
+• Advertiser Domains updated: ${advertiserDomains.join(', ')}`;
+      }
+
+      response += `
+
+🌐 **Current Settings**
+• Format: ${updatedCreative.format.type}/${updatedCreative.format.formatId}
+• Assembly Method: ${updatedCreative.assemblyMethod}`;
+
+      // Show asset references
+      if (updatedCreative.assetIds?.length) {
+        response += `
+• Referenced Assets: ${updatedCreative.assetIds.join(', ')}`;
+      }
+
+      // Show campaign assignments
+      if (updatedCreative.campaignAssignments?.length) {
+        response += `
+
+📋 **Campaign Assignments (${updatedCreative.campaignAssignments.length})**`;
+        for (const assignment of updatedCreative.campaignAssignments) {
+          const statusIcon = assignment.isActive ? "🟢" : "⚪";
+          response += `
+${statusIcon} ${assignment.campaignName} (${assignment.campaignId})`;
+        }
+      }
+
+      response += `
+
+⏰ **Timeline**
+• Created: ${new Date(updatedCreative.createdDate).toLocaleDateString()}
+• Last Modified: ${new Date(updatedCreative.lastModifiedDate).toLocaleDateString()}
+• Modified By: ${updatedCreative.lastModifiedBy}
+
+🔄 **[ARCHITECTURE]** Creative update orchestration complete:
+• Version bumped automatically (safe for active campaigns)
+• Campaign assignments preserved across update
+• Changes processed through appropriate ${updatedCreative.format.type} provider`;
+
+      return createMCPResponse({ message: response, success: true });
+
+    } catch (error) {
+      return createErrorResponse("Failed to update creative", error);
+    }
+  },
+
+  name: "creative/update",
+
+  parameters: z.object({
+    creativeId: z.string().describe("ID of the creative to update"),
+    
+    updates: z.object({
+      // Basic properties
+      name: z.string().optional().describe("New name for the creative"),
+      status: z.enum(['draft', 'pending_review', 'active', 'paused', 'archived', 'rejected'])
+        .optional().describe("New status for the creative"),
+      
+      // Content updates (partial update)
+      content: z.object({
+        htmlSnippet: z.string().optional().describe("Updated HTML5 creative snippet"),
+        javascriptTag: z.string().optional().describe("Updated JavaScript ad tag"),
+        vastTag: z.string().optional().describe("Updated VAST XML tag"),
+        assetIds: z.array(z.string()).optional().describe("Updated array of asset ID references"),
+        productUrl: z.string().optional().describe("Updated product page URL"),
+      }).optional().describe("Content sources to update"),
+      
+      // Marketing metadata
+      advertiserDomains: z.array(z.string()).optional().describe("Updated advertiser click domains"),
+      
+    }).refine(
+      (data) => data.name || data.status || data.content || data.advertiserDomains,
+      { message: "At least one update field must be provided" }
+    ).describe("Update fields - at least one must be provided"),
+  }),
+});

@@ -10,9 +10,9 @@ import {
 } from "../../utils/error-handling.js";
 
 /**
- * Create a new creative with assets for a buyer agent
- * Following AdCP Creative/Asset hierarchy with human-readable field names
- * Designed as pass-through to AdCP publishers
+ * Create creatives via MCP orchestration (no file uploads)
+ * Handles HTML snippets, JavaScript tags, VAST tags, and asset ID references
+ * Supports multiple content types and assembly methods
  */
 export const creativeCreateTool = (client: Scope3ApiClient) => ({
   annotations: {
@@ -20,36 +20,33 @@ export const creativeCreateTool = (client: Scope3ApiClient) => ({
     dangerLevel: "medium",
     openWorldHint: true,
     readOnlyHint: false,
-    title: "Create Creative with Assets",
+    title: "Create Creative (Orchestration)",
   },
 
   description: 
-    "Create a new creative with assets for a buyer agent. This follows the AdCP Creative/Asset hierarchy where a creative contains multiple assets (images, videos, text, etc.). All operations will pass through to AdCP publishers when the backend is implemented.",
+    "Create creatives with format specification and content sources. Supports HTML snippets, JavaScript ad tags, VAST tags, asset ID references, and product URLs. This is orchestration only - no file uploads. Can create multiple creatives at once with different assembly methods.",
 
   execute: async (
     args: {
       buyerAgentId: string;
       creativeName: string;
       creativeDescription?: string;
-      prompt?: string;
-      assets?: Array<{
-        assetName: string;
-        assetType: 'image' | 'video' | 'text' | 'audio' | 'html' | 'native_component';
-        fileUrl?: string;
-        fileContent?: string;
-        textContent?: {
-          headline?: string;
-          bodyText?: string;
-          callToAction?: string;
-          sponsoredByText?: string;
-        };
-        widthPixels?: number;
-        heightPixels?: number;
-        durationSeconds?: number;
-      }>;
-      advertiserDomains: string[];
+      externalId?: string;
+      format: {
+        type: 'adcp' | 'publisher' | 'creative_agent';
+        formatId: string;
+      };
+      content?: {
+        htmlSnippet?: string;
+        javascriptTag?: string;
+        vastTag?: string;
+        assetIds?: string[];
+        productUrl?: string;
+      };
       contentCategories?: string[];
       targetAudience?: string;
+      assemblyMethod?: 'publisher' | 'creative_agent' | 'pre_assembled';
+      variants?: number;
       assignToCampaignIds?: string[];
     },
     context: MCPToolExecuteContext,
@@ -66,90 +63,86 @@ export const creativeCreateTool = (client: Scope3ApiClient) => ({
     }
 
     try {
-      // If prompt provided without assets, parse it to generate assets
-      let assets = args.assets;
-      if (args.prompt && !assets?.length) {
-        const parsedPrompt = await client.parseCreativePrompt(apiKey, args.prompt);
-        assets = parsedPrompt.suggestedAssets.map(asset => ({
-          assetName: asset.assetName,
-          assetType: asset.assetType as any,
-          fileUrl: asset.fileUrl,
-          textContent: asset.textContent,
-          widthPixels: asset.widthPixels,
-          heightPixels: asset.heightPixels,
-          durationSeconds: asset.durationSeconds,
-        }));
-      }
-
-      if (!assets?.length) {
+      // Validate format specification
+      if (!args.format?.type || !args.format?.formatId) {
         return createErrorResponse(
-          "No assets provided. Please specify assets or use a prompt to generate them.",
-          new Error("Missing assets")
+          "Format specification is required. Use format.type and format.formatId to specify creative format.",
+          new Error("Missing format specification")
         );
       }
 
-      // Create creative through AdCP pass-through
-      const creative = await client.createCreative(apiKey, args.buyerAgentId, {
-        creativeName: args.creativeName,
-        creativeDescription: args.creativeDescription,
-        assets: assets.map(asset => ({
-          assetName: asset.assetName,
-          assetType: asset.assetType,
-          fileUrl: asset.fileUrl,
-          fileContent: asset.fileContent,
-          textContent: asset.textContent,
-          widthPixels: asset.widthPixels,
-          heightPixels: asset.heightPixels,
-          durationSeconds: asset.durationSeconds,
-        })),
-        advertiserDomains: args.advertiserDomains,
-        contentCategories: args.contentCategories,
-        targetAudience: args.targetAudience,
-      });
+      // Validate content sources
+      const { htmlSnippet, javascriptTag, vastTag, assetIds, productUrl } = args.content || {};
+      const hasContent = htmlSnippet || javascriptTag || vastTag || (assetIds?.length) || productUrl;
+      
+      if (!hasContent) {
+        return createErrorResponse(
+          "At least one content source is required: htmlSnippet, javascriptTag, vastTag, assetIds, or productUrl",
+          new Error("Missing content source")
+        );
+      }
+
+      // Determine variants (default 1)
+      const variantCount = args.variants || 1;
+      const creatives: any[] = [];
+
+      // Create creative(s) through orchestration
+      for (let i = 0; i < variantCount; i++) {
+        const creativeName = variantCount > 1 ? `${args.creativeName} (Variant ${i + 1})` : args.creativeName;
+        
+        const creative = await client.createCreative(apiKey, {
+          buyerAgentId: args.buyerAgentId,
+          creativeName,
+          creativeDescription: args.creativeDescription,
+          externalId: args.externalId,
+          format: args.format,
+          content: args.content || {},
+          contentCategories: args.contentCategories,
+          targetAudience: args.targetAudience,
+          assemblyMethod: args.assemblyMethod || 'pre_assembled',
+          // Add slight variation for multiple variants
+          ...(variantCount > 1 && { variantId: i }),
+        });
+        
+        creatives.push(creative);
+      }
 
       // Assign to campaigns if requested
-      const assignments: string[] = [];
+      const assignments: { creativeId: string; campaignIds: string[] }[] = [];
       if (args.assignToCampaignIds?.length) {
-        for (const campaignId of args.assignToCampaignIds) {
-          const result = await client.assignCreativeToCampaign(
-            apiKey,
-            creative.creativeId,
-            campaignId,
-            args.buyerAgentId
-          );
-          if (result.success) {
-            assignments.push(campaignId);
+        for (const creative of creatives) {
+          const assignedCampaigns: string[] = [];
+          for (const campaignId of args.assignToCampaignIds) {
+            const result = await client.assignCreativeToCampaign(
+              apiKey,
+              creative.creativeId,
+              campaignId,
+              args.buyerAgentId
+            );
+            if (result.success) {
+              assignedCampaigns.push(campaignId);
+            }
           }
+          assignments.push({
+            creativeId: creative.creativeId,
+            campaignIds: assignedCampaigns,
+          });
         }
       }
 
-      // Create human-readable response
-      const response = `🎨 Creative created successfully!
-
-📦 **Creative Details**
-• Creative ID: ${creative.creativeId}
-• Name: ${creative.creativeName}
-• Version: ${creative.version}
-• Buyer Agent: ${args.buyerAgentId}
-• Status: ${creative.status}
-
-🎯 **Assets (${creative.assets.length})**
-${creative.assets.map(asset => 
-  `• ${asset.assetName} (${asset.assetType}${asset.widthPixels && asset.heightPixels ? `, ${asset.widthPixels}×${asset.heightPixels}` : ''})`
-).join('\n')}
-
-🌐 **Marketing Details**
-• Advertiser Domains: ${creative.advertiserDomains.join(', ')}
-${creative.contentCategories?.length ? `• Content Categories: ${creative.contentCategories.join(', ')}\n` : ''}${creative.targetAudience ? `• Target Audience: ${creative.targetAudience}\n` : ''}
-⏰ **Timeline**
-• Created: ${new Date(creative.createdDate).toLocaleDateString()}
-• Created By: ${creative.createdBy}
-
-${assignments.length ? `✅ **Campaign Assignments**\n• Assigned to ${assignments.length} campaigns: ${assignments.join(', ')}\n` : ''}
-🔄 **[STUB]** This creative will be created via AdCP publishers when backend is implemented.
-All assets will be properly uploaded and validated through the appropriate AdCP channels.`;
-
-      return createMCPResponse({ message: response, success: true });
+      // Simple response with just creative IDs as requested
+      if (creatives.length === 1) {
+        return createMCPResponse({ 
+          message: `Creative created: ${creatives[0].creativeId}`, 
+          success: true 
+        });
+      } else {
+        const creativeIds = creatives.map(c => c.creativeId);
+        return createMCPResponse({ 
+          message: `Creatives created: ${creativeIds.join(', ')}`, 
+          success: true 
+        });
+      }
 
     } catch (error) {
       return createErrorResponse("Failed to create creative", error);
@@ -162,37 +155,39 @@ All assets will be properly uploaded and validated through the appropriate AdCP 
     buyerAgentId: z.string().describe("The buyer agent that will own this creative"),
     creativeName: z.string().describe("Human-readable name for the creative"),
     creativeDescription: z.string().optional().describe("Description of the creative's purpose and usage"),
+    externalId: z.string().optional().describe("Your external ID for managing this creative in your system"),
     
-    // Natural language option
-    prompt: z.string().optional().describe("Natural language description to auto-generate creative and assets"),
+    // Format specification (required)
+    format: z.object({
+      type: z.enum(['adcp', 'publisher', 'creative_agent']).describe("Format provider type"),
+      formatId: z.string().describe("Specific format ID, e.g., 'display_banner', 'ctv_video', 'dynamic_product'"),
+    }).describe("Creative format specification - use list_creative_formats to see available options"),
     
-    // Assets that compose the creative (AdCP structure)
-    assets: z.array(z.object({
-      assetName: z.string().describe("Name for this asset"),
-      assetType: z.enum(['image', 'video', 'text', 'audio', 'html', 'native_component']).describe("Type of asset"),
-      fileUrl: z.string().optional().describe("URL to the asset file"),
-      fileContent: z.string().optional().describe("Base64 encoded file content"),
+    // Content sources (at least one required)
+    content: z.object({
+      // Pre-assembled content (ad server tags)
+      htmlSnippet: z.string().optional().describe("HTML5 creative snippet"),
+      javascriptTag: z.string().optional().describe("JavaScript ad tag from ad server"),
+      vastTag: z.string().optional().describe("VAST XML tag for video ads"),
       
-      // For text/native assets
-      textContent: z.object({
-        headline: z.string().optional().describe("Main headline text"),
-        bodyText: z.string().optional().describe("Body/description text"),
-        callToAction: z.string().optional().describe("Call-to-action button text"),
-        sponsoredByText: z.string().optional().describe("Sponsored by disclaimer"),
-      }).optional(),
+      // Asset references (not uploads)
+      assetIds: z.array(z.string()).optional().describe("Array of asset IDs from assets/add"),
       
-      // Asset specifications
-      widthPixels: z.number().optional().describe("Width in pixels for visual assets"),
-      heightPixels: z.number().optional().describe("Height in pixels for visual assets"),
-      durationSeconds: z.number().optional().describe("Duration in seconds for video/audio"),
-    })).optional(),
+      // External sources
+      productUrl: z.string().optional().describe("Product page URL for creative agent to extract from"),
+    }).optional().describe("Content sources - at least one is required"),
     
-    // Creative metadata (human-readable names)
-    advertiserDomains: z.array(z.string()).describe("Domains where users will be sent when clicking"),
+    // Marketing metadata (advertiserDomains now at brand agent level)
     contentCategories: z.array(z.string()).optional().describe("IAB content categories for this creative"),
     targetAudience: z.string().optional().describe("Natural language description of target audience"),
     
+    // Assembly configuration
+    assemblyMethod: z.enum(['publisher', 'creative_agent', 'pre_assembled']).optional().describe("Who assembles the creative (default: pre_assembled)"),
+    
+    // Multiple creatives
+    variants: z.number().min(1).max(10).optional().describe("Number of creative variants to generate (default: 1)"),
+    
     // Optional immediate assignment
-    assignToCampaignIds: z.array(z.string()).optional().describe("Campaign IDs to immediately assign this creative to"),
+    assignToCampaignIds: z.array(z.string()).optional().describe("Campaign IDs to immediately assign these creatives to"),
   }),
 });

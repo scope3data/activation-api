@@ -38,11 +38,16 @@ import { updateCampaignTool } from "./campaigns/update-campaign.js";
 // Campaign creative tools
 import { campaignAttachCreativeTool } from "./campaigns/attach-creative.js";
 import { campaignListCreativesTool } from "./campaigns/list-creatives.js";
-// AdCP-aligned creative management tools
+// New Creative Management Tools (MCP Orchestration)
+import { assetsAddTool } from "./assets/add.js";
 import { creativeAssignTool, creativeUnassignTool } from "./creatives/assign.js";
 import { creativeCreateTool } from "./creatives/create.js";
+import { creativeUpdateTool } from "./creatives/update.js";
 import { creativeListTool } from "./creatives/list.js";
-import { creativeUploadAssetTool } from "./creatives/upload-asset.js";
+import { creativeSyncPublishersTool } from "./creatives/sync-publishers.js";
+import { creativeApprovalStatusTool } from "./creatives/approval-status.js";
+import { creativeReviseTool } from "./creatives/revise.js";
+import { listCreativeFormatsTool } from "./formats/list.js";
 
 export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   // Authentication and existing agent tools
@@ -89,16 +94,27 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(addMeasurementSourceTool(client));
   server.addTool(listMeasurementSourcesTool(client));
 
-  // AdCP-aligned Creative Management Tools
-  server.addTool(creativeCreateTool(client));
-  server.addTool(creativeListTool(client));
-  server.addTool(creativeUploadAssetTool(client));
-  server.addTool(creativeAssignTool(client));
-  server.addTool(creativeUnassignTool(client));
+  // New Creative Management Tools (MCP Orchestration)
+  server.addTool(creativeCreateTool(client));        // creative/create
+  server.addTool(creativeUpdateTool(client));        // creative/update  
+  server.addTool(creativeListTool(client));          // creative/list
+  server.addTool(creativeAssignTool(client));        // creative/assign
+  server.addTool(creativeUnassignTool(client));      // creative/unassign
+  
+  // Publisher Approval Workflow
+  server.addTool(creativeSyncPublishersTool(client));    // creative/sync_publishers
+  server.addTool(creativeApprovalStatusTool(client));    // creative/approval_status
+  server.addTool(creativeReviseTool(client));           // creative/revise
+  
+  // Asset Management (Reference-Based)
+  server.addTool(assetsAddTool(client));             // assets/add
+  
+  // Format Discovery
+  server.addTool(listCreativeFormatsTool(client));   // list_creative_formats
 
   // Campaign Creative Tools  
-  server.addTool(campaignAttachCreativeTool(client));
-  server.addTool(campaignListCreativesTool(client));
+  server.addTool(campaignAttachCreativeTool(client)); // campaign/attach_creative
+  server.addTool(campaignListCreativesTool(client));  // campaign/list_creatives
 };
 
 // Export individual tools for testing
@@ -138,12 +154,20 @@ export {
   updateBrandAgentCreativeTool,
   updateBrandAgentTool,
   updateCampaignTool,
-  // AdCP-aligned Creative Management Tools
+  // New Creative Management Tools
   creativeCreateTool,
+  creativeUpdateTool,
   creativeListTool,
-  creativeUploadAssetTool,
   creativeAssignTool,
   creativeUnassignTool,
+  // Publisher Approval Workflow
+  creativeSyncPublishersTool,
+  creativeApprovalStatusTool,
+  creativeReviseTool,
+  // Asset Management
+  assetsAddTool,
+  // Format Discovery
+  listCreativeFormatsTool,
   // Campaign Creative Tools
   campaignAttachCreativeTool,
   campaignListCreativesTool,

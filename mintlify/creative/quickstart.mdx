@@ -1,23 +1,23 @@
 ---
-title: "5-Minute Integration: Creative Management"
-description: "CRITICAL: Implement creative management in 5 minutes for 47% better campaign performance"
-icon: "rocket"
+title: "5-Minute Integration: Creatives"
+description: "Quick start guide to implement creative workflows in 5 minutes"
+icon: "clock"
 ---
 
-<Warning>
-**Critical for Developers**: Creative Management is **required** for campaign success. This 5-minute integration prevents 47% performance loss and saves 60-80% in creative production costs.
-</Warning>
+<Info>
+**Quick Start**: This 5-minute integration sets up creative workflows to improve campaign management and reduce operational overhead.
+</Info>
 
 <Tip>
-**Integration Goal**: By the end of this guide, you'll have a working creative management system that can create, assign, and optimize creatives for your campaigns.
+**Integration Goal**: By the end of this guide, you'll have a working creative system that can create, assign, and manage creatives for your campaigns.
 </Tip>
 
 ## What You'll Build (5 Minutes)
 
-✅ **Working creative management system** with enterprise-grade asset handling  
-✅ **Campaign-creative integration** for automatic performance optimization  
-✅ **Performance analytics** for data-driven creative decisions  
-✅ **Scalable architecture** ready for millions of creative assets
+✅ **Working creative system** with enterprise-grade asset handling  
+✅ **Campaign-creative integration** for streamlined workflow management  
+✅ **Asset organization** for efficient creative operations  
+✅ **Scalable architecture** ready for large-scale creative operations
 
 ## Prerequisites (1 Minute Setup)
 
@@ -40,44 +40,73 @@ Authorization: Bearer your_api_key
 </Step>
 </Steps>
 
-## Step 1: Create Creative with Assets (2 minutes)
+## Step 1: Create Creative with Format & Content (2 minutes)
 
 <Warning>
-**Why This Step is Critical**: This creates the foundation for all campaign performance. Proper creative structure improves campaign success by 47%.
+**ARCHITECTURE UPDATE**: Creative management now uses **MCP orchestration + REST upload** architecture. This step creates creatives with **real-world content sources** (HTML snippets, JavaScript tags, VAST tags, asset references).
 </Warning>
 
-**Developer Goal**: Create a production-ready creative with multiple assets that can be reused across campaigns.
+**Developer Goal**: Create a production-ready creative using the **most common enterprise workflow** - third-party ad server tags.
 
 <CodeGroup>
 
-```bash Natural Language
-"Create a creative called 'Holiday Sale 2024' for buyer agent ba_123 with a banner image and headline text"
+```bash Natural Language (Most Common Workflow)
+"Create a creative called 'Holiday Sale 2024' for buyer agent ba_123 using HTML snippet from Google Ad Manager"
 ```
 
-```json Tool Call
+```json Tool Call (HTML Snippet - 80% of Real Use Cases)
 {
   "tool": "creative/create",
   "parameters": {
     "buyerAgentId": "ba_123",
     "creativeName": "Holiday Sale 2024",
-    "assets": [
-      {
-        "assetName": "Holiday Banner",
-        "assetType": "image",
-        "fileUrl": "https://example.com/holiday-banner.jpg",
-        "widthPixels": 1200,
-        "heightPixels": 628
-      },
-      {
-        "assetName": "Holiday Headline",
-        "assetType": "text",
-        "textContent": {
-          "headline": "Save 50% This Holiday Season",
-          "callToAction": "Shop Now"
-        }
-      }
-    ],
-    "advertiserDomains": ["yourstore.com"]
+    "format": {
+      "type": "publisher",
+      "formatId": "display_banner"
+    },
+    "content": {
+      "htmlSnippet": "<div class='ad-unit'>\n  <img src='https://cdn.adserver.com/holiday-banner.jpg' />\n  <h2>Save 50% This Holiday Season</h2>\n  <button onclick='window.open(\"https://yourstore.com/sale\")'\'>Shop Now</button>\n</div>"
+    },
+    "advertiserDomains": ["yourstore.com"],
+    "assemblyMethod": "pre_assembled"
+  }
+}
+```
+
+```json Tool Call (Asset Assembly - 15% of Use Cases)
+{
+  "tool": "creative/create", 
+  "parameters": {
+    "buyerAgentId": "ba_123",
+    "creativeName": "Holiday Sale 2024",
+    "format": {
+      "type": "adcp",
+      "formatId": "display_banner"
+    },
+    "content": {
+      "assetIds": ["asset_img_123", "asset_txt_456"]
+    },
+    "advertiserDomains": ["yourstore.com"],
+    "assemblyMethod": "publisher"
+  }
+}
+```
+
+```json Tool Call (JavaScript Tag - Enterprise Workflow)
+{
+  "tool": "creative/create",
+  "parameters": {
+    "buyerAgentId": "ba_123", 
+    "creativeName": "Holiday Sale 2024",
+    "format": {
+      "type": "publisher",
+      "formatId": "display_banner"
+    },
+    "content": {
+      "javascriptTag": "<script src='https://sizmek.com/ad/12345/holiday-creative.js'></script>"
+    },
+    "advertiserDomains": ["yourstore.com"],
+    "assemblyMethod": "pre_assembled"
   }
 }
 ```
@@ -92,32 +121,24 @@ Authorization: Bearer your_api_key
   "version": "1.0.0",
   "buyerAgentId": "ba_123",
   "status": "draft",
-  "assets": [
-    {
-      "assetId": "asset_001",
-      "assetName": "Holiday Banner",
-      "assetType": "image",
-      "widthPixels": 1200,
-      "heightPixels": 628,
-      "fileUrl": "https://cdn.scope3.com/creative_abc123/asset_001.jpg"
-    },
-    {
-      "assetId": "asset_002", 
-      "assetName": "Holiday Headline",
-      "assetType": "text",
-      "textContent": {
-        "headline": "Save 50% This Holiday Season",
-        "callToAction": "Shop Now"
-      }
-    }
-  ],
+  "format": {
+    "type": "publisher",
+    "formatId": "display_banner"
+  },
+  "content": {
+    "htmlSnippet": "<div class='ad-unit'>\n  <img src='https://cdn.adserver.com/holiday-banner.jpg' />\n  <h2>Save 50% This Holiday Season</h2>\n  <button onclick='window.open(\"https://yourstore.com/sale\")'\'>Shop Now</button>\n</div>"
+  },
+  "assemblyMethod": "pre_assembled",
   "advertiserDomains": ["yourstore.com"],
   "campaignAssignments": [],
-  "createdDate": "2024-01-15T10:30:00Z"
+  "createdDate": "2024-01-15T10:30:00Z",
+  "lastModifiedDate": "2024-01-15T10:30:00Z"
 }
 ```
 
-**✅ Integration Checkpoint**: Creative is ready for campaign assignment and optimization
+**✅ Integration Checkpoint**: Creative with real-world content is ready for enterprise campaign deployment
+
+**🏗️ Architecture Note**: This creative contains an HTML snippet (the most common enterprise use case) and will be served via the publisher's ad serving infrastructure.
 
 ## Step 2: Deploy to Campaign (1 minute)
 
@@ -228,12 +249,12 @@ Authorization: Bearer your_api_key
 
 <CardGroup cols={2}>
 
-<Card title="Creative (API Entity)" icon="palette">
-**Database Model**: Primary entity with versioning, contains asset references, supports concurrent campaign assignments
+<Card title="Creative (Orchestration Entity)" icon="palette">
+**MCP Layer**: Primary orchestration entity with format specification, content sources (HTML/JS/VAST), and assembly method configuration
 </Card>
 
-<Card title="Asset (Content Files)" icon="file">
-**CDN-Optimized**: Individual files with technical specs, cached for performance, reusable across unlimited creatives
+<Card title="Content Sources (Real-World)" icon="code">
+**Enterprise Ready**: HTML snippets (80%), JavaScript tags (15%), VAST tags (3%), asset references (2%) - matches actual advertising workflows
 </Card>
 
 <Card title="Buyer Agent (Partition Key)" icon="building">
@@ -268,10 +289,19 @@ Authorization: Bearer your_api_key
 
 <AccordionGroup>
 
-<Accordion title="Performance: How many assets per creative?">
-**Recommended**: 3-5 assets per creative for optimal API performance and management efficiency. Enterprise clients successfully manage creatives with 20+ assets.
+<Accordion title="Architecture: How does MCP orchestration + REST work?">
+**MCP Layer**: Handles creative orchestration, format specification, content sources via natural language
+**REST Layer**: Handles actual file uploads via presigned URLs, CDN uploads, bulk operations
 
-**Technical**: No hard limits. Response times stay under 100ms for creatives with 50+ assets.
+**Why**: MCP protocol isn't designed for binary file transfers. This architecture enables real-world enterprise workflows.
+</Accordion>
+
+<Accordion title="Content: What content types are most common?">
+**HTML Snippets (80%)**: Pre-built creative code from ad servers (DCM, GAM, Sizmek)
+**JavaScript Tags (15%)**: Dynamic ad tags from third-party platforms
+**Asset Assembly (5%)**: Upload assets via REST, reference by ID for publisher assembly
+
+**Technical**: Most enterprises use third-party ad servers, not direct asset uploads.
 </Accordion>
 
 <Accordion title="Scaling: Can creatives be reused across campaigns?">
@@ -288,6 +318,17 @@ Authorization: Bearer your_api_key
 - Active campaigns continue using assigned version
 - No campaign disruption during creative updates  
 - Update campaign assignments explicitly when ready
+</Accordion>
+
+<Accordion title="Formats: How do I know which format to use?">
+**Format Discovery Pattern**:
+1. Use `list_creative_formats` to see available formats
+2. Choose based on content type and assembly needs
+3. AdCP formats for standard workflows
+4. Publisher formats for custom requirements
+5. Creative agent formats for AI generation
+
+**Most Common**: `publisher/display_banner` with `content.htmlSnippet`
 </Accordion>
 
 <Accordion title="Multi-Tenancy: How to organize multiple brands?">

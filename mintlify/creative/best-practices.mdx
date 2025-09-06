@@ -1,5 +1,5 @@
 ---
-title: "Enterprise Creative Management Best Practices"
+title: "Enterprise Creative Best Practices"
 description: "Production deployment patterns and optimization strategies for developers"
 icon: "trophy"
 ---
@@ -15,12 +15,14 @@ icon: "trophy"
 **Best for**: Enterprise clients, brand consistency, cost optimization
 
 ```typescript
-// Implementation Order
+// Implementation Order (MCP Orchestration + REST)
 1. Brand Agent Foundation → create_brand_agent()
-2. Asset Library Setup → creative/upload_asset() (logos, templates, brand guidelines)  
-3. Creative Template Creation → creative/create() (reusable creative frameworks)
-4. Campaign Deployment → creative/assign() (assign proven creatives to campaigns)
-5. Performance Optimization → campaign/list_creatives() (data-driven creative decisions)
+2. Format Discovery → list_creative_formats() (understand available formats)
+3. Asset Upload via REST → Use REST endpoints for file uploads, get asset references
+4. Asset References → assets/add() (create asset references from REST uploads)
+5. Creative Template Creation → creative/create() with format specs and content sources
+6. Campaign Deployment → creative/assign() (assign proven creatives to campaigns)
+7. Performance Optimization → campaign/list_creatives() (data-driven creative decisions)
 ```
 
 **Benefits:**
@@ -42,12 +44,13 @@ icon: "trophy"
 **Best for**: Agencies, rapid iteration, campaign-specific messaging
 
 ```typescript
-// Implementation Order  
+// Implementation Order (MCP Orchestration Focus)
 1. Brand Agent Foundation → create_brand_agent()
-2. Campaign Creation → create_campaign()
-3. Creative Development → campaign/attach_creative() with newCreatives
-4. Rapid Testing → creative/create() (multiple variants) 
-5. Winner Scaling → creative/assign() (promote successful creatives)
+2. Format Discovery → list_creative_formats() (choose optimal formats)
+3. Campaign Creation → create_campaign()
+4. Creative Development → campaign/attach_creative() with HTML snippets/JS tags
+5. Rapid Testing → creative/create() with different content sources
+6. Winner Scaling → creative/assign() (promote successful creatives)
 ```
 
 **Benefits:**
@@ -102,19 +105,28 @@ icon: "trophy"
 
 ### API Integration Patterns
 
-#### Bulk Operations Pattern
+#### MCP Orchestration Pattern
 
 ```typescript
-// ❌ Inefficient: Multiple API calls
-for (const creativeId of creativeIds) {
-  await assignCreativeToGame(creativeId, campaignId);
-}
+// ❌ Inefficient: File uploads via MCP (wrong architecture)
+await creative/create({
+  assets: [{ fileContent: base64EncodedData }]  // DON'T DO THIS
+});
 
-// ✅ Efficient: Single bulk operation
-await campaign/attach_creative({
-  campaignId,
-  buyerAgentId,  
-  creativeIds: [...allCreativeIds]
+// ✅ Efficient: MCP orchestration + REST uploads
+// 1. Upload files via REST API
+const uploadResult = await restClient.uploadAsset(file);
+
+// 2. Create asset references via MCP
+await assets/add({
+  assetUrl: uploadResult.cdnUrl,
+  uploadId: uploadResult.uploadId
+});
+
+// 3. Create creative via MCP orchestration
+await creative/create({
+  format: { type: 'publisher', formatId: 'display_banner' },
+  content: { assetIds: [uploadResult.assetId] }
 });
 ```
 
@@ -157,10 +169,11 @@ try {
 **Strategic Naming for Scale:**
 
 ```typescript
-// ✅ Good: Descriptive and searchable
-creativeName: "Nike_Q1_2024_Spring_Collection_Hero_Video_v2"
-creativeName: "Starbucks_Holiday_Banner_Desktop_1200x628_CTA_ShopNow"
-creativeName: "Tesla_Model3_ProductDemo_Mobile_Native_Vertical"
+// ✅ Good: Descriptive with format and content type
+creativeName: "Nike_Q1_2024_Spring_HTML_Banner_Desktop_v2"
+creativeName: "Starbucks_Holiday_JS_Tag_Mobile_GAM_v1"
+creativeName: "Tesla_Model3_VAST_Video_CTV_30s_v3"
+creativeName: "Brand_Logo_Asset_Reference_2024_Primary"
 
 // ❌ Bad: Generic and hard to find  
 creativeName: "banner1"
@@ -179,15 +192,17 @@ creativeName: "creative_v2"
 **Library Structure:**
 
 ```typescript
-// Organize by campaign tier
-"Brand_Tier": Nike_Brand_Logo_2024_Primary.svg
-"Campaign_Tier": Nike_Spring_Hero_Video_30s_1920x1080.mp4  
-"Variant_Tier": Nike_Spring_CTA_ShopNow_v1.txt
+// Organize by content source and format
+"HTML_Snippets": Nike_Spring_HTML_Banner_Desktop_v1
+"JS_Tags": Starbucks_Holiday_GAM_Tag_Mobile_v2
+"VAST_Tags": Tesla_CTV_Video_VAST_30s_v1
+"Asset_References": Brand_Logo_CDN_Reference_2024
 
-// Tag for discovery
-tags: ["brand_asset", "logo", "primary"]
-tags: ["campaign_spring", "hero_video", "30_second"] 
-tags: ["cta_button", "conversion", "variant_a"]
+// Tag by format and assembly method
+tags: ["html_snippet", "pre_assembled", "desktop"]
+tags: ["js_tag", "gam", "mobile", "dynamic"]
+tags: ["vast_tag", "video", "ctv", "30_second"]
+tags: ["asset_reference", "logo", "brand_tier"]
 ```
 </Tab>
 
@@ -281,49 +296,65 @@ if (performanceA.ctr > performanceControl.ctr * 1.1) {
 
 ## Common Pitfalls and Solutions
 
-### ❌ Anti-Pattern: Ignoring Creative Management
+### ❌ Anti-Pattern: Using MCP for File Uploads
 
-**Problem:** Attempting to run campaigns without proper creative management integration.
+**Problem:** Attempting to upload files via MCP protocol (wrong architecture).
 
 ```typescript  
-// ❌ This leads to poor performance
-await create_campaign({
-  name: "Summer Sale",
-  budget: 50000
-  // Missing: Creative integration
+// ❌ This is wrong - MCP not designed for file transfers
+await creative/create({
+  assets: [{
+    fileContent: base64EncodedLargeVideo,  // DON'T DO THIS
+    assetType: "video"
+  }]
 });
 ```
 
 **Impact:** 
-- 47% lower campaign performance
-- 3x higher creative production costs
-- Manual asset management overhead
-- Brand inconsistency issues
+- Protocol timeouts on large files
+- Poor performance due to base64 encoding
+- Doesn't match real enterprise workflows
+- Missing format specification
 
 **✅ Solution:**
 ```typescript
-// Always integrate creative management
+// Correct: MCP orchestration + REST uploads
 1. await create_brand_agent({ name: "Nike" });
-2. await creative/create({ creativeName: "Summer Sale Creative", ... });
-3. await create_campaign({ creativeIds: [...], ... });
+2. await list_creative_formats();  // Discover formats
+3. await creative/create({
+     format: { type: 'publisher', formatId: 'display_banner' },
+     content: { htmlSnippet: '<div>Ad content</div>' }  // Real workflow
+   });
+4. await create_campaign({ creativeIds: [...], ... });
 ```
 
 ---
 
-### ❌ Anti-Pattern: Poor Asset Organization
+### ❌ Anti-Pattern: Wrong Content Source Type
 
-**Problem:** Generic naming and no tagging strategy.
+**Problem:** Not using the right content source for enterprise workflows.
 
 ```typescript
-// ❌ Hard to manage at scale
+// ❌ Trying to recreate what ad servers already provide
 creativeName: "banner1", "video_final", "image_v2"
+content: { assetIds: [...] }  // When you should use HTML snippets
 ```
 
 **✅ Solution:**
 ```typescript
-// Strategic naming and tagging
-creativeName: "Nike_Q1_Spring_Hero_Banner_Desktop_1200x628_v1"
-tags: ["nike", "q1", "spring", "hero", "banner", "desktop"]
+// Use the right content source for your workflow
+
+// Most common (80%): HTML snippets from ad servers
+creativeName: "Nike_Q1_GAM_HTML_Banner_Desktop_v1"
+content: { htmlSnippet: '<div>Pre-built ad from GAM</div>' }
+
+// Enterprise (15%): JavaScript tags
+creativeName: "Brand_Sizmek_JS_Tag_Mobile_v2" 
+content: { javascriptTag: '<script src="..."></script>' }
+
+// Video (5%): VAST tags
+creativeName: "Product_CTV_VAST_30s_v1"
+content: { vastTag: '<VAST version="3.0">...</VAST>' }
 ```
 
 ---

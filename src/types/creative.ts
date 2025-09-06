@@ -1,290 +1,291 @@
 /**
- * Creative Management Types - AdCP-Aligned Structure
+ * Creative Management Types - MCP Orchestration + REST Upload Architecture
  * 
- * Following AdCP-style hierarchy where a Creative contains multiple Assets
+ * MCP Layer: Orchestration and control via natural language
+ * REST Layer: File uploads and bulk data operations
+ * 
  * All field names are verbose and human-readable for LLM usage
  */
 
+// ========================================
+// Creative Format System
+// ========================================
+
 /**
- * A Creative is the conceptual advertising unit that contains multiple assets
- * This is the top-level container that gets assigned to campaigns
+ * Creative format specification - defines what can be created
+ */
+export interface CreativeFormat {
+  type: 'adcp' | 'publisher' | 'creative_agent';
+  formatId: string;  // e.g., "adcp/display_banner", "publisher/ctv_video", "agent/dynamic_product"
+  name: string;
+  description: string;
+  
+  requirements: {
+    requiredAssets: Array<{
+      type: 'image' | 'video' | 'text' | 'logo' | 'audio';
+      specs: {
+        dimensions?: string;     // "1200x628" or "16:9"
+        maxSize?: string;        // "5MB"
+        formats?: string[];      // ["jpg", "png"] 
+      };
+    }>;
+    
+    assemblyCapable: boolean;        // Can be assembled from assets
+    acceptsThirdPartyTags: boolean;  // Supports ad server tags
+  };
+}
+
+/**
+ * Response for listing all available creative formats
+ */
+export interface CreativeFormatsResponse {
+  adcp_formats: CreativeFormat[];
+  publisher_formats: CreativeFormat[];
+  creative_agent_formats: CreativeFormat[];
+}
+
+// ========================================
+// Asset Management (Reference-Based)
+// ========================================
+
+/**
+ * Asset source reference (not upload)
+ */
+export interface AssetSource {
+  url?: string;           // External URL to fetch from
+  uploadId?: string;      // ID from REST upload
+  cdnUrl?: string;        // Already on CDN
+}
+
+/**
+ * Asset metadata and references
+ */
+export interface CreativeAsset {
+  assetId: string;
+  assetName: string;
+  assetType: 'image' | 'video' | 'text' | 'audio' | 'html' | 'logo' | 'font';
+  
+  // Asset source (reference, not upload)
+  source: AssetSource;
+  
+  // File specifications (optional, may be discovered)
+  fileFormat?: string;  // e.g., "jpg", "mp4", "mp3"
+  fileSizeBytes?: number;
+  
+  // Visual specifications (for images and videos)
+  dimensions?: {
+    width: number;
+    height: number;
+  };
+  
+  // Temporal specifications (for videos and audio)
+  durationSeconds?: number;
+  
+  // Text content (for text assets)
+  textContent?: {
+    headline?: string;
+    bodyText?: string;
+    callToAction?: string;
+    sponsoredByText?: string;
+  };
+  
+  // Organization
+  tags?: string[];
+  metadata?: Record<string, unknown>;
+  
+  // Timestamps
+  createdDate: string;
+  lastModifiedDate: string;
+  createdBy: string;
+}
+
+/**
+ * Response for listing assets
+ */
+export interface AssetListResponse {
+  assets: CreativeAsset[];
+  totalCount: number;
+  hasMore: boolean;
+  nextOffset?: number;
+}
+
+// ========================================
+// Creative Content System
+// ========================================
+
+/**
+ * Creative content sources (orchestration, not upload)
+ */
+export interface CreativeContent {
+  // Pre-assembled content (ad server tags)
+  htmlSnippet?: string;      // For HTML5 creatives
+  javascriptTag?: string;    // For JS ad tags  
+  vastTag?: string;          // For video ads
+  
+  // Asset references (not uploads)
+  assetIds?: string[];       // References to pre-uploaded assets
+  
+  // External sources
+  productUrl?: string;       // For product-based generation
+}
+
+/**
+ * The main Creative entity - orchestration focused
  */
 export interface Creative {
-  // Identity
   creativeId: string;
   creativeName: string;
   creativeDescription?: string;
-  version: string; // Semantic versioning for iterations
+  version: string;
   
-  // Ownership (tied to buyer agent)
+  // External ID management
+  externalId?: string;  // User-provided ID for external system management
+  
+  // Ownership
   buyerAgentId: string;
   customerId: number;
   
-  // Creative composition - AdCP style: Creative contains Assets
-  assets: CreativeAsset[]; // Multiple assets make up a creative
-  primaryAssetId?: string; // ID of the hero/main asset
+  // Format and assembly
+  format: {
+    type: 'adcp' | 'publisher' | 'creative_agent';
+    formatId: string;  // e.g., "adcp/display_banner", "publisher/amazon_dsp/ctv_video"
+  };
+  assemblyMethod: 'publisher' | 'creative_agent' | 'pre_assembled';
   
-  // Creative metadata
-  advertiserDomains: string[]; // Where clicks will go
-  contentCategories: string[]; // IAB content taxonomy
+  // Content (orchestration, not upload)
+  content: CreativeContent;
+  
+  // Referenced assets (not embedded)
+  assetIds: string[];
+  
+  // Marketing metadata (advertiserDomains now at brand agent level)
+  contentCategories?: string[];  // IAB content categories
   targetAudience?: string; // Natural language description
   
-  // Status and workflow
-  status: CreativeStatus;
+  // Status and lifecycle
+  status: 'draft' | 'pending_review' | 'active' | 'paused' | 'archived' | 'rejected';
   
-  // Campaign associations (optimized to reduce API calls)
-  campaignAssignments?: CampaignAssignment[];
+  // Asset validation status
+  assetValidation?: {
+    allAssetsValid: boolean;
+    invalidAssets?: Array<{
+      assetId: string;
+      error: 'not_found' | 'download_failed' | 'format_mismatch' | 'size_exceeded' | 'corrupted';
+      errorMessage: string;
+    }>;
+    validatedAt?: string;
+  };
   
-  // Tracking with human-readable names
+  // Publisher approval status
+  publisherApprovals?: Array<{
+    publisherId: string;
+    publisherName: string;
+    approvalStatus: 'pending' | 'approved' | 'rejected' | 'auto_approved' | 'changes_requested';
+    syncedAt: string;
+    reviewedAt?: string;
+    rejectionReason?: string;
+    requestedChanges?: string[];
+    autoApprovalPolicy?: boolean;  // Publisher auto-approves standard formats
+  }>;
+  
+  // Campaign relationships (optimized for reduced API calls)
+  campaignAssignments?: {
+    campaignId: string;
+    campaignName: string;
+    assignedDate: string;
+    isActive: boolean;
+    publishersSynced?: string[];  // Which publishers this creative was synced to
+  }[];
+  
+  // Timestamps and audit
   createdDate: string;
   lastModifiedDate: string;
   createdBy: string;
   lastModifiedBy: string;
 }
 
-/**
- * An Asset is an actual file or content piece that composes a Creative
- * Multiple assets can belong to one creative (e.g., image + headline + CTA)
- */
-export interface CreativeAsset {
-  // Identity
-  assetId: string;
-  assetName: string;
-  assetDescription?: string;
-  
-  // Asset specifications
-  assetType: AssetType;
-  
-  // File details (verbose names for LLM clarity)
-  fileFormat: string; // 'jpeg', 'png', 'mp4', etc.
-  fileSizeBytes: number;
-  fileUrl: string;
-  thumbnailUrl?: string;
-  
-  // Dimensions (for visual assets)
-  widthPixels?: number;
-  heightPixels?: number;
-  aspectRatio?: string; // '16:9', '1:1', etc.
-  
-  // Duration (for video/audio)
-  durationSeconds?: number;
-  
-  // Text content (for text/native assets)
-  textContent?: TextContent;
-  
-  // Technical capabilities (human-readable names)
-  supportedAPIs?: string[]; // ['MRAID_3.0', 'VPAID_2.0', etc.]
-  supportedProtocols?: string[]; // ['VAST_4.2', 'DAAST_1.0', etc.]
-  mimeTypes?: string[];
-  
-  // Asset role in creative
-  assetRole?: AssetRole;
-  placementHints?: string[]; // ['above_fold', 'mobile_optimized', etc.]
-  
-  // Metadata
-  tags: string[];
-  customMetadata?: Record<string, unknown>;
-}
+// ========================================
+// Input Types for MCP Operations
+// ========================================
 
 /**
- * Text content for text-based or native assets
- */
-export interface TextContent {
-  headline?: string;
-  bodyText?: string;
-  callToAction?: string;
-  sponsoredByText?: string;
-  brandName?: string;
-  disclaimer?: string;
-}
-
-/**
- * Campaign assignment information included in creative responses
- * to reduce the need for separate API calls
- */
-export interface CampaignAssignment {
-  campaignId: string;
-  campaignName: string;
-  assignedDate: string;
-  isActive: boolean;
-  performance?: {
-    impressions: number;
-    clicks: number;
-    clickThroughRate: number;
-  };
-}
-
-/**
- * Creative Package for multi-format/responsive creatives
- * Supports dynamic creative optimization and format adaptation
- */
-export interface CreativePackage {
-  packageId: string;
-  packageName: string;
-  packageDescription?: string;
-  buyerAgentId: string;
-  
-  // Base creative
-  baseCreative: Creative;
-  
-  // Format variants for different contexts
-  formatVariants: CreativeVariant[];
-  
-  // Rules for when to use which variant
-  adaptationRules?: AdaptationRule[];
-  
-  // Dynamic creative optimization config
-  dynamicOptimization?: DynamicCreativeConfig;
-}
-
-/**
- * A variant of a creative optimized for specific contexts
- */
-export interface CreativeVariant {
-  variantId: string;
-  variantName: string;
-  targetContext: string; // 'mobile', 'desktop', 'ctv', etc.
-  targetSizes: Array<{
-    widthPixels: number;
-    heightPixels: number;
-  }>;
-  creative: Creative;
-  performance?: VariantPerformance;
-}
-
-/**
- * Rules for adaptive creative selection
- */
-export interface AdaptationRule {
-  ruleId: string;
-  condition: string; // 'device_type', 'screen_size', 'time_of_day', etc.
-  conditionValue: string;
-  action: string; // Which variant to use
-  priority: number;
-}
-
-/**
- * Dynamic creative optimization configuration
- */
-export interface DynamicCreativeConfig {
-  templateAssetId: string; // Base creative template
-  dynamicElements: {
-    textFields: string[];
-    imageSlots: string[];
-    productFeeds: string[];
-    callToActions: string[];
-  };
-  personalizationSignals: string[];
-  optimizationGoal: OptimizationGoal;
-}
-
-/**
- * Performance metrics for creative variants
- */
-export interface VariantPerformance {
-  impressions: number;
-  clicks: number;
-  conversions: number;
-  clickThroughRate: number;
-  conversionRate: number;
-  costPerClick?: number;
-  costPerConversion?: number;
-}
-
-/**
- * Creative Collection for organization and management
- */
-export interface CreativeCollection {
-  collectionId: string;
-  collectionName: string;
-  collectionDescription?: string;
-  buyerAgentId: string;
-  
-  creativeIds: string[];
-  tags: string[];
-  
-  createdDate: string;
-  lastModifiedDate: string;
-}
-
-/**
- * Response structure for listing creatives
- * Includes summary data to reduce follow-up API calls
- */
-export interface CreativeListResponse {
-  items: Creative[];
-  totalCount: number;
-  pageInfo: {
-    hasNextPage: boolean;
-    endCursor?: string;
-  };
-  // Summary statistics to reduce additional queries
-  summary?: CreativeSummary;
-}
-
-/**
- * Summary statistics for creative lists
- */
-export interface CreativeSummary {
-  totalCreatives: number;
-  byStatus: Record<string, number>;
-  byAssetType: Record<string, number>;
-  totalCampaigns: number;
-  averageAssetsPerCreative: number;
-}
-
-/**
- * Input types for creating creatives
+ * Input for creating creatives via MCP orchestration
  */
 export interface CreateCreativeInput {
+  buyerAgentId: string;
   creativeName: string;
   creativeDescription?: string;
-  buyerAgentId: string;
   
-  // Assets that compose this creative
-  assets: CreateAssetInput[];
+  // External ID management
+  externalId?: string;  // User-provided ID for external system management
   
-  // Metadata
-  advertiserDomains: string[];
-  contentCategories?: string[];
-  targetAudience?: string;
+  // Format specification (required)
+  format: {
+    type: 'adcp' | 'publisher' | 'creative_agent';
+    formatId: string;  // e.g., "adcp/display_banner", "publisher/amazon_dsp/ctv_video"
+  };
   
-  // Optional immediate assignment
+  // Content sources (one or more required)
+  content?: CreativeContent;
+  
+  // Marketing details (advertiserDomains now at brand agent level)
+  contentCategories?: string[];  // IAB content categories
+  targetAudience?: string; // Natural language description
+  
+  // Assembly method
+  assemblyMethod?: 'publisher' | 'creative_agent' | 'pre_assembled';
+  
+  // Multiple creatives at once
+  variants?: number;  // Generate N variants
+  
+  // Optional immediate campaign assignment
   assignToCampaignIds?: string[];
 }
 
 /**
- * Input for creating individual assets
+ * Input for updating existing creatives
  */
-export interface CreateAssetInput {
-  assetName: string;
-  assetType: AssetType;
-  
-  // File information
-  fileUrl?: string;
-  fileContent?: string; // Base64 encoded
-  fileFormat?: string;
-  
-  // Specifications
-  widthPixels?: number;
-  heightPixels?: number;
-  durationSeconds?: number;
-  
-  // Text content for native/text assets
-  textContent?: TextContent;
-  
-  // Role and metadata
-  assetRole?: AssetRole;
-  tags?: string[];
-  customMetadata?: Record<string, unknown>;
+export interface UpdateCreativeInput {
+  creativeId: string;
+  updates: {
+    name?: string;
+    status?: 'draft' | 'pending_review' | 'active' | 'paused' | 'archived' | 'rejected';
+    content?: Partial<CreativeContent>;
+    externalId?: string;
+  };
 }
+
+/**
+ * Input for adding assets via MCP (reference management)
+ */
+export interface AddAssetInput {
+  buyerAgentId: string;
+  assets: Array<{
+    name: string;
+    type: 'image' | 'video' | 'audio' | 'logo' | 'font';
+    
+    // Reference, not upload
+    source: AssetSource;
+    
+    metadata?: {
+      dimensions?: { width: number; height: number };
+      duration?: number;
+      fileSize?: number;
+      tags?: string[];
+    };
+  }>;
+}
+
+// ========================================
+// Filter and Pagination
+// ========================================
 
 /**
  * Filter options for listing creatives
  */
 export interface CreativeFilter {
-  status?: CreativeStatus;
-  hasAssetType?: AssetType;
+  status?: 'draft' | 'pending_review' | 'active' | 'paused' | 'archived' | 'rejected';
+  hasAssetType?: 'image' | 'video' | 'text' | 'audio' | 'html' | 'logo' | 'font';
   campaignId?: string;
   searchTerm?: string;
   contentCategory?: string;
@@ -302,41 +303,123 @@ export interface PaginationInput {
   offset: number;
 }
 
-// Enums with descriptive values
+// ========================================
+// Response Types
+// ========================================
 
-export enum CreativeStatus {
-  DRAFT = 'draft',
-  PENDING_REVIEW = 'pending_review',
-  ACTIVE = 'active',
-  PAUSED = 'paused',
-  ARCHIVED = 'archived'
+/**
+ * Response structure for listing creatives
+ */
+export interface CreativeListResponse {
+  creatives: Creative[];
+  totalCount: number;
+  hasMore: boolean;
+  nextOffset?: number;
+  
+  // Summary statistics
+  summary: {
+    totalCreatives: number;
+    activeCreatives: number;
+    draftCreatives: number;
+    assignedCreatives: number;
+    unassignedCreatives: number;
+  };
 }
 
-export enum AssetType {
-  IMAGE = 'image',
-  VIDEO = 'video',
-  TEXT = 'text',
-  AUDIO = 'audio',
-  HTML = 'html',
-  NATIVE_COMPONENT = 'native_component'
+/**
+ * Assignment operation results
+ */
+export interface AssignmentResult {
+  creativeId: string;
+  campaignId: string;
+  success: boolean;
+  message: string;
 }
 
-export enum AssetRole {
-  PRIMARY = 'primary',
-  COMPANION = 'companion',
-  FALLBACK = 'fallback',
-  VARIANT = 'variant',
-  BACKGROUND = 'background',
-  OVERLAY = 'overlay'
+// ========================================
+// Asset Import Results (for REST operations)
+// ========================================
+
+/**
+ * Result of importing a single asset
+ */
+export interface AssetImportResult {
+  assetId: string;
+  originalUrl?: string;
+  uploadId?: string;
+  success: boolean;
+  error?: string;
 }
 
-export enum OptimizationGoal {
-  CLICK_THROUGH_RATE = 'click_through_rate',
-  COST_PER_ACQUISITION = 'cost_per_acquisition',
-  RETURN_ON_AD_SPEND = 'return_on_ad_spend',
-  VIEWABILITY = 'viewability',
-  BRAND_AWARENESS = 'brand_awareness'
+/**
+ * Bulk asset import response
+ */
+export interface BulkAssetImportResponse {
+  results: AssetImportResult[];
+  successCount: number;
+  errorCount: number;
+  summary: string;
 }
+
+// ========================================
+// Publisher Sync and Approval Types
+// ========================================
+
+/**
+ * Request to sync creative to publishers for pre-approval
+ */
+export interface CreativePreApprovalRequest {
+  creativeId: string;
+  publisherIds: string[];  // Specific publishers to get pre-approval from
+}
+
+/**
+ * Result of syncing creative to publisher
+ */
+export interface PublisherSyncResult {
+  creativeId: string;
+  publisherId: string;
+  publisherName: string;
+  syncStatus: 'success' | 'failed' | 'pending';
+  syncedAt: string;
+  error?: string;
+  approvalStatus?: 'pending' | 'auto_approved';
+  estimatedReviewTime?: string;  // e.g., "24 hours", "instant"
+}
+
+/**
+ * Publisher approval update notification
+ */
+export interface PublisherApprovalUpdate {
+  creativeId: string;
+  publisherId: string;
+  publisherName: string;
+  previousStatus: string;
+  newStatus: 'approved' | 'rejected' | 'changes_requested';
+  reviewedAt: string;
+  rejectionReason?: string;
+  requestedChanges?: string[];
+  reviewerNotes?: string;
+}
+
+/**
+ * Creative revision for rejected creatives
+ */
+export interface CreativeRevisionInput {
+  creativeId: string;
+  publisherId: string;
+  revisions: {
+    content?: Partial<CreativeContent>;
+    contentCategories?: string[];
+    targetAudience?: string;
+    assetIds?: string[];
+  };
+  revisionNotes?: string;  // Explain what was changed
+}
+
+// ========================================
+// Error Types
+// ========================================
 
 /**
  * Error types for creative operations
@@ -348,16 +431,25 @@ export interface CreativeError {
 }
 
 /**
+ * Asset validation error details
+ */
+export interface AssetValidationError {
+  assetId: string;
+  assetUrl?: string;
+  errorType: 'not_found' | 'download_failed' | 'format_mismatch' | 'size_exceeded' | 'corrupted' | 'missing_required';
+  errorMessage: string;
+  technicalDetails?: {
+    httpStatus?: number;
+    expectedFormat?: string;
+    actualFormat?: string;
+    maxSize?: string;
+    actualSize?: string;
+  };
+  suggestion?: string;  // How to fix the error
+}
+
+/**
  * Result types for mutations
  */
 export type CreativeResult = Creative | CreativeError;
 export type AssetResult = CreativeAsset | CreativeError;
-
-/**
- * Assignment operation results
- */
-export interface AssignmentResult {
-  success: boolean;
-  message: string;
-  assignment?: CampaignAssignment;
-}

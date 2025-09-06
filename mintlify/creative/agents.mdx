@@ -10,7 +10,7 @@ Creative Agents provide AI-powered creative generation following AdCP PR #23. Th
 
 ## What are Creative Agents?
 
-Creative Agents are AI-powered tools that extend our creative management system with intelligent automation:
+Creative Agents are AI-powered tools that extend our creative system with intelligent automation:
 
 <CardGroup cols={2}>
 
@@ -310,9 +310,9 @@ const DynamicVideoCreative = {
 
 </Steps>
 
-## Enhanced Creative Tools (Future)
+## Enhanced Creative Tools (Future Integration)
 
-When creative agents are integrated, these tools will be enhanced:
+When creative agents are integrated with our **MCP orchestration + REST** architecture, these tools will be enhanced:
 
 <CardGroup cols={2}>
 
@@ -324,8 +324,9 @@ When creative agents are integrated, these tools will be enhanced:
 - Multi-format output
 
 ```bash
-"Build a creative for our coffee brand"
+"Build a creative with HTML snippet for our coffee brand"
 ```
+**Integration**: Works with existing MCP orchestration layer
 </Card>
 
 <Card title="creative/manage_library" icon="folder-gear">
@@ -350,14 +351,24 @@ When creative agents are integrated, these tools will be enhanced:
 
 <Tab title="Enhanced creative/create">
 ```typescript
-// Enhanced with creative agent generation
+// Enhanced with creative agent generation (MCP orchestration)
 interface CreateCreativeInput {
   creativeName: string;
   
-  // Existing manual creation
-  assets?: ManualAsset[];
+  // Current MCP orchestration approach
+  format: {
+    type: 'adcp' | 'publisher' | 'creative_agent';
+    formatId: string;
+  };
+  content?: {
+    htmlSnippet?: string;
+    javascriptTag?: string;
+    vastTag?: string;
+    assetIds?: string[];  // References to REST-uploaded assets
+    productUrl?: string;
+  };
   
-  // NEW: Creative agent generation
+  // NEW: Creative agent generation via MCP
   generateWithAgent?: {
     mode: 'manifest' | 'code';
     prompt: string;
@@ -367,6 +378,7 @@ interface CreateCreativeInput {
   };
   
   advertiserDomains: string[];
+  assemblyMethod: 'publisher' | 'creative_agent' | 'pre_assembled';
 }
 ```
 </Tab>
@@ -431,18 +443,18 @@ interface BrandGuidelines {
 ```bash
 User: "Create product showcase creatives for our electronics store"
 
-Agent: "I'll create a product showcase creative package. What products should I focus on?"
+Agent: "I'll create a product showcase creative package. What format do you need?"
 
-User: "Latest smartphones and headphones, targeting tech enthusiasts"
+User: "HTML snippets for display banners targeting tech enthusiasts"
 
-Agent: "Perfect! Generating tech-focused creatives with product imagery..."
+Agent: "Perfect! Generating tech-focused HTML creatives..."
 
 Result:
 🎨 Creative Package: "Tech Showcase Q4"
-📱 Smartphone Hero Creative (1200x628)
-🎧 Headphones Companion Creative (300x250) 
-📊 Performance tracking enabled
-🎯 Targeting: Tech enthusiast demographics
+📱 HTML Creative with smartphone hero imagery
+🎧 HTML Creative with headphones product focus
+📊 Format: publisher/display_banner with pre_assembled method
+🎯 Content: HTML snippets ready for ad server deployment
 ```
 
 ### Example 2: Seasonal Campaign Automation
@@ -450,18 +462,18 @@ Result:
 ```bash
 User: "Set up automated seasonal creatives for our coffee shop"
 
-Agent: "I'll create dynamic seasonal creatives. What seasons and themes?"
+Agent: "I'll create dynamic seasonal creatives. What format and assembly method?"
 
-User: "All four seasons with weather-based personalization"
+User: "Creative agent format with dynamic code for weather personalization"
 
 Agent: "Deploying seasonal automation with weather triggers..."
 
 Result:
-☀️ Summer: Iced coffee focus, bright colors
-🍂 Fall: Warm drinks, cozy imagery
-❄️ Winter: Hot beverages, comfort messaging  
-🌸 Spring: Fresh start, renewal themes
-🌤️ Real-time weather personalization active
+☀️ Summer: Dynamic HTML with iced coffee focus, bright colors
+🍂 Fall: Dynamic content with warm drinks, cozy imagery
+❄️ Winter: Dynamic messaging for hot beverages, comfort themes
+🌸 Spring: Dynamic creative with fresh start, renewal messaging
+🌤️ Format: creative_agent/dynamic_seasonal with real-time personalization
 ```
 
 ### Example 3: A/B Testing Automation

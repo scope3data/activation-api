@@ -43,6 +43,7 @@ export const createBrandAgentTool = (client: Scope3ApiClient) => ({
       const brandAgent = await client.createBrandAgent(apiKey, {
         description: args.description,
         name: args.name,
+        advertiserDomains: args.advertiserDomains,
       });
 
       let summary = `✅ Brand Agent Created Successfully!\n\n`;
@@ -81,5 +82,8 @@ export const createBrandAgentTool = (client: Scope3ApiClient) => ({
       .optional()
       .describe("Optional description of the brand agent"),
     name: z.string().describe("Name of the brand agent (advertiser account)"),
+    advertiserDomains: z
+      .array(z.string())
+      .describe("Domains where users will be sent from all campaigns/creatives"),
   }),
 });

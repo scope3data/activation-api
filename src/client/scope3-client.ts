@@ -27,7 +27,12 @@ import type {
   CreativeFilter,
   CreativeListResponse,
   CreateCreativeInput,
-  CreateAssetInput,
+  AddAssetInput,
+  CreativeRevisionInput,
+  PublisherSyncResult,
+  UpdateCreativeInput,
+  CreativeFormatsResponse,
+  BulkAssetImportResponse,
   AssignmentResult,
   PaginationInput,
 } from "../types/creative.js";
@@ -1521,49 +1526,48 @@ export class Scope3ApiClient {
   }
 
   // ========================================
-  // CREATIVE MANAGEMENT METHODS (AdCP Pass-Through)
+  // CREATIVE MANAGEMENT METHODS (MCP Orchestration + REST)
   // ========================================
 
   /**
-   * Create a new creative with assets
-   * Designed as pass-through to AdCP publishers
+   * Create creatives via orchestration (no file uploads)
+   * Handles format specification and content sources
    */
   async createCreative(
     apiKey: string,
-    buyerAgentId: string,
-    input: Omit<CreateCreativeInput, 'buyerAgentId'>,
+    input: CreateCreativeInput,
   ): Promise<Creative> {
-    // STUB: Will pass through to AdCP publisher when available
-    console.log('[STUB] createCreative - will pass through to AdCP publisher');
-    console.log('Input:', { buyerAgentId, ...input });
+    // STUB: Will orchestrate with format providers
+    console.log('[STUB] createCreative - orchestration with format providers');
+    console.log('Input:', input);
     
-    // Generate mock creative with human-readable structure
+    // Validate format specification
+    if (!input.format?.type || !input.format?.formatId) {
+      throw new Error('Format specification required (format.type and format.formatId)');
+    }
+    
+    // Validate content sources
+    const { htmlSnippet, javascriptTag, vastTag, assetIds, productUrl } = input.content || {};
+    const hasContent = htmlSnippet || javascriptTag || vastTag || (assetIds?.length) || productUrl;
+    
+    if (!hasContent) {
+      throw new Error('At least one content source required');
+    }
+    
+    // Generate mock creative with new architecture
     const mockCreative: Creative = {
       creativeId: `creative_${Date.now()}`,
       creativeName: input.creativeName,
       creativeDescription: input.creativeDescription,
       version: '1.0.0',
-      buyerAgentId,
+      buyerAgentId: input.buyerAgentId,
       customerId: await this.getCustomerId(apiKey),
       
-      assets: input.assets.map((asset, idx) => ({
-        assetId: `asset_${Date.now()}_${idx}`,
-        assetName: asset.assetName,
-        assetType: asset.assetType,
-        fileFormat: this.detectFileFormat(asset.fileUrl || ''),
-        fileSizeBytes: 0, // Would be calculated
-        fileUrl: asset.fileUrl || `https://stub.asset/${Date.now()}`,
-        textContent: asset.textContent,
-        assetRole: idx === 0 ? 'primary' : 'companion',
-        tags: asset.tags || [],
-        widthPixels: asset.widthPixels,
-        heightPixels: asset.heightPixels,
-        durationSeconds: asset.durationSeconds,
-      })),
+      format: input.format,
+      assemblyMethod: input.assemblyMethod || 'pre_assembled',
+      content: input.content || {},
+      assetIds: input.content?.assetIds || [],
       
-      primaryAssetId: input.assets.length > 0 ? `asset_${Date.now()}_0` : undefined,
-      
-      advertiserDomains: input.advertiserDomains,
       contentCategories: input.contentCategories || [],
       targetAudience: input.targetAudience,
       
@@ -1579,7 +1583,6 @@ export class Scope3ApiClient {
 
   /**
    * List creatives for a buyer agent with optional filters
-   * Will query AdCP publishers when backend is implemented
    */
   async listCreatives(
     apiKey: string,
@@ -1588,70 +1591,285 @@ export class Scope3ApiClient {
     pagination?: PaginationInput,
     includeCampaigns?: boolean,
   ): Promise<CreativeListResponse> {
-    // STUB: Will query AdCP publishers
-    console.log('[STUB] listCreatives - will query AdCP publishers');
+    // STUB: Will query format providers
+    console.log('[STUB] listCreatives - will query format providers');
     console.log('Query:', { buyerAgentId, filter, pagination, includeCampaigns });
     
     return {
-      items: [],
+      creatives: [],
       totalCount: 0,
-      pageInfo: { hasNextPage: false },
+      hasMore: false,
       summary: {
         totalCreatives: 0,
-        byStatus: {},
-        byAssetType: {},
-        totalCampaigns: 0,
-        averageAssetsPerCreative: 0,
+        activeCreatives: 0,
+        draftCreatives: 0,
+        assignedCreatives: 0,
+        unassignedCreatives: 0,
       }
     };
   }
 
   /**
-   * Get a single creative by ID
+   * Update existing creative
    */
-  async getCreative(
+  async updateCreative(
     apiKey: string,
-    creativeId: string,
+    input: UpdateCreativeInput,
   ): Promise<Creative> {
-    // STUB: Will query AdCP publisher
-    console.log('[STUB] getCreative - will query AdCP publisher');
-    console.log('Query:', { creativeId });
+    // STUB: Will update through format providers
+    console.log('[STUB] updateCreative - will update through format providers');
+    console.log('Input:', input);
     
-    throw new Error('Creative not found (STUB)');
+    // Mock updated creative
+    const mockCreative: Creative = {
+      creativeId: input.creativeId,
+      creativeName: input.updates.name || 'Updated Creative',
+      version: '1.1.0', // Version bump
+      buyerAgentId: 'ba_123',
+      customerId: await this.getCustomerId(apiKey),
+      
+      format: { type: 'adcp', formatId: 'display_banner' },
+      assemblyMethod: 'pre_assembled',
+      content: input.updates.content || {},
+      assetIds: input.updates.content?.assetIds || [],
+      
+      status: input.updates.status || 'draft',
+      
+      createdDate: new Date(Date.now() - 86400000).toISOString(),
+      lastModifiedDate: new Date().toISOString(),
+      createdBy: 'api_user',
+      lastModifiedBy: 'api_user',
+    };
+    
+    return mockCreative;
   }
 
   /**
-   * Upload individual asset that can be used in creatives
-   * Will delegate to appropriate AdCP publisher based on asset type
+   * Add assets via reference management (MCP orchestration)
+   * No file uploads - manages URLs, upload IDs, CDN references
    */
-  async uploadAsset(
+  async addAssets(
     apiKey: string,
-    buyerAgentId: string,
-    asset: CreateAssetInput,
-  ): Promise<CreativeAsset> {
-    console.log('[STUB] uploadAsset - will pass through to AdCP publisher');
-    console.log('Upload:', { buyerAgentId, asset });
+    input: AddAssetInput,
+  ): Promise<BulkAssetImportResponse> {
+    console.log('[STUB] addAssets - reference management');
+    console.log('Input:', input);
     
-    // Would delegate to appropriate AdCP publisher
-    // based on asset type and buyer agent configuration
+    // Mock asset import results
+    const results = input.assets.map((asset, idx) => ({
+      assetId: `asset_${Date.now()}_${idx}`,
+      originalUrl: asset.source.url,
+      uploadId: asset.source.uploadId,
+      success: true,
+    }));
     
-    const mockAsset: CreativeAsset = {
-      assetId: `asset_${Date.now()}`,
-      assetName: asset.assetName,
-      assetType: asset.assetType,
-      fileFormat: this.detectFileFormat(asset.fileUrl || ''),
-      fileSizeBytes: 0,
-      fileUrl: asset.fileUrl || `https://stub.asset/${Date.now()}`,
-      textContent: asset.textContent,
-      assetRole: asset.assetRole,
-      tags: asset.tags || [],
-      widthPixels: asset.widthPixels,
-      heightPixels: asset.heightPixels,
-      durationSeconds: asset.durationSeconds,
-      customMetadata: asset.customMetadata,
+    return {
+      results,
+      successCount: results.length,
+      errorCount: 0,
+      summary: `Successfully added ${results.length} assets via reference management`,
     };
+  }
+  
+  /**
+   * List available creative formats from all providers
+   */
+  async listCreativeFormats(
+    apiKey: string,
+    filters?: {
+      type?: 'adcp' | 'publisher' | 'creative_agent';
+      search?: string;
+      assemblyCapable?: boolean;
+      acceptsThirdPartyTags?: boolean;
+    },
+  ): Promise<CreativeFormatsResponse> {
+    console.log('[STUB] listCreativeFormats - discovery from all providers');
+    console.log('Filters:', filters);
     
-    return mockAsset;
+    // Standard AdCP formats - sync with actual AdCP specification
+    return {
+      adcp_formats: [
+        {
+          type: 'adcp',
+          formatId: 'display_banner_320x50',
+          name: 'Mobile Banner 320x50',
+          description: 'Standard mobile banner format',
+          requirements: {
+            requiredAssets: [
+              {
+                type: 'image',
+                specs: {
+                  dimensions: '320x50',
+                  maxSize: '150KB',
+                  formats: ['jpg', 'png', 'gif']
+                }
+              }
+            ],
+            assemblyCapable: true,
+            acceptsThirdPartyTags: true
+          }
+        },
+        {
+          type: 'adcp',
+          formatId: 'display_banner_728x90',
+          name: 'Leaderboard Banner 728x90',
+          description: 'Standard leaderboard banner format',
+          requirements: {
+            requiredAssets: [
+              {
+                type: 'image',
+                specs: {
+                  dimensions: '728x90',
+                  maxSize: '150KB',
+                  formats: ['jpg', 'png', 'gif']
+                }
+              }
+            ],
+            assemblyCapable: true,
+            acceptsThirdPartyTags: true
+          }
+        },
+        {
+          type: 'adcp',
+          formatId: 'video_vast_preroll',
+          name: 'VAST Video Pre-roll',
+          description: 'Standard VAST 4.0 compliant video creative',
+          requirements: {
+            requiredAssets: [
+              {
+                type: 'video',
+                specs: {
+                  dimensions: '16:9',
+                  maxSize: '100MB',
+                  formats: ['mp4']
+                }
+              }
+            ],
+            assemblyCapable: true,
+            acceptsThirdPartyTags: true
+          }
+        },
+        {
+          type: 'adcp',
+          formatId: 'native_article',
+          name: 'Native Article Format',
+          description: 'Standard native article placement',
+          requirements: {
+            requiredAssets: [
+              {
+                type: 'image',
+                specs: {
+                  dimensions: '1200x628',
+                  maxSize: '1MB',
+                  formats: ['jpg', 'png']
+                }
+              },
+              {
+                type: 'text',
+                specs: {}
+              }
+            ],
+            assemblyCapable: true,
+            acceptsThirdPartyTags: false
+          }
+        }
+      ],
+      publisher_formats: [
+        {
+          type: 'publisher',
+          formatId: 'amazon_dsp_ctv_video',
+          name: 'Amazon DSP CTV Video',
+          description: 'Amazon DSP specific Connected TV video format',
+          requirements: {
+            requiredAssets: [
+              {
+                type: 'video',
+                specs: {
+                  dimensions: '1920x1080',
+                  maxSize: '200MB',
+                  formats: ['mp4']
+                }
+              },
+              {
+                type: 'logo',
+                specs: {
+                  dimensions: '400x400',
+                  maxSize: '1MB',
+                  formats: ['png']
+                }
+              }
+            ],
+            assemblyCapable: true,
+            acceptsThirdPartyTags: false
+          }
+        },
+        {
+          type: 'publisher',
+          formatId: 'google_dv360_responsive_display',
+          name: 'Google DV360 Responsive Display',
+          description: 'Google Display & Video 360 responsive display creative',
+          requirements: {
+            requiredAssets: [
+              {
+                type: 'image',
+                specs: {
+                  dimensions: 'responsive',
+                  maxSize: '5MB',
+                  formats: ['jpg', 'png']
+                }
+              },
+              {
+                type: 'text',
+                specs: {}
+              },
+              {
+                type: 'logo',
+                specs: {
+                  dimensions: '128x128',
+                  maxSize: '100KB',
+                  formats: ['png']
+                }
+              }
+            ],
+            assemblyCapable: true,
+            acceptsThirdPartyTags: true
+          }
+        }
+      ],
+      creative_agent_formats: [
+        {
+          type: 'creative_agent',
+          formatId: 'ai_dynamic_product',
+          name: 'AI Dynamic Product Creative',
+          description: 'AI-generated creative from product catalog data',
+          requirements: {
+            requiredAssets: [],
+            assemblyCapable: true,
+            acceptsThirdPartyTags: false
+          }
+        },
+        {
+          type: 'creative_agent',
+          formatId: 'ai_brand_template',
+          name: 'AI Brand Template Generator',
+          description: 'AI-generated creative from brand guidelines and assets',
+          requirements: {
+            requiredAssets: [
+              {
+                type: 'logo',
+                specs: {
+                  dimensions: 'any',
+                  maxSize: '10MB',
+                  formats: ['png', 'svg']
+                }
+              }
+            ],
+            assemblyCapable: true,
+            acceptsThirdPartyTags: false
+          }
+        }
+      ],
+    };
   }
 
   /**
@@ -1669,14 +1887,10 @@ export class Scope3ApiClient {
     // Would validate that both creative and campaign belong to the same buyer agent
     
     return {
+      creativeId,
+      campaignId,
       success: true,
       message: `[STUB] Creative ${creativeId} assigned to campaign ${campaignId}`,
-      assignment: {
-        campaignId,
-        campaignName: 'Mock Campaign',
-        assignedDate: new Date().toISOString(),
-        isActive: true,
-      }
     };
   }
 
@@ -1692,84 +1906,158 @@ export class Scope3ApiClient {
     console.log('Unassignment:', { creativeId, campaignId });
     
     return {
+      creativeId,
+      campaignId,
       success: true,
       message: `[STUB] Creative ${creativeId} unassigned from campaign ${campaignId}`,
     };
   }
 
   /**
-   * Get all creatives assigned to a specific campaign
+   * Get all creatives assigned to a specific campaign with performance data
    */
   async getCampaignCreatives(
     apiKey: string,
     campaignId: string,
+    includePerformance?: boolean,
   ): Promise<Creative[]> {
     console.log('[STUB] getCampaignCreatives - will query campaign assignments');
-    console.log('Query:', { campaignId });
+    console.log('Query:', { campaignId, includePerformance });
     
     return [];
   }
 
   /**
-   * Parse creative prompt to detect required assets and types
-   * Uses AI to understand natural language creative descriptions
+   * Get a specific creative with full details including approval status
    */
-  async parseCreativePrompt(
+  async getCreative(
     apiKey: string,
-    prompt: string,
-  ): Promise<{
-    suggestedName: string;
-    suggestedAssets: CreateAssetInput[];
-    advertiserDomains?: string[];
-    contentCategories?: string[];
-  }> {
-    console.log('[STUB] parseCreativePrompt - will use AI to parse prompt');
-    console.log('Prompt:', prompt);
+    creativeId: string,
+  ): Promise<Creative | null> {
+    console.log('[STUB] getCreative - fetching creative with approval status');
+    console.log('Creative ID:', creativeId);
     
-    // Would use AI to parse the natural language prompt
-    // and suggest creative structure
-    
+    // Mock response with approval details
     return {
-      suggestedName: 'AI-Generated Creative Name',
-      suggestedAssets: [
+      creativeId,
+      creativeName: 'Summer Sale Banner',
+      version: '1.0',
+      buyerAgentId: 'ba_123',
+      customerId: 1,
+      format: {
+        type: 'adcp',
+        formatId: 'display_banner_728x90',
+      },
+      assemblyMethod: 'pre_assembled',
+      content: {
+        htmlSnippet: '<div>Ad content</div>',
+      },
+      assetIds: ['asset_123', 'asset_456'],
+      status: 'active',
+      
+      // Asset validation status
+      assetValidation: {
+        allAssetsValid: true,
+        validatedAt: new Date().toISOString(),
+      },
+      
+      // Publisher approvals
+      publisherApprovals: [
         {
-          assetName: 'Generated from prompt',
-          assetType: 'image',
-          fileUrl: 'https://placeholder.com/generated',
-        }
+          publisherId: 'pub_google',
+          publisherName: 'Google Ads',
+          approvalStatus: 'approved',
+          syncedAt: new Date(Date.now() - 86400000).toISOString(),
+          reviewedAt: new Date().toISOString(),
+          autoApprovalPolicy: true,
+        },
+        {
+          publisherId: 'pub_amazon',
+          publisherName: 'Amazon DSP',
+          approvalStatus: 'pending',
+          syncedAt: new Date().toISOString(),
+          autoApprovalPolicy: false,
+        },
       ],
+      
+      createdDate: new Date(Date.now() - 172800000).toISOString(),
+      lastModifiedDate: new Date().toISOString(),
+      createdBy: 'user@example.com',
+      lastModifiedBy: 'user@example.com',
     };
   }
 
   /**
-   * Detect file format from URL or filename
-   * Helper method for asset management
+   * Sync creative to publishers for approval
    */
-  private detectFileFormat(url: string): string {
-    if (!url) return 'unknown';
+  async syncCreativeToPublishers(
+    apiKey: string,
+    params: {
+      creativeId: string;
+      publisherIds: string[];
+      campaignId?: string;
+      preApproval?: boolean;
+    },
+  ): Promise<PublisherSyncResult[]> {
+    console.log('[STUB] syncCreativeToPublishers - syncing for approval');
+    console.log('Params:', params);
     
-    const extension = url.split('.').pop()?.toLowerCase();
-    switch (extension) {
-      case 'jpg':
-      case 'jpeg':
-        return 'jpeg';
-      case 'png':
-        return 'png';
-      case 'gif':
-        return 'gif';
-      case 'mp4':
-        return 'mp4';
-      case 'webm':
-        return 'webm';
-      case 'mp3':
-        return 'mp3';
-      case 'aac':
-        return 'aac';
-      case 'html':
-      case 'htm':
-        return 'html';
-      default:
-        return extension || 'unknown';
-    }
+    // Mock sync results
+    return params.publisherIds.map(publisherId => {
+      // Simulate different scenarios
+      const isStandardFormat = Math.random() > 0.3;
+      const syncSuccess = Math.random() > 0.1;
+      
+      return {
+        creativeId: params.creativeId,
+        publisherId,
+        publisherName: `Publisher ${publisherId}`,
+        syncStatus: syncSuccess ? 'success' : 'failed',
+        syncedAt: new Date().toISOString(),
+        error: syncSuccess ? undefined : 'Publisher API temporarily unavailable',
+        approvalStatus: syncSuccess && isStandardFormat ? 'auto_approved' : 'pending',
+        estimatedReviewTime: isStandardFormat ? 'Instant' : '24 hours',
+      };
+    });
   }
+
+  /**
+   * Revise a creative based on publisher feedback
+   */
+  async reviseCreative(
+    apiKey: string,
+    params: CreativeRevisionInput,
+  ): Promise<Creative> {
+    console.log('[STUB] reviseCreative - applying revisions');
+    console.log('Revision params:', params);
+    
+    // Mock revision result
+    return {
+      creativeId: params.creativeId,
+      creativeName: 'Summer Sale Banner (Revised)',
+      version: '1.1',
+      buyerAgentId: 'ba_123',
+      customerId: 1,
+      format: {
+        type: 'adcp',
+        formatId: 'display_banner_728x90',
+      },
+      assemblyMethod: 'pre_assembled',
+      content: {
+        ...params.revisions.content,
+      },
+      assetIds: params.revisions.assetIds || [],
+      contentCategories: params.revisions.contentCategories,
+      targetAudience: params.revisions.targetAudience,
+      status: 'pending_review',
+      
+      createdDate: new Date(Date.now() - 172800000).toISOString(),
+      lastModifiedDate: new Date().toISOString(),
+      createdBy: 'user@example.com',
+      lastModifiedBy: 'user@example.com',
+    };
+  }
+
+  // Removed parseCreativePrompt - AI generation handled by creative agents
+  // Removed detectFileFormat - handled by REST upload layer
 }

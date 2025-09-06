@@ -56,6 +56,7 @@ export interface CreateBrandAgentCreativeParams {
 export interface CreateBrandAgentParams {
   description?: string;
   name: string;
+  advertiserDomains: string[];
 }
 
 // Tool parameter interfaces
@@ -183,6 +184,7 @@ export interface UpdateBrandAgentParams {
   brandAgentId: string;
   description?: string;
   name?: string;
+  advertiserDomains?: string[];
 }
 
 export interface UpdateCampaignParams {

@@ -7,7 +7,7 @@ This is an MCP (Model Context Protocol) server that provides comprehensive tools
 **Scope3 Campaign API** is built on **three interdependent pillars** that form the foundation of enterprise advertising automation. **You cannot build successful campaigns without all three working together.**
 
 <Warning>
-**Critical Developer Notice**: Creative Management is not optional - it's a core platform requirement. **47% of campaign performance comes from creative quality.** Without proper creative integration, your campaigns will underperform by 25-50%.
+**Developer Notice**: Creatives are an important part of the platform. **Creative quality is the largest factor in campaign performance.** Without proper creative integration, your campaigns will significantly underperform.
 </Warning>
 
 ### 🏢 **Pillar 1: Brand Agent Management** - The Foundation
@@ -16,12 +16,12 @@ This is an MCP (Model Context Protocol) server that provides comprehensive tools
 - **Setup Priority**: #1 - Create brand agents first
 - **Integration Complexity**: ⭐⭐ (2/5) - Straightforward CRUD operations
 
-### 🎨 **Pillar 2: Creative Management** - The Performance Engine ⚠️ REQUIRED
+### 🎨 **Pillar 2: Creatives** - The Performance Engine
 - **Purpose**: Complete creative asset lifecycle and optimization system
-- **Developer Impact**: **MANDATORY for campaign success** - campaigns without proper creative management fail
-- **Setup Priority**: #2 - Must be configured before launching campaigns
-- **Integration Complexity**: ⭐⭐⭐⭐ (4/5) - Complex but essential
-- **Business ROI**: 60-80% cost reduction + 25-40% performance improvement
+- **Developer Impact**: Important for campaign success - campaigns benefit from proper creative setup
+- **Setup Priority**: #2 - Recommended before launching campaigns
+- **Integration Complexity**: ⭐⭐⭐⭐ (4/5) - Advanced features available
+- **Business ROI**: Significant cost reduction and performance improvement
 - **Technical Architecture**: AdCP pass-through with AI-powered optimization
 
 ### 🎯 **Pillar 3: Campaign Optimization** - The Execution Layer
@@ -32,19 +32,19 @@ This is an MCP (Model Context Protocol) server that provides comprehensive tools
 
 ---
 
-## 🎨 Creative Management - Mission-Critical Module
+## 🎨 Creatives - Core Module
 
 <Tip>
-**For Developers**: Creative Management is the **#1 most important integration** after brand agent setup. This module is **non-negotiable** for campaign success and must be implemented before launching any campaigns.
+**For Developers**: Creatives are an important integration after brand agent setup. This module provides powerful features for campaign management workflows.
 </Tip>
 
-### 🚨 Why This Module is Mission-Critical for Your Integration
+### 📋 Why This Module Matters for Your Integration
 
 **📈 Developer Business Case**
-- **Campaign Failure Prevention**: Without creative management, campaigns fail 60-70% more often
-- **Performance Guarantee**: Proper creative integration guarantees 25-40% better campaign performance
-- **Cost Savings**: Reduces ongoing creative production costs by 60-80%
-- **Development Efficiency**: Reusable assets and AI generation reduce implementation time by 75%
+- **Campaign Performance**: Without proper creatives, campaigns perform significantly worse
+- **Performance Guarantee**: Proper creative integration substantially improves campaign performance
+- **Cost Savings**: Dramatically reduces ongoing creative production costs
+- **Development Efficiency**: Reusable assets and AI generation substantially reduce implementation time
 - **Future-Proof**: AdCP alignment ensures long-term compatibility
 
 **🏗️ Technical Architecture Benefits**
@@ -55,9 +55,9 @@ This is an MCP (Model Context Protocol) server that provides comprehensive tools
 - **Performance Monitoring**: Built-in analytics and A/B testing automation
 
 <Warning>
-**Integration Warning**: Attempting to run campaigns without proper creative management integration will result in:
-- 47% lower campaign performance
-- 3x higher creative production costs  
+**Integration Warning**: Attempting to run campaigns without proper creative integration will result in:
+- Significantly lower campaign performance
+- Much higher creative production costs  
 - Manual asset management overhead
 - Brand inconsistency issues
 - Failed campaign optimization
@@ -67,7 +67,7 @@ This is an MCP (Model Context Protocol) server that provides comprehensive tools
 
 <CardGroup cols={2}>
 <Card title="🚀 REQUIRED: Integration Guide" icon="rocket" href="mintlify/creative/overview">
-**Complete developer walkthrough** - Everything you need to integrate creative management into your brand agent setup
+**Complete developer walkthrough** - Everything you need to integrate creatives into your brand agent setup
 </Card>
 
 <Card title="⚡ Quick Start (5 mins)" icon="bolt" href="mintlify/creative/quickstart">
@@ -79,20 +79,20 @@ This is an MCP (Model Context Protocol) server that provides comprehensive tools
 </Card>
 
 <Card title="📋 Enterprise Patterns" icon="building" href="mintlify/creative/best-practices">
-**Production deployment** - Scale creative management across multiple brands and campaigns
+**Production deployment** - Scale creatives across multiple brands and campaigns
 </Card>
 </CardGroup>
 
-### Creative Management at a Glance
+### Creatives at a Glance
 
 ```
-📦 Creative Management Module
+📦 Creatives Module
   ├── 🎨 7 Creative Tools (AdCP-aligned)
   │   ├── creative/create - Build creatives with multiple assets
   │   ├── creative/list - Manage creative libraries
   │   ├── creative/upload_asset - Reusable asset management  
   │   ├── creative/assign - Campaign assignments
-  │   └── campaign/* - Campaign-centric creative management
+  │   └── campaign/* - Campaign-centric creative workflows
   ├── 🤖 AI Integration (Creative Agents)
   │   ├── Manifest Mode - Static asset generation
   │   └── Code Mode - Dynamic creative personalization
@@ -109,7 +109,7 @@ The API uses a hierarchical **Brand Agent** model that mirrors traditional ad te
 ```
 BrandAgent (Advertiser/Account)
   ├── Campaigns (multiple, owned by brand agent)
-  ├── Creative Library (AdCP-aligned creative management)
+  ├── Creative Library (AdCP-aligned creative workflows)
   │   ├── Creatives (contain multiple assets)
   │   └── Assets (images, videos, text, audio, etc.)
   ├── Standards (brand safety configuration)
@@ -121,12 +121,50 @@ BrandAgent (Advertiser/Account)
 
 - **Advertiser-Centric**: Brand agents act as advertiser accounts that own all resources
 - **Resource Sharing**: Creatives and audiences can be reused across campaigns within the same brand agent
-- **AdCP Pass-Through**: Creative operations delegate to appropriate AdCP publishers based on asset type
+- **MCP + REST Architecture**: MCP handles orchestration, REST handles file uploads and bulk data
+- **Format-Driven**: Creative formats from AdCP, publishers, and creative agents determine assembly methods
+- **Content Source Flexibility**: Supports ad server tags, asset references, product URLs, and creative agents
 - **Human-Readable APIs**: All field names are verbose and descriptive for optimal LLM usage
-- **Creative/Asset Hierarchy**: Following AdCP structure where creatives contain multiple assets
-- **Creative Agents Ready**: Designed for integration with AdCP creative agents (PR #23) for AI-powered creative generation
-- **Stub Architecture**: Advanced features (standards, audiences, measurement) implemented as extensible stubs  
+- **Real-World Workflows**: Third-party ad tags, trafficking sheets, asset libraries, creative agents
+- **Enterprise Scale**: Reference-based asset management for millions of assets
 - **Natural Language**: All tools work conversationally with Claude
+
+## 🏗️ MCP Orchestration + REST Upload Architecture
+
+**For Developers**: This platform uses a **two-layer architecture** that separates concerns for optimal performance and developer experience:
+
+### **MCP Layer (Orchestration & Control)**
+- **Purpose**: Workflow orchestration via natural language tool calls
+- **Handles**: Creative format specification, content references, campaign assignments
+- **Examples**: `creative/create`, `assets/add`, `list_creative_formats`
+- **Data Types**: Metadata, references, configuration, orchestration commands
+- **Performance**: Optimized for fast API calls and natural language processing
+
+### **REST Layer (Data & File Operations)**
+- **Purpose**: File uploads, bulk operations, and data storage
+- **Handles**: Actual file uploads, presigned URLs, bulk asset imports
+- **Examples**: `POST /api/assets/upload`, `GET /api/assets/upload-url`
+- **Data Types**: Binary files, large datasets, bulk operations
+- **Performance**: Optimized for file transfer and data processing
+
+### **Why This Separation Matters**
+
+```typescript
+// ❌ Wrong: Uploading files via MCP
+"Upload this 50MB video file via creative/upload_asset"
+// Problems: Timeouts, base64 bloat, poor performance
+
+// ✅ Right: MCP orchestration + REST uploads
+1. REST: POST /api/assets/upload → returns uploadId
+2. MCP: "Add asset with uploadId upload_789"
+3. MCP: "Create creative using asset asset_123"
+```
+
+**Benefits:**
+- ⚡ **Performance**: No file transfer bottlenecks in MCP layer
+- 🎯 **Separation**: MCP focuses on orchestration, REST on data
+- 🏗️ **Scalability**: Handle enterprise file volumes efficiently
+- 🔧 **Flexibility**: Support presigned URLs, CDN integration, bulk operations
 
 ## Available Tools
 
@@ -136,32 +174,34 @@ BrandAgent (Advertiser/Account)
 - Create advertiser accounts and organizational structure
 - **Complexity**: ⭐⭐ Simple | **Priority**: Required first
 
-**2. 🎨 Creative Management Engine** ⚠️ **CRITICAL MODULE** (7 tools)
-- **MANDATORY integration** for campaign success
-- **Complexity**: ⭐⭐⭐⭐ Advanced | **Priority**: Required before campaigns
-- **Impact**: 47% of campaign performance depends on this module
+**2. 🎨 Creative Engine** (6 tools)
+- **Important integration** for campaign success  
+- **Architecture**: MCP orchestration + REST uploads (proper separation)
+- **Complexity**: ⭐⭐⭐⭐ Advanced | **Priority**: Recommended before campaigns
+- **Impact**: Campaign performance heavily depends on this module
+- **Real Workflows**: Third-party ad tags, asset references, format specifications
 
 **3. 🎯 Campaign Execution** (3 tools) - *Deploy last*
 - Launch campaigns with INTELLIGENT_PMPS optimization
 - **Complexity**: ⭐⭐⭐ Standard | **Priority**: Final integration step
-- **Dependencies**: Requires both brand agents AND creative management
+- **Dependencies**: Requires both brand agents AND creatives
 
 **4. 🔧 Advanced Features** (6 tools) - *Optional extensions*
 - Brand safety, audiences, measurement (extensible stubs)
 
-### 🎨 Creative Management - The Performance Engine ⚠️
+### 🎨 Creatives - The Performance Engine
 
-<Warning>
-**DEVELOPER ALERT**: This is the **most critical integration** in the entire platform. **DO NOT** skip or postpone creative management implementation. Campaigns without proper creative management fail 60-70% more often.
-</Warning>
+<Info>
+**Developer Note**: This is an important integration in the platform. Proper creative setup improves campaign outcomes.
+</Info>
 
-**Why This Module is Non-Negotiable:**
-- 📉 **Campaign Performance**: 47% of success depends on creative quality
-- 💰 **Business Impact**: $100K campaign → $147K performance with proper creative management  
-- 🚀 **Developer Productivity**: AI-powered tools reduce creative work by 90%
+**Why This Module Matters:**
+- 📉 **Campaign Performance**: Success heavily depends on creative quality
+- 💰 **Business Impact**: Proper creatives deliver substantial ROI improvements  
+- 🚀 **Developer Productivity**: AI-powered tools dramatically reduce creative work
 - 🏢 **Enterprise Scale**: One creative library serves thousands of campaigns
 
-#### 📦 **Core Creative Tools** (Required Integration)
+#### 📦 **Core Creative Tools**
 
 **Asset Management Foundation:**
 - `creative/create` - **PRIMARY TOOL** - Create multi-asset creatives (images, video, text, audio)
@@ -175,10 +215,10 @@ BrandAgent (Advertiser/Account)
 
 #### 📈 **Integration ROI Guarantee**
 
-Proper creative management integration **guarantees**:
-- ✅ **60-80% reduction** in creative production costs
-- ✅ **25-40% improvement** in campaign performance
-- ✅ **90% reduction** in manual creative management time  
+Proper creative integration **provides**:
+- ✅ **Dramatic reduction** in creative production costs
+- ✅ **Substantial improvement** in campaign performance
+- ✅ **Major reduction** in manual creative workflow time  
 - ✅ **Zero creative bottlenecks** in campaign launches
 - ✅ **Automatic brand compliance** across all creative assets
 
@@ -276,13 +316,13 @@ Lists all campaigns for a specific brand agent.
 - `brandAgentId` (string, required): Brand agent ID
 - `status` (string, optional): Filter by campaign status
 
-### Creative Management (7 tools) - AdCP-Aligned ⭐
+### Creatives (10 tools) - AdCP-Aligned with Publisher Approval ⭐
 
-**🎨 NEW: Comprehensive creative management with AI-powered creative agents!**
+**🎨 Comprehensive creatives with publisher approval workflow!**
 
-Following AdCP Creative/Asset hierarchy with human-readable field names. All operations pass through to AdCP publishers for seamless creative workflow integration.
+Following AdCP Creative/Asset hierarchy with full publisher approval lifecycle. Handles asset validation, publisher sync, approval tracking, and revision management.
 
-**📖 [Complete Creative Management Guide →](docs/creative-management-guide.md)**
+**📖 [Complete Creative Guide →](docs/creative-management-guide.md)**
 
 **Quick Start**: 
 ```
@@ -387,7 +427,54 @@ Removes a creative assignment from a campaign.
 
 - User: "Remove creative cr_456 from campaign camp_789"
 
-#### 14. campaign/attach_creative
+#### 14. creative/sync_publishers
+
+Syncs a creative to one or more publishers for approval. Can be used for pre-approval before campaigns or when inventory is selected.
+
+**Parameters:**
+
+- `creativeId` (string, required): Creative to sync
+- `publisherIds` (array, required): Publishers to sync to  
+- `campaignId` (string, optional): Campaign context if syncing for specific campaign
+- `preApproval` (boolean, optional): Request pre-approval before campaign launch
+
+**Usage Examples:**
+
+- User: "Get my banner creative pre-approved by Google and Amazon"
+- User: "Sync creative cr_456 to all publishers for campaign camp_789"
+
+#### 15. creative/approval_status
+
+Check the approval status of a creative across all publishers or a specific publisher. Shows asset validation errors and publisher feedback.
+
+**Parameters:**
+
+- `creativeId` (string, required): Creative to check
+- `publisherId` (string, optional): Filter to specific publisher
+
+**Usage Examples:**
+
+- User: "Check approval status for creative cr_456"
+- User: "Has Amazon approved my creative?"
+
+#### 16. creative/revise
+
+Revise a creative that was rejected or had changes requested by a publisher. Automatically re-syncs for approval after revision.
+
+**Parameters:**
+
+- `creativeId` (string, required): Creative to revise
+- `publisherId` (string, required): Publisher that requested changes
+- `revisions` (object, required): Specific changes to make
+- `revisionNotes` (string, optional): Explanation of changes
+- `autoResync` (boolean, optional): Auto re-sync after revision (default: true)
+
+**Usage Examples:**
+
+- User: "Update creative cr_456 to address Google's feedback about content categories"
+- User: "Fix the rejected creative for Amazon by updating the asset"
+
+#### 17. campaign/attach_creative
 
 Campaign-centric approach to attach creatives with option to create new ones inline.
 
@@ -404,7 +491,7 @@ Campaign-centric approach to attach creatives with option to create new ones inl
 - User: "Attach creatives cr_123 and cr_456 to campaign camp_789"
 - User: "Create a new banner creative and attach it to my summer campaign"
 
-#### 15. campaign/list_creatives
+#### 18. campaign/list_creatives
 
 Lists all creatives assigned to a specific campaign with performance data.
 
@@ -419,17 +506,33 @@ Lists all creatives assigned to a specific campaign with performance data.
 - User: "Show me all creatives for campaign camp_789"
 - User: "What creatives are running in my summer sale campaign?"
 
-## 🎨 Creative Management - Core Workflows
+## 🎨 Creatives - Core Workflows
 
-**Creative Management is the engine that powers high-performing campaigns.** This module handles the complete creative lifecycle from asset creation to performance optimization.
+**Creatives are the engine that powers high-performing campaigns.** This module handles the complete creative lifecycle from asset creation to performance optimization.
 
-### Why Start with Creative Management?
+### Creative Lifecycle & Publisher Approval
 
-**Creative quality drives 47% of campaign performance.** Before launching campaigns, you need:
+**The Creative Journey from Creation to Campaign:**
+
+```
+1. Create on Scope3 → 2. Validate Assets → 3. Sync to Publishers → 4. Get Approval → 5. Deploy to Campaigns
+```
+
+**Key Workflow Points:**
+- **Creation**: Creatives are created on Scope3 but NOT automatically synced to publishers
+- **Asset Validation**: System validates all assets can be downloaded and match requirements
+- **Publisher Sync**: When campaign selects inventory OR via pre-approval request
+- **Approval Process**: Publishers may auto-approve standard formats or require manual review
+- **Rejection Handling**: Revise and re-sync based on publisher feedback
+- **Campaign Deployment**: Only approved creatives can run on publisher inventory
+
+### Why Start with Creatives?
+
+**Creative quality is the primary driver of campaign performance.** Before launching campaigns, you need:
 - ✅ **Reusable Asset Library**: Upload logos, fonts, brand guidelines once, use everywhere
 - ✅ **Multi-Format Creatives**: Generate display, video, native, and audio creatives from the same assets  
-- ✅ **Performance Tracking**: Monitor creative performance across campaigns for optimization
-- ✅ **Brand Compliance**: Ensure all creatives follow brand guidelines automatically
+- ✅ **Publisher Pre-Approval**: Get creatives approved before campaign launch
+- ✅ **Error Recovery**: Handle asset failures and publisher rejections gracefully
 
 ### 🛠️ **Developer Implementation Workflows**
 
@@ -448,9 +551,9 @@ This is the **REQUIRED** implementation order for successful campaign deployment
 → create_brand_agent → returns ba_123
 ```
 
-**Step 2: Creative Management Integration** ⚠️ **CRITICAL**
+**Step 2: Creative Integration**
 ```typescript
-// 2. Build creative library (REQUIRED for campaign success)
+// 2. Build creative library (important for campaign success)
 "Create a creative called 'Summer Sale' for buyer agent ba_123 with banner and headline"
 → creative/create → Creates creative cr_456 with multiple assets
 
@@ -470,9 +573,9 @@ This is the **REQUIRED** implementation order for successful campaign deployment
 → campaign/list_creatives → ROI optimization insights
 ```
 
-<Warning>
-**NEVER skip Step 2**: Attempting to create campaigns without proper creative management will result in poor performance and manual asset management overhead.
-</Warning>
+<Tip>
+**Recommendation**: Setting up creatives before campaigns provides better workflow organization and reduces manual asset management overhead.
+</Tip>
 
 #### **Production-Ready Natural Language Examples**
 
@@ -513,7 +616,7 @@ This is the **REQUIRED** implementation order for successful campaign deployment
 5. Performance Optimization → campaign/list_creatives() (data-driven decisions)
 ```
 - ✅ **Technical Benefits**: Centralized asset management, API call optimization
-- ✅ **Business ROI**: 60-80% reduction in creative production costs
+- ✅ **Business ROI**: Dramatic reduction in creative production costs
 - ✅ **Developer Impact**: Single creative library serves unlimited campaigns
 
 **🚀 Campaign-First Integration** (Recommended for Agile Teams)
@@ -526,7 +629,7 @@ This is the **REQUIRED** implementation order for successful campaign deployment
 5. Cross-Campaign Reuse → creative/list() (identify top performers)
 ```
 - ✅ **Technical Benefits**: Faster time-to-market, campaign-specific optimization
-- ✅ **Business ROI**: 25-40% improvement in campaign performance
+- ✅ **Business ROI**: Substantial improvement in campaign performance
 - ✅ **Developer Impact**: Streamlined workflow for rapid iteration
 
 **🤖 AI-First Integration** (Next-Generation Implementation)
@@ -539,20 +642,20 @@ This is the **REQUIRED** implementation order for successful campaign deployment
 5. Performance AI → Predictive creative optimization
 ```
 - ✅ **Technical Benefits**: Zero manual creative work, predictive optimization
-- ✅ **Business ROI**: 90%+ reduction in creative management overhead  
+- ✅ **Business ROI**: Major reduction in creative workflow overhead  
 - ✅ **Developer Impact**: Natural language API, automated creative workflows
 
-### 📖 Complete Creative Management Documentation
+### 📖 Complete Creative Documentation
 
-**Master creative management with our comprehensive guides:**
+**Master creatives with our comprehensive guides:**
 
-**🚀 [Creative Management Overview](mintlify/creative/overview)** - Complete module guide  
+**🚀 [Creative Overview](mintlify/creative/overview)** - Complete module guide  
 **⚡ [5-Minute Quick Start](mintlify/creative/quickstart)** - Create your first creative now  
 **🤖 [Creative Agents Integration](mintlify/creative/agents)** - AI-powered creative generation  
 **📋 [Enterprise Best Practices](mintlify/creative/best-practices)** - Scale creative operations  
 **🔄 [Platform Migration](mintlify/migration/creative-management)** - Migrate from other platforms
 
-**💡 Pro Tip**: Start with the Quick Start guide to create your first creative in 5 minutes, then explore the Overview for comprehensive creative management strategies.
+**💡 Pro Tip**: Start with the Quick Start guide to create your first creative in 5 minutes, then explore the Overview for comprehensive creative strategies.
 
 ### Brand Standards (2 tools) - Brand Safety
 
@@ -665,7 +768,7 @@ Retrieves available AMP agents and their models from Scope3.
 
 ## Workflow Examples
 
-### Setting up a Brand Agent with Creative Management
+### Setting up a Brand Agent with Creatives
 
 ```
 1. User: "Create a brand agent called Nike"
@@ -687,7 +790,7 @@ Retrieves available AMP agents and their models from Scope3.
    → creative/assign links cr_456 to camp_123
 ```
 
-### AdCP-Aligned Creative Management
+### AdCP-Aligned Creative Workflows
 
 ```
 1. User: "List all creatives for Nike brand agent"
@@ -770,14 +873,14 @@ PORT=8080 npm start
 
 - **Encapsulated Workflows**: Single tool calls handle complex multi-step processes
 - **Natural Language Processing**: Convert campaign descriptions into technical targeting profiles
-- **AdCP Creative Management**: Full Creative/Asset hierarchy with pass-through to AdCP publishers
+- **AdCP Creative Workflows**: Full Creative/Asset hierarchy with pass-through to AdCP publishers
 - **Creative Agents Integration**: Ready for AI-powered creative generation via AdCP creative agents (manifest + code modes)
 - **Human-Readable APIs**: Verbose field names optimized for LLM comprehension
 - **Optimized Response Design**: Creative lists include campaign assignments to reduce API calls
 - **INTELLIGENT_PMPS Strategy**: Uses Scope3's intelligent programmatic private marketplace strategy
 - **Human-Readable Responses**: Returns text summaries instead of raw technical data
 - **Error Handling**: Provides clear error messages for authentication and API issues
-- **Dual Creative APIs**: Both creative-centric and campaign-centric creative management
+- **Dual Creative APIs**: Both creative-centric and campaign-centric creative workflows
 
 ## Development
 
@@ -905,7 +1008,7 @@ The stub implementations provide clear extension points for:
 - **Advanced Brand Standards**: Real-time brand safety monitoring, custom rule engines
 - **Smart Synthetic Audiences**: AI-powered audience creation, behavioral targeting, lookalike modeling
 - **Comprehensive Measurement**: Real-time attribution, cross-channel analytics, MMM integration
-- **Enhanced Creative Management**: A/B testing, performance optimization, format variants
+- **Enhanced Creative Workflows**: A/B testing, performance optimization, format variants
 
 This implementation successfully transforms the Scope3 API from a campaign-focused tool into a **complete advertiser platform** that can scale to support enterprise-level advertising operations while maintaining the simplicity of natural language interactions.
 

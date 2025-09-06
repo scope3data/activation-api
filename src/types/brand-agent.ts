@@ -9,6 +9,9 @@ export interface BrandAgent {
   id: string;
   name: string;
   updatedAt: Date;
+  
+  // Shared marketing configuration
+  advertiserDomains: string[];  // Domains where users will be sent from all campaigns/creatives
 }
 
 // Campaign types (owned by brand agent)
@@ -114,6 +117,7 @@ export interface BrandAgentCreativeUpdateInput {
 export interface BrandAgentInput {
   description?: string;
   name: string;
+  advertiserDomains: string[];  // Required on creation
 }
 
 // API Response types
@@ -124,6 +128,7 @@ export interface BrandAgentsData {
 export interface BrandAgentUpdateInput {
   description?: string;
   name?: string;
+  advertiserDomains?: string[];
 }
 
 export interface BrandAgentWhereInput {

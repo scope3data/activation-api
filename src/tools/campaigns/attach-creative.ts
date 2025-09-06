@@ -42,7 +42,6 @@ export const campaignAttachCreativeTool = (client: Scope3ApiClient) => ({
             callToAction?: string;
           };
         }>;
-        advertiserDomains: string[];
       }>;
       prompt?: string;
     },
@@ -92,10 +91,11 @@ export const campaignAttachCreativeTool = (client: Scope3ApiClient) => ({
       if (args.newCreatives?.length) {
         for (const newCreative of args.newCreatives) {
           try {
-            const creative = await client.createCreative(apiKey, args.buyerAgentId, {
+            const creative = await client.createCreative(apiKey, {
+              buyerAgentId: args.buyerAgentId,
               creativeName: newCreative.creativeName,
-              assets: newCreative.assets,
-              advertiserDomains: newCreative.advertiserDomains,
+              format: { type: 'publisher', formatId: 'display_banner' },
+              content: { htmlSnippet: '<div>New creative content</div>' },
             });
 
             const assignResult = await client.assignCreativeToCampaign(
@@ -117,16 +117,14 @@ export const campaignAttachCreativeTool = (client: Scope3ApiClient) => ({
         }
       }
 
-      // Process prompt for creative requirements
+      // Process prompt for creative requirements (simplified)
       if (args.prompt) {
         try {
-          const parsed = await client.parseCreativePrompt(apiKey, args.prompt);
-          
-          const creative = await client.createCreative(apiKey, args.buyerAgentId, {
-            creativeName: parsed.suggestedName,
-            assets: parsed.suggestedAssets,
-            advertiserDomains: parsed.advertiserDomains || ['example.com'],
-            contentCategories: parsed.contentCategories,
+          const creative = await client.createCreative(apiKey, {
+            buyerAgentId: args.buyerAgentId,
+            creativeName: `Creative from prompt: ${args.prompt}`,
+            format: { type: 'publisher', formatId: 'display_banner' },
+            content: { htmlSnippet: '<div>Generated from prompt</div>' },
           });
 
           const assignResult = await client.assignCreativeToCampaign(
@@ -137,7 +135,7 @@ export const campaignAttachCreativeTool = (client: Scope3ApiClient) => ({
           );
 
           if (assignResult.success) {
-            results.push(`✅ Created and attached creative from prompt: "${parsed.suggestedName}" (${creative.creativeId})`);
+            results.push(`✅ Created and attached creative from prompt: "${creative.creativeName}" (${creative.creativeId})`);
             attachedCreativeIds.push(creative.creativeId);
           } else {
             results.push(`⚠️ Created creative from prompt but failed to attach: ${assignResult.message}`);
@@ -197,7 +195,6 @@ ${attachedCreativeIds.map(id => `• ${id}`).join('\n')}` : ''}
           callToAction: z.string().optional(),
         }).optional(),
       })),
-      advertiserDomains: z.array(z.string()).describe("Domains for click-through"),
     })).optional().describe("New creatives to create and attach"),
     
     // Option 3: Natural language prompt
