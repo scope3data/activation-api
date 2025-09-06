@@ -1,0 +1,464 @@
+---
+title: 'Authentication'
+description: 'Get your API key and start making authenticated requests'
+icon: 'key'
+---
+
+# API Authentication
+
+The Scope3 Agentic Campaign API uses API key authentication for secure access to your brand agents, campaigns, and creative assets.
+
+## Getting Your API Key
+
+<Steps>
+  <Step title="Request Access">
+    [Contact our team](mailto:api@scope3.com) to request API access for the Scope3 Agentic Campaign API. Include:
+    - Your company name and website
+    - Expected usage volume
+    - Integration timeline
+    - Brief description of your use case
+  </Step>
+  
+  <Step title="Receive Your Key">
+    You'll receive your API key via secure email within 24-48 hours. The key format is:
+    ```
+    scope3_live_1234567890abcdef...
+    ```
+  </Step>
+  
+  <Step title="Test Your Key">
+    Verify your key works with a simple authentication test:
+    
+    <CodeGroup>
+    ```bash cURL
+    curl -X GET https://api.agentic.scope3.com/auth/check \
+      -H "x-scope3-api-key: your_api_key_here"
+    ```
+    
+    ```python Python
+    import requests
+    
+    response = requests.get(
+        "https://api.agentic.scope3.com/auth/check",
+        headers={"x-scope3-api-key": "your_api_key_here"}
+    )
+    
+    print(response.json())  # Should show your account info
+    ```
+    
+    ```javascript JavaScript
+    const response = await fetch("https://api.agentic.scope3.com/auth/check", {
+        headers: {
+            "x-scope3-api-key": "your_api_key_here"
+        }
+    });
+    
+    const data = await response.json();
+    console.log(data);  // Should show your account info
+    ```
+    </CodeGroup>
+  </Step>
+</Steps>
+
+## Authentication Methods
+
+The API supports two authentication methods - choose the one that works best for your integration:
+
+<Tabs>
+  <Tab title="API Key Header (Recommended)">
+    **Method:** Include your API key in the `x-scope3-api-key` header
+    
+    ```bash
+    curl -X POST https://api.agentic.scope3.com/brand-agents \
+      -H "x-scope3-api-key: your_api_key_here" \
+      -H "Content-Type: application/json" \
+      -d '{"name": "My Brand Agent"}'
+    ```
+    
+    **Benefits:**
+    - Simple and straightforward
+    - Works with all HTTP clients
+    - No base64 encoding required
+    - Standard header format
+  </Tab>
+  
+  <Tab title="Bearer Token">
+    **Method:** Use your API key as a Bearer token in the `Authorization` header
+    
+    ```bash
+    curl -X POST https://api.agentic.scope3.com/brand-agents \
+      -H "Authorization: Bearer your_api_key_here" \
+      -H "Content-Type: application/json" \
+      -d '{"name": "My Brand Agent"}'
+    ```
+    
+    **Benefits:**
+    - Standard OAuth 2.0 format
+    - Works with OAuth-aware libraries
+    - Compatible with API gateways
+  </Tab>
+</Tabs>
+
+## SDK Setup
+
+If you're using our official SDKs, authentication is handled automatically:
+
+<CodeGroup>
+```python Python SDK
+from scope3 import Client
+
+# Initialize with API key
+client = Client(api_key="your_scope3_api_key_here")
+
+# All subsequent requests are automatically authenticated
+brand_agent = client.create_brand_agent(
+    name="My Brand Agent",
+    description="Test brand agent"
+)
+```
+
+```javascript JavaScript SDK
+import { Scope3Client } from '@scope3/agentic-api';
+
+// Initialize with API key
+const client = new Scope3Client({
+    apiKey: 'your_scope3_api_key_here'
+});
+
+// All requests automatically include authentication
+const brandAgent = await client.createBrandAgent({
+    name: 'My Brand Agent',
+    description: 'Test brand agent'
+});
+```
+
+```claude MCP Server
+# Add to your Claude Desktop configuration
+{
+  "mcpServers": {
+    "scope3-campaigns": {
+      "command": "node",
+      "args": ["/path/to/mcp-server.js"],
+      "env": {
+        "SCOPE3_API_KEY": "your_scope3_api_key_here"
+      }
+    }
+  }
+}
+```
+</CodeGroup>
+
+## Environment Configuration
+
+For production applications, store your API key securely using environment variables:
+
+<Tabs>
+  <Tab title="Environment Variables">
+    ```bash .env
+    # Production API key
+    SCOPE3_API_KEY=scope3_live_1234567890abcdef...
+    
+    # Optional: Use different keys for different environments
+    SCOPE3_API_KEY_STAGING=scope3_test_abcdef1234567890...
+    SCOPE3_API_KEY_PRODUCTION=scope3_live_1234567890abcdef...
+    ```
+    
+    ```python Python
+    import os
+    from scope3 import Client
+    
+    # Load API key from environment
+    api_key = os.environ.get('SCOPE3_API_KEY')
+    if not api_key:
+        raise ValueError("SCOPE3_API_KEY environment variable is required")
+    
+    client = Client(api_key=api_key)
+    ```
+  </Tab>
+  
+  <Tab title="Configuration Files">
+    ```json config.json
+    {
+      "scope3": {
+        "apiKey": "your_api_key_here",
+        "baseUrl": "https://api.agentic.scope3.com"
+      }
+    }
+    ```
+    
+    ```python Python
+    import json
+    from scope3 import Client
+    
+    # Load configuration from file
+    with open('config.json', 'r') as f:
+        config = json.load(f)
+    
+    client = Client(
+        api_key=config['scope3']['apiKey'],
+        base_url=config['scope3']['baseUrl']
+    )
+    ```
+  </Tab>
+  
+  <Tab title="Docker Secrets">
+    ```yaml docker-compose.yml
+    version: '3.8'
+    services:
+      app:
+        image: my-app:latest
+        environment:
+          - SCOPE3_API_KEY_FILE=/run/secrets/scope3_api_key
+        secrets:
+          - scope3_api_key
+    
+    secrets:
+      scope3_api_key:
+        external: true
+    ```
+    
+    ```python Python
+    import os
+    from scope3 import Client
+    
+    # Read API key from Docker secret file
+    key_file = os.environ.get('SCOPE3_API_KEY_FILE', '/run/secrets/scope3_api_key')
+    
+    with open(key_file, 'r') as f:
+        api_key = f.read().strip()
+    
+    client = Client(api_key=api_key)
+    ```
+  </Tab>
+</Tabs>
+
+## Testing Authentication
+
+Use the authentication check endpoint to verify your setup:
+
+<CodeGroup>
+```python Python
+import requests
+
+def test_auth(api_key):
+    """Test API key authentication"""
+    response = requests.get(
+        "https://api.agentic.scope3.com/auth/check",
+        headers={"x-scope3-api-key": api_key}
+    )
+    
+    if response.status_code == 200:
+        data = response.json()
+        print(f"✅ Authentication successful!")
+        print(f"Account: {data.get('account_name', 'Unknown')}")
+        print(f"User: {data.get('user_email', 'Unknown')}")
+        return True
+    else:
+        print(f"❌ Authentication failed: {response.status_code}")
+        print(f"Error: {response.text}")
+        return False
+
+# Test your key
+test_auth("your_api_key_here")
+```
+
+```javascript JavaScript
+async function testAuth(apiKey) {
+    try {
+        const response = await fetch("https://api.agentic.scope3.com/auth/check", {
+            headers: {
+                "x-scope3-api-key": apiKey
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log("✅ Authentication successful!");
+            console.log(`Account: ${data.account_name || 'Unknown'}`);
+            console.log(`User: ${data.user_email || 'Unknown'}`);
+            return true;
+        } else {
+            console.log(`❌ Authentication failed: ${response.status}`);
+            console.log(`Error: ${await response.text()}`);
+            return false;
+        }
+    } catch (error) {
+        console.log(`❌ Network error: ${error.message}`);
+        return false;
+    }
+}
+
+// Test your key
+testAuth("your_api_key_here");
+```
+
+```bash cURL
+#!/bin/bash
+# Save as test-auth.sh and make executable with chmod +x test-auth.sh
+
+API_KEY="your_api_key_here"
+
+echo "Testing Scope3 API authentication..."
+
+response=$(curl -s -w "\n%{http_code}" -X GET \
+    "https://api.agentic.scope3.com/auth/check" \
+    -H "x-scope3-api-key: $API_KEY")
+
+# Split response body and status code
+body=$(echo "$response" | head -n -1)
+status=$(echo "$response" | tail -n 1)
+
+if [ "$status" = "200" ]; then
+    echo "✅ Authentication successful!"
+    echo "$body" | jq '.'
+else
+    echo "❌ Authentication failed (status: $status)"
+    echo "$body"
+fi
+```
+</CodeGroup>
+
+## Security Best Practices
+
+<Warning>
+**API Key Security**
+
+Your API key provides full access to your Scope3 account. Follow these security practices:
+
+❌ **Never do:**
+- Commit API keys to version control
+- Include keys in client-side code
+- Share keys via email or chat
+- Use production keys in development
+
+✅ **Always do:**
+- Store keys in environment variables or secure key management
+- Use different keys for different environments
+- Rotate keys regularly
+- Monitor API usage for suspicious activity
+</Warning>
+
+### Key Management Checklist
+
+<AccordionGroup>
+  <Accordion title="Development Environment">
+    - [ ] API key stored in `.env` file (not committed to git)
+    - [ ] `.env` file added to `.gitignore`
+    - [ ] Test key used (not production key)
+    - [ ] Key rotation schedule established
+  </Accordion>
+  
+  <Accordion title="Production Environment">
+    - [ ] API key stored in secure environment variables
+    - [ ] Key management system in use (AWS Secrets Manager, etc.)
+    - [ ] Monitoring and alerting set up for API usage
+    - [ ] Regular key rotation scheduled
+    - [ ] Access logs reviewed regularly
+  </Accordion>
+  
+  <Accordion title="Team Access">
+    - [ ] Individual API keys for each team member
+    - [ ] Keys tied to specific user accounts
+    - [ ] Access permissions properly scoped
+    - [ ] Offboarding process includes key revocation
+    - [ ] Key usage tracked and audited
+  </Accordion>
+</AccordionGroup>
+
+## Rate Limits
+
+The API includes rate limiting to ensure fair usage:
+
+| Endpoint Type | Rate Limit | Burst Limit |
+|---------------|------------|-------------|
+| **Authentication** | 100 requests/minute | 10 requests/second |
+| **Brand Agent Operations** | 1000 requests/minute | 50 requests/second |
+| **Campaign Management** | 2000 requests/minute | 100 requests/second |
+| **Creative Upload** | 100 requests/minute | 5 requests/second |
+| **Performance Data** | 500 requests/minute | 25 requests/second |
+
+<Info>
+**Rate Limit Headers**
+
+Each API response includes rate limiting information:
+- `X-RateLimit-Limit`: Your rate limit per window
+- `X-RateLimit-Remaining`: Requests remaining in current window  
+- `X-RateLimit-Reset`: Unix timestamp when the window resets
+</Info>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="401 Unauthorized Error">
+    **Common causes:**
+    - API key is missing or incorrect
+    - Key has been revoked or expired
+    - Wrong authentication header format
+    
+    **Solutions:**
+    - Verify your API key is correct and active
+    - Check header format: `x-scope3-api-key: your_key_here`
+    - Test with the `/auth/check` endpoint
+  </Accordion>
+  
+  <Accordion title="403 Forbidden Error">
+    **Common causes:**
+    - API key doesn't have required permissions
+    - Account suspended or restricted
+    - IP address not allowlisted (if IP restrictions are enabled)
+    
+    **Solutions:**
+    - Check your account permissions and limits
+    - Contact support if account appears suspended
+    - Verify IP restrictions if configured
+  </Accordion>
+  
+  <Accordion title="429 Rate Limited Error">
+    **Common causes:**
+    - Exceeded rate limits for your account
+    - Too many concurrent requests
+    - Burst limit exceeded
+    
+    **Solutions:**
+    - Implement exponential backoff retry logic
+    - Reduce request frequency
+    - Contact support for higher rate limits if needed
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Create Your First Campaign"
+    icon="rocket"
+    href="/quickstart/first-campaign"
+  >
+    Now that you're authenticated, launch your first agentic campaign
+  </Card>
+  <Card
+    title="API Reference"
+    icon="code"
+    href="/api-reference/overview"
+  >
+    Explore the complete API documentation with interactive examples
+  </Card>
+  <Card
+    title="SDK Documentation"
+    icon="book"
+    href="/sdks/overview"
+  >
+    Learn more about our Python, JavaScript, and MCP integrations
+  </Card>
+  <Card
+    title="Security Guide"
+    icon="shield"
+    href="/resources/security"
+  >
+    Best practices for securing your API integrations
+  </Card>
+</CardGroup>
+
+---
+
+Need help with authentication? [Contact our API support team →](mailto:api-support@scope3.com)

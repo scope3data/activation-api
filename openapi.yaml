@@ -2,651 +2,1275 @@ openapi: 3.1.0
 info:
   title: Scope3 Agentic Campaign Management API
   version: 1.0.0
-  description: |
-    API for managing agentic advertising campaigns executed via AdCP using Scope3 media quality, synthetic audience, cross-publisher frequency capping, custom signals integration, and intelligent allocation.
+  description: >-
+    API for managing agentic advertising campaigns executed via AdCP using Scope3 media quality,
+    synthetic audience, cross-publisher frequency capping, custom signals integration, and
+    intelligent allocation.
+
 
     ## Key Concepts
-    - **Campaign**: Contains prompt-based objectives, creatives, and allocation algorithms
-    - **Package**: A buyable unit of ad inventory with pricing information
-    - **Allocation**: The distribution of budget across packages
 
-    ## LLM Usage Notes
-    to do!
+    - **Brand Agent**: Your advertiser account - the top-level container for campaigns, creatives,
+    and settings
 
+    - **Campaign**: Individual budget allocation units created with natural language prompts  
+
+    - **Creative**: Reusable ad assets shared across campaigns within a brand agent
+
+    - **Synthetic Audience**: AI-enhanced targeting profiles built from natural language
+    descriptions
+
+    - **Brand Standards**: Brand safety and content filtering rules applied across all campaigns
+
+
+    ## Platform Migration
+
+    This API is designed to make migration from traditional DSPs seamless:
+
+
+    ### The Trade Desk Users
+
+    - **Advertiser** → Brand Agent
+
+    - **Line Item** → Campaign  
+
+    - **Creative** → Creative (shared across campaigns)
+
+    - **Audience Segment** → Synthetic Audience
+
+
+    ### DV360 Users  
+
+    - **Advertiser** → Brand Agent
+
+    - **Insertion Order** → Campaign
+
+    - **Creative** → Creative (shared across campaigns)
+
+    - **Audience List** → Synthetic Audience
+
+
+    ## Natural Language Campaign Management
+
+    Instead of configuring complex targeting parameters, describe your campaign goals in plain
+    English:
+
+
+    ```
+
+    "Target young professionals interested in sustainable products in major cities with a $10K
+    budget"
+
+    ```
+
+
+    The AI handles audience creation, bidding optimization, and performance management
+    automatically.
+
+
+    ## Getting Started
+
+    1. Create a Brand Agent (your advertiser account)
+
+    2. Upload Creative assets to the shared library
+
+    3. Create Campaigns using natural language prompts
+
+    4. Monitor AI-powered optimization and performance
+
+
+    For detailed guides, see our [documentation](https://docs.scope3.com).
 servers:
-  - url: https://aapi.scope3.com/v1/rest
-    description: Scope3 Agentic API Server (REST endpoint)
-
+  - url: https://api.agentic.scope3.com
+    description: Scope3 Agentic API Server
 paths:
-  /campaigns:
-    get:
-      operationId: listCampaigns
-      summary: List all active campaigns
-      description: |
-        Returns all active campaigns for the authenticated principal.
-        Use this to understand what campaigns have been created, whether they are active, whether there are any errors or warnings that need to be addressed.
+  /check-auth:
+    post:
+      operationId: check_auth
+      summary: Check Authentication Status
+      description: Check the authentication status of the current API key and return user information.
       x-llm-hints:
-        - "Call this when user asks about 'current', 'active', or 'running' campaigns"
-        - "Use before updating to verify campaign exists"
-        - "Results include campaign IDs needed for other operations"
-      parameters:
-        - name: brand_agent_id
-          in: query
-          required: false
-          schema:
-            type: string
-          description: Filter by specific brand agent ID (defaults to all)
-        - name: status
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [active, paused, completed, draft]
-            default: active
-          description: Filter campaigns by status
+        - Use this tool when user wants to check the authentication status of the current api key
+          and return user information
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
       responses:
         "200":
-          description: List of campaigns
+          description: Successful response
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  campaigns:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Campaign"
-              examples:
-                basic:
-                  value:
-                    campaigns:
-                      - id: "camp_123"
-                        name: "Holiday Sale 2024"
-                        prompt: "Target users interested in electronics with holiday shopping intent"
-                        budget:
-                          total: 50000
-                          currency: "USD"
-                          daily_cap: 2000
-                          pacing: "even"
-                        status: "active"
-                        created_at: "2024-11-01T00:00:00Z"
-
-  /campaigns/create-draft:
-    post:
-      operationId: createCampaignDraft
-      summary: Create a campaign draft/plan
-      description: |
-        Creates a campaign from a natural language prompt and budget.
-        Returns a complete plan including targeting, signals, creative formats, and sample products.
-
-        This endpoint:
-        1. Analyzes the prompt to extract objectives and targeting
-        2. Calls get_products on all publishers (with optional brief)
-        3. Saves matching products
-        4. Generates an initial allocation plan
-      x-llm-hints:
-        - "Use when user wants to 'create', 'start', 'launch', or 'set up' a campaign"
-        - "The prompt should capture all user requirements in natural language"
-        - "Budget is in cents (multiply dollars by 100)"
-        - "Returns a plan for user approval before activation"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - prompt
-                - budget
-              properties:
-                prompt:
-                  type: string
-                  description: Natural language description of campaign objectives and targeting
-                  example: "Reach millennials interested in sustainable fashion in major US cities, emphasize our eco-friendly materials"
-                budget:
-                  $ref: "#/components/schemas/Budget"
-                brief:
-                  type: object
-                  description: Optional structured brief for get_products calls
-                  properties:
-                    categories:
-                      type: array
-                      items:
-                        type: string
-                    geo_targets:
-                      type: array
-                      items:
-                        type: string
-                    demographics:
-                      type: object
-                start_date:
-                  type: string
-                  format: date-time
-                  description: Campaign start date (defaults to immediate)
-                end_date:
-                  type: string
-                  format: date-time
-                  description: Campaign end date (optional)
-            examples:
-              simple:
-                value:
-                  prompt: "Target young professionals interested in productivity apps"
-                  budget:
-                    total: 10000
-                    currency: "USD"
-                    daily_cap: null
-                    pacing: "even"
-              detailed:
-                value:
-                  prompt: "Holiday campaign for electronics, focus on gift-givers, emphasize deals"
-                  budget:
-                    total: 50000
-                    currency: "USD"
-                    daily_cap: 2500
-                    pacing: "accelerated"
-                  brief:
-                    categories: ["electronics", "gifts"]
-                    geo_targets: ["US", "CA"]
-                  start_date: "2024-11-15T00:00:00Z"
-                  end_date: "2024-12-31T23:59:59Z"
-      responses:
-        "200":
-          description: Campaign plan created successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CampaignPlan"
-              examples:
-                full_plan:
-                  value:
-                    campaign_id: "camp_456"
-                    status: "draft"
-                    plan:
-                      targeting:
-                        interests: ["productivity", "technology", "business"]
-                        demographics:
-                          age_range: "25-45"
-                          income: "50k+"
-                      signals:
-                        - type: "intent"
-                          value: "app_downloads"
-                        - type: "behavioral"
-                          value: "business_tools_usage"
-                      creative_formats:
-                        - format: "native"
-                          recommended: true
-                        - format: "video"
-                          recommended: false
-                      sample_products:
-                        - package_id: "pkg_789"
-                          publisher: "TechNews"
-                          name: "Professional Audience - Native"
-                          estimated_reach: 500000
-                          cpm: 12.00
-                          recommended_budget: 1000
-
-  /campaigns/create:
-    post:
-      operationId: createCampaign
-      summary: Create complete campaign from natural language prompt
-      description: |
-        Creates a complete campaign in Scope3 by parsing a natural language prompt and automatically creating:
-        - Campaign strategy with the specified name and objectives
-        - All targeting profiles based on the parsed audience segments
-        - Brand agent associations (standards and story agents)
-        - Channel and country configurations
-
-        This is a one-step process that handles the entire campaign creation workflow.
-        Returns the created strategy ID and a human-readable summary of what was set up.
-
-        Uses INTELLIGENT_PMPS strategy type by default (optimized for premium marketplace placements).
-        Future versions will support media buys workflow.
-      x-llm-hints:
-        - "Use when user wants to 'create', 'build', 'launch', or 'set up' a campaign"
-        - "Single tool call creates the complete campaign ready for deployment"
-        - "Returns strategy ID and summary of created targeting profiles"
-        - "Call for end-to-end campaign creation from natural language"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - name
-                - prompt
-              properties:
-                name:
-                  type: string
-                  description: Name for the campaign strategy
-                  example: "Q4 Sustainable Fashion Campaign"
-                prompt:
-                  type: string
-                  description: Natural language description of campaign goals and strategy
-                  example: "Target millennials interested in sustainable fashion in major US cities, emphasize our eco-friendly materials and ethical manufacturing"
-            examples:
-              simple:
-                value:
-                  prompt: "Target young professionals interested in productivity apps"
-      responses:
-        "200":
-          description: Campaign created successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CreatedCampaign"
-              examples:
-                created_campaign:
-                  value:
-                    strategy:
-                      id: "str_987654321"
-                      name: "Q4 Sustainable Fashion Campaign"
-                      status: "created"
-                      warnings: []
-                    targeting:
-                      profilesCreated: 3
-                      profiles:
-                        - id: "tp_123456"
-                          dimensionName: "interests"
-                          includeCount: 5
-                          excludeCount: 2
-                        - id: "tp_123457"
-                          dimensionName: "demographics"
-                          includeCount: 3
-                          excludeCount: 0
-                        - id: "tp_123458"
-                          dimensionName: "geography"
-                          includeCount: 10
-                          excludeCount: 1
-                    summary:
-                      channels: ["display", "video"]
-                      countries: ["US", "CA", "UK"]
-                      brandStandardsAgents:
-                        - id: 456
-                          name: "Fashion Brand Standards Agent"
-                      brandStoryAgents: []
-                      targetingProfiles:
-                        - category: "Interests"
-                          categoryDescription: "Topics and activities the audience is interested in"
-                          includeTargets:
-                            - id: "12345"
-                              name: "Sustainable Living"
-                              description: "Users interested in eco-friendly products and lifestyle"
-                          excludeTargets:
-                            - id: "67890"
-                              name: "Fast Fashion"
-                              description: "Users interested in fast fashion brands"
-                          issues: []
-
-  /campaigns/update-strategy:
-    post:
-      operationId: updateCampaignStrategy
-      summary: Generate updated campaign strategy prompt
-      description: |
-        Generates an updated campaign strategy prompt based on changes to targeting, 
-        brand agents, channels, and countries. This endpoint compares current strategy
-        settings with original ones to create a refined, natural language prompt that
-        reflects the modifications made to the campaign.
-
-        This is useful when you need to:
-        - Update campaign targeting parameters
-        - Change brand agent assignments
-        - Modify channel or country targeting
-        - Generate a new prompt that reflects all changes
-      x-llm-hints:
-        - "Use when user wants to 'update', 'modify', or 'change' an existing campaign strategy"
-        - "Compares current settings with original to generate refined prompt"
-        - "Call this before updating the actual campaign to get the updated strategy language"
-        - "Useful for maintaining consistency between prompt and targeting parameters"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - currentPrompt
-                - brandStandardsAgents
-                - brandStoryAgents
-                - channels
-                - countries
-                - strategyType
-              properties:
-                currentPrompt:
-                  type: string
-                  description: Current campaign prompt to be updated
-                  example: "Target young professionals interested in productivity apps"
-                brandStandardsAgents:
-                  type: array
-                  items:
-                    $ref: "#/components/schemas/BrandAgent"
-                  description: Current brand standards agents for the campaign
-                brandStoryAgents:
-                  type: array
-                  items:
-                    $ref: "#/components/schemas/BrandAgent"
-                  description: Current brand story agents for the campaign
-                channels:
-                  type: array
-                  items:
+                  success:
+                    type: boolean
+                  message:
                     type: string
-                  description: Current advertising channels
-                  example: ["display", "video", "native"]
-                countries:
-                  type: array
-                  items:
-                    type: string
-                  description: Current target countries
-                  example: ["US", "CA", "UK"]
-                strategyType:
-                  $ref: "#/components/schemas/StrategyType"
-                bitmapTargetingProfiles:
-                  type: array
-                  items:
-                    $ref: "#/components/schemas/BitmapTargetingProfileInput"
-                  description: Current bitmap targeting profiles
-                originalBitmapTargetingProfiles:
-                  type: array
-                  items:
-                    $ref: "#/components/schemas/BitmapTargetingProfileInput"
-                  description: Original bitmap targeting profiles for comparison
-                originalBrandStandardsAgents:
-                  type: array
-                  items:
-                    $ref: "#/components/schemas/BrandAgent"
-                  description: Original brand standards agents for comparison
-                originalBrandStoryAgents:
-                  type: array
-                  items:
-                    $ref: "#/components/schemas/BrandAgent"
-                  description: Original brand story agents for comparison
-                originalChannels:
-                  type: array
-                  items:
-                    type: string
-                  description: Original advertising channels for comparison
-                originalCountries:
-                  type: array
-                  items:
-                    type: string
-                  description: Original target countries for comparison
-            examples:
-              channel_update:
-                value:
-                  currentPrompt: "Target young professionals interested in productivity apps"
-                  brandStandardsAgents: []
-                  brandStoryAgents: []
-                  channels: ["display", "video", "native", "audio"]
-                  countries: ["US", "CA"]
-                  strategyType: "INTELLIGENT_PMPS"
-                  originalChannels: ["display", "video"]
-                  originalCountries: ["US", "CA"]
-              targeting_update:
-                value:
-                  currentPrompt: "Holiday campaign for electronics targeting gift-givers"
-                  brandStandardsAgents:
-                    [{ "id": 123, "name": "Tech Brand Agent" }]
-                  brandStoryAgents: []
-                  channels: ["display", "video"]
-                  countries: ["US", "CA", "UK"]
-                  strategyType: "BRAND_STANDARDS"
-                  originalCountries: ["US", "CA"]
-                  originalBrandStandardsAgents: []
-      responses:
-        "200":
-          description: Updated strategy prompt generated successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  updatedPrompt:
-                    type: string
-                    description: The updated campaign strategy prompt
-                required:
-                  - updatedPrompt
-              examples:
-                updated_prompt:
-                  value:
-                    updatedPrompt: "Target young professionals interested in productivity apps across display, video, native, and audio channels, expanding reach while maintaining focus on business and efficiency tools"
-
-  /campaigns/{campaign_id}:
-    put:
-      operationId: updateCampaign
-      summary: Update campaign settings
-      description: |
-        Updates campaign configuration including creatives, targeting, budget, or prompt.
-        Partial updates are supported - only include fields you want to change.
-      x-llm-hints:
-        - "Use when user wants to 'change', 'modify', 'update', or 'adjust' campaign"
-        - "Can update individual fields without affecting others"
-        - "Changes take effect immediately for active campaigns"
-      parameters:
-        - name: campaign_id
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Campaign identifier
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                prompt:
-                  type: string
-                  description: Updated campaign objectives
-                budget:
-                  $ref: "#/components/schemas/Budget"
-                creatives:
-                  type: array
-                  items:
-                    $ref: "#/components/schemas/Creative"
-                targeting:
-                  $ref: "#/components/schemas/Targeting"
-                status:
-                  type: string
-                  enum: [active, paused, completed]
-            examples:
-              update_budget:
-                value:
-                  budget:
-                    total: 75000
-                    currency: "USD"
-                    daily_cap: 3500
-                    pacing: "asap"
-              update_creative:
-                value:
-                  creatives:
-                    - id: "creative_001"
-                      type: "image"
-                      url: "https://cdn.example.com/new-creative.jpg"
-                      headline: "New Year, New You"
-      responses:
-        "200":
-          description: Campaign updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Campaign"
-
-  /campaigns/{campaign_id}/allocation:
-    get:
-      operationId: getCampaignAllocation
-      summary: Get current budget allocation
-      description: |
-        Returns list of all packages with active budget for this campaign.
-        Shows how the campaign budget is distributed across different ad inventory.
-      x-llm-hints:
-        - "Use when user asks 'where is budget going' or 'show allocation'"
-        - "Call before update_campaign_allocation to see current state"
-        - "Returns actual spend data if campaign is active"
-      parameters:
-        - name: campaign_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Current allocation details
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  campaign_id:
-                    type: string
-                  total_budget:
-                    $ref: "#/components/schemas/Budget"
-                  allocated_budget:
-                    type: integer
-                    description: Sum of all package allocations
-                  packages:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/PackageAllocation"
-              examples:
-                multi_package:
-                  value:
-                    campaign_id: "camp_123"
-                    total_budget:
-                      total: 50000
-                      currency: "USD"
-                      daily_cap: 2500
-                      pacing: "even"
-                    allocated_budget: 45000
-                    packages:
-                      - package_id: "pkg_001"
-                        publisher: "NewsNetwork"
-                        name: "Premium Inventory"
-                        allocated_budget: 20000
-                        spent: 15000
-                        fcap: 3
-                        pacing: "even"
-                        performance:
-                          impressions: 1250000
-                          clicks: 15000
-                          ctr: 0.012
-                      - package_id: "pkg_002"
-                        publisher: "TechBlog"
-                        name: "Tech Enthusiasts"
-                        allocated_budget: 25000
-                        spent: 20000
-                        fcap: 5
-                        pacing: "asap"
-
-    put:
-      operationId: updateCampaignAllocation
-      summary: Update package allocations
-      description: |
-        Updates how budget is allocated across packages.
-        Can set budget, frequency cap, and pacing for each package.
-        Use to optimize campaign performance based on package results.
-      x-llm-hints:
-        - "Use when user wants to 'shift budget', 'change allocation', or 'optimize spend'"
-        - "Can add new packages or remove existing ones"
-        - "Setting budget to 0 effectively pauses a package"
-        - "Call get_campaign_allocation first to see current state"
-      parameters:
-        - name: campaign_id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                packages:
-                  type: array
-                  items:
+                  data:
                     type: object
-                    required:
-                      - package_id
-                    properties:
-                      package_id:
-                        type: string
-                        description: Package identifier
-                      budget:
-                        type: number
-                        description: Budget allocation for this package
-                      fcap:
-                        type: integer
-                        description: Frequency cap (impressions per user per day)
-                        minimum: 1
-                        maximum: 20
-                      pacing:
-                        type: string
-                        enum: [even, asap, accelerated]
-                        description: How quickly to spend the budget
-                      status:
-                        type: string
-                        enum: [active, paused, removed]
-            examples:
-              rebalance:
-                value:
-                  packages:
-                    - package_id: "pkg_001"
-                      budget: 30000
-                      fcap: 5
-                      pacing: "even"
-                    - package_id: "pkg_002"
-                      budget: 10000
-                      fcap: 3
-                      pacing: "even"
-                    - package_id: "pkg_003"
-                      status: "removed"
-      responses:
-        "200":
-          description: Allocation updated successfully
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    success: true
+                    message: Operation completed successfully
+                    data: {}
+        "400":
+          description: Bad request
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  campaign_id:
+                  error:
                     type: string
-                  updated_packages:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/PackageAllocation"
-                  total_allocated:
-                    type: number
-
+                  details:
+                    type: object
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /amp-agentss/{id}:
+    get:
+      operationId: get_amp_agents
+      summary: Get Scope3 AMP Agents
+      description: Get all agents and their models from Scope3 API. Optionally filter by customer ID or
+        agent name. Requires authentication.
+      x-llm-hints:
+        - Use this tool when user wants to get all agents and their models from scope3 api
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    success: true
+                    message: Operation completed successfully
+                    data: {}
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: object
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /brand-agents:
+    post:
+      operationId: create_brand_agent
+      summary: Create Brand Agent
+      description: Create a new brand agent (advertiser account). This creates the top-level container
+        that will own campaigns, creatives, audiences, standards, and measurement sources. Requires
+        authentication.
+      x-llm-hints:
+        - Use this tool when user wants to create a new brand agent (advertiser account)
+        - Call this when user says 'create', 'make', 'set up', or 'add'
+      x-migration-notes:
+        ttd: Creates an Advertiser account equivalent
+        dv360: Creates an Advertiser account equivalent
+        amazon: Creates an Account equivalent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+            examples:
+              nike:
+                summary: Create Nike brand agent
+                value:
+                  name: Nike Global
+                  description: Global athletic wear and equipment brand
+              agency:
+                summary: Create agency client brand agent
+                value:
+                  name: Acme Corp
+                  description: B2B software company targeting enterprise customers
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    success: true
+                    message: Operation completed successfully
+                    data: {}
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: object
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /brand-agents/{id}:
+    put:
+      operationId: update_brand_agent
+      summary: Update Brand Agent
+      description: Update the name or description of an existing brand agent (advertiser account). This
+        only updates metadata - campaigns, creatives, and other resources remain unchanged. Requires
+        authentication.
+      x-llm-hints:
+        - Use this tool when user wants to update the name or description of an existing brand agent
+          (advertiser account)
+        - Call this when user says 'change', 'update', 'modify', or 'edit'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    success: true
+                    message: Operation completed successfully
+                    data: {}
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: object
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    delete:
+      operationId: delete_brand_agent
+      summary: Delete Brand Agent
+      description: "⚠️ DANGER: Permanently delete a brand agent (advertiser account) and ALL associated
+        data including campaigns, creatives, audiences, standards, and measurement sources. This
+        action cannot be undone. Requires authentication."
+      x-llm-hints:
+        - "Use this tool when user wants to ⚠️ danger: permanently delete a brand agent (advertiser
+          account) and all associated data including campaigns, creatives, audiences, standards, and
+          measurement sources"
+        - Call this when user says 'delete', 'remove', or 'destroy'
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    success: true
+                    message: Operation completed successfully
+                    data: {}
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: object
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    get:
+      operationId: get_brand_agent
+      summary: Get Brand Agent
+      description: Get detailed information about a specific brand agent (advertiser account) by ID.
+        Requires authentication.
+      x-llm-hints:
+        - Use this tool when user wants to get detailed information about a specific brand agent
+          (advertiser account) by id
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    success: true
+                    message: Operation completed successfully
+                    data: {}
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: object
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /brand-agentss:
+    get:
+      operationId: list_brand_agents
+      summary: List Brand Agents
+      description: List all brand agents (advertiser accounts) for the authenticated user. Optionally
+        filter by name or customer ID. Requires authentication.
+      x-llm-hints:
+        - Use this tool when user wants to list all brand agents (advertiser accounts) for the
+          authenticated user
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    success: true
+                    message: Operation completed successfully
+                    data: {}
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: object
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /campaigns:
+    post:
+      operationId: create_campaign
+      summary: Create Campaign
+      description: Create a complete campaign in Scope3 by parsing a natural language prompt and
+        automatically creating the strategy and targeting profiles. Returns the created strategy ID
+        and a human-readable summary of what was created. Uses INTELLIGENT_PMPS strategy type by
+        default (future versions will support media buys). Requires authentication.
+      x-llm-hints:
+        - Use this tool when user wants to create a complete campaign in scope3 by parsing a natural
+          language prompt and automatically creating the strategy and targeting profiles
+        - Call this when user says 'create', 'make', 'set up', or 'add'
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      x-migration-notes:
+        ttd: Creates a Line Item equivalent within your Advertiser
+        dv360: Creates an Insertion Order equivalent
+        amazon: Creates an Order equivalent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+            examples:
+              holiday:
+                summary: Holiday campaign
+                value:
+                  brandAgentId: ba_nike_123
+                  name: Holiday Sale 2024
+                  prompt: Target gift buyers during holiday season with our premium athletic wear, focusing on people
+                    shopping for fitness enthusiasts and athletes
+                  budget:
+                    total: 5000000
+                    currency: USD
+                    dailyCap: 100000
+                    pacing: even
+              product_launch:
+                summary: Product launch campaign
+                value:
+                  brandAgentId: ba_nike_123
+                  name: New Running Shoe Launch
+                  prompt: Launch our latest running shoe to serious runners and marathon enthusiasts aged 25-45 in
+                    major metropolitan areas
+                  budget:
+                    total: 7500000
+                    currency: USD
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    success: true
+                    message: Operation completed successfully
+                    data: {}
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: object
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /campaigns/{id}:
+    put:
+      operationId: update_campaign
+      summary: Update Campaign
+      description: Update an existing campaign strategy with a new prompt. This tool parses the new
+        prompt, updates the strategy with new targeting, agents, channels, and countries, and
+        provides a summary of changes made. Requires strategy ID and authentication.
+      x-llm-hints:
+        - Use this tool when user wants to update an existing campaign strategy with a new prompt
+        - Call this when user asks 'show me', 'list', or 'what are my'
+        - Call this when user says 'change', 'update', 'modify', or 'edit'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    success: true
+                    message: Operation completed successfully
+                    data: {}
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: object
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /campaignss:
+    get:
+      operationId: list_campaigns
+      summary: List Brand Agent Campaigns
+      description: List all campaigns for a specific brand agent (advertiser account). Optionally filter
+        by campaign status. Shows campaign details including budget, creative assignments, and
+        current status. Requires authentication.
+      x-llm-hints:
+        - Use this tool when user wants to list all campaigns for a specific brand agent (advertiser
+          account)
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    success: true
+                    message: Operation completed successfully
+                    data: {}
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: object
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /creatives:
+    post:
+      operationId: create_creative
+      summary: Create Brand Agent Creative
+      description: Create a new creative asset within a brand agent (advertiser account). The creative
+        will be owned by the specified brand agent and can be used across multiple campaigns within
+        that brand agent. Supports image, video, native, and HTML5 creative types. Requires
+        authentication.
+      x-llm-hints:
+        - Use this tool when user wants to create a new creative asset within a brand agent
+          (advertiser account)
+      x-migration-notes:
+        ttd: Creates a Creative asset (same concept, but shared across campaigns)
+        dv360: Creates a Creative asset (same concept, but shared across campaigns)
+        amazon: Creates a Creative asset (same concept, but shared across campaigns)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+            examples:
+              video:
+                summary: Video creative
+                value:
+                  brandAgentId: ba_nike_123
+                  name: Hero Video 30s
+                  type: video
+                  url: https://cdn.nike.com/hero-video-30s.mp4
+                  headline: Just Do It
+                  cta: Shop Now
+              image:
+                summary: Image creative
+                value:
+                  brandAgentId: ba_nike_123
+                  name: Product Hero Image
+                  type: image
+                  url: https://cdn.nike.com/product-hero.jpg
+                  headline: Premium Athletic Wear
+                  cta: Discover More
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    success: true
+                    message: Operation completed successfully
+                    data: {}
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: object
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /creatives/{id}:
+    put:
+      operationId: update_creative
+      summary: Update Brand Agent Creative
+      description: Update an existing creative asset's details including name, type, URL, headline, body
+        text, or call-to-action. This tool supports partial updates - only provide the fields you
+        want to change. Changes affect all campaigns using this creative. Requires authentication.
+      x-llm-hints:
+        - Use this tool when user wants to update an existing creative asset's details including
+          name, type, url, headline, body text, or call-to-action
+        - Call this when user says 'change', 'update', 'modify', or 'edit'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    success: true
+                    message: Operation completed successfully
+                    data: {}
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: object
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /creativess:
+    get:
+      operationId: list_creatives
+      summary: List Brand Agent Creatives
+      description: List all creative assets for a specific brand agent (advertiser account). Shows
+        creative details including type, URLs, and metadata. These creatives can be assigned to any
+        campaign within the same brand agent. Requires authentication.
+      x-llm-hints:
+        - Use this tool when user wants to list all creative assets for a specific brand agent
+          (advertiser account)
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    success: true
+                    message: Operation completed successfully
+                    data: {}
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: object
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /set-brand-standards:
+    post:
+      operationId: set_brand_standards
+      summary: Set Brand Standards
+      description: Set or update brand safety standards and media controls for a brand agent. These
+        standards apply to all campaigns within the brand agent and help ensure brand-safe media
+        placements. Currently supports domain blocklists/allowlists, keyword filters, and content
+        categories (stub implementation). Requires authentication.
+      x-llm-hints:
+        - Use this tool when user wants to set or update brand safety standards and media controls
+          for a brand agent
+        - Call this when user asks 'show me', 'list', or 'what are my'
+        - Call this when user says 'change', 'update', 'modify', or 'edit'
+      x-migration-notes:
+        ttd: Configures Brand Safety rules (same concept, applied at brand agent level)
+        dv360: Configures Brand Safety rules (same concept, applied at brand agent level)
+        amazon: Configures Brand Safety and content filtering
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    success: true
+                    message: Operation completed successfully
+                    data: {}
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: object
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /brand-standardss/{id}:
+    get:
+      operationId: get_brand_standards
+      summary: Get Brand Standards
+      description: Retrieve the current brand safety standards and media controls for a brand agent. Shows
+        all configured domain lists, keyword filters, and content categories that apply to campaigns
+        within this brand agent. Requires authentication.
+      x-llm-hints:
+        - Use this tool when user wants to retrieve the current brand safety standards and media
+          controls for a brand agent
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    success: true
+                    message: Operation completed successfully
+                    data: {}
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: object
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /audiences:
+    post:
+      operationId: create_audience
+      summary: Create Synthetic Audience
+      description: Create a new synthetic audience for a brand agent. Synthetic audiences represent target
+        customer or prospect profiles that can be used across multiple campaigns within the same
+        brand agent. Currently supports basic name and description (stub implementation). Requires
+        authentication.
+      x-llm-hints:
+        - Use this tool when user wants to create a new synthetic audience for a brand agent
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      x-migration-notes:
+        ttd: Creates an enhanced Audience Segment with AI modeling
+        dv360: Creates an enhanced Audience List with AI modeling
+        amazon: Creates an enhanced Audience with AI modeling
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    success: true
+                    message: Operation completed successfully
+                    data: {}
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: object
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /audiencess:
+    get:
+      operationId: list_audiences
+      summary: List Synthetic Audiences
+      description: List all synthetic audiences for a specific brand agent. Shows audience profiles that
+        can be assigned to campaigns for targeting. These audiences represent customer or prospect
+        profiles for better campaign targeting. Requires authentication.
+      x-llm-hints:
+        - Use this tool when user wants to list all synthetic audiences for a specific brand agent
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    success: true
+                    message: Operation completed successfully
+                    data: {}
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: object
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /add-measurement-source:
+    post:
+      operationId: add_measurement_source
+      summary: Add Measurement Source
+      description: Add a measurement source to a brand agent for tracking campaign performance. Supports
+        conversion APIs, analytics platforms, brand studies, and MMM (Media Mix Modeling)
+        integrations. Currently supports basic configuration (stub implementation). Requires
+        authentication.
+      x-llm-hints:
+        - Use this tool when user wants to add a measurement source to a brand agent for tracking
+          campaign performance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    success: true
+                    message: Operation completed successfully
+                    data: {}
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: object
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /measurement-sourcess:
+    get:
+      operationId: list_measurement_sources
+      summary: List Measurement Sources
+      description: List all measurement sources configured for a specific brand agent. Shows all tracking
+        and analytics integrations including conversion APIs, analytics platforms, brand studies,
+        and MMM sources. Requires authentication.
+      x-llm-hints:
+        - Use this tool when user wants to list all measurement sources configured for a specific
+          brand agent
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    success: true
+                    message: Operation completed successfully
+                    data: {}
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: object
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Use your Scope3 API key as the bearer token
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-scope3-api-key
+      description: Scope3 API key for authentication
   schemas:
-    Budget:
+    BrandAgent:
       type: object
-      description: Budget configuration for a media buy or campaign
       properties:
-        total:
+        id:
+          type: string
+          description: Unique brand agent identifier
+        name:
+          type: string
+          description: Brand agent name
+        description:
+          type: string
+          description: Brand agent description
+        customerId:
           type: number
-          description: Total budget amount
-          minimum: 0
-        currency:
+          description: Associated customer ID
+        createdAt:
           type: string
-          description: ISO 4217 currency code
-          pattern: "^[A-Z]{3}$"
-          examples: ["USD", "EUR", "GBP"]
-        daily_cap:
-          type: ["number", "null"]
-          description: Daily budget cap (null for no limit)
-          minimum: 0
-        pacing:
+          format: date-time
+        updatedAt:
           type: string
-          enum: [even, asap, accelerated]
-          description: Budget pacing strategy
+          format: date-time
       required:
-        - total
-        - currency
-      additionalProperties: false
-
+        - id
+        - name
+        - customerId
+        - createdAt
+        - updatedAt
     Campaign:
       type: object
       properties:
@@ -655,636 +1279,149 @@ components:
           description: Unique campaign identifier
         name:
           type: string
-          description: Human-readable campaign name
+          description: Campaign name
         prompt:
           type: string
-          description: Natural language objectives and targeting
+          description: Natural language campaign description
+        brandAgentId:
+          type: string
+          description: Parent brand agent ID
+        status:
+          type: string
+          enum:
+            - active
+            - paused
+            - completed
+            - draft
+          description: Campaign status
         budget:
           $ref: "#/components/schemas/Budget"
-        spent:
-          type: number
-          description: Amount spent so far
-        status:
-          type: string
-          enum: [draft, active, paused, completed]
-        creatives:
+        creativeIds:
           type: array
           items:
-            $ref: "#/components/schemas/Creative"
-        measurement_tool:
-          type: string
-          description: ID or name of measurement tool/agent
-        catalog:
-          $ref: "#/components/schemas/Catalog"
-        allocation_algorithm:
-          type: string
-          description: Algorithm used for budget allocation
-        created_at:
+            type: string
+          description: Associated creative asset IDs
+        audienceIds:
+          type: array
+          items:
+            type: string
+          description: Associated synthetic audience IDs
+        createdAt:
           type: string
           format: date-time
-        updated_at:
+        updatedAt:
           type: string
           format: date-time
-
-    CampaignPlan:
-      type: object
-      properties:
-        campaign_id:
-          type: string
-        status:
-          type: string
-        plan:
-          type: object
-          properties:
-            targeting:
-              $ref: "#/components/schemas/Targeting"
-            signals:
-              type: array
-              items:
-                type: object
-                properties:
-                  type:
-                    type: string
-                  value:
-                    type: string
-            creative_formats:
-              type: array
-              items:
-                type: object
-                properties:
-                  format:
-                    type: string
-                  recommended:
-                    type: boolean
-            sample_products:
-              type: array
-              items:
-                $ref: "#/components/schemas/Product"
-
+      required:
+        - id
+        - name
+        - prompt
+        - brandAgentId
+        - status
+        - createdAt
+        - updatedAt
     Creative:
       type: object
       properties:
         id:
           type: string
+          description: Unique creative identifier
+        name:
+          type: string
+          description: Creative name
         type:
           type: string
-          enum: [image, video, native, html5]
+          enum:
+            - video
+            - image
+            - native
+            - html5
+          description: Creative asset type
         url:
           type: string
+          format: uri
+          description: Creative asset URL
         headline:
           type: string
+          description: Creative headline text
         body:
           type: string
+          description: Creative body text
         cta:
           type: string
           description: Call-to-action text
-
-    Targeting:
+        brandAgentId:
+          type: string
+          description: Parent brand agent ID
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - type
+        - url
+        - brandAgentId
+        - createdAt
+        - updatedAt
+    Budget:
       type: object
       properties:
-        interests:
-          type: array
-          items:
-            type: string
-        demographics:
-          type: object
-          properties:
-            age_range:
-              type: string
-            gender:
-              type: string
-            income:
-              type: string
-        geo_targets:
-          type: array
-          items:
-            type: string
-
-    Catalog:
-      type: object
-      properties:
-        packages:
-          type: array
-          items:
-            $ref: "#/components/schemas/Package"
-        pricing_guide:
-          $ref: "#/components/schemas/PricingGuide"
-
-    Package:
-      type: object
-      properties:
-        id:
-          type: string
-        publisher:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-        inventory_type:
-          type: string
-        available_impressions:
+        total:
           type: integer
-        floor_cpm:
-          type: number
-          description: Minimum CPM
-
-    PricingGuide:
-      type: object
-      properties:
-        hard_floors:
-          type: object
-          additionalProperties:
-            type: number
-        quartiles:
-          type: object
-          properties:
-            q1:
-              type: number
-            q2:
-              type: number
-            q3:
-              type: number
-            q4:
-              type: number
-
-    Product:
-      type: object
-      properties:
-        package_id:
+          description: Total budget amount in cents (e.g., 5000000 = $50,000)
+        currency:
           type: string
-        publisher:
-          type: string
-        name:
-          type: string
-        estimated_reach:
+          enum:
+            - USD
+            - EUR
+            - GBP
+            - CAD
+            - AUD
+          description: Budget currency
+        dailyCap:
           type: integer
-        cpm:
-          type: number
-        recommended_budget:
-          type: number
-
-    PackageAllocation:
-      type: object
-      properties:
-        package_id:
-          type: string
-        publisher:
-          type: string
-        name:
-          type: string
-        allocated_budget:
-          type: number
-        spent:
-          type: number
-        fcap:
-          type: integer
+          description: Daily spending limit in cents
         pacing:
           type: string
-        performance:
-          type: object
-          properties:
-            impressions:
-              type: integer
-            clicks:
-              type: integer
-            ctr:
-              type: number
-            conversions:
-              type: integer
-
-    BrandAgent:
+          enum:
+            - even
+            - accelerated
+            - front_loaded
+          description: Budget pacing strategy
+      required:
+        - total
+        - currency
+    SyntheticAudience:
       type: object
       properties:
         id:
-          type: integer
-          description: Brand agent identifier
+          type: string
+          description: Unique audience identifier
         name:
           type: string
-          description: Brand agent name
-      required:
-        - id
-        - name
-      additionalProperties: false
-
-    StrategyType:
-      type: string
-      enum:
-        [BRAND_AGENT, BRAND_STANDARDS, INTELLIGENT_PMPS, INTELLIGENT_SEGMENTS]
-      description: |
-        Type of strategy to optimize for:
-        - INTELLIGENT_PMPS: Premium marketplace placements (default, current focus)
-        - INTELLIGENT_SEGMENTS: Audience-based targeting
-        - BRAND_STANDARDS: Brand guideline compliance
-        - BRAND_AGENT: Brand-specific agent optimization
-
-        Note: Future versions will transition to media buys workflow
-
-    TargetingItem:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Targeting item identifier
-        key:
-          type: string
-          description: Targeting item key
-        displayName:
-          type: string
-          description: Human-readable display name
-        dimensionName:
-          type: string
-          description: Dimension this item belongs to
+          description: Audience name
         description:
           type: string
-          description: Detailed description of the targeting item
-      required:
-        - id
-        - key
-        - displayName
-        - dimensionName
-      additionalProperties: false
-
-    BitmapTargetingProfile:
-      type: object
-      properties:
-        dimensionName:
+          description: Natural language audience description
+        brandAgentId:
           type: string
-          description: Name of the targeting dimension
-        anyOfItems:
-          type: array
-          items:
-            $ref: "#/components/schemas/TargetingItem"
-          description: Items to include in targeting
-        noneOfItems:
-          type: array
-          items:
-            $ref: "#/components/schemas/TargetingItem"
-          description: Items to exclude from targeting
-        errors:
-          type: array
-          items:
-            type: string
-          description: Any errors encountered during parsing
-      required:
-        - dimensionName
-        - anyOfItems
-        - noneOfItems
-        - errors
-      additionalProperties: false
-
-    TargetingProfile:
-      type: object
-      properties:
-        category:
-          type: string
-          description: Human-readable category name (e.g., "Interests", "Demographics")
-        categoryDescription:
-          type: string
-          description: Explanation of what this targeting category covers
-        includeTargets:
-          type: array
-          items:
-            type: object
-            properties:
-              id:
-                type: string
-                description: Targeting item identifier
-              name:
-                type: string
-                description: Human-readable target name
-              description:
-                type: string
-                description: Additional details about this target
-            required: [id, name]
-          description: Audience segments to include in targeting
-        excludeTargets:
-          type: array
-          items:
-            type: object
-            properties:
-              id:
-                type: string
-                description: Targeting item identifier
-              name:
-                type: string
-                description: Human-readable target name
-              description:
-                type: string
-                description: Additional details about this target
-            required: [id, name]
-          description: Audience segments to exclude from targeting
-        issues:
-          type: array
-          items:
-            type: string
-          description: Any user-friendly warnings or conflicts with this targeting
-      required:
-        - category
-        - categoryDescription
-        - includeTargets
-        - excludeTargets
-        - issues
-      additionalProperties: false
-
-    ParsedStrategy:
-      type: object
-      properties:
-        targetingProfiles:
-          type: array
-          items:
-            $ref: "#/components/schemas/TargetingProfile"
-          description: Human-readable targeting profiles showing what audiences to include/exclude
-        bitmapTargetingProfiles:
-          type: array
-          items:
-            $ref: "#/components/schemas/BitmapTargetingProfile"
-          description: Technical targeting profiles (for advanced use)
-        brandStandardsAgents:
-          type: array
-          items:
-            $ref: "#/components/schemas/BrandAgent"
-          description: Recommended brand standards agents
-        brandStoryAgents:
-          type: array
-          items:
-            $ref: "#/components/schemas/BrandAgent"
-          description: Recommended brand story agents
-        channels:
-          type: ["array", "null"]
-          items:
-            type: string
-          description: Suggested advertising channels
-        countries:
-          type: ["array", "null"]
-          items:
-            type: string
-          description: Target countries extracted from prompt
-        missing:
-          type: array
-          items:
-            type: string
-          description: Elements that could not be parsed from the prompt
-        status:
-          type: string
-          description: Status of the parsing operation
-        strategyName:
-          type: string
-          description: Generated name for the campaign strategy
-      required:
-        - targetingProfiles
-        - bitmapTargetingProfiles
-        - brandStandardsAgents
-        - brandStoryAgents
-        - channels
-        - countries
-        - missing
-        - status
-        - strategyName
-      additionalProperties: false
-
-    TargetingItemInput:
-      type: object
-      properties:
-        id:
-          type: integer
-          description: Targeting item identifier
-        key:
-          type: string
-          description: Targeting item key
-        name:
-          type: string
-          description: Targeting item name
-      required:
-        - id
-        - key
-        - name
-      additionalProperties: false
-
-    BitmapTargetingProfileInput:
-      type: object
-      properties:
-        dimensionName:
-          type: string
-          description: Name of the targeting dimension
-        anyOfItems:
-          type: array
-          items:
-            $ref: "#/components/schemas/TargetingItemInput"
-          description: Items to include in targeting
-        noneOfItems:
-          type: array
-          items:
-            $ref: "#/components/schemas/TargetingItemInput"
-          description: Items to exclude from targeting
-      required:
-        - dimensionName
-        - anyOfItems
-        - noneOfItems
-      additionalProperties: false
-
-    CreatedStrategy:
-      type: object
-      description: Successfully created campaign strategy
-      properties:
-        id:
-          type: string
-          description: Unique strategy identifier
-        name:
-          type: string
-          description: Strategy name
-        prompt:
-          type: string
-          description: Campaign prompt/description
-        strategyType:
-          $ref: "#/components/schemas/StrategyType"
-        channelCodes:
-          type: array
-          items:
-            type: string
-          description: Advertising channels
-        countryCodes:
-          type: array
-          items:
-            type: string
-          description: Target countries
+          description: Parent brand agent ID
         createdAt:
           type: string
           format: date-time
-          description: Strategy creation timestamp
         updatedAt:
           type: string
           format: date-time
-          description: Strategy last update timestamp
       required:
         - id
         - name
-        - strategyType
-        - channelCodes
-        - countryCodes
+        - brandAgentId
         - createdAt
         - updatedAt
-      additionalProperties: false
-
-    CreatedTargetingProfile:
-      type: object
-      description: Successfully created bitmap targeting profile
-      properties:
-        id:
-          type: string
-          description: Unique targeting profile identifier
-        dimensionName:
-          type: string
-          description: Targeting dimension name
-        anyOf:
-          type: array
-          items:
-            type: string
-          description: Included targeting item IDs
-        noneOf:
-          type: array
-          items:
-            type: string
-          description: Excluded targeting item IDs
-        strategyId:
-          type: string
-          description: Associated strategy ID
-        createdAt:
-          type: string
-          format: date-time
-          description: Profile creation timestamp
-        updatedAt:
-          type: string
-          format: date-time
-          description: Profile last update timestamp
-        anyOfItems:
-          type: array
-          items:
-            $ref: "#/components/schemas/TargetingItem"
-          description: Included targeting items with details
-        noneOfItems:
-          type: array
-          items:
-            $ref: "#/components/schemas/TargetingItem"
-          description: Excluded targeting items with details
-      required:
-        - id
-        - dimensionName
-        - anyOf
-        - noneOf
-        - strategyId
-        - createdAt
-        - updatedAt
-        - anyOfItems
-        - noneOfItems
-      additionalProperties: false
-
-    CreatedCampaign:
-      type: object
-      description: Successfully created campaign with strategy and targeting profiles
-      properties:
-        strategy:
-          type: object
-          description: Created strategy information
-          properties:
-            id:
-              type: string
-              description: Unique strategy identifier
-            name:
-              type: string
-              description: Strategy name
-            status:
-              type: string
-              enum: [created, created_with_warnings]
-              description: Creation status
-            warnings:
-              type: array
-              items:
-                type: string
-              description: Any warnings during strategy creation
-          required:
-            - id
-            - name
-            - status
-            - warnings
-        targeting:
-          type: object
-          description: Targeting profiles creation summary
-          properties:
-            profilesCreated:
-              type: integer
-              description: Number of targeting profiles successfully created
-            profiles:
-              type: array
-              items:
-                type: object
-                properties:
-                  id:
-                    type: string
-                    description: Targeting profile ID
-                  dimensionName:
-                    type: string
-                    description: Targeting dimension name
-                  includeCount:
-                    type: integer
-                    description: Number of include targeting items
-                  excludeCount:
-                    type: integer
-                    description: Number of exclude targeting items
-                required:
-                  - id
-                  - dimensionName
-                  - includeCount
-                  - excludeCount
-          required:
-            - profilesCreated
-            - profiles
-        summary:
-          type: object
-          description: Human-readable campaign summary
-          properties:
-            channels:
-              type: array
-              items:
-                type: string
-              description: Campaign channels
-            countries:
-              type: array
-              items:
-                type: string
-              description: Target countries
-            brandStandardsAgents:
-              type: array
-              items:
-                $ref: "#/components/schemas/BrandAgent"
-              description: Brand standards agents
-            brandStoryAgents:
-              type: array
-              items:
-                $ref: "#/components/schemas/BrandAgent"
-              description: Brand story agents
-            targetingProfiles:
-              type: array
-              items:
-                $ref: "#/components/schemas/TargetingProfile"
-              description: Human-readable targeting profiles
-          required:
-            - channels
-            - countries
-            - brandStandardsAgents
-            - brandStoryAgents
-            - targetingProfiles
-      required:
-        - strategy
-        - targeting
-        - summary
-      additionalProperties: false
-
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-
 security:
   - bearerAuth: []
+  - apiKeyAuth: []

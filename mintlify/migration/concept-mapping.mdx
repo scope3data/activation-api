@@ -1,0 +1,419 @@
+---
+title: 'Platform Concept Mapping'
+description: 'Detailed mapping between traditional DSP concepts and Scope3 agentic campaigns'
+icon: 'map'
+---
+
+# Platform Concept Mapping
+
+Understanding how your existing DSP concepts translate to Scope3's agentic model is crucial for a successful migration. This guide provides detailed mappings for major advertising platforms.
+
+## Quick Reference Table
+
+<Note>
+**Universal Mapping**
+All major DSPs follow similar hierarchical patterns. Here's how they map to Scope3:
+
+| Traditional DSP Layer | Scope3 Equivalent | Purpose |
+|----------------------|------------------|---------|
+| **Account/Advertiser** | Brand Agent | Top-level container for all assets |
+| **Campaign/Order** | Brand Agent Context | Organizational grouping (flattened) |  
+| **Line Item/Insertion Order** | Campaign | Individual budget allocation |
+| **Creative** | Creative | Ad assets (enhanced sharing) |
+| **Audience/Segment** | Synthetic Audience | AI-enhanced targeting profiles |
+| **Conversion/Pixel** | Measurement Source | Analytics and tracking |
+| **Brand Safety** | Brand Standards | Content filtering and compliance |
+</Note>
+
+## The Trade Desk → Scope3
+
+<Tabs>
+  <Tab title="Account Structure">
+    ### Account Hierarchy Mapping
+
+    **The Trade Desk Structure:**
+    ```
+    Advertiser
+    ├── Campaign
+    │   ├── Line Item
+    │   │   ├── Creatives
+    │   │   ├── Audiences  
+    │   │   └── Targeting
+    │   └── Brand Safety
+    └── Data Partners
+    ```
+
+    **Scope3 Structure:**
+    ```
+    Brand Agent (Advertiser)
+    ├── Campaigns (Line Items)
+    ├── Creatives (shared)
+    ├── Synthetic Audiences (shared)
+    ├── Brand Standards (Brand Safety)
+    └── Measurement Sources (Data Partners)
+    ```
+
+    ### Key Differences
+    - **Flatter Hierarchy:** TTD's Campaign layer is removed; Line Items become our Campaigns
+    - **Shared Resources:** Creatives and audiences are shared across all campaigns within a brand agent
+    - **Natural Language:** Campaign targeting defined through prompts, not parameter forms
+  </Tab>
+
+  <Tab title="Campaign Management">
+    ### Campaign Configuration
+
+    | TTD Configuration | Scope3 Equivalent | Example |
+    |------------------|------------------|---------|
+    | **Campaign Name** | Brand Agent Context | Used for organizational grouping |
+    | **Line Item Name** | Campaign Name | "Q4 Holiday Video Push" |
+    | **Objective** | Campaign Prompt | "Target holiday shoppers with video ads focusing on gift-giving" |
+    | **Budget & Pacing** | Campaign Budget | Same budget controls, AI-optimized pacing |
+    | **Flight Dates** | Campaign Schedule | Handled in campaign configuration |
+    | **Bid Strategy** | AI-Managed | Automatic optimization based on goals |
+
+    ### Targeting Translation
+    ```json
+    // TTD Line Item Targeting
+    {
+      "demographics": {"age": "25-34", "gender": "M"},
+      "interests": ["technology", "gaming"],
+      "geo": ["US-NY", "US-CA"],
+      "daypart": "evening"
+    }
+
+    // Scope3 Campaign Prompt  
+    "Target tech-savvy males aged 25-34 in New York and California during evening hours"
+    ```
+  </Tab>
+
+  <Tab title="Creative & Audiences">
+    ### Creative Management
+
+    **TTD Approach:**
+    - Creatives uploaded per line item
+    - Manual creative rotation settings
+    - Separate approval workflow
+
+    **Scope3 Approach:**  
+    - Creatives belong to brand agent
+    - Automatically available to all campaigns
+    - AI-optimized creative selection
+
+    ### Audience Segments
+
+    | TTD Audience Type | Scope3 Equivalent | Enhancement |
+    |------------------|------------------|-------------|
+    | **1st Party Data** | Synthetic Audience | Enhanced with lookalike modeling |
+    | **3rd Party Segments** | Synthetic Audience | AI-curated from multiple sources |
+    | **Lookalike Audiences** | Synthetic Audience | Built-in with continuous learning |
+    | **Geo-fencing** | Campaign Targeting | Natural language geo descriptions |
+    | **Behavioral Targeting** | Synthetic Audience | Intent-based AI targeting |
+
+    ```python
+    # TTD Audience Creation
+    audience = ttd.create_audience({
+        "name": "Tech Enthusiasts", 
+        "segments": ["tech_interest", "high_income"],
+        "lookalike_seed": "customer_list_id"
+    })
+
+    # Scope3 Audience Creation
+    audience = scope3.create_audience(
+        brand_agent_id="ba_123",
+        name="Tech Enthusiasts",
+        description="People interested in latest technology with disposable income for premium products"
+    )
+    ```
+  </Tab>
+</Tabs>
+
+## DV360 → Scope3
+
+<Tabs>
+  <Tab title="Account Structure">
+    ### Hierarchy Mapping
+
+    **DV360 Structure:**
+    ```
+    Advertiser  
+    ├── Campaign
+    │   ├── Insertion Order
+    │   │   ├── Line Items
+    │   │   │   ├── Creatives
+    │   │   │   └── Targeting
+    │   │   └── Frequency Caps
+    │   └── Audience Lists
+    └── Floodlight Configuration
+    ```
+
+    **Scope3 Structure:**
+    ```
+    Brand Agent (Advertiser)
+    ├── Campaigns (Insertion Orders)  
+    ├── Creatives (shared)
+    ├── Synthetic Audiences (shared)
+    ├── Brand Standards
+    └── Measurement Sources (Floodlight)
+    ```
+
+    ### Translation Notes
+    - **Insertion Orders** become Scope3 Campaigns
+    - **Line Items** become targeting configurations within campaigns  
+    - **Audience Lists** become Synthetic Audiences with AI enhancement
+    - **Floodlight** becomes Measurement Sources with broader integration
+  </Tab>
+
+  <Tab title="Campaign Setup">
+    ### Campaign Configuration
+
+    | DV360 Element | Scope3 Equivalent | Notes |
+    |---------------|------------------|-------|
+    | **Campaign Goal** | Campaign Prompt | Natural language objective |
+    | **Insertion Order Budget** | Campaign Budget | Same budget controls |
+    | **Line Item Targeting** | Campaign Configuration | AI-optimized from prompt |
+    | **Creative Assignment** | Creative Selection | Automatic optimization |
+    | **Frequency Capping** | AI-Managed | Intelligent frequency optimization |
+    | **Bid Strategy** | AI-Optimized | Performance-based bidding |
+
+    ### Example Translation
+
+    **DV360 Insertion Order Setup:**
+    ```
+    Name: "Summer Sale Campaign"  
+    Budget: $50,000
+    Flight: June 1-30
+    Goal: Drive website conversions
+    Target: Adults 25-54 interested in fashion
+    Bid Strategy: Target CPA $25
+    ```
+
+    **Scope3 Campaign Creation:**
+    ```python
+    campaign = scope3.create_campaign(
+        brand_agent_id="ba_123",
+        name="Summer Sale Campaign",
+        prompt="Drive website conversions for summer sale targeting fashion-interested adults 25-54 with $25 target CPA",
+        budget={
+            "total": 5000000,  # cents
+            "currency": "USD",
+            "pacing": "even"
+        }
+    )
+    ```
+  </Tab>
+
+  <Tab title="Measurement & Optimization">
+    ### Conversion Tracking
+
+    **DV360 Floodlight Setup:**
+    - Create conversion activities in Campaign Manager  
+    - Configure Floodlight tags on website
+    - Link to DV360 for optimization
+    - Manual bid adjustments based on performance
+
+    **Scope3 Measurement Sources:**
+    ```python
+    # Add conversion tracking
+    measurement = scope3.add_measurement_source(
+        brand_agent_id="ba_123", 
+        name="Website Conversions",
+        type="conversion_api",
+        configuration={
+            "endpoint": "https://mysite.com/conversions",
+            "events": ["purchase", "signup", "download"]
+        }
+    )
+    
+    # AI automatically optimizes based on conversion data
+    ```
+
+    ### Performance Optimization
+
+    | DV360 Process | Scope3 Process | Benefit |
+    |--------------|----------------|---------|
+    | Manual bid adjustments | AI-powered optimization | Continuous real-time optimization |
+    | Creative rotation rules | Intelligent creative selection | Performance-based creative serving |
+    | Audience refinement | Synthetic audience learning | Self-improving targeting |
+    | Budget reallocation | Dynamic budget optimization | Automatic budget distribution |
+  </Tab>
+</Tabs>
+
+## Amazon DSP → Scope3
+
+<AccordionGroup>
+  <Accordion title="Account & Order Structure">
+    ### Amazon DSP Mapping
+
+    | Amazon DSP | Scope3 | Notes |
+    |------------|--------|-------|
+    | **Advertiser Account** | Brand Agent | Top-level container |
+    | **Order** | Campaign | Budget and targeting unit |
+    | **Line Item** | Campaign Targeting | Merged into campaign configuration |
+    | **Deal ID Targeting** | AI-Optimized | Automatic premium inventory access |
+    | **Amazon Audiences** | Synthetic Audiences | Enhanced with cross-platform data |
+
+    **Migration Approach:**
+    - Each Amazon Order becomes a Scope3 Campaign
+    - Line Item targeting gets converted to natural language prompts
+    - Amazon audience segments become enhanced Synthetic Audiences
+    - Deal ID targeting is handled automatically by AI optimization
+  </Accordion>
+
+  <Accordion title="Creative & Audience Assets">
+    ### Creative Assets
+    **Amazon:** Creatives tied to specific line items with limited sharing
+    **Scope3:** Brand agent-level creative library with automatic optimization
+
+    ### Audience Segments  
+    ```python
+    # Amazon DSP Audience Targeting
+    amazon_targeting = {
+        "audiences": ["amazon_shoppers", "electronics_intenders"],
+        "lookalikes": ["customer_list_lookalike_1pct"],
+        "demographics": {"age": "25-54"} 
+    }
+
+    # Scope3 Synthetic Audience
+    audience = scope3.create_audience(
+        brand_agent_id="ba_123",
+        name="Electronics Shoppers", 
+        description="Amazon shoppers showing intent for electronics purchases, similar to our existing customers"
+    )
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Migration Code Examples
+
+### Brand Agent Creation
+
+<CodeGroup>
+```python Python
+# Create your advertiser account equivalent
+brand_agent = scope3.create_brand_agent(
+    name="Nike Global", 
+    description="Global sportswear and athletic brand"
+)
+
+print(f"Created brand agent: {brand_agent['id']}")
+# Use this ID for all subsequent campaign and asset creation
+```
+
+```javascript JavaScript  
+// Create advertiser account
+const brandAgent = await scope3.createBrandAgent({
+    name: "Nike Global",
+    description: "Global sportswear and athletic brand"
+});
+
+console.log(`Created brand agent: ${brandAgent.id}`);
+```
+
+```bash cURL
+curl -X POST https://api.agentic.scope3.com/brand-agents \
+  -H "x-scope3-api-key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Nike Global",
+    "description": "Global sportswear and athletic brand"  
+  }'
+```
+</CodeGroup>
+
+### Campaign Migration
+
+<CodeGroup>
+```python Python
+# Convert complex line item to natural language campaign
+campaign = scope3.create_campaign(
+    brand_agent_id=brand_agent['id'],
+    name="Back to School Push",
+    prompt="""
+    Target college students and young professionals aged 18-25 
+    interested in athletic wear and fitness. Focus on back-to-school 
+    season with emphasis on performance and style. Budget $75K over 
+    6 weeks with emphasis on video and social formats.
+    """,
+    budget={
+        "total": 7500000,  # $75,000 in cents
+        "currency": "USD", 
+        "daily_cap": 178571,  # ~$1,786/day
+        "pacing": "even"
+    }
+)
+```
+
+```javascript JavaScript
+// Natural language campaign creation
+const campaign = await scope3.createCampaign({
+    brandAgentId: brandAgent.id,
+    name: "Back to School Push", 
+    prompt: `
+        Target college students and young professionals aged 18-25
+        interested in athletic wear and fitness. Focus on back-to-school
+        season with emphasis on performance and style. Budget $75K over  
+        6 weeks with emphasis on video and social formats.
+    `,
+    budget: {
+        total: 7500000,
+        currency: "USD",
+        dailyCap: 178571,
+        pacing: "even"
+    }
+});
+```
+</CodeGroup>
+
+## Best Practices for Migration
+
+<Warning>
+**Migration Gotchas**
+
+1. **Don't Over-Specify:** Scope3's AI works best with natural language goals, not technical parameters
+2. **Think Business Outcomes:** Focus on what you want to achieve, not how to achieve it  
+3. **Leverage Shared Resources:** Take advantage of brand agent-level creative and audience sharing
+4. **Start Small:** Migrate a few campaigns first to understand the differences before bulk migration
+</Warning>
+
+<Tip>
+**Migration Success Tips**
+
+✅ **Do:** Use descriptive campaign names and clear business objectives in prompts
+✅ **Do:** Consolidate similar audiences into synthetic audience descriptions  
+✅ **Do:** Take advantage of automatic optimization rather than manual controls
+✅ **Do:** Test with small budgets initially to validate performance
+
+❌ **Don't:** Try to recreate exact targeting parameter combinations
+❌ **Don't:** Create separate creatives for each campaign - use the shared library
+❌ **Don't:** Over-optimize initially - let the AI learn your performance patterns
+</Warning>
+
+## Ready to Start Migration?
+
+<CardGroup cols={3}>
+  <Card 
+    title="Use Migration Wizard" 
+    icon="magic-wand"
+    href="/migration/wizard"
+  >
+    Interactive step-by-step migration tool
+  </Card>
+  <Card 
+    title="Platform-Specific Guide"
+    icon="book" 
+    href="/migration/from-ttd"
+  >
+    Detailed guides for TTD, DV360, Amazon DSP
+  </Card>
+  <Card 
+    title="API Documentation"
+    icon="code"
+    href="/api-reference/overview" 
+  >
+    Complete API reference for programmatic migration
+  </Card>
+</CardGroup>
+
+---
+
+Need help with your specific migration scenario? [Contact our migration specialists →](mailto:migration@scope3.com)

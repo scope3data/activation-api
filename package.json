@@ -3,13 +3,17 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "npm run generate:openapi && tsc",
     "start": "tsx src/server.ts",
     "dev": "fastmcp dev src/server.ts",
-    "lint": "prettier --check . && eslint . && tsc --noEmit && node scripts/validate-openapi.js",
+    "lint": "prettier --check . && eslint . && tsc --noEmit && npm run validate:openapi",
     "test": "vitest run",
     "format": "prettier --write . && eslint --fix .",
-    "validate-openapi": "node scripts/validate-openapi.js",
+    "generate:openapi": "tsx scripts/generate-openapi.ts",
+    "validate:openapi": "node scripts/validate-openapi.js",
+    "docs:dev": "cd mintlify && mintlify dev",
+    "docs:build": "cd mintlify && mintlify build",
+    "prebuild": "npm run generate:openapi",
     "prepare": "husky"
   },
   "keywords": [
@@ -43,12 +47,19 @@
     ]
   },
   "lint-staged": {
+    "src/tools/**/*.ts": [
+      "npm run generate:openapi",
+      "git add openapi.yaml"
+    ],
     "*.{ts,js}": [
       "prettier --write",
       "eslint --fix"
     ],
     "*.ts": [
       "npm run test"
+    ],
+    "openapi.yaml": [
+      "npm run validate:openapi"
     ]
   },
   "devDependencies": {

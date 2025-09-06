@@ -1,0 +1,434 @@
+---
+title: 'Create Your First Campaign'
+description: 'Launch an agentic campaign in 5 minutes with natural language'
+icon: 'rocket'
+---
+
+# Your First Agentic Campaign
+
+This tutorial will walk you through creating your first AI-powered campaign using natural language. You'll go from API key to live campaign in under 5 minutes.
+
+<Note>
+**What You'll Build**
+
+By the end of this guide, you'll have:
+- A brand agent (advertiser account) set up
+- A creative asset uploaded
+- An agentic campaign running with AI optimization
+- Real-time performance tracking configured
+</Note>
+
+## Prerequisites
+
+<Steps>
+  <Step title="Get Your API Key">
+    [Request API access](mailto:api@scope3.com) if you haven't already. You'll receive your `x-scope3-api-key` via email.
+  </Step>
+  
+  <Step title="Choose Your Method">
+    You can follow this tutorial using:
+    - **Python SDK** (recommended for developers)
+    - **cURL commands** (for testing and exploration)  
+    - **Claude Desktop MCP** (for conversational campaign management)
+  </Step>
+</Steps>
+
+## Step 1: Create Your Brand Agent
+
+Every campaign needs a brand agent (advertiser account) to contain it. Think of this as your company's advertising account.
+
+<CodeGroup>
+```python Python
+import scope3
+
+# Initialize client
+client = scope3.Client(api_key="your_scope3_api_key_here")
+
+# Create your advertiser account  
+brand_agent = client.create_brand_agent(
+    name="My Awesome Company",
+    description="E-commerce company selling eco-friendly products"
+)
+
+print(f"Brand Agent created: {brand_agent['id']}")
+brand_agent_id = brand_agent['id']  # Save this for next steps
+```
+
+```bash cURL
+# Create brand agent
+curl -X POST https://api.agentic.scope3.com/brand-agents \
+  -H "x-scope3-api-key: your_scope3_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Awesome Company",
+    "description": "E-commerce company selling eco-friendly products"
+  }'
+
+# Save the returned brand agent ID for next steps
+```
+
+```claude MCP in Claude Desktop
+Create a brand agent called "My Awesome Company" for an e-commerce company selling eco-friendly products.
+```
+</CodeGroup>
+
+<Tip>
+**Brand Agent Naming**
+
+Choose descriptive names that reflect your actual business or brand structure. If you manage multiple brands, create separate brand agents for each one (e.g., "Nike Running", "Nike Basketball").
+</Tip>
+
+## Step 2: Upload Your Creative
+
+Upload a creative asset to your brand agent's shared library. This creative can then be used across any campaign.
+
+<CodeGroup>
+```python Python
+# Upload a video creative
+creative = client.create_creative(
+    brand_agent_id=brand_agent_id,
+    name="Eco Products Hero Video",
+    type="video",
+    url="https://yourcdn.com/eco-hero-video.mp4",
+    headline="Go Green, Live Better", 
+    cta="Shop Now"
+)
+
+print(f"Creative uploaded: {creative['id']}")
+creative_id = creative['id']
+```
+
+```bash cURL
+curl -X POST https://api.agentic.scope3.com/creatives \
+  -H "x-scope3-api-key: your_scope3_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "brandAgentId": "ba_your_brand_agent_id",
+    "name": "Eco Products Hero Video", 
+    "type": "video",
+    "url": "https://yourcdn.com/eco-hero-video.mp4",
+    "headline": "Go Green, Live Better",
+    "cta": "Shop Now"
+  }'
+```
+
+```claude MCP in Claude Desktop  
+Upload a video creative called "Eco Products Hero Video" to my brand agent. The video URL is https://yourcdn.com/eco-hero-video.mp4 with headline "Go Green, Live Better" and CTA "Shop Now".
+```
+</CodeGroup>
+
+<AccordionGroup>
+  <Accordion title="Supported Creative Types">
+    - **video**: MP4, WebM, MOV formats
+    - **image**: JPG, PNG, WebP formats  
+    - **native**: Text-based native ad creatives
+    - **html5**: Interactive HTML5 ad units
+  </Accordion>
+  
+  <Accordion title="Creative Best Practices">
+    - Use high-resolution assets (minimum 1920x1080 for video)
+    - Keep file sizes under 50MB for optimal delivery
+    - Include compelling headlines and clear CTAs
+    - Test multiple creative variations for optimization
+  </Accordion>
+</AccordionGroup>
+
+## Step 3: Launch Your Agentic Campaign
+
+Now for the magic - create your campaign using natural language. The AI will handle all the complex targeting and optimization setup.
+
+<CodeGroup>
+```python Python
+# Create campaign with natural language prompt
+campaign = client.create_campaign(
+    brand_agent_id=brand_agent_id,
+    name="Eco Products Launch",
+    prompt="""
+    Launch our eco-friendly product line to environmentally conscious consumers 
+    aged 25-45 who shop online and care about sustainability. Focus on urban 
+    areas with higher environmental awareness. Budget $10,000 over 2 weeks 
+    with emphasis on video content to showcase product quality and environmental impact.
+    """,
+    budget={
+        "total": 1000000,  # $10,000 in cents
+        "currency": "USD",
+        "pacing": "even"
+    },
+    creative_ids=[creative_id]
+)
+
+print(f"Campaign created: {campaign['id']}")
+print(f"Campaign status: {campaign['status']}")
+```
+
+```bash cURL
+curl -X POST https://api.agentic.scope3.com/campaigns \
+  -H "x-scope3-api-key: your_scope3_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "brandAgentId": "ba_your_brand_agent_id",
+    "name": "Eco Products Launch",
+    "prompt": "Launch our eco-friendly product line to environmentally conscious consumers aged 25-45 who shop online and care about sustainability. Focus on urban areas with higher environmental awareness. Budget $10,000 over 2 weeks with emphasis on video content to showcase product quality and environmental impact.",
+    "budget": {
+      "total": 1000000,
+      "currency": "USD", 
+      "pacing": "even"
+    },
+    "creativeIds": ["cr_your_creative_id"]
+  }'
+```
+
+```claude MCP in Claude Desktop
+Create a campaign called "Eco Products Launch" targeting environmentally conscious consumers aged 25-45 who shop online and care about sustainability. Focus on urban areas with higher environmental awareness. Budget $10,000 over 2 weeks with emphasis on video content to showcase product quality and environmental impact. Use the eco products video creative I just uploaded.
+```
+</CodeGroup>
+
+<Info>
+**What Happens Behind the Scenes**
+
+When you create an agentic campaign, Scope3's AI:
+1. **Analyzes your prompt** to extract targeting intent and goals
+2. **Creates synthetic audiences** based on your description
+3. **Optimizes targeting parameters** for your objectives  
+4. **Sets up bidding strategy** based on budget and goals
+5. **Begins real-time optimization** using performance signals
+6. **Automatically adjusts** creative delivery and budget allocation
+</Info>
+
+## Step 4: Monitor Performance
+
+Your campaign is now live! Let's check how it's performing.
+
+<CodeGroup>
+```python Python
+# Check campaign status and performance
+campaigns = client.list_campaigns(brand_agent_id=brand_agent_id)
+
+for campaign in campaigns['campaigns']:
+    print(f"Campaign: {campaign['name']}")
+    print(f"Status: {campaign['status']}")  
+    print(f"Budget spent: ${campaign.get('spent', 0) / 100:.2f}")
+    print("---")
+
+# Get detailed performance metrics (if available)
+try:
+    performance = client.get_campaign_performance(
+        campaign_id=campaign['id'],
+        date_range="last_7_days"
+    )
+    print(f"Impressions: {performance.get('impressions', 'N/A')}")
+    print(f"Clicks: {performance.get('clicks', 'N/A')}")
+    print(f"CTR: {performance.get('ctr', 'N/A')}%")
+except:
+    print("Performance data will be available once campaign starts delivering")
+```
+
+```bash cURL  
+# List campaigns to check status
+curl -X GET https://api.agentic.scope3.com/campaigns?brand_agent_id=ba_your_brand_agent_id \
+  -H "x-scope3-api-key: your_scope3_api_key_here"
+
+# Get campaign performance
+curl -X GET https://api.agentic.scope3.com/campaigns/camp_your_campaign_id/performance \
+  -H "x-scope3-api-key: your_scope3_api_key_here"
+```
+
+```claude MCP in Claude Desktop
+Show me the status and performance of my "Eco Products Launch" campaign.
+```
+</CodeGroup>
+
+## Step 5: Optimize and Scale
+
+Based on initial performance, you can easily optimize or create variations.
+
+<Tabs>
+  <Tab title="Campaign Optimization">
+    <CodeGroup>
+    ```python Python
+    # Update campaign based on performance
+    updated_campaign = client.update_campaign(
+        campaign_id=campaign['id'],
+        prompt="""
+        Expand targeting to include gift-buyers and people interested in 
+        sustainable living. Increase focus on metropolitan areas where 
+        initial performance is strong. Emphasize quality and environmental 
+        impact messaging.
+        """,
+        budget={
+            "total": 2000000,  # Increase to $20,000
+            "currency": "USD"
+        }
+    )
+    ```
+    
+    ```claude MCP in Claude Desktop
+    Update my Eco Products Launch campaign to expand targeting to include gift-buyers and people interested in sustainable living. Increase the budget to $20,000 and focus more on metropolitan areas where performance is strong.
+    ```
+    </CodeGroup>
+  </Tab>
+
+  <Tab title="Scale with New Campaigns">
+    <CodeGroup>
+    ```python Python
+    # Create a second campaign targeting different audience
+    campaign_2 = client.create_campaign(
+        brand_agent_id=brand_agent_id,
+        name="Eco Gifts Holiday Push",
+        prompt="""
+        Target people shopping for sustainable gifts during holiday season.
+        Focus on gift-buyers aged 30-55 with higher disposable income who 
+        value environmental responsibility. Emphasize gift-giving angle 
+        and premium product quality. Budget $15,000 over 4 weeks.
+        """,
+        budget={
+            "total": 1500000,  # $15,000
+            "currency": "USD" 
+        },
+        creative_ids=[creative_id]  # Reuse the same creative
+    )
+    ```
+    
+    ```claude MCP in Claude Desktop  
+    Create a new campaign called "Eco Gifts Holiday Push" targeting people shopping for sustainable gifts during holiday season. Focus on gift-buyers aged 30-55 with higher disposable income who value environmental responsibility. Budget $15,000 over 4 weeks, and use the same eco products video.
+    ```
+    </CodeGroup>
+  </Tab>
+
+  <Tab title="A/B Test Creatives">
+    <CodeGroup>
+    ```python Python
+    # Upload alternative creative for testing
+    creative_2 = client.create_creative(
+        brand_agent_id=brand_agent_id,
+        name="Eco Products Lifestyle Image", 
+        type="image",
+        url="https://yourcdn.com/eco-lifestyle.jpg",
+        headline="Sustainable Living Made Simple",
+        cta="Discover More"
+    )
+
+    # Create test campaign with both creatives
+    test_campaign = client.create_campaign(
+        brand_agent_id=brand_agent_id,
+        name="Creative Test Campaign",
+        prompt="Test video vs image creative performance with eco-conscious consumers",
+        budget={"total": 500000, "currency": "USD"},  # $5,000 test budget
+        creative_ids=[creative_id, creative_2['id']]  # Multiple creatives
+    )
+    ```
+    </CodeGroup>
+  </Tab>
+</Tabs>
+
+## What You've Accomplished
+
+<CheckCircleIcon className="h-4 w-4 text-green-500" />
+
+Congratulations! You've successfully:
+
+✅ **Created a brand agent** - Your advertiser account container  
+✅ **Uploaded a creative** - Added to your shared creative library  
+✅ **Launched an agentic campaign** - Using natural language targeting  
+✅ **Set up performance monitoring** - Track real-time optimization  
+✅ **Learned optimization patterns** - Ready to scale and improve  
+
+## Key Differences from Traditional DSPs
+
+<Tabs>
+  <Tab title="Traditional DSP Process">
+    **Traditional Campaign Setup (30+ minutes):**
+    1. Navigate to campaign creation form
+    2. Fill out dozens of targeting parameters
+    3. Upload creatives for each campaign separately  
+    4. Set manual bidding strategies
+    5. Configure frequency caps and pacing
+    6. Set up conversion tracking
+    7. Launch and manually monitor
+    8. Make manual optimizations based on performance
+  </Tab>
+
+  <Tab title="Scope3 Agentic Process"> 
+    **Agentic Campaign Setup (5 minutes):**
+    1. Describe your campaign goals in natural language
+    2. Upload creatives once to shared library
+    3. AI handles all targeting and optimization automatically
+    4. Real-time performance optimization without manual intervention
+    5. Easy scaling and iteration with conversational updates
+  </Tab>
+</Tabs>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Advanced Campaign Features"
+    icon="settings"
+    href="/concepts/campaigns"
+  >
+    Learn about audience targeting, budget optimization, and advanced prompt techniques
+  </Card>
+  <Card
+    title="Creative Best Practices"  
+    icon="image"
+    href="/concepts/creatives"
+  >
+    Optimize your creative library for maximum performance across campaigns
+  </Card>
+  <Card
+    title="Set Up MCP Server"
+    icon="robot"
+    href="/quickstart/mcp-setup"
+  >
+    Manage campaigns conversationally through Claude Desktop
+  </Card>
+  <Card
+    title="Migration from Other Platforms"
+    icon="arrow-right-arrow-left"
+    href="/migration/overview"
+  >
+    Migrate existing campaigns from TTD, DV360, or other DSPs
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Campaign Not Delivering">
+    **Common causes:**
+    - Budget too low for competitive targeting
+    - Creative not approved (check creative status)
+    - Targeting too narrow (try broader audience descriptions)
+    - Brand safety settings too restrictive
+    
+    **Solutions:**
+    - Increase daily budget caps
+    - Simplify targeting prompt to broader audiences  
+    - Check creative approval status
+    - Review brand standards configuration
+  </Accordion>
+
+  <Accordion title="Performance Below Expectations">
+    **Optimization strategies:**
+    - Update campaign prompt with performance learnings
+    - Add more creative variations for testing
+    - Expand or refine audience descriptions
+    - Adjust budget allocation between campaigns
+    
+    **Remember:** AI optimization improves over time with more data
+  </Accordion>
+
+  <Accordion title="API Errors">
+    **Common issues:**
+    - Invalid API key (check your key is correct)
+    - Brand agent not found (save brand agent ID properly)  
+    - Creative upload failed (check file size and format)
+    - Budget validation errors (ensure budget is in cents)
+    
+    **Getting help:** [Contact API support](mailto:api-support@scope3.com)
+  </Accordion>
+</AccordionGroup>
+
+---
+
+**Ready to scale?** Now that you have the basics down, explore our [advanced campaign strategies](/concepts/campaigns) or learn how to [migrate existing campaigns](/migration/overview) from your current platform.
