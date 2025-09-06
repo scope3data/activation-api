@@ -13,7 +13,9 @@
     "validate:openapi": "node scripts/validate-openapi.js",
     "ci:local": "bash scripts/ci-check.sh",
     "docs:dev": "cd mintlify && mintlify dev",
-    "docs:build": "cd mintlify && mintlify build",
+    "docs:validate": "cd mintlify && mintlify broken-links && mintlify openapi-check ../openapi.yaml",
+    "docs:validate:links": "cd mintlify && mintlify broken-links",
+    "docs:validate:openapi": "mintlify openapi-check openapi.yaml",
     "prebuild": "npm run generate:openapi",
     "prepare": "husky",
     "postinstall": "npm run build"
