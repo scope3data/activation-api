@@ -108,16 +108,18 @@ This will start a local Mintlify server, typically at http://localhost:3000.
 
 #### Documentation Validation
 
+**Prerequisites**: Install Mintlify CLI globally: `npm install -g mintlify`
+
 Validate documentation before committing:
 
 ```bash
-# Validate OpenAPI spec used in docs
+# Validate OpenAPI spec used in docs (requires Mintlify CLI)
 npm run docs:validate:openapi
 
-# Check for broken internal links (informational)
+# Check for broken internal links (informational, requires Mintlify CLI)
 npm run docs:validate:links
 
-# Run all documentation validation
+# Run all documentation validation (requires Mintlify CLI)
 npm run docs:validate
 ```
 
@@ -125,9 +127,10 @@ npm run docs:validate
 
 - All documentation files are in the `mintlify/` directory
 - The `mint.json` file contains navigation and configuration
-- OpenAPI spec is automatically validated against documentation
+- **Mintlify CLI required**: Documentation validation commands require `mintlify` to be installed globally
+- **Optional validation**: Documentation validation is separate from main lint/CI pipeline
+- Run `npm run docs:validate:openapi` locally to ensure OpenAPI compatibility (when Mintlify CLI is available)
 - Broken links are checked but don't fail CI (since docs may be incomplete)
-- Run `npm run docs:validate:openapi` before committing to ensure OpenAPI compatibility
 
 ### CI/Local Environment Parity
 

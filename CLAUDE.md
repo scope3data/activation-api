@@ -495,15 +495,17 @@ npm run docs:dev  # Start local documentation server
 
 ### Validation Commands
 
+**Prerequisites**: Requires Mintlify CLI: `npm install -g mintlify`
+
 ```bash
-npm run docs:validate:openapi  # Validate OpenAPI spec (runs in CI)
+npm run docs:validate:openapi  # Validate OpenAPI spec (requires Mintlify CLI)
 npm run docs:validate:links    # Check for broken links (informational)
 npm run docs:validate          # Run full validation
 ```
 
-The documentation validation is integrated into:
+The documentation validation is available as:
 
-- **Lint command**: `npm run lint` includes OpenAPI validation
-- **CI pipeline**: Automatically validates documentation on every commit
-- **Git hooks**: Pre-commit validation ensures consistency
-- **Development workflow**: Easy local validation before pushing
+- **Optional local validation**: Requires Mintlify CLI to be installed globally
+- **Separate from CI**: Documentation validation doesn't block main CI pipeline
+- **Development workflow**: Easy local validation when Mintlify CLI is available
+- **OpenAPI consistency**: Ensures documentation stays in sync with API spec

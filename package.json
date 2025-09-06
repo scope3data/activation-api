@@ -6,7 +6,7 @@
     "build": "npm run generate:openapi && tsc",
     "start": "node dist/server.js",
     "dev": "fastmcp dev src/server.ts",
-    "lint": "prettier --check . && eslint . && tsc --noEmit && npm run validate:openapi && npm run docs:validate:openapi",
+    "lint": "prettier --check . && eslint . && tsc --noEmit && npm run validate:openapi",
     "test": "vitest run",
     "format": "prettier --write . && eslint --fix .",
     "generate:openapi": "tsx scripts/generate-openapi.ts",
@@ -69,11 +69,7 @@
       "npm run test"
     ],
     "openapi.yaml": [
-      "npm run validate:openapi",
-      "bash -c 'npm run docs:validate:openapi'"
-    ],
-    "mintlify/**/*.{md,mdx,json}": [
-      "bash -c 'npm run docs:validate:openapi'"
+      "npm run validate:openapi"
     ]
   },
   "devDependencies": {
