@@ -356,12 +356,12 @@ Your API key provides full access to your Scope3 account. Follow these security 
     rotation schedule established
   </Accordion>
 
-  <Accordion title="Production Environment">
-    - [ ] API key stored in secure environment variables - [ ] Key management
-    system in use (AWS Secrets Manager, etc.) - [ ] Monitoring and alerting set
-    up for API usage - [ ] Regular key rotation scheduled - [ ] Access logs
-    reviewed regularly
-  </Accordion>
+<Accordion title="Production Environment">
+  - [ ] API key stored in secure environment variables - [ ] Key management
+  system in use (AWS Secrets Manager, etc.) - [ ] Monitoring and alerting set up
+  for API usage - [ ] Regular key rotation scheduled - [ ] Access logs reviewed
+  regularly
+</Accordion>
 
   <Accordion title="Team Access">
     - [ ] Individual API keys for each team member - [ ] Keys tied to specific
@@ -402,13 +402,12 @@ Each API response includes rate limiting information:
     your_key_here` - Test with the `/auth/check` endpoint
   </Accordion>
 
-  <Accordion title="403 Forbidden Error">
-    **Common causes:** - API key doesn't have required permissions - Account
-    suspended or restricted - IP address not allowlisted (if IP restrictions are
-    enabled) **Solutions:** - Check your account permissions and limits -
-    Contact support if account appears suspended - Verify IP restrictions if
-    configured
-  </Accordion>
+<Accordion title="403 Forbidden Error">
+  **Common causes:** - API key doesn't have required permissions - Account
+  suspended or restricted - IP address not allowlisted (if IP restrictions are
+  enabled) **Solutions:** - Check your account permissions and limits - Contact
+  support if account appears suspended - Verify IP restrictions if configured
+</Accordion>
 
   <Accordion title="429 Rate Limited Error">
     **Common causes:** - Exceeded rate limits for your account - Too many
