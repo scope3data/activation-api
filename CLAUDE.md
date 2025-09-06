@@ -72,39 +72,41 @@ Retrieves available AMP agents and their models from Scope3.
 
 ## Authentication
 
-All tools (except check_auth) require a Scope3 API key. Provide authentication via:
+All tools (except check_auth) require a Scope3 API key. Provide authentication via HTTP headers only:
 
 - `x-scope3-api-key` header
 - `Authorization: Bearer <api_key>` header
-- Environment variable `SCOPE3_API_KEY`
+
+**Note**: API keys are never stored server-side and must be provided by the client in each request.
 
 ## Configuration
 
 ### Claude Desktop
 
-Add to your Claude Desktop configuration:
+This MCP server runs in HTTP mode only. Start the server:
 
-```json
-{
-  "mcpServers": {
-    "scope3-campaign-api": {
-      "command": "node",
-      "args": ["/path/to/dist/server.js"],
-      "env": {
-        "NODE_ENV": "development",
-        "SCOPE3_API_KEY": "your_scope3_api_key_here"
-      }
-    }
-  }
-}
+```bash
+npm start
+```
+
+The server will be available at `http://localhost:3001/mcp`.
+
+**Authentication**: Include your Scope3 API key in requests:
+```bash
+curl -H "x-scope3-api-key: your_api_key" http://localhost:3001/mcp
 ```
 
 ### HTTP Mode
 
-The server also supports HTTP mode for integration with other applications:
+The server runs in HTTP mode by default:
 
 ```bash
-npm start -- --http --port 3001
+npm start  # Starts on port 3001
+```
+
+Or specify a custom port:
+```bash
+PORT=8080 npm start
 ```
 
 ## Features

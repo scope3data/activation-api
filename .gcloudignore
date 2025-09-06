@@ -1,0 +1,59 @@
+# Ignore git files
+.git
+.gitignore
+
+# Dependencies
+node_modules/
+
+# Build outputs and temporary files
+dist/
+coverage/
+*.log
+*.tmp
+*.temp
+
+# Environment files (security)
+.env*
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Documentation and non-runtime files
+*.md
+docs/
+README*
+LICENSE
+CHANGELOG*
+
+# Test files
+*.test.ts
+*.test.js
+tests/
+__tests__/
+spec/
+*.spec.ts
+*.spec.js
+
+# Development files
+.github/
+.husky/
+scripts/
+vitest.config.ts
+eslint.config.ts
+tsconfig.json
+
+# Configuration files not needed at runtime
+claude_desktop_config_example.json
+openapi.yaml

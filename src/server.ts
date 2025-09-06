@@ -14,23 +14,18 @@ const server = new FastMCP({
 // Register all tools
 registerTools(server, scope3Client);
 
-// Start the server with configurable options (skip in test environment)
+// Start the server in HTTP mode (skip in test environment)
 if (process.env.NODE_ENV !== "test") {
-  // Check if we should use stdio (for Claude Desktop) or HTTP (for testing)
-  if (process.env.MCP_TRANSPORT === "http") {
-    server.start({
-      httpStream: {
-        endpoint: config.endpoint as `/${string}`,
-        port: config.port,
-      },
-      transportType: "httpStream",
-    });
-    // Only log in HTTP mode since stdio mode can't handle console output
-    console.log(`MCP Server started in HTTP mode on port ${config.port}`);
-  } else {
-    // Default to stdio for Claude Desktop - no console.log allowed
-    server.start({
-      transportType: "stdio",
-    });
-  }
+  const port = parseInt(process.env.PORT || String(config.port));
+  
+  server.start({
+    httpStream: {
+      endpoint: config.endpoint as `/${string}`,
+      port,
+    },
+    transportType: "httpStream",
+  });
+  
+  console.log(`MCP Server started on port ${port}`);
+  console.log(`Endpoint: http://localhost:${port}${config.endpoint}`);
 }
