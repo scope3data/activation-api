@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { Scope3ApiClient } from "./scope3-client.js";
+import { Scope3ApiClient } from "./client/scope3-client.js";
 
 // Mock the global fetch function
 global.fetch = vi.fn();
