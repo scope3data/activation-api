@@ -622,7 +622,7 @@ function toolToOpenAPIOperation(
   path: string,
 ): OpenAPIOperation {
   const operation: OpenAPIOperation = {
-    description: tool.description || "",
+    description: (tool.description || "").replace(/\n\s+/g, " ").trim(),
     operationId: tool.name,
     summary: tool.annotations?.title || tool.name.replace(/_/g, " "),
     "x-llm-hints": extractLLMHints(tool.description),
