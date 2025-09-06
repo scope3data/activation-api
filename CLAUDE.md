@@ -32,10 +32,12 @@ BrandAgent (Advertiser/Account)
 Creates a new brand agent (advertiser account) that acts as a container for campaigns, creatives, audiences, and settings.
 
 **Parameters:**
+
 - `name` (string, required): Name of the brand agent/advertiser
 - `description` (string, optional): Optional description
 
 **Usage Examples:**
+
 - User: "Create a brand agent for Nike"
 - User: "Set up an advertiser account called 'Acme Corp' for our B2B campaigns"
 
@@ -46,6 +48,7 @@ Creates a new brand agent (advertiser account) that acts as a container for camp
 Updates brand agent metadata (name, description).
 
 **Parameters:**
+
 - `brandAgentId` (string, required): ID of brand agent to update
 - `name` (string, optional): New name
 - `description` (string, optional): New description
@@ -55,6 +58,7 @@ Updates brand agent metadata (name, description).
 ⚠️ **DANGER**: Permanently deletes a brand agent and ALL associated data.
 
 **Parameters:**
+
 - `brandAgentId` (string, required): ID of brand agent to delete
 
 #### 4. get_brand_agent
@@ -62,6 +66,7 @@ Updates brand agent metadata (name, description).
 Retrieves detailed information about a specific brand agent.
 
 **Parameters:**
+
 - `brandAgentId` (string, required): ID of brand agent
 
 #### 5. list_brand_agents
@@ -69,6 +74,7 @@ Retrieves detailed information about a specific brand agent.
 Lists all brand agents with optional filtering.
 
 **Parameters:**
+
 - `where` (object, optional): Optional filters
   - `name` (string): Filter by name (partial match)
   - `customerId` (number): Filter by customer ID
@@ -80,6 +86,7 @@ Lists all brand agents with optional filtering.
 Creates a campaign within a brand agent context. Supports optional creative and audience assignment during creation.
 
 **Parameters:**
+
 - `brandAgentId` (string, required): ID of owning brand agent
 - `name` (string, required): Campaign name
 - `prompt` (string, required): Natural language campaign description
@@ -88,6 +95,7 @@ Creates a campaign within a brand agent context. Supports optional creative and 
 - `audienceIds` (array, optional): Audience IDs to assign
 
 **Usage Examples:**
+
 - User: "Create a $50,000 CTV campaign for brand agent ba_123 targeting cat lovers"
 - User: "Set up a premium display campaign for Nike with $25K budget"
 
@@ -96,6 +104,7 @@ Creates a campaign within a brand agent context. Supports optional creative and 
 Updates campaign settings including creative assignments (follows create/update pattern).
 
 **Parameters:**
+
 - `campaignId` (string, required): Campaign to update
 - `name`, `prompt`, `budget`, `status` (optional): Fields to update
 - `creativeIds` (array, optional): New creative assignments (replaces existing)
@@ -106,6 +115,7 @@ Updates campaign settings including creative assignments (follows create/update 
 Lists all campaigns for a specific brand agent.
 
 **Parameters:**
+
 - `brandAgentId` (string, required): Brand agent ID
 - `status` (string, optional): Filter by campaign status
 
@@ -116,6 +126,7 @@ Lists all campaigns for a specific brand agent.
 Creates a creative asset owned by a brand agent, usable across multiple campaigns.
 
 **Parameters:**
+
 - `brandAgentId` (string, required): Owning brand agent
 - `name` (string, required): Creative name
 - `type` (enum, required): 'image', 'video', 'native', or 'html5'
@@ -123,6 +134,7 @@ Creates a creative asset owned by a brand agent, usable across multiple campaign
 - `headline`, `body`, `cta` (string, optional): Creative text elements
 
 **Usage Examples:**
+
 - User: "Add a video creative to brand agent ba_123 called 'Summer Sale'"
 - User: "Create a native ad creative with headline and CTA text"
 
@@ -131,6 +143,7 @@ Creates a creative asset owned by a brand agent, usable across multiple campaign
 Updates creative asset details. Changes affect all campaigns using this creative.
 
 **Parameters:**
+
 - `creativeId` (string, required): Creative to update
 - `name`, `type`, `url`, `headline`, `body`, `cta` (optional): Fields to update
 
@@ -139,6 +152,7 @@ Updates creative asset details. Changes affect all campaigns using this creative
 Lists all creatives owned by a brand agent.
 
 **Parameters:**
+
 - `brandAgentId` (string, required): Brand agent ID
 
 ### Brand Standards (2 tools) - Brand Safety
@@ -148,6 +162,7 @@ Lists all creatives owned by a brand agent.
 Configures brand safety rules that apply to all campaigns within the brand agent.
 
 **Parameters:**
+
 - `brandAgentId` (string, required): Brand agent ID
 - `domainBlocklist` (array, optional): Domains to block
 - `domainAllowlist` (array, optional): Domains to allow
@@ -155,6 +170,7 @@ Configures brand safety rules that apply to all campaigns within the brand agent
 - `contentCategories` (array, optional): Content categories to avoid
 
 **Usage Examples:**
+
 - User: "Block competitor domains for Nike brand agent"
 - User: "Set up keyword filters to avoid political content"
 
@@ -169,11 +185,13 @@ Retrieves current brand safety standards for a brand agent.
 Creates a synthetic audience profile for targeting (stub implementation).
 
 **Parameters:**
+
 - `brandAgentId` (string, required): Owning brand agent
 - `name` (string, required): Audience name
 - `description` (string, optional): Audience description
 
 **Usage Examples:**
+
 - User: "Create an audience called 'Tech Enthusiasts 25-34' for our brand"
 
 #### 15. list_audiences
@@ -187,12 +205,14 @@ Lists all synthetic audiences owned by a brand agent.
 Adds tracking/analytics integration to a brand agent (stub implementation).
 
 **Parameters:**
+
 - `brandAgentId` (string, required): Owning brand agent
 - `name` (string, required): Source name
 - `type` (enum, required): 'conversion_api', 'analytics', 'brand_study', 'mmm'
 - `configuration` (object, optional): Source-specific settings
 
 **Usage Examples:**
+
 - User: "Add Google Analytics tracking to our brand agent"
 - User: "Set up Facebook Conversions API for measurement"
 
@@ -207,10 +227,12 @@ Lists all measurement sources configured for a brand agent.
 Original campaign creation tool (kept for backward compatibility).
 
 **Parameters:**
+
 - `name` (string, required): Campaign name
 - `prompt` (string, required): Natural language description
 
 **Usage Examples:**
+
 - User: "Create a $50,000 CTV campaign for cat lovers in New York"
 
 **Note:** Consider using the new brand agent campaign tools for better organization.
@@ -226,6 +248,7 @@ Verifies API key authentication status and returns user information.
 **Parameters:** None
 
 **Usage Examples:**
+
 - User: "Am I authenticated?"
 - User: "Check my login status"
 
@@ -234,9 +257,11 @@ Verifies API key authentication status and returns user information.
 Retrieves available AMP agents and their models from Scope3.
 
 **Parameters:**
+
 - `where` (object, optional): Filters for agents
 
 **Usage Examples:**
+
 - User: "Show me all available agents"
 
 ## Workflow Examples
@@ -375,6 +400,7 @@ src/
 **ESLint Rules**: Strict rules against `any` types required using `Record<string, unknown>` for flexible object types. Unused variables in destructuring assignments need explicit ignoring with `[, value]`.
 
 **MCP Tool Patterns**: Consistent patterns across all tools:
+
 - Zod schemas for parameter validation
 - Auth checking with fallback to environment variables
 - Human-readable response formatting
@@ -408,6 +434,7 @@ src/
 This implementation added **comprehensive brand agent management** to the Scope3 Campaign API:
 
 ### 📊 **By the Numbers**
+
 - **20 new MCP tools** for complete brand agent lifecycle
 - **11 new TypeScript interfaces** with full type safety
 - **20+ new client methods** in Scope3ApiClient
@@ -416,6 +443,7 @@ This implementation added **comprehensive brand agent management** to the Scope3
 - **All CI tests passing** with quality gates met
 
 ### 🎯 **Core Capabilities Added**
+
 - **Brand Agent Management**: Complete CRUD operations for advertiser accounts
 - **Campaign Organization**: Campaigns scoped to brand agents with shared resource access
 - **Creative Asset Management**: Reusable creative assets across campaigns
@@ -424,6 +452,7 @@ This implementation added **comprehensive brand agent management** to the Scope3
 - **Analytics Integration**: Measurement source configuration and tracking (stub)
 
 ### 🚀 **Production Ready**
+
 - ✅ Full MCP protocol compliance
 - ✅ Comprehensive error handling and auth integration
 - ✅ Human-readable conversational responses
@@ -434,7 +463,9 @@ This implementation added **comprehensive brand agent management** to the Scope3
 - ✅ Extensible architecture for future enhancements
 
 ### 🔮 **Future Expansion Ready**
+
 The stub implementations provide clear extension points for:
+
 - **Advanced Brand Standards**: Real-time brand safety monitoring, custom rule engines
 - **Smart Synthetic Audiences**: AI-powered audience creation, behavioral targeting, lookalike modeling
 - **Comprehensive Measurement**: Real-time attribution, cross-channel analytics, MMM integration
