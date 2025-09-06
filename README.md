@@ -1,8 +1,36 @@
-# FastMCP Boilerplate
+# Scope3 Campaign API MCP Server
 
-A boilerplate for [FastMCP](https://github.com/punkpeye/fastmcp).
+An MCP (Model Context Protocol) server for comprehensive advertising campaign management through the Scope3 API.
 
-This boilerplate is a good starting point for building an MCP server. It includes a basic setup for testing, linting, formatting, and publishing to NPM.
+## Development Environment Setup
+
+### Prerequisites
+
+This project requires **Node.js 22+** for consistency with CI environments.
+
+#### Using nvm (recommended):
+```bash
+# Install/use the correct Node version
+nvm use
+
+# Or install if you don't have Node 22
+nvm install 22
+nvm use 22
+```
+
+#### Manual setup:
+- Ensure you have Node.js 22+ installed
+- Check your version: `node --version`
+
+### Local CI Checking
+
+Before pushing changes, run our local CI simulation:
+
+```bash
+npm run ci:local
+```
+
+This runs the same checks as our CI pipeline and catches issues early.
 
 ## Development
 
@@ -61,6 +89,20 @@ Use `npm run format` to format the code.
 ```bash
 npm run format
 ```
+
+### CI/Local Environment Parity
+
+To ensure your local environment matches CI and prevent "works on my machine" issues:
+
+```bash
+# Setup correct Node version
+nvm use
+
+# Run local CI simulation before pushing
+npm run ci:local
+```
+
+See [CI/Local Parity Guide](docs/CI_LOCAL_PARITY.md) for detailed information.
 
 ### GitHub Actions
 

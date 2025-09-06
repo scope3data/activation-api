@@ -1,0 +1,25 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Pre-push hook to run CI checks locally
+echo "🚀 Running pre-push CI checks..."
+
+# Check if we should skip the hook (for emergencies)
+if [ "$SKIP_PRE_PUSH" = "1" ]; then
+  echo "⚠️  Skipping pre-push checks (SKIP_PRE_PUSH=1)"
+  exit 0
+fi
+
+# Run the local CI simulation
+npm run ci:local
+
+if [ $? -ne 0 ]; then
+  echo "❌ Pre-push checks failed!"
+  echo "   Please fix the issues above before pushing."
+  echo ""
+  echo "   To skip these checks in an emergency, use:"
+  echo "   SKIP_PRE_PUSH=1 git push"
+  exit 1
+fi
+
+echo "✅ Pre-push checks passed!"
