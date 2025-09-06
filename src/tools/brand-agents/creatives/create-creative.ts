@@ -43,7 +43,10 @@ export const createBrandAgentCreativeTool = (client: Scope3ApiClient) => ({
       // First, verify the brand agent exists
       let brandAgentName: string;
       try {
-        const brandAgent = await client.getBrandAgent(apiKey, args.brandAgentId);
+        const brandAgent = await client.getBrandAgent(
+          apiKey,
+          args.brandAgentId,
+        );
         brandAgentName = brandAgent.name;
       } catch (fetchError) {
         return createErrorResponse(
@@ -53,16 +56,19 @@ export const createBrandAgentCreativeTool = (client: Scope3ApiClient) => ({
       }
 
       const creativeInput = {
+        body: args.body,
         brandAgentId: args.brandAgentId,
+        cta: args.cta,
+        headline: args.headline,
         name: args.name,
         type: args.type,
         url: args.url,
-        headline: args.headline,
-        body: args.body,
-        cta: args.cta,
       };
 
-      const creative = await client.createBrandAgentCreative(apiKey, creativeInput);
+      const creative = await client.createBrandAgentCreative(
+        apiKey,
+        creativeInput,
+      );
 
       let summary = `✅ Creative Created Successfully!\n\n`;
       summary += `**Creative Details:**\n`;
@@ -71,7 +77,7 @@ export const createBrandAgentCreativeTool = (client: Scope3ApiClient) => ({
       summary += `• **Brand Agent:** ${brandAgentName} (${creative.brandAgentId})\n`;
       summary += `• **Type:** ${creative.type}\n`;
       summary += `• **URL:** ${creative.url}\n`;
-      
+
       if (creative.headline) {
         summary += `• **Headline:** ${creative.headline}\n`;
       }
@@ -81,26 +87,26 @@ export const createBrandAgentCreativeTool = (client: Scope3ApiClient) => ({
       if (creative.cta) {
         summary += `• **Call-to-Action:** ${creative.cta}\n`;
       }
-      
+
       summary += `• **Created:** ${new Date(creative.createdAt).toLocaleString()}\n\n`;
-      
+
       summary += `**Creative Type Information:**\n`;
       switch (creative.type) {
-        case 'image':
+        case "html5":
+          summary += `• HTML5 creatives support rich interactive experiences\n`;
+          summary += `• Ensure compatibility across different devices\n`;
+          break;
+        case "image":
           summary += `• Image creatives work well for display campaigns\n`;
           summary += `• Ensure the image meets publisher size requirements\n`;
           break;
-        case 'video':
-          summary += `• Video creatives are ideal for CTV and video campaigns\n`;
-          summary += `• Check video duration and format requirements\n`;
-          break;
-        case 'native':
+        case "native":
           summary += `• Native creatives blend with publisher content\n`;
           summary += `• Headlines and body text are especially important\n`;
           break;
-        case 'html5':
-          summary += `• HTML5 creatives support rich interactive experiences\n`;
-          summary += `• Ensure compatibility across different devices\n`;
+        case "video":
+          summary += `• Video creatives are ideal for CTV and video campaigns\n`;
+          summary += `• Check video duration and format requirements\n`;
           break;
       }
 
@@ -108,7 +114,7 @@ export const createBrandAgentCreativeTool = (client: Scope3ApiClient) => ({
       summary += `• Assign this creative to campaigns within the same brand agent\n`;
       summary += `• Review creative performance once campaigns are running\n`;
       summary += `• Create additional creative variants for A/B testing\n\n`;
-      
+
       summary += `The creative is ready to be assigned to campaigns!`;
 
       return createMCPResponse({
@@ -122,23 +128,24 @@ export const createBrandAgentCreativeTool = (client: Scope3ApiClient) => ({
 
   name: "create_creative",
   parameters: z.object({
-    brandAgentId: z.string().describe("ID of the brand agent that will own this creative"),
-    name: z.string().describe("Name of the creative asset"),
-    type: z
-      .enum(['image', 'video', 'native', 'html5'])
-      .describe("Type of creative: image, video, native, or html5"),
-    url: z.string().describe("URL where the creative asset is hosted"),
+    body: z.string().optional().describe("Optional body text for the creative"),
+    brandAgentId: z
+      .string()
+      .describe("ID of the brand agent that will own this creative"),
+    cta: z
+      .string()
+      .optional()
+      .describe(
+        "Optional call-to-action text (e.g., 'Learn More', 'Shop Now')",
+      ),
     headline: z
       .string()
       .optional()
       .describe("Optional headline text for the creative"),
-    body: z
-      .string()
-      .optional()
-      .describe("Optional body text for the creative"),
-    cta: z
-      .string()
-      .optional()
-      .describe("Optional call-to-action text (e.g., 'Learn More', 'Shop Now')"),
+    name: z.string().describe("Name of the creative asset"),
+    type: z
+      .enum(["image", "video", "native", "html5"])
+      .describe("Type of creative: image, video, native, or html5"),
+    url: z.string().describe("URL where the creative asset is hosted"),
   }),
 });

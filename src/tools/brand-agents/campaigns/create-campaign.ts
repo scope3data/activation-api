@@ -43,7 +43,10 @@ export const createBrandAgentCampaignTool = (client: Scope3ApiClient) => ({
       // First, verify the brand agent exists
       let brandAgentName: string;
       try {
-        const brandAgent = await client.getBrandAgent(apiKey, args.brandAgentId);
+        const brandAgent = await client.getBrandAgent(
+          apiKey,
+          args.brandAgentId,
+        );
         brandAgentName = brandAgent.name;
       } catch (fetchError) {
         return createErrorResponse(
@@ -53,15 +56,18 @@ export const createBrandAgentCampaignTool = (client: Scope3ApiClient) => ({
       }
 
       const campaignInput = {
+        audienceIds: args.audienceIds || [],
         brandAgentId: args.brandAgentId,
-        name: args.name,
-        prompt: args.prompt,
         budget: args.budget,
         creativeIds: args.creativeIds || [],
-        audienceIds: args.audienceIds || [],
+        name: args.name,
+        prompt: args.prompt,
       };
 
-      const campaign = await client.createBrandAgentCampaign(apiKey, campaignInput);
+      const campaign = await client.createBrandAgentCampaign(
+        apiKey,
+        campaignInput,
+      );
 
       let summary = `✅ Campaign Created Successfully!\n\n`;
       summary += `**Campaign Details:**\n`;
@@ -69,7 +75,7 @@ export const createBrandAgentCampaignTool = (client: Scope3ApiClient) => ({
       summary += `• **ID:** ${campaign.id}\n`;
       summary += `• **Brand Agent:** ${brandAgentName} (${campaign.brandAgentId})\n`;
       summary += `• **Prompt:** ${campaign.prompt}\n`;
-      
+
       if (campaign.budget) {
         summary += `• **Budget:** ${campaign.budget.total} ${campaign.budget.currency}`;
         if (campaign.budget.dailyCap) {
@@ -80,7 +86,7 @@ export const createBrandAgentCampaignTool = (client: Scope3ApiClient) => ({
           summary += `• **Pacing:** ${campaign.budget.pacing}\n`;
         }
       }
-      
+
       summary += `• **Status:** ${campaign.status}\n`;
       summary += `• **Created:** ${new Date(campaign.createdAt).toLocaleString()}\n`;
 
@@ -109,7 +115,7 @@ export const createBrandAgentCampaignTool = (client: Scope3ApiClient) => ({
       summary += `• Create or assign synthetic audiences for targeting\n`;
       summary += `• Review and adjust campaign settings as needed\n`;
       summary += `• Activate the campaign when ready\n\n`;
-      
+
       summary += `Campaign is ready for further configuration and activation!`;
 
       return createMCPResponse({
@@ -123,27 +129,44 @@ export const createBrandAgentCampaignTool = (client: Scope3ApiClient) => ({
 
   name: "create_campaign",
   parameters: z.object({
-    brandAgentId: z.string().describe("ID of the brand agent that will own this campaign"),
-    name: z.string().describe("Name of the campaign"),
-    prompt: z
+    audienceIds: z
+      .array(z.string())
+      .optional()
+      .describe(
+        "Optional array of synthetic audience IDs to assign (must belong to same brand agent)",
+      ),
+    brandAgentId: z
       .string()
-      .describe("Natural language description of campaign objectives and strategy"),
+      .describe("ID of the brand agent that will own this campaign"),
     budget: z
       .object({
+        currency: z
+          .string()
+          .default("USD")
+          .describe("Budget currency (default: USD)"),
+        dailyCap: z
+          .number()
+          .optional()
+          .describe("Optional daily spending limit"),
+        pacing: z
+          .string()
+          .optional()
+          .describe("Budget pacing strategy (e.g., 'even', 'asap')"),
         total: z.number().describe("Total campaign budget"),
-        currency: z.string().default("USD").describe("Budget currency (default: USD)"),
-        dailyCap: z.number().optional().describe("Optional daily spending limit"),
-        pacing: z.string().optional().describe("Budget pacing strategy (e.g., 'even', 'asap')"),
       })
       .optional()
       .describe("Campaign budget configuration"),
     creativeIds: z
       .array(z.string())
       .optional()
-      .describe("Optional array of creative IDs to assign (must belong to same brand agent)"),
-    audienceIds: z
-      .array(z.string())
-      .optional()
-      .describe("Optional array of synthetic audience IDs to assign (must belong to same brand agent)"),
+      .describe(
+        "Optional array of creative IDs to assign (must belong to same brand agent)",
+      ),
+    name: z.string().describe("Name of the campaign"),
+    prompt: z
+      .string()
+      .describe(
+        "Natural language description of campaign objectives and strategy",
+      ),
   }),
 });

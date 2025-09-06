@@ -41,8 +41,8 @@ export const createBrandAgentTool = (client: Scope3ApiClient) => ({
 
     try {
       const brandAgent = await client.createBrandAgent(apiKey, {
-        name: args.name,
         description: args.description,
+        name: args.name,
       });
 
       let summary = `✅ Brand Agent Created Successfully!\n\n`;
@@ -54,7 +54,7 @@ export const createBrandAgentTool = (client: Scope3ApiClient) => ({
       }
       summary += `• Customer ID: ${brandAgent.customerId}\n`;
       summary += `• Created: ${new Date(brandAgent.createdAt).toLocaleString()}\n\n`;
-      
+
       summary += `**What's Next?**\n`;
       summary += `You can now:\n`;
       summary += `• Set brand standards for this agent\n`;
@@ -62,7 +62,7 @@ export const createBrandAgentTool = (client: Scope3ApiClient) => ({
       summary += `• Add creatives to this brand agent\n`;
       summary += `• Create synthetic audiences for targeting\n`;
       summary += `• Configure measurement sources\n\n`;
-      
+
       summary += `Use the brand agent ID \`${brandAgent.id}\` for all subsequent operations.`;
 
       return createMCPResponse({
@@ -76,10 +76,10 @@ export const createBrandAgentTool = (client: Scope3ApiClient) => ({
 
   name: "create_brand_agent",
   parameters: z.object({
-    name: z.string().describe("Name of the brand agent (advertiser account)"),
     description: z
       .string()
       .optional()
       .describe("Optional description of the brand agent"),
+    name: z.string().describe("Name of the brand agent (advertiser account)"),
   }),
 });

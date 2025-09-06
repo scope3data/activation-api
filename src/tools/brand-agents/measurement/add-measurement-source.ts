@@ -43,7 +43,10 @@ export const addMeasurementSourceTool = (client: Scope3ApiClient) => ({
       // First, verify the brand agent exists
       let brandAgentName: string;
       try {
-        const brandAgent = await client.getBrandAgent(apiKey, args.brandAgentId);
+        const brandAgent = await client.getBrandAgent(
+          apiKey,
+          args.brandAgentId,
+        );
         brandAgentName = brandAgent.name;
       } catch (fetchError) {
         return createErrorResponse(
@@ -54,12 +57,15 @@ export const addMeasurementSourceTool = (client: Scope3ApiClient) => ({
 
       const sourceInput = {
         brandAgentId: args.brandAgentId,
+        configuration: args.configuration,
         name: args.name,
         type: args.type,
-        configuration: args.configuration,
       };
 
-      const measurementSource = await client.addMeasurementSource(apiKey, sourceInput);
+      const measurementSource = await client.addMeasurementSource(
+        apiKey,
+        sourceInput,
+      );
 
       let summary = `✅ Measurement Source Added Successfully!\n\n`;
       summary += `**Source Details:**\n`;
@@ -70,34 +76,39 @@ export const addMeasurementSourceTool = (client: Scope3ApiClient) => ({
       summary += `• **Status:** ${measurementSource.status}\n`;
       summary += `• **Created:** ${new Date(measurementSource.createdAt).toLocaleString()}\n`;
 
-      if (measurementSource.configuration && Object.keys(measurementSource.configuration).length > 0) {
+      if (
+        measurementSource.configuration &&
+        Object.keys(measurementSource.configuration).length > 0
+      ) {
         summary += `\n**Configuration:**\n`;
-        Object.entries(measurementSource.configuration).forEach(([key, value]) => {
-          summary += `• ${key}: ${JSON.stringify(value)}\n`;
-        });
+        Object.entries(measurementSource.configuration).forEach(
+          ([key, value]) => {
+            summary += `• ${key}: ${JSON.stringify(value)}\n`;
+          },
+        );
       }
 
       summary += `\n📊 **Measurement Source Type: ${measurementSource.type.toUpperCase()}**\n`;
       switch (measurementSource.type) {
-        case 'conversion_api':
-          summary += `• Track conversions and attributions from campaigns\n`;
-          summary += `• Integrate with e-commerce platforms and CRMs\n`;
-          summary += `• Measure campaign ROI and effectiveness\n`;
-          summary += `• Support for real-time conversion tracking\n`;
-          break;
-        case 'analytics':
+        case "analytics":
           summary += `• Connect to Google Analytics, Adobe Analytics, or similar\n`;
           summary += `• Monitor website traffic and user engagement\n`;
           summary += `• Track campaign-driven site behavior\n`;
           summary += `• Analyze audience segments and demographics\n`;
           break;
-        case 'brand_study':
+        case "brand_study":
           summary += `• Measure brand awareness and perception\n`;
           summary += `• Track brand lift from advertising campaigns\n`;
           summary += `• Monitor brand sentiment and recall\n`;
           summary += `• Compare brand metrics across different audiences\n`;
           break;
-        case 'mmm':
+        case "conversion_api":
+          summary += `• Track conversions and attributions from campaigns\n`;
+          summary += `• Integrate with e-commerce platforms and CRMs\n`;
+          summary += `• Measure campaign ROI and effectiveness\n`;
+          summary += `• Support for real-time conversion tracking\n`;
+          break;
+        case "mmm":
           summary += `• Media Mix Modeling for attribution analysis\n`;
           summary += `• Understand cross-channel media effectiveness\n`;
           summary += `• Optimize budget allocation across channels\n`;
@@ -132,14 +143,24 @@ export const addMeasurementSourceTool = (client: Scope3ApiClient) => ({
 
   name: "add_measurement_source",
   parameters: z.object({
-    brandAgentId: z.string().describe("ID of the brand agent that will own this measurement source"),
-    name: z.string().describe("Name of the measurement source (e.g., 'Google Analytics', 'Facebook Conversions API')"),
-    type: z
-      .enum(['conversion_api', 'analytics', 'brand_study', 'mmm'])
-      .describe("Type of measurement: conversion_api, analytics, brand_study, or mmm (Media Mix Modeling)"),
+    brandAgentId: z
+      .string()
+      .describe("ID of the brand agent that will own this measurement source"),
     configuration: z
       .record(z.any())
       .optional()
-      .describe("Optional configuration parameters specific to the measurement source type"),
+      .describe(
+        "Optional configuration parameters specific to the measurement source type",
+      ),
+    name: z
+      .string()
+      .describe(
+        "Name of the measurement source (e.g., 'Google Analytics', 'Facebook Conversions API')",
+      ),
+    type: z
+      .enum(["conversion_api", "analytics", "brand_study", "mmm"])
+      .describe(
+        "Type of measurement: conversion_api, analytics, brand_study, or mmm (Media Mix Modeling)",
+      ),
   }),
 });

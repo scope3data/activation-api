@@ -43,7 +43,10 @@ export const deleteBrandAgentTool = (client: Scope3ApiClient) => ({
       // First, get the brand agent details to show what's being deleted
       let brandAgentName: string;
       try {
-        const brandAgent = await client.getBrandAgent(apiKey, args.brandAgentId);
+        const brandAgent = await client.getBrandAgent(
+          apiKey,
+          args.brandAgentId,
+        );
         brandAgentName = brandAgent.name;
       } catch (fetchError) {
         // If we can't fetch the brand agent, it might not exist
@@ -58,7 +61,8 @@ export const deleteBrandAgentTool = (client: Scope3ApiClient) => ({
 
       if (!success) {
         return createMCPResponse({
-          message: "Failed to delete brand agent. The operation was not completed.",
+          message:
+            "Failed to delete brand agent. The operation was not completed.",
           success: false,
         });
       }
@@ -67,7 +71,7 @@ export const deleteBrandAgentTool = (client: Scope3ApiClient) => ({
       summary += `The following brand agent has been permanently deleted:\n`;
       summary += `• **Name:** ${brandAgentName}\n`;
       summary += `• **ID:** ${args.brandAgentId}\n\n`;
-      
+
       summary += `⚠️ **What was deleted:**\n`;
       summary += `• The brand agent record\n`;
       summary += `• All campaigns owned by this brand agent\n`;
@@ -75,7 +79,7 @@ export const deleteBrandAgentTool = (client: Scope3ApiClient) => ({
       summary += `• All synthetic audiences owned by this brand agent\n`;
       summary += `• All brand standards configurations\n`;
       summary += `• All measurement source configurations\n\n`;
-      
+
       summary += `❌ **This action cannot be undone.**\n`;
       summary += `The brand agent and all its associated data have been permanently removed from the system.`;
 
@@ -90,6 +94,8 @@ export const deleteBrandAgentTool = (client: Scope3ApiClient) => ({
 
   name: "delete_brand_agent",
   parameters: z.object({
-    brandAgentId: z.string().describe("ID of the brand agent to delete permanently"),
+    brandAgentId: z
+      .string()
+      .describe("ID of the brand agent to delete permanently"),
   }),
 });

@@ -43,7 +43,10 @@ export const getBrandStandardsTool = (client: Scope3ApiClient) => ({
       // First, verify the brand agent exists and get its name
       let brandAgentName: string;
       try {
-        const brandAgent = await client.getBrandAgent(apiKey, args.brandAgentId);
+        const brandAgent = await client.getBrandAgent(
+          apiKey,
+          args.brandAgentId,
+        );
         brandAgentName = brandAgent.name;
       } catch (fetchError) {
         return createErrorResponse(
@@ -52,15 +55,21 @@ export const getBrandStandardsTool = (client: Scope3ApiClient) => ({
         );
       }
 
-      const brandStandards = await client.getBrandStandards(apiKey, args.brandAgentId);
+      const brandStandards = await client.getBrandStandards(
+        apiKey,
+        args.brandAgentId,
+      );
 
       let summary = `**Brand Standards for ${brandAgentName}**\n\n`;
       summary += `**Brand Agent ID:** ${args.brandAgentId}\n`;
       summary += `**Last Updated:** ${new Date(brandStandards.updatedAt).toLocaleString()}\n\n`;
-      
+
       let hasStandards = false;
 
-      if (brandStandards.domainBlocklist && brandStandards.domainBlocklist.length > 0) {
+      if (
+        brandStandards.domainBlocklist &&
+        brandStandards.domainBlocklist.length > 0
+      ) {
         hasStandards = true;
         summary += `🚫 **Domain Blocklist** (${brandStandards.domainBlocklist.length} domains):\n`;
         brandStandards.domainBlocklist.forEach((domain, index) => {
@@ -69,7 +78,10 @@ export const getBrandStandardsTool = (client: Scope3ApiClient) => ({
         summary += `\n`;
       }
 
-      if (brandStandards.domainAllowlist && brandStandards.domainAllowlist.length > 0) {
+      if (
+        brandStandards.domainAllowlist &&
+        brandStandards.domainAllowlist.length > 0
+      ) {
         hasStandards = true;
         summary += `✅ **Domain Allowlist** (${brandStandards.domainAllowlist.length} domains):\n`;
         brandStandards.domainAllowlist.forEach((domain, index) => {
@@ -78,7 +90,10 @@ export const getBrandStandardsTool = (client: Scope3ApiClient) => ({
         summary += `\n`;
       }
 
-      if (brandStandards.keywordFilters && brandStandards.keywordFilters.length > 0) {
+      if (
+        brandStandards.keywordFilters &&
+        brandStandards.keywordFilters.length > 0
+      ) {
         hasStandards = true;
         summary += `🔍 **Keyword Filters** (${brandStandards.keywordFilters.length} keywords):\n`;
         brandStandards.keywordFilters.forEach((keyword, index) => {
@@ -87,7 +102,10 @@ export const getBrandStandardsTool = (client: Scope3ApiClient) => ({
         summary += `\n`;
       }
 
-      if (brandStandards.contentCategories && brandStandards.contentCategories.length > 0) {
+      if (
+        brandStandards.contentCategories &&
+        brandStandards.contentCategories.length > 0
+      ) {
         hasStandards = true;
         summary += `📂 **Content Categories** (${brandStandards.contentCategories.length} categories):\n`;
         brandStandards.contentCategories.forEach((category, index) => {
@@ -124,7 +142,7 @@ export const getBrandStandardsTool = (client: Scope3ApiClient) => ({
         summary += `• These standards apply to ALL campaigns within this brand agent\n`;
         summary += `• New campaigns automatically inherit these settings\n`;
         summary += `• Standards help ensure brand-safe media placements\n\n`;
-        
+
         summary += `💡 **Management:**\n`;
         summary += `• Use \`set_brand_standards\` to update these rules\n`;
         summary += `• Changes affect all current and future campaigns`;
@@ -141,6 +159,8 @@ export const getBrandStandardsTool = (client: Scope3ApiClient) => ({
 
   name: "get_brand_standards",
   parameters: z.object({
-    brandAgentId: z.string().describe("ID of the brand agent to retrieve standards for"),
+    brandAgentId: z
+      .string()
+      .describe("ID of the brand agent to retrieve standards for"),
   }),
 });

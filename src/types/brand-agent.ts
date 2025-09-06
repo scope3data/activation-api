@@ -1,172 +1,105 @@
 // Brand Agent types - represents advertiser/account level entities
 
 export interface BrandAgent {
+  createdAt: Date;
+  customerId: number;
+  description?: string;
   id: string;
   name: string;
-  description?: string;
-  customerId: number;
-  createdAt: Date;
   updatedAt: Date;
-}
-
-export interface BrandAgentInput {
-  name: string;
-  description?: string;
-}
-
-export interface BrandAgentUpdateInput {
-  name?: string;
-  description?: string;
-}
-
-export interface BrandAgentWhereInput {
-  id?: { equals?: string };
-  name?: { contains?: string };
-  customerId?: { equals?: number };
 }
 
 // Campaign types (owned by brand agent)
 export interface BrandAgentCampaign {
-  id: string;
+  audienceIds: string[];
   brandAgentId: string;
-  name: string;
-  prompt: string;
   budget?: {
-    total: number;
     currency: string;
     dailyCap?: number;
     pacing?: string;
+    total: number;
   };
-  creativeIds: string[];
-  audienceIds: string[];
-  status: string;
   createdAt: Date;
+  creativeIds: string[];
+  id: string;
+  name: string;
+  prompt: string;
+  status: string;
   updatedAt: Date;
 }
 
 export interface BrandAgentCampaignInput {
+  audienceIds?: string[];
   brandAgentId: string;
-  name: string;
-  prompt: string;
   budget?: {
-    total: number;
     currency: string;
     dailyCap?: number;
     pacing?: string;
+    total: number;
   };
   creativeIds?: string[];
-  audienceIds?: string[];
+  name: string;
+  prompt: string;
+}
+
+export interface BrandAgentCampaignsData {
+  brandAgentCampaigns: BrandAgentCampaign[];
 }
 
 export interface BrandAgentCampaignUpdateInput {
-  name?: string;
-  prompt?: string;
+  audienceIds?: string[];
   budget?: {
-    total?: number;
     currency?: string;
     dailyCap?: number;
     pacing?: string;
+    total?: number;
   };
   creativeIds?: string[];
-  audienceIds?: string[];
+  name?: string;
+  prompt?: string;
   status?: string;
 }
 
 // Creative types (owned by brand agent)
 export interface BrandAgentCreative {
-  id: string;
-  brandAgentId: string;
-  name: string;
-  type: 'image' | 'video' | 'native' | 'html5';
-  url: string;
-  headline?: string;
   body?: string;
-  cta?: string;
+  brandAgentId: string;
   createdAt: Date;
+  cta?: string;
+  headline?: string;
+  id: string;
+  name: string;
+  type: "html5" | "image" | "native" | "video";
   updatedAt: Date;
+  url: string;
 }
 
 export interface BrandAgentCreativeInput {
-  brandAgentId: string;
-  name: string;
-  type: 'image' | 'video' | 'native' | 'html5';
-  url: string;
-  headline?: string;
   body?: string;
+  brandAgentId: string;
   cta?: string;
+  headline?: string;
+  name: string;
+  type: "html5" | "image" | "native" | "video";
+  url: string;
+}
+
+export interface BrandAgentCreativesData {
+  brandAgentCreatives: BrandAgentCreative[];
 }
 
 export interface BrandAgentCreativeUpdateInput {
-  name?: string;
-  type?: 'image' | 'video' | 'native' | 'html5';
-  url?: string;
-  headline?: string;
   body?: string;
   cta?: string;
-}
-
-// Brand Standards (configuration per brand agent)
-export interface BrandStandards {
-  brandAgentId: string;
-  domainBlocklist?: string[];
-  domainAllowlist?: string[];
-  keywordFilters?: string[];
-  contentCategories?: string[];
-  updatedAt: Date;
-}
-
-export interface BrandStandardsInput {
-  domainBlocklist?: string[];
-  domainAllowlist?: string[];
-  keywordFilters?: string[];
-  contentCategories?: string[];
-}
-
-// Synthetic Audience types (owned by brand agent) - stub for now
-export interface SyntheticAudience {
-  id: string;
-  brandAgentId: string;
-  name: string;
-  description?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface SyntheticAudienceInput {
-  brandAgentId: string;
-  name: string;
-  description?: string;
-}
-
-export interface SyntheticAudienceUpdateInput {
+  headline?: string;
   name?: string;
+  type?: "html5" | "image" | "native" | "video";
+  url?: string;
+}
+
+export interface BrandAgentInput {
   description?: string;
-}
-
-// Measurement Source types (owned by brand agent) - stub for now
-export interface MeasurementSource {
-  id: string;
-  brandAgentId: string;
   name: string;
-  type: 'conversion_api' | 'analytics' | 'brand_study' | 'mmm';
-  configuration?: Record<string, any>;
-  status: 'active' | 'inactive' | 'error';
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface MeasurementSourceInput {
-  brandAgentId: string;
-  name: string;
-  type: 'conversion_api' | 'analytics' | 'brand_study' | 'mmm';
-  configuration?: Record<string, any>;
-}
-
-export interface MeasurementSourceUpdateInput {
-  name?: string;
-  type?: 'conversion_api' | 'analytics' | 'brand_study' | 'mmm';
-  configuration?: Record<string, any>;
-  status?: 'active' | 'inactive' | 'error';
 }
 
 // API Response types
@@ -174,18 +107,85 @@ export interface BrandAgentsData {
   brandAgents: BrandAgent[];
 }
 
-export interface BrandAgentCampaignsData {
-  brandAgentCampaigns: BrandAgentCampaign[];
+export interface BrandAgentUpdateInput {
+  description?: string;
+  name?: string;
 }
 
-export interface BrandAgentCreativesData {
-  brandAgentCreatives: BrandAgentCreative[];
+export interface BrandAgentWhereInput {
+  customerId?: { equals?: number };
+  id?: { equals?: string };
+  name?: { contains?: string };
+}
+
+// Brand Standards (configuration per brand agent)
+export interface BrandStandards {
+  brandAgentId: string;
+  contentCategories?: string[];
+  domainAllowlist?: string[];
+  domainBlocklist?: string[];
+  keywordFilters?: string[];
+  updatedAt: Date;
+}
+
+export interface BrandStandardsInput {
+  contentCategories?: string[];
+  domainAllowlist?: string[];
+  domainBlocklist?: string[];
+  keywordFilters?: string[];
+}
+
+// Measurement Source types (owned by brand agent) - stub for now
+export interface MeasurementSource {
+  brandAgentId: string;
+  configuration?: Record<string, unknown>;
+  createdAt: Date;
+  id: string;
+  name: string;
+  status: "active" | "error" | "inactive";
+  type: "analytics" | "brand_study" | "conversion_api" | "mmm";
+  updatedAt: Date;
+}
+
+export interface MeasurementSourceInput {
+  brandAgentId: string;
+  configuration?: Record<string, unknown>;
+  name: string;
+  type: "analytics" | "brand_study" | "conversion_api" | "mmm";
+}
+
+export interface MeasurementSourcesData {
+  measurementSources: MeasurementSource[];
+}
+
+export interface MeasurementSourceUpdateInput {
+  configuration?: Record<string, unknown>;
+  name?: string;
+  status?: "active" | "error" | "inactive";
+  type?: "analytics" | "brand_study" | "conversion_api" | "mmm";
+}
+
+// Synthetic Audience types (owned by brand agent) - stub for now
+export interface SyntheticAudience {
+  brandAgentId: string;
+  createdAt: Date;
+  description?: string;
+  id: string;
+  name: string;
+  updatedAt: Date;
+}
+
+export interface SyntheticAudienceInput {
+  brandAgentId: string;
+  description?: string;
+  name: string;
 }
 
 export interface SyntheticAudiencesData {
   syntheticAudiences: SyntheticAudience[];
 }
 
-export interface MeasurementSourcesData {
-  measurementSources: MeasurementSource[];
+export interface SyntheticAudienceUpdateInput {
+  description?: string;
+  name?: string;
 }

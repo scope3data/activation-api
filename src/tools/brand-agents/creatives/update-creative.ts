@@ -2,8 +2,8 @@ import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../../client/scope3-client.js";
 import type {
-  UpdateBrandAgentCreativeParams,
   MCPToolExecuteContext,
+  UpdateBrandAgentCreativeParams,
 } from "../../../types/mcp.js";
 
 import {
@@ -40,9 +40,9 @@ export const updateBrandAgentCreativeTool = (client: Scope3ApiClient) => ({
     }
 
     try {
-      const updateInput: any = {};
+      const updateInput: Record<string, unknown> = {};
       const changes: string[] = [];
-      
+
       // Build update input with only provided fields
       if (args.name !== undefined) {
         updateInput.name = args.name;
@@ -58,21 +58,30 @@ export const updateBrandAgentCreativeTool = (client: Scope3ApiClient) => ({
       }
       if (args.headline !== undefined) {
         updateInput.headline = args.headline;
-        changes.push(args.headline ? `Headline updated to: "${args.headline}"` : 'Headline removed');
+        changes.push(
+          args.headline
+            ? `Headline updated to: "${args.headline}"`
+            : "Headline removed",
+        );
       }
       if (args.body !== undefined) {
         updateInput.body = args.body;
-        changes.push(args.body ? `Body text updated` : 'Body text removed');
+        changes.push(args.body ? `Body text updated` : "Body text removed");
       }
       if (args.cta !== undefined) {
         updateInput.cta = args.cta;
-        changes.push(args.cta ? `Call-to-action updated to: "${args.cta}"` : 'Call-to-action removed');
+        changes.push(
+          args.cta
+            ? `Call-to-action updated to: "${args.cta}"`
+            : "Call-to-action removed",
+        );
       }
 
       // Check if there are actually fields to update
       if (Object.keys(updateInput).length === 0) {
         return createMCPResponse({
-          message: "No changes specified. Please provide at least one field to update (name, type, url, headline, body, or cta).",
+          message:
+            "No changes specified. Please provide at least one field to update (name, type, url, headline, body, or cta).",
           success: false,
         });
       }
@@ -90,7 +99,7 @@ export const updateBrandAgentCreativeTool = (client: Scope3ApiClient) => ({
       summary += `• **Brand Agent ID:** ${updatedCreative.brandAgentId}\n`;
       summary += `• **Type:** ${updatedCreative.type}\n`;
       summary += `• **URL:** ${updatedCreative.url}\n`;
-      
+
       if (updatedCreative.headline) {
         summary += `• **Headline:** ${updatedCreative.headline}\n`;
       }
@@ -100,7 +109,7 @@ export const updateBrandAgentCreativeTool = (client: Scope3ApiClient) => ({
       if (updatedCreative.cta) {
         summary += `• **Call-to-Action:** ${updatedCreative.cta}\n`;
       }
-      
+
       summary += `• **Last Updated:** ${new Date(updatedCreative.updatedAt).toLocaleString()}\n`;
 
       summary += `\n**Changes Made:**\n`;
@@ -112,24 +121,24 @@ export const updateBrandAgentCreativeTool = (client: Scope3ApiClient) => ({
       if (args.type) {
         summary += `\n**Type Change Guidance:**\n`;
         switch (args.type) {
-          case 'image':
+          case "html5":
+            summary += `• HTML5 creatives support rich interactive experiences\n`;
+            summary += `• Ensure compatibility across different devices\n`;
+            break;
+          case "image":
             summary += `• Image creatives work well for display campaigns\n`;
             summary += `• Ensure the image meets publisher size requirements\n`;
             break;
-          case 'video':
-            summary += `• Video creatives are ideal for CTV and video campaigns\n`;
-            summary += `• Check video duration and format requirements\n`;
-            break;
-          case 'native':
+          case "native":
             summary += `• Native creatives blend with publisher content\n`;
             summary += `• Headlines and body text are especially important\n`;
             if (!updatedCreative.headline || !updatedCreative.body) {
               summary += `• ⚠️ Consider adding headline and body text for better native performance\n`;
             }
             break;
-          case 'html5':
-            summary += `• HTML5 creatives support rich interactive experiences\n`;
-            summary += `• Ensure compatibility across different devices\n`;
+          case "video":
+            summary += `• Video creatives are ideal for CTV and video campaigns\n`;
+            summary += `• Check video duration and format requirements\n`;
             break;
         }
       }
@@ -147,30 +156,27 @@ export const updateBrandAgentCreativeTool = (client: Scope3ApiClient) => ({
 
   name: "update_creative",
   parameters: z.object({
-    creativeId: z.string().describe("ID of the creative to update"),
-    name: z
+    body: z
       .string()
       .optional()
-      .describe("New name for the creative"),
+      .describe("New body text (use empty string to remove)"),
+    creativeId: z.string().describe("ID of the creative to update"),
+    cta: z
+      .string()
+      .optional()
+      .describe("New call-to-action text (use empty string to remove)"),
+    headline: z
+      .string()
+      .optional()
+      .describe("New headline text (use empty string to remove)"),
+    name: z.string().optional().describe("New name for the creative"),
     type: z
-      .enum(['image', 'video', 'native', 'html5'])
+      .enum(["image", "video", "native", "html5"])
       .optional()
       .describe("New creative type: image, video, native, or html5"),
     url: z
       .string()
       .optional()
       .describe("New URL where the creative asset is hosted"),
-    headline: z
-      .string()
-      .optional()
-      .describe("New headline text (use empty string to remove)"),
-    body: z
-      .string()
-      .optional()
-      .describe("New body text (use empty string to remove)"),
-    cta: z
-      .string()
-      .optional()
-      .describe("New call-to-action text (use empty string to remove)"),
   }),
 });

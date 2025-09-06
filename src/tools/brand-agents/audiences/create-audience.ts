@@ -43,7 +43,10 @@ export const createSyntheticAudienceTool = (client: Scope3ApiClient) => ({
       // First, verify the brand agent exists
       let brandAgentName: string;
       try {
-        const brandAgent = await client.getBrandAgent(apiKey, args.brandAgentId);
+        const brandAgent = await client.getBrandAgent(
+          apiKey,
+          args.brandAgentId,
+        );
         brandAgentName = brandAgent.name;
       } catch (fetchError) {
         return createErrorResponse(
@@ -54,11 +57,14 @@ export const createSyntheticAudienceTool = (client: Scope3ApiClient) => ({
 
       const audienceInput = {
         brandAgentId: args.brandAgentId,
-        name: args.name,
         description: args.description,
+        name: args.name,
       };
 
-      const audience = await client.createSyntheticAudience(apiKey, audienceInput);
+      const audience = await client.createSyntheticAudience(
+        apiKey,
+        audienceInput,
+      );
 
       let summary = `✅ Synthetic Audience Created Successfully!\n\n`;
       summary += `**Audience Details:**\n`;
@@ -69,20 +75,20 @@ export const createSyntheticAudienceTool = (client: Scope3ApiClient) => ({
         summary += `• **Description:** ${audience.description}\n`;
       }
       summary += `• **Created:** ${new Date(audience.createdAt).toLocaleString()}\n\n`;
-      
+
       summary += `🎯 **What are Synthetic Audiences?**\n`;
       summary += `Synthetic audiences are AI-generated profiles that represent your ideal customers or prospects. They help you:\n`;
       summary += `• Target campaigns more effectively\n`;
       summary += `• Find lookalike audiences across different publishers\n`;
       summary += `• Optimize media buying based on audience behavior patterns\n`;
       summary += `• Evaluate media quality against audience preferences\n\n`;
-      
+
       summary += `**Next Steps:**\n`;
       summary += `• Assign this audience to campaigns within the same brand agent\n`;
       summary += `• Monitor campaign performance with this audience\n`;
       summary += `• Create additional audience variants for different campaign objectives\n`;
       summary += `• Use audience insights to refine targeting strategies\n\n`;
-      
+
       summary += `🚧 **Note:** This is a stub implementation. Advanced audience features including:\n`;
       summary += `• Demographics and psychographic profiling\n`;
       summary += `• Behavioral targeting parameters\n`;
@@ -90,7 +96,7 @@ export const createSyntheticAudienceTool = (client: Scope3ApiClient) => ({
       summary += `• Lookalike audience generation\n`;
       summary += `• Cross-publisher audience matching\n`;
       summary += `...will be added in future releases.\n\n`;
-      
+
       summary += `The audience is ready to be assigned to campaigns!`;
 
       return createMCPResponse({
@@ -104,11 +110,19 @@ export const createSyntheticAudienceTool = (client: Scope3ApiClient) => ({
 
   name: "create_audience",
   parameters: z.object({
-    brandAgentId: z.string().describe("ID of the brand agent that will own this audience"),
-    name: z.string().describe("Name of the synthetic audience (e.g., 'Tech Enthusiasts 25-34')"),
+    brandAgentId: z
+      .string()
+      .describe("ID of the brand agent that will own this audience"),
     description: z
       .string()
       .optional()
-      .describe("Optional description of the audience characteristics and targeting goals"),
+      .describe(
+        "Optional description of the audience characteristics and targeting goals",
+      ),
+    name: z
+      .string()
+      .describe(
+        "Name of the synthetic audience (e.g., 'Tech Enthusiasts 25-34')",
+      ),
   }),
 });

@@ -1,11 +1,11 @@
 import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../../client/scope3-client.js";
+import type { BrandAgentWhereInput } from "../../../types/brand-agent.js";
 import type {
   ListBrandAgentsParams,
   MCPToolExecuteContext,
 } from "../../../types/mcp.js";
-import type { BrandAgentWhereInput } from "../../../types/brand-agent.js";
 
 import {
   createAuthErrorResponse,
@@ -55,13 +55,14 @@ export const listBrandAgentsTool = (client: Scope3ApiClient) => ({
 
       if (brandAgents.length === 0) {
         return createMCPResponse({
-          message: "No brand agents found. Create your first brand agent to get started!",
+          message:
+            "No brand agents found. Create your first brand agent to get started!",
           success: true,
         });
       }
 
-      let summary = `Found ${brandAgents.length} brand agent${brandAgents.length === 1 ? '' : 's'}:\n\n`;
-      
+      let summary = `Found ${brandAgents.length} brand agent${brandAgents.length === 1 ? "" : "s"}:\n\n`;
+
       brandAgents.forEach((agent, index) => {
         summary += `**${index + 1}. ${agent.name}**\n`;
         summary += `   • ID: ${agent.id}\n`;

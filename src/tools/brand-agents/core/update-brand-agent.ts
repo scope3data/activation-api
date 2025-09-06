@@ -2,8 +2,8 @@ import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../../client/scope3-client.js";
 import type {
-  UpdateBrandAgentParams,
   MCPToolExecuteContext,
+  UpdateBrandAgentParams,
 } from "../../../types/mcp.js";
 
 import {
@@ -40,8 +40,8 @@ export const updateBrandAgentTool = (client: Scope3ApiClient) => ({
     }
 
     try {
-      const updateInput: { name?: string; description?: string } = {};
-      
+      const updateInput: { description?: string; name?: string } = {};
+
       if (args.name !== undefined) {
         updateInput.name = args.name;
       }
@@ -52,7 +52,8 @@ export const updateBrandAgentTool = (client: Scope3ApiClient) => ({
       // Check if there are actually fields to update
       if (Object.keys(updateInput).length === 0) {
         return createMCPResponse({
-          message: "No changes specified. Please provide at least a name or description to update.",
+          message:
+            "No changes specified. Please provide at least a name or description to update.",
           success: false,
         });
       }
@@ -95,13 +96,10 @@ export const updateBrandAgentTool = (client: Scope3ApiClient) => ({
   name: "update_brand_agent",
   parameters: z.object({
     brandAgentId: z.string().describe("ID of the brand agent to update"),
-    name: z
-      .string()
-      .optional()
-      .describe("New name for the brand agent"),
     description: z
       .string()
       .optional()
       .describe("New description for the brand agent"),
+    name: z.string().optional().describe("New name for the brand agent"),
   }),
 });

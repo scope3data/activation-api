@@ -2,8 +2,8 @@ import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../../client/scope3-client.js";
 import type {
-  UpdateBrandAgentCampaignParams,
   MCPToolExecuteContext,
+  UpdateBrandAgentCampaignParams,
 } from "../../../types/mcp.js";
 
 import {
@@ -40,9 +40,9 @@ export const updateBrandAgentCampaignTool = (client: Scope3ApiClient) => ({
     }
 
     try {
-      const updateInput: any = {};
+      const updateInput: Record<string, unknown> = {};
       const changes: string[] = [];
-      
+
       // Build update input with only provided fields
       if (args.name !== undefined) {
         updateInput.name = args.name;
@@ -58,11 +58,15 @@ export const updateBrandAgentCampaignTool = (client: Scope3ApiClient) => ({
       }
       if (args.creativeIds !== undefined) {
         updateInput.creativeIds = args.creativeIds;
-        changes.push(`Creative assignments updated (${args.creativeIds.length} creatives)`);
+        changes.push(
+          `Creative assignments updated (${args.creativeIds.length} creatives)`,
+        );
       }
       if (args.audienceIds !== undefined) {
         updateInput.audienceIds = args.audienceIds;
-        changes.push(`Audience assignments updated (${args.audienceIds.length} audiences)`);
+        changes.push(
+          `Audience assignments updated (${args.audienceIds.length} audiences)`,
+        );
       }
       if (args.status !== undefined) {
         updateInput.status = args.status;
@@ -72,7 +76,8 @@ export const updateBrandAgentCampaignTool = (client: Scope3ApiClient) => ({
       // Check if there are actually fields to update
       if (Object.keys(updateInput).length === 0) {
         return createMCPResponse({
-          message: "No changes specified. Please provide at least one field to update (name, prompt, budget, creativeIds, audienceIds, or status).",
+          message:
+            "No changes specified. Please provide at least one field to update (name, prompt, budget, creativeIds, audienceIds, or status).",
           success: false,
         });
       }
@@ -89,7 +94,7 @@ export const updateBrandAgentCampaignTool = (client: Scope3ApiClient) => ({
       summary += `• **ID:** ${updatedCampaign.id}\n`;
       summary += `• **Brand Agent ID:** ${updatedCampaign.brandAgentId}\n`;
       summary += `• **Prompt:** ${updatedCampaign.prompt}\n`;
-      
+
       if (updatedCampaign.budget) {
         summary += `• **Budget:** ${updatedCampaign.budget.total} ${updatedCampaign.budget.currency}`;
         if (updatedCampaign.budget.dailyCap) {
@@ -100,12 +105,15 @@ export const updateBrandAgentCampaignTool = (client: Scope3ApiClient) => ({
           summary += `• **Pacing:** ${updatedCampaign.budget.pacing}\n`;
         }
       }
-      
+
       summary += `• **Status:** ${updatedCampaign.status}\n`;
       summary += `• **Last Updated:** ${new Date(updatedCampaign.updatedAt).toLocaleString()}\n`;
 
       // Show current creative assignments
-      if (updatedCampaign.creativeIds && updatedCampaign.creativeIds.length > 0) {
+      if (
+        updatedCampaign.creativeIds &&
+        updatedCampaign.creativeIds.length > 0
+      ) {
         summary += `\n**Current Creative Assignments:**\n`;
         updatedCampaign.creativeIds.forEach((creativeId, index) => {
           summary += `   ${index + 1}. Creative ID: ${creativeId}\n`;
@@ -115,7 +123,10 @@ export const updateBrandAgentCampaignTool = (client: Scope3ApiClient) => ({
       }
 
       // Show current audience assignments
-      if (updatedCampaign.audienceIds && updatedCampaign.audienceIds.length > 0) {
+      if (
+        updatedCampaign.audienceIds &&
+        updatedCampaign.audienceIds.length > 0
+      ) {
         summary += `\n**Current Audience Assignments:**\n`;
         updatedCampaign.audienceIds.forEach((audienceId, index) => {
           summary += `   ${index + 1}. Audience ID: ${audienceId}\n`;
@@ -140,32 +151,29 @@ export const updateBrandAgentCampaignTool = (client: Scope3ApiClient) => ({
 
   name: "update_campaign",
   parameters: z.object({
-    campaignId: z.string().describe("ID of the campaign to update"),
-    name: z
-      .string()
-      .optional()
-      .describe("New name for the campaign"),
-    prompt: z
-      .string()
-      .optional()
-      .describe("New campaign objectives and strategy description"),
-    budget: z
-      .object({
-        total: z.number().optional().describe("New total campaign budget"),
-        currency: z.string().optional().describe("New budget currency"),
-        dailyCap: z.number().optional().describe("New daily spending limit"),
-        pacing: z.string().optional().describe("New budget pacing strategy"),
-      })
-      .optional()
-      .describe("New budget configuration"),
-    creativeIds: z
-      .array(z.string())
-      .optional()
-      .describe("New creative assignments (replaces existing assignments)"),
     audienceIds: z
       .array(z.string())
       .optional()
       .describe("New audience assignments (replaces existing assignments)"),
+    budget: z
+      .object({
+        currency: z.string().optional().describe("New budget currency"),
+        dailyCap: z.number().optional().describe("New daily spending limit"),
+        pacing: z.string().optional().describe("New budget pacing strategy"),
+        total: z.number().optional().describe("New total campaign budget"),
+      })
+      .optional()
+      .describe("New budget configuration"),
+    campaignId: z.string().describe("ID of the campaign to update"),
+    creativeIds: z
+      .array(z.string())
+      .optional()
+      .describe("New creative assignments (replaces existing assignments)"),
+    name: z.string().optional().describe("New name for the campaign"),
+    prompt: z
+      .string()
+      .optional()
+      .describe("New campaign objectives and strategy description"),
     status: z
       .string()
       .optional()

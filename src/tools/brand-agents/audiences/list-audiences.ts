@@ -43,7 +43,10 @@ export const listSyntheticAudiencesTool = (client: Scope3ApiClient) => ({
       // First, verify the brand agent exists and get its name
       let brandAgentName: string;
       try {
-        const brandAgent = await client.getBrandAgent(apiKey, args.brandAgentId);
+        const brandAgent = await client.getBrandAgent(
+          apiKey,
+          args.brandAgentId,
+        );
         brandAgentName = brandAgent.name;
       } catch (fetchError) {
         return createErrorResponse(
@@ -52,23 +55,27 @@ export const listSyntheticAudiencesTool = (client: Scope3ApiClient) => ({
         );
       }
 
-      const audiences = await client.listSyntheticAudiences(apiKey, args.brandAgentId);
+      const audiences = await client.listSyntheticAudiences(
+        apiKey,
+        args.brandAgentId,
+      );
 
       if (audiences.length === 0) {
         return createMCPResponse({
-          message: `No synthetic audiences found for brand agent "${brandAgentName}".\n\n` +
-                  `🎯 **Why Create Synthetic Audiences?**\n` +
-                  `• Better targeting across campaigns\n` +
-                  `• Consistent audience definitions\n` +
-                  `• Improved campaign performance\n` +
-                  `• Cross-publisher audience matching\n\n` +
-                  `Create your first synthetic audience to get started with advanced targeting!`,
+          message:
+            `No synthetic audiences found for brand agent "${brandAgentName}".\n\n` +
+            `🎯 **Why Create Synthetic Audiences?**\n` +
+            `• Better targeting across campaigns\n` +
+            `• Consistent audience definitions\n` +
+            `• Improved campaign performance\n` +
+            `• Cross-publisher audience matching\n\n` +
+            `Create your first synthetic audience to get started with advanced targeting!`,
           success: true,
         });
       }
 
-      let summary = `Found ${audiences.length} synthetic audience${audiences.length === 1 ? '' : 's'} for brand agent **${brandAgentName}**:\n\n`;
-      
+      let summary = `Found ${audiences.length} synthetic audience${audiences.length === 1 ? "" : "s"} for brand agent **${brandAgentName}**:\n\n`;
+
       audiences.forEach((audience, index) => {
         summary += `**${index + 1}. ${audience.name}**\n`;
         summary += `   • ID: ${audience.id}\n`;
@@ -77,7 +84,7 @@ export const listSyntheticAudiencesTool = (client: Scope3ApiClient) => ({
         }
         summary += `   • Created: ${new Date(audience.createdAt).toLocaleString()}\n`;
         summary += `   • Updated: ${new Date(audience.updatedAt).toLocaleString()}\n`;
-        
+
         if (index < audiences.length - 1) {
           summary += `\n`;
         }
@@ -114,6 +121,8 @@ export const listSyntheticAudiencesTool = (client: Scope3ApiClient) => ({
 
   name: "list_audiences",
   parameters: z.object({
-    brandAgentId: z.string().describe("ID of the brand agent to list audiences for"),
+    brandAgentId: z
+      .string()
+      .describe("ID of the brand agent to list audiences for"),
   }),
 });

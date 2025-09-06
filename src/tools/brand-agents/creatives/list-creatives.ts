@@ -43,7 +43,10 @@ export const listBrandAgentCreativesTool = (client: Scope3ApiClient) => ({
       // First, verify the brand agent exists and get its name
       let brandAgentName: string;
       try {
-        const brandAgent = await client.getBrandAgent(apiKey, args.brandAgentId);
+        const brandAgent = await client.getBrandAgent(
+          apiKey,
+          args.brandAgentId,
+        );
         brandAgentName = brandAgent.name;
       } catch (fetchError) {
         return createErrorResponse(
@@ -52,7 +55,10 @@ export const listBrandAgentCreativesTool = (client: Scope3ApiClient) => ({
         );
       }
 
-      const creatives = await client.listBrandAgentCreatives(apiKey, args.brandAgentId);
+      const creatives = await client.listBrandAgentCreatives(
+        apiKey,
+        args.brandAgentId,
+      );
 
       if (creatives.length === 0) {
         return createMCPResponse({
@@ -61,47 +67,53 @@ export const listBrandAgentCreativesTool = (client: Scope3ApiClient) => ({
         });
       }
 
-      let summary = `Found ${creatives.length} creative${creatives.length === 1 ? '' : 's'} for brand agent **${brandAgentName}**:\n\n`;
-      
+      let summary = `Found ${creatives.length} creative${creatives.length === 1 ? "" : "s"} for brand agent **${brandAgentName}**:\n\n`;
+
       creatives.forEach((creative, index) => {
         summary += `**${index + 1}. ${creative.name}**\n`;
         summary += `   • ID: ${creative.id}\n`;
         summary += `   • Type: ${creative.type}\n`;
         summary += `   • URL: ${creative.url}\n`;
-        
+
         if (creative.headline) {
           summary += `   • Headline: "${creative.headline}"\n`;
         }
         if (creative.body) {
-          const bodyPreview = creative.body.length > 60 ? creative.body.substring(0, 60) + '...' : creative.body;
+          const bodyPreview =
+            creative.body.length > 60
+              ? creative.body.substring(0, 60) + "..."
+              : creative.body;
           summary += `   • Body: "${bodyPreview}"\n`;
         }
         if (creative.cta) {
           summary += `   • CTA: "${creative.cta}"\n`;
         }
-        
+
         summary += `   • Created: ${new Date(creative.createdAt).toLocaleString()}\n`;
         summary += `   • Updated: ${new Date(creative.updatedAt).toLocaleString()}\n`;
-        
+
         if (index < creatives.length - 1) {
           summary += `\n`;
         }
       });
 
       // Add summary statistics
-      const typeCounts = creatives.reduce((counts, creative) => {
-        counts[creative.type] = (counts[creative.type] || 0) + 1;
-        return counts;
-      }, {} as Record<string, number>);
+      const typeCounts = creatives.reduce(
+        (counts, creative) => {
+          counts[creative.type] = (counts[creative.type] || 0) + 1;
+          return counts;
+        },
+        {} as Record<string, number>,
+      );
 
       summary += `\n📊 **Creative Type Summary:**\n`;
       Object.entries(typeCounts).forEach(([type, count]) => {
         summary += `   • ${type}: ${count}\n`;
       });
 
-      const creativesWithHeadlines = creatives.filter(c => c.headline).length;
-      const creativesWithBody = creatives.filter(c => c.body).length;
-      const creativesWithCTA = creatives.filter(c => c.cta).length;
+      const creativesWithHeadlines = creatives.filter((c) => c.headline).length;
+      const creativesWithBody = creatives.filter((c) => c.body).length;
+      const creativesWithCTA = creatives.filter((c) => c.cta).length;
 
       summary += `\n📝 **Content Summary:**\n`;
       summary += `   • With headlines: ${creativesWithHeadlines}/${creatives.length}\n`;
@@ -112,8 +124,10 @@ export const listBrandAgentCreativesTool = (client: Scope3ApiClient) => ({
       summary += `   • Use creative IDs when creating or updating campaigns\n`;
       summary += `   • Different creative types work better for different campaign objectives\n`;
       summary += `   • Consider creating multiple creative variants for A/B testing\n`;
-      
-      if (creatives.some(c => c.type === 'native' && (!c.headline || !c.body))) {
+
+      if (
+        creatives.some((c) => c.type === "native" && (!c.headline || !c.body))
+      ) {
         summary += `   • Native creatives work best with both headlines and body text\n`;
       }
 
@@ -128,6 +142,8 @@ export const listBrandAgentCreativesTool = (client: Scope3ApiClient) => ({
 
   name: "list_creatives",
   parameters: z.object({
-    brandAgentId: z.string().describe("ID of the brand agent to list creatives for"),
+    brandAgentId: z
+      .string()
+      .describe("ID of the brand agent to list creatives for"),
   }),
 });

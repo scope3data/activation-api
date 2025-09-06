@@ -51,7 +51,7 @@ export const getBrandAgentTool = (client: Scope3ApiClient) => ({
       summary += `• **Customer ID:** ${brandAgent.customerId}\n`;
       summary += `• **Created:** ${new Date(brandAgent.createdAt).toLocaleString()}\n`;
       summary += `• **Last Updated:** ${new Date(brandAgent.updatedAt).toLocaleString()}\n\n`;
-      
+
       summary += `**Available Actions:**\n`;
       summary += `• Create campaigns for this brand agent\n`;
       summary += `• Add creatives to this brand agent\n`;

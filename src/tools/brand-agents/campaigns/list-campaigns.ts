@@ -43,7 +43,10 @@ export const listBrandAgentCampaignsTool = (client: Scope3ApiClient) => ({
       // First, verify the brand agent exists and get its name
       let brandAgentName: string;
       try {
-        const brandAgent = await client.getBrandAgent(apiKey, args.brandAgentId);
+        const brandAgent = await client.getBrandAgent(
+          apiKey,
+          args.brandAgentId,
+        );
         brandAgentName = brandAgent.name;
       } catch (fetchError) {
         return createErrorResponse(
@@ -64,25 +67,25 @@ export const listBrandAgentCampaignsTool = (client: Scope3ApiClient) => ({
           message += ` with status "${args.status}"`;
         }
         message += `. Create your first campaign to get started!`;
-        
+
         return createMCPResponse({
           message,
           success: true,
         });
       }
 
-      let summary = `Found ${campaigns.length} campaign${campaigns.length === 1 ? '' : 's'} for brand agent **${brandAgentName}**`;
+      let summary = `Found ${campaigns.length} campaign${campaigns.length === 1 ? "" : "s"} for brand agent **${brandAgentName}**`;
       if (args.status) {
         summary += ` (status: ${args.status})`;
       }
       summary += `:\n\n`;
-      
+
       campaigns.forEach((campaign, index) => {
         summary += `**${index + 1}. ${campaign.name}**\n`;
         summary += `   • ID: ${campaign.id}\n`;
         summary += `   • Status: ${campaign.status}\n`;
-        summary += `   • Prompt: ${campaign.prompt.length > 100 ? campaign.prompt.substring(0, 100) + '...' : campaign.prompt}\n`;
-        
+        summary += `   • Prompt: ${campaign.prompt.length > 100 ? campaign.prompt.substring(0, 100) + "..." : campaign.prompt}\n`;
+
         if (campaign.budget) {
           summary += `   • Budget: ${campaign.budget.total} ${campaign.budget.currency}`;
           if (campaign.budget.dailyCap) {
@@ -90,41 +93,48 @@ export const listBrandAgentCampaignsTool = (client: Scope3ApiClient) => ({
           }
           summary += `\n`;
         }
-        
+
         if (campaign.creativeIds && campaign.creativeIds.length > 0) {
           summary += `   • Creatives: ${campaign.creativeIds.length} assigned\n`;
         } else {
           summary += `   • Creatives: None assigned ⚠️\n`;
         }
-        
+
         if (campaign.audienceIds && campaign.audienceIds.length > 0) {
           summary += `   • Audiences: ${campaign.audienceIds.length} assigned\n`;
         } else {
           summary += `   • Audiences: None assigned\n`;
         }
-        
+
         summary += `   • Created: ${new Date(campaign.createdAt).toLocaleString()}\n`;
         summary += `   • Updated: ${new Date(campaign.updatedAt).toLocaleString()}\n`;
-        
+
         if (index < campaigns.length - 1) {
           summary += `\n`;
         }
       });
 
       // Add summary statistics
-      const statusCounts = campaigns.reduce((counts, campaign) => {
-        counts[campaign.status] = (counts[campaign.status] || 0) + 1;
-        return counts;
-      }, {} as Record<string, number>);
+      const statusCounts = campaigns.reduce(
+        (counts, campaign) => {
+          counts[campaign.status] = (counts[campaign.status] || 0) + 1;
+          return counts;
+        },
+        {} as Record<string, number>,
+      );
 
       summary += `\n📊 **Campaign Status Summary:**\n`;
       Object.entries(statusCounts).forEach(([status, count]) => {
         summary += `   • ${status}: ${count}\n`;
       });
 
-      const campaignsWithCreatives = campaigns.filter(c => c.creativeIds && c.creativeIds.length > 0).length;
-      const campaignsWithAudiences = campaigns.filter(c => c.audienceIds && c.audienceIds.length > 0).length;
-      
+      const campaignsWithCreatives = campaigns.filter(
+        (c) => c.creativeIds && c.creativeIds.length > 0,
+      ).length;
+      const campaignsWithAudiences = campaigns.filter(
+        (c) => c.audienceIds && c.audienceIds.length > 0,
+      ).length;
+
       summary += `\n💡 **Tips:**\n`;
       summary += `   • ${campaignsWithCreatives}/${campaigns.length} campaigns have creatives assigned\n`;
       summary += `   • ${campaignsWithAudiences}/${campaigns.length} campaigns have audiences assigned\n`;
@@ -146,10 +156,14 @@ export const listBrandAgentCampaignsTool = (client: Scope3ApiClient) => ({
 
   name: "list_campaigns",
   parameters: z.object({
-    brandAgentId: z.string().describe("ID of the brand agent to list campaigns for"),
+    brandAgentId: z
+      .string()
+      .describe("ID of the brand agent to list campaigns for"),
     status: z
       .string()
       .optional()
-      .describe("Optional filter by campaign status (e.g., 'active', 'paused', 'completed')"),
+      .describe(
+        "Optional filter by campaign status (e.g., 'active', 'paused', 'completed')",
+      ),
   }),
 });
