@@ -3,6 +3,16 @@ title: MCP Integration Overview
 description: "How the Model Context Protocol enables natural language campaign management"
 ---
 
+<Info>
+**🚀 Skip Straight to Implementation!**
+
+Just add this MCP server to your favorite AI agent and let it handle everything:
+
+**https://docs.agentic.scope3.com/mcp**
+
+Works with Claude, ChatGPT, Claude Code, Cursor, and any MCP-compatible agent.
+</Info>
+
 The Scope3 Ad Platform is built as an MCP (Model Context Protocol) server, designed for seamless integration with AI agents and conversational interfaces.
 
 ## What is MCP?
@@ -212,13 +222,58 @@ Traditional advertising platforms require:
   execution.
 </Tip>
 
+## 🚀 Quick Add to Your AI Agent
+
+Skip the manual setup - just copy these configs:
+
+<Tabs>
+  <Tab title="Claude Desktop">
+    ```json
+    // Copy to ~/.config/claude/claude_desktop_config.json
+    {
+      "mcpServers": {
+        "scope3": {
+          "command": "npx",
+          "args": ["-y", "@scope3/campaign-mcp-server"],
+          "env": { "SCOPE3_API_KEY": "your-api-key" }
+        }
+      }
+    }
+    ```
+    <Card title="📋 Copy Claude Config" icon="copy">
+      One-click Claude Desktop setup - just paste and restart
+    </Card>
+  </Tab>
+  
+  <Tab title="ChatGPT Custom GPT">
+    ```yaml
+    # Custom GPT Settings:
+    MCP Server: https://api.agentic.scope3.com/mcp
+    Header: x-scope3-api-key: your-api-key
+    ```
+    <Card title="🔗 Create ChatGPT Custom GPT" icon="link">
+      Set up ChatGPT with Scope3 campaign management
+    </Card>
+  </Tab>
+  
+  <Tab title="One-Line Terminal">
+    ```bash
+    # Works with Claude Code, Cursor, or any MCP client
+    export SCOPE3_API_KEY="your-key" && npx @scope3/campaign-mcp-server --http
+    ```
+    <Card title="⚡ Terminal Quick Start" icon="terminal">
+      Start MCP server in one command
+    </Card>
+  </Tab>
+</Tabs>
+
 ## Getting Started
 
 Ready to experience natural language campaign management?
 
 <CardGroup cols={2}>
-  <Card title="Set Up Claude Desktop" icon="desktop" href="/mcp/setup">
-    Configure Scope3 MCP server with Claude Desktop
+  <Card title="🤖 One-Click Setup" icon="zap" href="/mcp/setup">
+    Copy-paste configs for Claude, ChatGPT, Cursor, and more
   </Card>
   <Card
     title="Try Natural Language"

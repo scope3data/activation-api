@@ -99,49 +99,18 @@ The API supports two authentication methods - choose the one that works best for
   </Tab>
 </Tabs>
 
-## SDK Setup
+## MCP Server Setup (Recommended)
 
-If you're using our official SDKs, authentication is handled automatically:
+Skip the SDK complexity - just add our MCP server to your AI agent:
 
 <CodeGroup>
-```python Python SDK
-from scope3 import Client
-
-# Initialize with API key
-
-client = Client(api_key="your_scope3_api_key_here")
-
-# All subsequent requests are automatically authenticated
-
-brand_agent = client.create_brand_agent(
-name="My Brand Agent",
-description="Test brand agent"
-)
-
-````
-
-```javascript JavaScript SDK
-import { Scope3Client } from '@scope3/agentic-api';
-
-// Initialize with API key
-const client = new Scope3Client({
-    apiKey: 'your_scope3_api_key_here'
-});
-
-// All requests automatically include authentication
-const brandAgent = await client.createBrandAgent({
-    name: 'My Brand Agent',
-    description: 'Test brand agent'
-});
-````
-
-```claude MCP Server
-# Add to your Claude Desktop configuration
+```json Claude Desktop
+# Add to ~/.config/claude/claude_desktop_config.json
 {
   "mcpServers": {
-    "scope3-campaigns": {
-      "command": "node",
-      "args": ["/path/to/mcp-server.js"],
+    "scope3": {
+      "command": "npx",
+      "args": ["-y", "@scope3/campaign-mcp-server"],
       "env": {
         "SCOPE3_API_KEY": "your_scope3_api_key_here"
       }
@@ -150,7 +119,30 @@ const brandAgent = await client.createBrandAgent({
 }
 ```
 
+```yaml ChatGPT Custom GPT
+# Custom GPT configuration
+MCP Server: https://api.agentic.scope3.com/mcp
+Headers: 
+  x-scope3-api-key: your_scope3_api_key_here
+```
+
+```bash Claude Code / Terminal
+# Start MCP server locally
+export SCOPE3_API_KEY="your_scope3_api_key_here"
+npx @scope3/campaign-mcp-server --http --port 3001
+
+# Then in your AI agent:
+# "Connect to http://localhost:3001/mcp"
+```
+
 </CodeGroup>
+
+**Why MCP over SDKs?**
+- ✅ No code required - just natural language
+- ✅ Works with any MCP-compatible AI agent
+- ✅ Automatic authentication handling
+- ✅ Human-readable results
+- ✅ Real-time campaign management through conversation
 
 ## Environment Configuration
 
@@ -167,41 +159,42 @@ For production applications, store your API key securely using environment varia
     SCOPE3_API_KEY_PRODUCTION=scope3_live_1234567890abcdef...
     ```
     
-    ```python Python
-    import os
-    from scope3 import Client
+    ```bash MCP Server
+    # Load API key from environment for MCP server
+    export SCOPE3_API_KEY=$(cat /path/to/secret/api_key.txt)
     
-    # Load API key from environment
-    api_key = os.environ.get('SCOPE3_API_KEY')
-    if not api_key:
-        raise ValueError("SCOPE3_API_KEY environment variable is required")
+    # Start MCP server with environment auth
+    npx @scope3/campaign-mcp-server --http
     
-    client = Client(api_key=api_key)
+    # MCP server automatically uses SCOPE3_API_KEY environment variable
     ```
   </Tab>
   
   <Tab title="Configuration Files">
-    ```json config.json
+    ```json claude_desktop_config.json
     {
-      "scope3": {
-        "apiKey": "your_api_key_here",
-        "baseUrl": "https://api.agentic.scope3.com"
+      "mcpServers": {
+        "scope3": {
+          "command": "npx",
+          "args": ["-y", "@scope3/campaign-mcp-server"],
+          "env": {
+            "SCOPE3_API_KEY": "your_api_key_here",
+            "SCOPE3_API_URL": "https://api.agentic.scope3.com"
+          }
+        }
       }
     }
     ```
     
-    ```python Python
-    import json
-    from scope3 import Client
+    ```bash Load from Config
+    # Load MCP server configuration from file
+    SCOPE3_CONFIG=$(cat ~/.config/scope3/config.json)
     
-    # Load configuration from file
-    with open('config.json', 'r') as f:
-        config = json.load(f)
+    # Extract API key and start server
+    API_KEY=$(echo $SCOPE3_CONFIG | jq -r '.apiKey')
+    export SCOPE3_API_KEY=$API_KEY
     
-    client = Client(
-        api_key=config['scope3']['apiKey'],
-        base_url=config['scope3']['baseUrl']
-    )
+    npx @scope3/campaign-mcp-server --http
     ```
   </Tab>
   
@@ -221,17 +214,14 @@ For production applications, store your API key securely using environment varia
         external: true
     ```
     
-    ```python Python
-    import os
-    from scope3 import Client
-    
+    ```bash Docker MCP Server
     # Read API key from Docker secret file
-    key_file = os.environ.get('SCOPE3_API_KEY_FILE', '/run/secrets/scope3_api_key')
+    export SCOPE3_API_KEY=$(cat /run/secrets/scope3_api_key)
     
-    with open(key_file, 'r') as f:
-        api_key = f.read().strip()
+    # Start MCP server with secret-based auth
+    npx @scope3/campaign-mcp-server --http --port 3001
     
-    client = Client(api_key=api_key)
+    # MCP server automatically uses the environment variable
     ```
   </Tab>
 </Tabs>
@@ -430,8 +420,8 @@ Each API response includes rate limiting information:
   <Card title="API Reference" icon="code" href="/api-reference/overview">
     Explore the complete API documentation with interactive examples
   </Card>
-  <Card title="SDK Documentation" icon="book" href="/sdks/overview">
-    Learn more about our Python, JavaScript, and MCP integrations
+  <Card title="MCP Integration" icon="robot" href="/mcp/overview">
+    Learn more about natural language campaign management with AI agents
   </Card>
   <Card title="Security Guide" icon="shield" href="/resources/security">
     Best practices for securing your API integrations

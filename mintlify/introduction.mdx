@@ -18,6 +18,16 @@ description: "Decarbonizing Media & Advertising - The Sustainable Ad Buying Plat
 
 Welcome to Scope3 - where sustainable campaigns meet conversational simplicity.
 
+<Warning>
+**🤖 Just Add This to Your AI Agent!**
+
+Skip the complex setup - add our MCP server to your favorite AI assistant and let AI implement everything for you:
+
+**https://docs.agentic.scope3.com/mcp**
+
+Works with Claude, ChatGPT, Claude Code, Cursor, and any MCP-compatible agent.
+</Warning>
+
 The Scope3 Ad Platform is built for the future of advertising: **decarbonizing media through People & Agents working together**. Instead of replacing human expertise, we amplify it through AI collaboration, sustainable practices, and intelligent carbon-conscious automation.
 
 <CardGroup cols={2}>
@@ -46,12 +56,11 @@ The Scope3 Ad Platform is built for the future of advertising: **decarbonizing m
     impact across your media investments.
   </Card>
   <Card
-    title="Sustainable Future"
-    icon="recycle"
-    href="/quickstart/mcp-setup"
+    title="🤖 AI-Ready MCP Server"
+    icon="robot"
+    href="/mcp/setup"
   >
-    Part of Scope3's mission to decarbonize advertising through innovative
-    technology and responsible media buying.
+    Add to Claude, ChatGPT, or any AI agent - let AI implement sustainable campaigns for you.
   </Card>
 </CardGroup>
 
@@ -190,18 +199,91 @@ Scope3 doesn't replace your existing platform - it **complements** it. Use our [
 | Audience Segment          | Synthetic Audience | AI-enhanced targeting profiles         |
 | Brand Safety Rules        | Brand Standards    | Applied automatically across campaigns |
 
-## MCP: Built for AI Collaboration
+## 🤖 Add This MCP Server to Your AI Agent
 
-### Natural Language Campaign Management
+**Skip the API complexity - let AI implement everything for you!**
 
-As an MCP (Model Context Protocol) server, Scope3 enables natural conversations:
+### One-Click Integration
+
+Just add our MCP server to your favorite AI assistant:
+
+**🔗 https://docs.agentic.scope3.com/mcp**
+
+<Tabs>
+  <Tab title="Claude Desktop">
+    ```json
+    // ~/.config/claude/claude_desktop_config.json
+    {
+      "mcpServers": {
+        "scope3-campaigns": {
+          "command": "npx",
+          "args": ["-y", "@scope3/campaign-mcp-server"],
+          "env": {
+            "SCOPE3_API_KEY": "your-api-key-here"
+          }
+        }
+      }
+    }
+    ```
+    
+    Then just ask Claude: **"Create a sustainable fashion campaign targeting millennials with a $50K budget"**
+  </Tab>
+  
+  <Tab title="ChatGPT (Custom GPTs)">
+    ```yaml
+    # In your Custom GPT configuration
+    MCP Server URL: https://api.agentic.scope3.com/mcp
+    Headers: 
+      x-scope3-api-key: your-api-key-here
+    ```
+    
+    Then ask: **"Show me premium CTV inventory under $35 CPM and create a campaign using the best options"**
+  </Tab>
+  
+  <Tab title="Claude Code">
+    ```bash
+    # Terminal setup
+    export SCOPE3_API_KEY="your-api-key"
+    npx @scope3/campaign-mcp-server --http --port 3001
+    ```
+    
+    Then in Claude Code: **"Connect to http://localhost:3001/mcp and help me optimize our Q4 campaign performance"**
+  </Tab>
+  
+  <Tab title="Cursor">
+    ```typescript
+    // Add to your project's MCP configuration
+    import { MCPClient } from '@modelcontextprotocol/sdk';
+    
+    const scope3 = new MCPClient({
+      serverUrl: 'https://api.agentic.scope3.com/mcp',
+      headers: { 'x-scope3-api-key': process.env.SCOPE3_API_KEY }
+    });
+    ```
+    
+    Then use Cursor's chat: **"Use the Scope3 MCP tools to analyze our campaign performance and suggest optimizations"**
+  </Tab>
+</Tabs>
+
+### What Your AI Agent Can Do
+
+Once connected, your AI assistant can handle the entire campaign lifecycle:
 
 ```
-Human: "Find me premium video inventory under $40 CPM"
-AI Agent: → discover_publisher_products({ formats: ["video"], maxCpm: 40 })
-```
+Human: "Create a brand awareness campaign for our sustainable sneaker launch"
 
-**Human readable results:** AI agents get structured data, humans get clear insights.
+AI Agent: I'll set that up for you!
+→ create_brand_agent({ name: "EcoStep Footwear" })
+→ create_campaign({ 
+    name: "Sustainable Sneaker Launch",
+    prompt: "Target eco-conscious millennials, premium inventory only",
+    budget: { total: 75000, currency: "USD" }
+  })
+
+✅ Campaign created! Using carbon-efficient inventory mix.
+   Expected reach: 2.3M eco-conscious consumers.
+   Estimated carbon reduction: 34% vs. traditional DSPs.
+```
 
 ## Available Tools
 
@@ -275,6 +357,13 @@ AI Agent: → discover_publisher_products({ formats: ["video"], maxCpm: 40 })
 
 <CardGroup cols={2}>
   <Card
+    title="🤖 Add to Your AI Agent (Recommended)"
+    icon="zap"
+    href="/quickstart/mcp-setup"
+  >
+    **Fastest setup:** Add MCP server to Claude, ChatGPT, or any AI agent - let AI implement everything
+  </Card>
+  <Card
     title="Quick Start Tutorial"
     icon="rocket"
     href="/quickstart/first-campaign"
@@ -287,10 +376,15 @@ AI Agent: → discover_publisher_products({ formats: ["video"], maxCpm: 40 })
   <Card title="Platform Integration" icon="link" href="/migration/overview">
     Learn how Scope3 complements your existing advertising stack
   </Card>
-  <Card title="MCP Integration" icon="comments" href="/quickstart/mcp-setup">
-    Set up natural language campaign management through AI agents
-  </Card>
 </CardGroup>
+
+<Note>
+**🚀 Want the absolute fastest way to get started?**
+
+Just add this URL to your AI agent: **https://docs.agentic.scope3.com/mcp**
+
+Works with Claude Desktop, ChatGPT, Claude Code, Cursor, and any MCP-compatible agent.
+</Note>
 
 ---
 

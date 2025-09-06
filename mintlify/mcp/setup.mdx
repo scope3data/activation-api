@@ -3,7 +3,72 @@ title: MCP Setup Guide
 description: "Configure the Scope3 MCP server with Claude Desktop and other AI platforms"
 ---
 
+<Card title="🤖 One-Line Setup" icon="zap">
+**Add this MCP server to your AI agent and start managing campaigns through natural language:**
+
+**https://docs.agentic.scope3.com/mcp**
+
+Skip the complex setup - works with Claude, ChatGPT, Claude Code, Cursor, and more!
+</Card>
+
 This guide walks you through setting up the Scope3 MCP server for natural language campaign management.
+
+## 🚀 Quick Start Examples
+
+<Tabs>
+  <Tab title="Claude Desktop">
+    **1. Add to your config:**
+    ```json
+    // ~/.config/claude/claude_desktop_config.json
+    {
+      "mcpServers": {
+        "scope3": {
+          "command": "npx",
+          "args": ["-y", "@scope3/campaign-mcp-server"],
+          "env": {
+            "SCOPE3_API_KEY": "your-api-key"
+          }
+        }
+      }
+    }
+    ```
+    
+    **2. Ask Claude:**
+    > "Create a sustainable fashion campaign for millennials with $50K budget"
+  </Tab>
+  
+  <Tab title="ChatGPT Custom GPT">
+    **1. Create a Custom GPT with:**
+    ```yaml
+    Server: https://api.agentic.scope3.com/mcp
+    Header: x-scope3-api-key: your-api-key
+    ```
+    
+    **2. Ask ChatGPT:**
+    > "Find premium CTV inventory under $35 CPM and launch a campaign"
+  </Tab>
+  
+  <Tab title="Claude Code">
+    **1. Start the server:**
+    ```bash
+    export SCOPE3_API_KEY="your-api-key"
+    npx @scope3/campaign-mcp-server --http
+    ```
+    
+    **2. In Claude Code:**
+    > "Connect to localhost:3001/mcp and optimize our campaign performance"
+  </Tab>
+  
+  <Tab title="Cursor">
+    **1. Add to your project:**
+    ```bash
+    npm install @scope3/campaign-mcp-server
+    ```
+    
+    **2. Use in Cursor chat:**
+    > "Use Scope3 MCP tools to analyze brand performance and suggest improvements"
+  </Tab>
+</Tabs>
 
 ## Prerequisites
 
