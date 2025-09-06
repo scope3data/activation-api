@@ -35,6 +35,14 @@ import { getBrandStandardsTool } from "./brand-agents/standards/get-brand-standa
 import { setBrandStandardsTool } from "./brand-agents/standards/set-brand-standards.js";
 import { createCampaignTool } from "./campaigns/create-campaign.js";
 import { updateCampaignTool } from "./campaigns/update-campaign.js";
+// Campaign creative tools
+import { campaignAttachCreativeTool } from "./campaigns/attach-creative.js";
+import { campaignListCreativesTool } from "./campaigns/list-creatives.js";
+// AdCP-aligned creative management tools
+import { creativeAssignTool, creativeUnassignTool } from "./creatives/assign.js";
+import { creativeCreateTool } from "./creatives/create.js";
+import { creativeListTool } from "./creatives/list.js";
+import { creativeUploadAssetTool } from "./creatives/upload-asset.js";
 
 export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   // Authentication and existing agent tools
@@ -80,6 +88,17 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   // Brand Agent measurement tools
   server.addTool(addMeasurementSourceTool(client));
   server.addTool(listMeasurementSourcesTool(client));
+
+  // AdCP-aligned Creative Management Tools
+  server.addTool(creativeCreateTool(client));
+  server.addTool(creativeListTool(client));
+  server.addTool(creativeUploadAssetTool(client));
+  server.addTool(creativeAssignTool(client));
+  server.addTool(creativeUnassignTool(client));
+
+  // Campaign Creative Tools  
+  server.addTool(campaignAttachCreativeTool(client));
+  server.addTool(campaignListCreativesTool(client));
 };
 
 // Export individual tools for testing
@@ -119,4 +138,13 @@ export {
   updateBrandAgentCreativeTool,
   updateBrandAgentTool,
   updateCampaignTool,
+  // AdCP-aligned Creative Management Tools
+  creativeCreateTool,
+  creativeListTool,
+  creativeUploadAssetTool,
+  creativeAssignTool,
+  creativeUnassignTool,
+  // Campaign Creative Tools
+  campaignAttachCreativeTool,
+  campaignListCreativesTool,
 };

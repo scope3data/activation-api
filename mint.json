@@ -46,6 +46,15 @@
       ]
     },
     {
+      "group": "🎨 Creative Management (Critical Module)",
+      "pages": [
+        "mintlify/creative/quickstart",
+        "mintlify/creative/overview",
+        "mintlify/creative/agents",
+        "mintlify/creative/best-practices"
+      ]
+    },
+    {
       "group": "MCP Integration",
       "pages": ["mintlify/mcp/overview", "mintlify/mcp/setup"]
     },

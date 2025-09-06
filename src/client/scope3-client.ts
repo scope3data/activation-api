@@ -22,6 +22,16 @@ import type {
   SyntheticAudiencesData,
 } from "../types/brand-agent.js";
 import type {
+  Creative,
+  CreativeAsset,
+  CreativeFilter,
+  CreativeListResponse,
+  CreateCreativeInput,
+  CreateAssetInput,
+  AssignmentResult,
+  PaginationInput,
+} from "../types/creative.js";
+import type {
   InventoryOption,
   InventoryOptionInput,
   InventoryOptionsData,
@@ -74,6 +84,15 @@ import {
   UPDATE_BRAND_AGENT_CREATIVE_MUTATION,
   UPDATE_BRAND_AGENT_MUTATION,
 } from "./queries/brand-agents.js";
+import {
+  GET_CREATIVES_QUERY,
+  GET_CREATIVE_QUERY,
+  CREATE_CREATIVE_MUTATION,
+  UPLOAD_ASSET_MUTATION,
+  ASSIGN_CREATIVE_TO_CAMPAIGN_MUTATION,
+  UNASSIGN_CREATIVE_FROM_CAMPAIGN_MUTATION,
+  GET_CAMPAIGN_CREATIVES_QUERY,
+} from "./queries/creatives.js";
 import {
   CREATE_STRATEGY_MUTATION,
   GENERATE_UPDATED_STRATEGY_PROMPT_QUERY,
@@ -1499,5 +1518,258 @@ export class Scope3ApiClient {
     }
 
     return result.data.updateOneStrategy;
+  }
+
+  // ========================================
+  // CREATIVE MANAGEMENT METHODS (AdCP Pass-Through)
+  // ========================================
+
+  /**
+   * Create a new creative with assets
+   * Designed as pass-through to AdCP publishers
+   */
+  async createCreative(
+    apiKey: string,
+    buyerAgentId: string,
+    input: Omit<CreateCreativeInput, 'buyerAgentId'>,
+  ): Promise<Creative> {
+    // STUB: Will pass through to AdCP publisher when available
+    console.log('[STUB] createCreative - will pass through to AdCP publisher');
+    console.log('Input:', { buyerAgentId, ...input });
+    
+    // Generate mock creative with human-readable structure
+    const mockCreative: Creative = {
+      creativeId: `creative_${Date.now()}`,
+      creativeName: input.creativeName,
+      creativeDescription: input.creativeDescription,
+      version: '1.0.0',
+      buyerAgentId,
+      customerId: await this.getCustomerId(apiKey),
+      
+      assets: input.assets.map((asset, idx) => ({
+        assetId: `asset_${Date.now()}_${idx}`,
+        assetName: asset.assetName,
+        assetType: asset.assetType,
+        fileFormat: this.detectFileFormat(asset.fileUrl || ''),
+        fileSizeBytes: 0, // Would be calculated
+        fileUrl: asset.fileUrl || `https://stub.asset/${Date.now()}`,
+        textContent: asset.textContent,
+        assetRole: idx === 0 ? 'primary' : 'companion',
+        tags: asset.tags || [],
+        widthPixels: asset.widthPixels,
+        heightPixels: asset.heightPixels,
+        durationSeconds: asset.durationSeconds,
+      })),
+      
+      primaryAssetId: input.assets.length > 0 ? `asset_${Date.now()}_0` : undefined,
+      
+      advertiserDomains: input.advertiserDomains,
+      contentCategories: input.contentCategories || [],
+      targetAudience: input.targetAudience,
+      
+      status: 'draft',
+      createdDate: new Date().toISOString(),
+      lastModifiedDate: new Date().toISOString(),
+      createdBy: 'api_user',
+      lastModifiedBy: 'api_user',
+    };
+    
+    return mockCreative;
+  }
+
+  /**
+   * List creatives for a buyer agent with optional filters
+   * Will query AdCP publishers when backend is implemented
+   */
+  async listCreatives(
+    apiKey: string,
+    buyerAgentId: string,
+    filter?: CreativeFilter,
+    pagination?: PaginationInput,
+    includeCampaigns?: boolean,
+  ): Promise<CreativeListResponse> {
+    // STUB: Will query AdCP publishers
+    console.log('[STUB] listCreatives - will query AdCP publishers');
+    console.log('Query:', { buyerAgentId, filter, pagination, includeCampaigns });
+    
+    return {
+      items: [],
+      totalCount: 0,
+      pageInfo: { hasNextPage: false },
+      summary: {
+        totalCreatives: 0,
+        byStatus: {},
+        byAssetType: {},
+        totalCampaigns: 0,
+        averageAssetsPerCreative: 0,
+      }
+    };
+  }
+
+  /**
+   * Get a single creative by ID
+   */
+  async getCreative(
+    apiKey: string,
+    creativeId: string,
+  ): Promise<Creative> {
+    // STUB: Will query AdCP publisher
+    console.log('[STUB] getCreative - will query AdCP publisher');
+    console.log('Query:', { creativeId });
+    
+    throw new Error('Creative not found (STUB)');
+  }
+
+  /**
+   * Upload individual asset that can be used in creatives
+   * Will delegate to appropriate AdCP publisher based on asset type
+   */
+  async uploadAsset(
+    apiKey: string,
+    buyerAgentId: string,
+    asset: CreateAssetInput,
+  ): Promise<CreativeAsset> {
+    console.log('[STUB] uploadAsset - will pass through to AdCP publisher');
+    console.log('Upload:', { buyerAgentId, asset });
+    
+    // Would delegate to appropriate AdCP publisher
+    // based on asset type and buyer agent configuration
+    
+    const mockAsset: CreativeAsset = {
+      assetId: `asset_${Date.now()}`,
+      assetName: asset.assetName,
+      assetType: asset.assetType,
+      fileFormat: this.detectFileFormat(asset.fileUrl || ''),
+      fileSizeBytes: 0,
+      fileUrl: asset.fileUrl || `https://stub.asset/${Date.now()}`,
+      textContent: asset.textContent,
+      assetRole: asset.assetRole,
+      tags: asset.tags || [],
+      widthPixels: asset.widthPixels,
+      heightPixels: asset.heightPixels,
+      durationSeconds: asset.durationSeconds,
+      customMetadata: asset.customMetadata,
+    };
+    
+    return mockAsset;
+  }
+
+  /**
+   * Assign creative to campaign (both must belong to same buyer agent)
+   */
+  async assignCreativeToCampaign(
+    apiKey: string,
+    creativeId: string,
+    campaignId: string,
+    buyerAgentId: string,
+  ): Promise<AssignmentResult> {
+    console.log('[STUB] assignCreativeToCampaign - will validate and assign');
+    console.log('Assignment:', { creativeId, campaignId, buyerAgentId });
+    
+    // Would validate that both creative and campaign belong to the same buyer agent
+    
+    return {
+      success: true,
+      message: `[STUB] Creative ${creativeId} assigned to campaign ${campaignId}`,
+      assignment: {
+        campaignId,
+        campaignName: 'Mock Campaign',
+        assignedDate: new Date().toISOString(),
+        isActive: true,
+      }
+    };
+  }
+
+  /**
+   * Unassign creative from campaign
+   */
+  async unassignCreativeFromCampaign(
+    apiKey: string,
+    creativeId: string,
+    campaignId: string,
+  ): Promise<AssignmentResult> {
+    console.log('[STUB] unassignCreativeFromCampaign');
+    console.log('Unassignment:', { creativeId, campaignId });
+    
+    return {
+      success: true,
+      message: `[STUB] Creative ${creativeId} unassigned from campaign ${campaignId}`,
+    };
+  }
+
+  /**
+   * Get all creatives assigned to a specific campaign
+   */
+  async getCampaignCreatives(
+    apiKey: string,
+    campaignId: string,
+  ): Promise<Creative[]> {
+    console.log('[STUB] getCampaignCreatives - will query campaign assignments');
+    console.log('Query:', { campaignId });
+    
+    return [];
+  }
+
+  /**
+   * Parse creative prompt to detect required assets and types
+   * Uses AI to understand natural language creative descriptions
+   */
+  async parseCreativePrompt(
+    apiKey: string,
+    prompt: string,
+  ): Promise<{
+    suggestedName: string;
+    suggestedAssets: CreateAssetInput[];
+    advertiserDomains?: string[];
+    contentCategories?: string[];
+  }> {
+    console.log('[STUB] parseCreativePrompt - will use AI to parse prompt');
+    console.log('Prompt:', prompt);
+    
+    // Would use AI to parse the natural language prompt
+    // and suggest creative structure
+    
+    return {
+      suggestedName: 'AI-Generated Creative Name',
+      suggestedAssets: [
+        {
+          assetName: 'Generated from prompt',
+          assetType: 'image',
+          fileUrl: 'https://placeholder.com/generated',
+        }
+      ],
+    };
+  }
+
+  /**
+   * Detect file format from URL or filename
+   * Helper method for asset management
+   */
+  private detectFileFormat(url: string): string {
+    if (!url) return 'unknown';
+    
+    const extension = url.split('.').pop()?.toLowerCase();
+    switch (extension) {
+      case 'jpg':
+      case 'jpeg':
+        return 'jpeg';
+      case 'png':
+        return 'png';
+      case 'gif':
+        return 'gif';
+      case 'mp4':
+        return 'mp4';
+      case 'webm':
+        return 'webm';
+      case 'mp3':
+        return 'mp3';
+      case 'aac':
+        return 'aac';
+      case 'html':
+      case 'htm':
+        return 'html';
+      default:
+        return extension || 'unknown';
+    }
   }
 }
