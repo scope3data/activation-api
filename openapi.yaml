@@ -2,6 +2,9 @@ openapi: 3.1.0
 info:
   title: Scope3 Agentic Campaign Management API
   version: 1.0.0
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
   description: >-
     API for managing agentic advertising campaigns executed via AdCP using Scope3 media quality,
     synthetic audience, cross-publisher frequency capping, custom signals integration, and
@@ -152,6 +155,13 @@ paths:
         agent name. Requires authentication.
       x-llm-hints:
         - Use this tool when user wants to get all agents and their models from scope3 api
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Resource identifier
       responses:
         "200":
           description: Successful response
@@ -288,6 +298,13 @@ paths:
               basic:
                 summary: Basic example
                 value: {}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Resource identifier
       responses:
         "200":
           description: Successful response
@@ -340,6 +357,13 @@ paths:
           account) and all associated data including campaigns, creatives, audiences, standards, and
           measurement sources"
         - Call this when user says 'delete', 'remove', or 'destroy'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Resource identifier
       responses:
         "200":
           description: Successful response
@@ -389,6 +413,13 @@ paths:
       x-llm-hints:
         - Use this tool when user wants to get detailed information about a specific brand agent
           (advertiser account) by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Resource identifier
       responses:
         "200":
           description: Successful response
@@ -590,6 +621,13 @@ paths:
               basic:
                 summary: Basic example
                 value: {}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Resource identifier
       responses:
         "200":
           description: Successful response
@@ -787,6 +825,13 @@ paths:
               basic:
                 summary: Basic example
                 value: {}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Resource identifier
       responses:
         "200":
           description: Successful response
@@ -959,6 +1004,13 @@ paths:
         - Use this tool when user wants to retrieve the current brand safety standards and media
           controls for a brand agent
         - Call this when user asks 'show me', 'list', or 'what are my'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Resource identifier
       responses:
         "200":
           description: Successful response
