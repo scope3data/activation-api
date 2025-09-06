@@ -6,14 +6,16 @@
     "build": "npm run generate:openapi && tsc",
     "start": "node dist/server.js",
     "dev": "fastmcp dev src/server.ts",
-    "lint": "prettier --check . && eslint . && tsc --noEmit && npm run validate:openapi",
+    "lint": "prettier --check . && eslint . && tsc --noEmit && npm run validate:openapi && npm run docs:validate:openapi",
     "test": "vitest run",
     "format": "prettier --write . && eslint --fix .",
     "generate:openapi": "tsx scripts/generate-openapi.ts",
     "validate:openapi": "node scripts/validate-openapi.js",
     "ci:local": "bash scripts/ci-check.sh",
     "docs:dev": "cd mintlify && mintlify dev",
-    "docs:build": "cd mintlify && mintlify build",
+    "docs:validate": "cd mintlify && mintlify broken-links && mintlify openapi-check ../openapi.yaml",
+    "docs:validate:links": "cd mintlify && mintlify broken-links",
+    "docs:validate:openapi": "mintlify openapi-check openapi.yaml",
     "prebuild": "npm run generate:openapi",
     "prepare": "husky",
     "postinstall": "npm run build"
@@ -67,7 +69,11 @@
       "npm run test"
     ],
     "openapi.yaml": [
-      "npm run validate:openapi"
+      "npm run validate:openapi",
+      "bash -c 'npm run docs:validate:openapi'"
+    ],
+    "mintlify/**/*.{md,mdx,json}": [
+      "bash -c 'npm run docs:validate:openapi'"
     ]
   },
   "devDependencies": {

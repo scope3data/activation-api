@@ -38,6 +38,11 @@ npm run lint
 echo "🧪 Running tests..."
 npm test
 
+# Validate documentation
+echo "📚 Validating documentation..."
+npm run docs:validate:openapi
+echo "✅ Documentation validation passed"
+
 # Check for OpenAPI drift
 echo "📋 Checking OpenAPI consistency..."
 ORIGINAL_OPENAPI=$(cat openapi.yaml)

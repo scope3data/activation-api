@@ -92,6 +92,43 @@ Use `npm run format` to format the code.
 npm run format
 ```
 
+### Documentation
+
+The project includes comprehensive documentation built with [Mintlify](https://mintlify.com).
+
+#### Local Documentation Development
+
+Start the documentation server locally:
+
+```bash
+npm run docs:dev
+```
+
+This will start a local Mintlify server, typically at http://localhost:3000.
+
+#### Documentation Validation
+
+Validate documentation before committing:
+
+```bash
+# Validate OpenAPI spec used in docs
+npm run docs:validate:openapi
+
+# Check for broken internal links (informational)
+npm run docs:validate:links
+
+# Run all documentation validation
+npm run docs:validate
+```
+
+#### Documentation Guidelines
+
+- All documentation files are in the `mintlify/` directory
+- The `mint.json` file contains navigation and configuration
+- OpenAPI spec is automatically validated against documentation
+- Broken links are checked but don't fail CI (since docs may be incomplete)
+- Run `npm run docs:validate:openapi` before committing to ensure OpenAPI compatibility
+
 ### CI/Local Environment Parity
 
 To ensure your local environment matches CI and prevent "works on my machine" issues:

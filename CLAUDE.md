@@ -482,3 +482,28 @@ The stub implementations provide clear extension points for:
 - **Enhanced Creative Management**: A/B testing, performance optimization, format variants
 
 This implementation successfully transforms the Scope3 API from a campaign-focused tool into a **complete advertiser platform** that can scale to support enterprise-level advertising operations while maintaining the simplicity of natural language interactions.
+
+## Documentation Development
+
+The project includes comprehensive Mintlify documentation with integrated validation:
+
+### Local Development
+
+```bash
+npm run docs:dev  # Start local documentation server
+```
+
+### Validation Commands
+
+```bash
+npm run docs:validate:openapi  # Validate OpenAPI spec (runs in CI)
+npm run docs:validate:links    # Check for broken links (informational)
+npm run docs:validate          # Run full validation
+```
+
+The documentation validation is integrated into:
+
+- **Lint command**: `npm run lint` includes OpenAPI validation
+- **CI pipeline**: Automatically validates documentation on every commit
+- **Git hooks**: Pre-commit validation ensures consistency
+- **Development workflow**: Easy local validation before pushing
