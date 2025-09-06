@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "scope3-campaign-api": {
+      "command": "node",
+      "args": [
+        "/Users/brianokelley/conductor/activation-api/.conductor/create-campaign/dist/server.js"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "SCOPE3_API_KEY": "your_scope3_api_key_here"
+      }
+    }
+  }
+}

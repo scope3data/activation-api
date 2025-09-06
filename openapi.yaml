@@ -71,10 +71,10 @@ paths:
                         status: "active"
                         created_at: "2024-11-01T00:00:00Z"
 
-  /campaigns/create:
+  /campaigns/create-draft:
     post:
-      operationId: createCampaign
-      summary: Create a new campaign
+      operationId: createCampaignDraft
+      summary: Create a campaign draft/plan
       description: |
         Creates a campaign from a natural language prompt and budget.
         Returns a complete plan including targeting, signals, creative formats, and sample products.
@@ -184,6 +184,231 @@ paths:
                           estimated_reach: 500000
                           cpm: 12.00
                           recommended_budget: 1000
+
+  /campaigns/create:
+    post:
+      operationId: createCampaign
+      summary: Create complete campaign from natural language prompt
+      description: |
+        Creates a complete campaign in Scope3 by parsing a natural language prompt and automatically creating:
+        - Campaign strategy with the specified name and objectives
+        - All targeting profiles based on the parsed audience segments
+        - Brand agent associations (standards and story agents)
+        - Channel and country configurations
+
+        This is a one-step process that handles the entire campaign creation workflow.
+        Returns the created strategy ID and a human-readable summary of what was set up.
+
+        Uses INTELLIGENT_PMPS strategy type by default (optimized for premium marketplace placements).
+        Future versions will support media buys workflow.
+      x-llm-hints:
+        - "Use when user wants to 'create', 'build', 'launch', or 'set up' a campaign"
+        - "Single tool call creates the complete campaign ready for deployment"
+        - "Returns strategy ID and summary of created targeting profiles"
+        - "Call for end-to-end campaign creation from natural language"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - prompt
+              properties:
+                name:
+                  type: string
+                  description: Name for the campaign strategy
+                  example: "Q4 Sustainable Fashion Campaign"
+                prompt:
+                  type: string
+                  description: Natural language description of campaign goals and strategy
+                  example: "Target millennials interested in sustainable fashion in major US cities, emphasize our eco-friendly materials and ethical manufacturing"
+            examples:
+              simple:
+                value:
+                  prompt: "Target young professionals interested in productivity apps"
+      responses:
+        "200":
+          description: Campaign created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatedCampaign"
+              examples:
+                created_campaign:
+                  value:
+                    strategy:
+                      id: "str_987654321"
+                      name: "Q4 Sustainable Fashion Campaign"
+                      status: "created"
+                      warnings: []
+                    targeting:
+                      profilesCreated: 3
+                      profiles:
+                        - id: "tp_123456"
+                          dimensionName: "interests"
+                          includeCount: 5
+                          excludeCount: 2
+                        - id: "tp_123457"
+                          dimensionName: "demographics"
+                          includeCount: 3
+                          excludeCount: 0
+                        - id: "tp_123458"
+                          dimensionName: "geography"
+                          includeCount: 10
+                          excludeCount: 1
+                    summary:
+                      channels: ["display", "video"]
+                      countries: ["US", "CA", "UK"]
+                      brandStandardsAgents:
+                        - id: 456
+                          name: "Fashion Brand Standards Agent"
+                      brandStoryAgents: []
+                      targetingProfiles:
+                        - category: "Interests"
+                          categoryDescription: "Topics and activities the audience is interested in"
+                          includeTargets:
+                            - id: "12345"
+                              name: "Sustainable Living"
+                              description: "Users interested in eco-friendly products and lifestyle"
+                          excludeTargets:
+                            - id: "67890"
+                              name: "Fast Fashion"
+                              description: "Users interested in fast fashion brands"
+                          issues: []
+
+  /campaigns/update-strategy:
+    post:
+      operationId: updateCampaignStrategy
+      summary: Generate updated campaign strategy prompt
+      description: |
+        Generates an updated campaign strategy prompt based on changes to targeting, 
+        brand agents, channels, and countries. This endpoint compares current strategy
+        settings with original ones to create a refined, natural language prompt that
+        reflects the modifications made to the campaign.
+
+        This is useful when you need to:
+        - Update campaign targeting parameters
+        - Change brand agent assignments
+        - Modify channel or country targeting
+        - Generate a new prompt that reflects all changes
+      x-llm-hints:
+        - "Use when user wants to 'update', 'modify', or 'change' an existing campaign strategy"
+        - "Compares current settings with original to generate refined prompt"
+        - "Call this before updating the actual campaign to get the updated strategy language"
+        - "Useful for maintaining consistency between prompt and targeting parameters"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - currentPrompt
+                - brandStandardsAgents
+                - brandStoryAgents
+                - channels
+                - countries
+                - strategyType
+              properties:
+                currentPrompt:
+                  type: string
+                  description: Current campaign prompt to be updated
+                  example: "Target young professionals interested in productivity apps"
+                brandStandardsAgents:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/BrandAgent"
+                  description: Current brand standards agents for the campaign
+                brandStoryAgents:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/BrandAgent"
+                  description: Current brand story agents for the campaign
+                channels:
+                  type: array
+                  items:
+                    type: string
+                  description: Current advertising channels
+                  example: ["display", "video", "native"]
+                countries:
+                  type: array
+                  items:
+                    type: string
+                  description: Current target countries
+                  example: ["US", "CA", "UK"]
+                strategyType:
+                  $ref: "#/components/schemas/StrategyType"
+                bitmapTargetingProfiles:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/BitmapTargetingProfileInput"
+                  description: Current bitmap targeting profiles
+                originalBitmapTargetingProfiles:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/BitmapTargetingProfileInput"
+                  description: Original bitmap targeting profiles for comparison
+                originalBrandStandardsAgents:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/BrandAgent"
+                  description: Original brand standards agents for comparison
+                originalBrandStoryAgents:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/BrandAgent"
+                  description: Original brand story agents for comparison
+                originalChannels:
+                  type: array
+                  items:
+                    type: string
+                  description: Original advertising channels for comparison
+                originalCountries:
+                  type: array
+                  items:
+                    type: string
+                  description: Original target countries for comparison
+            examples:
+              channel_update:
+                value:
+                  currentPrompt: "Target young professionals interested in productivity apps"
+                  brandStandardsAgents: []
+                  brandStoryAgents: []
+                  channels: ["display", "video", "native", "audio"]
+                  countries: ["US", "CA"]
+                  strategyType: "INTELLIGENT_PMPS"
+                  originalChannels: ["display", "video"]
+                  originalCountries: ["US", "CA"]
+              targeting_update:
+                value:
+                  currentPrompt: "Holiday campaign for electronics targeting gift-givers"
+                  brandStandardsAgents:
+                    [{ "id": 123, "name": "Tech Brand Agent" }]
+                  brandStoryAgents: []
+                  channels: ["display", "video"]
+                  countries: ["US", "CA", "UK"]
+                  strategyType: "BRAND_STANDARDS"
+                  originalCountries: ["US", "CA"]
+                  originalBrandStandardsAgents: []
+      responses:
+        "200":
+          description: Updated strategy prompt generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updatedPrompt:
+                    type: string
+                    description: The updated campaign strategy prompt
+                required:
+                  - updatedPrompt
+              examples:
+                updated_prompt:
+                  value:
+                    updatedPrompt: "Target young professionals interested in productivity apps across display, video, native, and audio channels, expanding reach while maintaining focus on business and efficiency tools"
 
   /campaigns/{campaign_id}:
     put:
@@ -627,6 +852,433 @@ components:
               type: number
             conversions:
               type: integer
+
+    BrandAgent:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Brand agent identifier
+        name:
+          type: string
+          description: Brand agent name
+      required:
+        - id
+        - name
+      additionalProperties: false
+
+    StrategyType:
+      type: string
+      enum:
+        [BRAND_AGENT, BRAND_STANDARDS, INTELLIGENT_PMPS, INTELLIGENT_SEGMENTS]
+      description: |
+        Type of strategy to optimize for:
+        - INTELLIGENT_PMPS: Premium marketplace placements (default, current focus)
+        - INTELLIGENT_SEGMENTS: Audience-based targeting
+        - BRAND_STANDARDS: Brand guideline compliance
+        - BRAND_AGENT: Brand-specific agent optimization
+
+        Note: Future versions will transition to media buys workflow
+
+    TargetingItem:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Targeting item identifier
+        key:
+          type: string
+          description: Targeting item key
+        displayName:
+          type: string
+          description: Human-readable display name
+        dimensionName:
+          type: string
+          description: Dimension this item belongs to
+        description:
+          type: string
+          description: Detailed description of the targeting item
+      required:
+        - id
+        - key
+        - displayName
+        - dimensionName
+      additionalProperties: false
+
+    BitmapTargetingProfile:
+      type: object
+      properties:
+        dimensionName:
+          type: string
+          description: Name of the targeting dimension
+        anyOfItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/TargetingItem"
+          description: Items to include in targeting
+        noneOfItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/TargetingItem"
+          description: Items to exclude from targeting
+        errors:
+          type: array
+          items:
+            type: string
+          description: Any errors encountered during parsing
+      required:
+        - dimensionName
+        - anyOfItems
+        - noneOfItems
+        - errors
+      additionalProperties: false
+
+    TargetingProfile:
+      type: object
+      properties:
+        category:
+          type: string
+          description: Human-readable category name (e.g., "Interests", "Demographics")
+        categoryDescription:
+          type: string
+          description: Explanation of what this targeting category covers
+        includeTargets:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Targeting item identifier
+              name:
+                type: string
+                description: Human-readable target name
+              description:
+                type: string
+                description: Additional details about this target
+            required: [id, name]
+          description: Audience segments to include in targeting
+        excludeTargets:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Targeting item identifier
+              name:
+                type: string
+                description: Human-readable target name
+              description:
+                type: string
+                description: Additional details about this target
+            required: [id, name]
+          description: Audience segments to exclude from targeting
+        issues:
+          type: array
+          items:
+            type: string
+          description: Any user-friendly warnings or conflicts with this targeting
+      required:
+        - category
+        - categoryDescription
+        - includeTargets
+        - excludeTargets
+        - issues
+      additionalProperties: false
+
+    ParsedStrategy:
+      type: object
+      properties:
+        targetingProfiles:
+          type: array
+          items:
+            $ref: "#/components/schemas/TargetingProfile"
+          description: Human-readable targeting profiles showing what audiences to include/exclude
+        bitmapTargetingProfiles:
+          type: array
+          items:
+            $ref: "#/components/schemas/BitmapTargetingProfile"
+          description: Technical targeting profiles (for advanced use)
+        brandStandardsAgents:
+          type: array
+          items:
+            $ref: "#/components/schemas/BrandAgent"
+          description: Recommended brand standards agents
+        brandStoryAgents:
+          type: array
+          items:
+            $ref: "#/components/schemas/BrandAgent"
+          description: Recommended brand story agents
+        channels:
+          type: ["array", "null"]
+          items:
+            type: string
+          description: Suggested advertising channels
+        countries:
+          type: ["array", "null"]
+          items:
+            type: string
+          description: Target countries extracted from prompt
+        missing:
+          type: array
+          items:
+            type: string
+          description: Elements that could not be parsed from the prompt
+        status:
+          type: string
+          description: Status of the parsing operation
+        strategyName:
+          type: string
+          description: Generated name for the campaign strategy
+      required:
+        - targetingProfiles
+        - bitmapTargetingProfiles
+        - brandStandardsAgents
+        - brandStoryAgents
+        - channels
+        - countries
+        - missing
+        - status
+        - strategyName
+      additionalProperties: false
+
+    TargetingItemInput:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Targeting item identifier
+        key:
+          type: string
+          description: Targeting item key
+        name:
+          type: string
+          description: Targeting item name
+      required:
+        - id
+        - key
+        - name
+      additionalProperties: false
+
+    BitmapTargetingProfileInput:
+      type: object
+      properties:
+        dimensionName:
+          type: string
+          description: Name of the targeting dimension
+        anyOfItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/TargetingItemInput"
+          description: Items to include in targeting
+        noneOfItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/TargetingItemInput"
+          description: Items to exclude from targeting
+      required:
+        - dimensionName
+        - anyOfItems
+        - noneOfItems
+      additionalProperties: false
+
+    CreatedStrategy:
+      type: object
+      description: Successfully created campaign strategy
+      properties:
+        id:
+          type: string
+          description: Unique strategy identifier
+        name:
+          type: string
+          description: Strategy name
+        prompt:
+          type: string
+          description: Campaign prompt/description
+        strategyType:
+          $ref: "#/components/schemas/StrategyType"
+        channelCodes:
+          type: array
+          items:
+            type: string
+          description: Advertising channels
+        countryCodes:
+          type: array
+          items:
+            type: string
+          description: Target countries
+        createdAt:
+          type: string
+          format: date-time
+          description: Strategy creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Strategy last update timestamp
+      required:
+        - id
+        - name
+        - strategyType
+        - channelCodes
+        - countryCodes
+        - createdAt
+        - updatedAt
+      additionalProperties: false
+
+    CreatedTargetingProfile:
+      type: object
+      description: Successfully created bitmap targeting profile
+      properties:
+        id:
+          type: string
+          description: Unique targeting profile identifier
+        dimensionName:
+          type: string
+          description: Targeting dimension name
+        anyOf:
+          type: array
+          items:
+            type: string
+          description: Included targeting item IDs
+        noneOf:
+          type: array
+          items:
+            type: string
+          description: Excluded targeting item IDs
+        strategyId:
+          type: string
+          description: Associated strategy ID
+        createdAt:
+          type: string
+          format: date-time
+          description: Profile creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Profile last update timestamp
+        anyOfItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/TargetingItem"
+          description: Included targeting items with details
+        noneOfItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/TargetingItem"
+          description: Excluded targeting items with details
+      required:
+        - id
+        - dimensionName
+        - anyOf
+        - noneOf
+        - strategyId
+        - createdAt
+        - updatedAt
+        - anyOfItems
+        - noneOfItems
+      additionalProperties: false
+
+    CreatedCampaign:
+      type: object
+      description: Successfully created campaign with strategy and targeting profiles
+      properties:
+        strategy:
+          type: object
+          description: Created strategy information
+          properties:
+            id:
+              type: string
+              description: Unique strategy identifier
+            name:
+              type: string
+              description: Strategy name
+            status:
+              type: string
+              enum: [created, created_with_warnings]
+              description: Creation status
+            warnings:
+              type: array
+              items:
+                type: string
+              description: Any warnings during strategy creation
+          required:
+            - id
+            - name
+            - status
+            - warnings
+        targeting:
+          type: object
+          description: Targeting profiles creation summary
+          properties:
+            profilesCreated:
+              type: integer
+              description: Number of targeting profiles successfully created
+            profiles:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Targeting profile ID
+                  dimensionName:
+                    type: string
+                    description: Targeting dimension name
+                  includeCount:
+                    type: integer
+                    description: Number of include targeting items
+                  excludeCount:
+                    type: integer
+                    description: Number of exclude targeting items
+                required:
+                  - id
+                  - dimensionName
+                  - includeCount
+                  - excludeCount
+          required:
+            - profilesCreated
+            - profiles
+        summary:
+          type: object
+          description: Human-readable campaign summary
+          properties:
+            channels:
+              type: array
+              items:
+                type: string
+              description: Campaign channels
+            countries:
+              type: array
+              items:
+                type: string
+              description: Target countries
+            brandStandardsAgents:
+              type: array
+              items:
+                $ref: "#/components/schemas/BrandAgent"
+              description: Brand standards agents
+            brandStoryAgents:
+              type: array
+              items:
+                $ref: "#/components/schemas/BrandAgent"
+              description: Brand story agents
+            targetingProfiles:
+              type: array
+              items:
+                $ref: "#/components/schemas/TargetingProfile"
+              description: Human-readable targeting profiles
+          required:
+            - channels
+            - countries
+            - brandStandardsAgents
+            - brandStoryAgents
+            - targetingProfiles
+      required:
+        - strategy
+        - targeting
+        - summary
+      additionalProperties: false
 
   securitySchemes:
     bearerAuth:
