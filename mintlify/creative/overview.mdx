@@ -18,14 +18,15 @@ icon: "image"
 
 - **Campaign success** significantly depends on creative quality
 - **Cost reduction** through reusable asset management
-- **90% automation** of manual creative workflows
+- **Automation** of manual creative workflows
 - **Zero creative bottlenecks** in campaign deployment
 
-<Card title="Business Impact Calculator" icon="calculator">
-**Example ROI for $100K Campaign Budget:**
-- Without Creative Management: $100K → $85K performance (15% underperformance)
-- With Creative Management: $100K → $147K performance (47% overperformance)
-- **Net Gain: +$62K per campaign**
+<Card title="Business Impact" icon="calculator">
+**Example Campaign Benefits:**
+- Improved creative quality and consistency
+- Reduced production time and costs
+- Better audience engagement
+- Streamlined workflow automation
 </Card>
 
 ## Architecture: Creative Management as Core Infrastructure
@@ -35,7 +36,7 @@ icon: "image"
 **For Developers**: This AdCP-compliant hierarchy is designed for enterprise scale - one creative library can serve millions of campaigns across thousands of brands.
 
 **Why This Architecture Matters:**
-- **API Efficiency**: Reduces creative-related API calls by 70%
+- **API Efficiency**: Reduces creative-related API calls significantly
 - **Cache Optimization**: Assets are cached and reused across campaigns
 - **Brand Consistency**: Centralized asset management prevents brand violations
 - **Performance**: Creative hierarchy optimizes ad serving speed
@@ -94,12 +95,12 @@ graph TD
 ✅ **Checkpoint**: Brand agent created, ready for creative management
 </Step>
 
-<Step title="Phase 2: Creative Management (CRITICAL)">
-**Implement creative tools** - This is the core performance module
+<Step title="Phase 2: Creative Management">
+**Implement creative tools** - Important for campaign performance
 ```bash
 "Create a creative with banner and headline for Nike"
 ```
-⚠️ **Critical**: Without this phase, campaigns will underperform by 47%
+✅ **Recommended**: Proper creative setup improves campaign outcomes
 </Step>
 
 <Step title="Phase 3: Campaign Deployment (Final)">
@@ -113,9 +114,9 @@ graph TD
 
 ## 🏗️ MCP Orchestration + REST Upload Architecture
 
-<Warning>
-**CRITICAL ARCHITECTURE CHANGE**: Creative management now uses a **two-layer architecture** separating MCP orchestration from file uploads. This enables real-world enterprise workflows while maintaining conversational simplicity.
-</Warning>
+<Info>
+**Architecture Note**: Creative management uses a **two-layer architecture** separating MCP orchestration from file uploads. This enables real-world enterprise workflows while maintaining conversational simplicity.
+</Info>
 
 ### Why This Architecture?
 
@@ -133,7 +134,7 @@ graph TD
 
 <CardGroup cols={2}>
 
-<Card title="🏢 Most Common (80%)" icon="building">
+<Card title="🏢 Most Common" icon="building">
 **Third-Party Ad Server Tags**
 - HTML5 creative snippets from DCM/GAM
 - JavaScript ad tags from Sizmek/Flashtalking
@@ -143,7 +144,7 @@ graph TD
 **Integration**: `creative/create` with content.htmlSnippet
 </Card>
 
-<Card title="🎯 Asset Assembly (15%)" icon="puzzle">
+<Card title="🎯 Asset Assembly" icon="puzzle">
 **Asset ID References**
 - Images/videos uploaded via REST API
 - Assets referenced by ID in creatives
@@ -153,7 +154,7 @@ graph TD
 **Integration**: `assets/add` → `creative/create` with content.assetIds
 </Card>
 
-<Card title="🤖 Dynamic Generation (5%)" icon="robot">
+<Card title="🤖 Dynamic Generation" icon="robot">
 **Product Page Extraction**
 - Creative agents extract from URLs
 - AI-powered creative generation
@@ -185,7 +186,7 @@ graph TD
 
 <AccordionGroup>
 
-<Accordion title="creative/create - ORCHESTRATION API [REQUIRED]" icon="star">
+<Accordion title="creative/create - Primary Orchestration API" icon="star">
 
 **Most Important API**: Create creatives with format specification and content sources. **This is orchestration only - no file uploads via MCP.**
 
@@ -227,7 +228,7 @@ graph TD
 
 </Accordion>
 
-<Accordion title="creative/list - INVENTORY MANAGEMENT [ESSENTIAL]" icon="database">
+<Accordion title="creative/list - Inventory Management" icon="database">
 
 **Core Management API**: List and filter creatives with campaign assignments and performance data.
 
@@ -266,7 +267,7 @@ graph TD
 
 </Accordion>
 
-<Accordion title="creative/update - MODIFY EXISTING [NEW]" icon="edit">
+<Accordion title="creative/update - Modify Existing" icon="edit">
 
 **Creative Update API**: Update existing creative properties including name, status, and content sources. Creates new version while preserving campaign assignments.
 
@@ -332,7 +333,7 @@ Remove a creative from a campaign.
 
 </Accordion>
 
-<Accordion title="assets/add - REFERENCE MANAGEMENT [NEW]" icon="link">
+<Accordion title="assets/add - Asset References" icon="link">
 
 **Asset Reference API**: Add assets via reference management (URLs, upload IDs, CDN URLs). **No file uploads via MCP - use REST endpoints for actual uploads.**
 
@@ -368,7 +369,7 @@ Remove a creative from a campaign.
 
 </Accordion>
 
-<Accordion title="list_creative_formats - FORMAT DISCOVERY [NEW]" icon="search">
+<Accordion title="list_creative_formats - Format Discovery" icon="search">
 
 **Format Discovery API**: List all available creative formats from AdCP standards, publishers, and creative agents. Essential for understanding what formats can be created.
 
@@ -412,7 +413,7 @@ Remove a creative from a campaign.
 
 <AccordionGroup>
 
-<Accordion title="campaign/attach_creative - DEPLOYMENT API [STRATEGIC]" icon="rocket">
+<Accordion title="campaign/attach_creative - Campaign Deployment" icon="rocket">
 
 **Campaign-First Integration**: Attach creatives to campaigns with optional inline creation.
 
@@ -452,7 +453,7 @@ Remove a creative from a campaign.
 
 </Accordion>
 
-<Accordion title="campaign/list_creatives - ANALYTICS API [OPTIMIZATION]" icon="chart-line">
+<Accordion title="campaign/list_creatives - Performance Analytics" icon="chart-line">
 
 **Performance Intelligence**: View campaign creative performance with optimization insights.
 
