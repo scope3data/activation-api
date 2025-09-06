@@ -27,12 +27,15 @@ if (process.env.NODE_ENV !== "test") {
   server.start({
     httpStream: {
       endpoint: config.endpoint as `/${string}`,
+      host: "0.0.0.0", // Bind to all network interfaces for Cloud Run accessibility
       port,
     },
     transportType: "httpStream",
   });
 
-  console.log(`MCP Server started on port ${port}`);
-  console.log(`Endpoint: http://localhost:${port}${config.endpoint}`);
-  console.log(`Health check: http://localhost:${port}/health`);
+  console.log(
+    `MCP Server started on port ${port} (accessible on all interfaces)`,
+  );
+  console.log(`Endpoint: http://0.0.0.0:${port}${config.endpoint}`);
+  console.log(`Health check: http://0.0.0.0:${port}/health`);
 }
