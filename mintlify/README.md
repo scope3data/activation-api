@@ -60,18 +60,22 @@ npm run build
 ## 🔧 Configuration
 
 ### API Settings
+
 - **Base URL**: `https://api.agentic.scope3.com`
 - **Authentication**: `x-scope3-api-key` header or Bearer token
 - **OpenAPI**: Auto-generated from `src/tools/` MCP definitions
 
 ### Navigation
+
 The navigation is organized with migration users in mind:
+
 1. **Get Started** - Quick setup for new users
 2. **Platform Migration** - TTD/DV360 migration guides
 3. **Core Concepts** - Deep dive into Scope3 concepts
 4. **API Reference** - Interactive API documentation
 
 ### Features Enabled
+
 - ✅ Interactive API playground
 - ✅ AI-powered search and chat
 - ✅ Automatic /llms.txt generation
@@ -82,20 +86,25 @@ The navigation is organized with migration users in mind:
 ## 🎯 Design Philosophy
 
 ### Migration-First Approach
+
 Every concept page includes:
+
 - Platform equivalents (TTD/DV360/Amazon DSP)
 - Side-by-side comparisons
 - Migration code examples
 - "What's different and better" explanations
 
 ### Natural Language Focus
+
 Documentation emphasizes:
+
 - Business goals over technical parameters
 - Conversational campaign creation
 - AI-powered optimization benefits
 - Simplified operations workflow
 
 ### Developer Experience
+
 - Interactive code examples in Python, JavaScript, cURL
 - Copy-paste ready examples
 - Real-world use cases
@@ -104,13 +113,16 @@ Documentation emphasizes:
 ## 📖 Content Guidelines
 
 ### Writing Style
+
 - **Familiar → New**: Start with familiar concepts, introduce Scope3 equivalents
 - **Why → How**: Explain benefits before implementation details
 - **Progressive Disclosure**: Basic → Advanced information flow
 - **Migration Context**: Always relate back to traditional DSP workflows
 
 ### Code Examples
+
 Every endpoint should include:
+
 1. **Conceptual explanation** (what it does in ad tech terms)
 2. **Migration context** (how it relates to TTD/DV360)
 3. **Basic example** (simple use case)
@@ -118,11 +130,13 @@ Every endpoint should include:
 5. **Common pitfalls** (what to avoid)
 
 ### Platform Comparisons
+
 Use consistent format:
+
 ```markdown
-| Traditional DSP | Scope3 Equivalent | Notes |
-|----------------|------------------|-------|
-| Advertiser | Brand Agent | Top-level container |
+| Traditional DSP | Scope3 Equivalent | Notes               |
+| --------------- | ----------------- | ------------------- |
+| Advertiser      | Brand Agent       | Top-level container |
 ```
 
 ## 🔄 OpenAPI Generation
@@ -133,7 +147,7 @@ The OpenAPI specification is automatically generated from MCP tool definitions:
 // scripts/generate-openapi.ts extracts from:
 src/tools/
 ├── brand-agents/     # Brand agent management
-├── campaigns/        # Campaign operations  
+├── campaigns/        # Campaign operations
 ├── creatives/        # Creative asset management
 ├── audiences/        # Synthetic audience tools
 ├── standards/        # Brand safety configuration
@@ -141,6 +155,7 @@ src/tools/
 ```
 
 ### Custom Enhancements
+
 - **x-llm-hints**: AI assistant guidance
 - **x-migration-notes**: Platform mapping information
 - **Examples**: Real-world use cases
@@ -158,12 +173,14 @@ Documentation is configured for automatic deployment:
 ## 📊 Success Metrics
 
 ### Documentation Goals
+
 - ⏱ **Time to First API Call**: < 5 minutes
 - 🎯 **Migration Completion**: 80% fewer support tickets
 - 📈 **User Satisfaction**: 90%+ helpful ratings
 - 🔍 **Search Success**: 95% query resolution
 
 ### Key Performance Indicators
+
 - Search queries without results
 - Page bounce rates
 - Migration guide completion rates
@@ -173,12 +190,14 @@ Documentation is configured for automatic deployment:
 ## 🆘 Troubleshooting
 
 ### Common Issues
+
 - **OpenAPI Generation Fails**: Check MCP tool definitions for errors
 - **Dev Server Won't Start**: Ensure Node.js 18+ and dependencies installed
 - **Navigation Not Updating**: Verify mint.json syntax and page paths
 - **Examples Not Working**: Check API key configuration and endpoints
 
 ### Getting Help
+
 - **Documentation Issues**: [GitHub Issues](https://github.com/conductor/activation-api/issues)
 - **API Problems**: [API Support](mailto:api-support@scope3.com)
 - **Migration Help**: [Migration Team](mailto:migration@scope3.com)
@@ -186,6 +205,7 @@ Documentation is configured for automatic deployment:
 ## 🔮 Future Enhancements
 
 ### Planned Features
+
 - **Interactive Migration Wizard**: Step-by-step platform migration
 - **Campaign Builder**: Visual campaign creation tool
 - **Performance Dashboard**: Embedded analytics and reporting
@@ -193,6 +213,7 @@ Documentation is configured for automatic deployment:
 - **Multi-language Support**: Localization for global users
 
 ### Community Features
+
 - **Community Forum**: User discussion and support
 - **Best Practices Library**: Community-contributed examples
 - **Integration Showcase**: Partner and customer implementations

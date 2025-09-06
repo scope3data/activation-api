@@ -1,7 +1,7 @@
 ---
-title: 'Authentication'
-description: 'Get your API key and start making authenticated requests'
-icon: 'key'
+title: "Authentication"
+description: "Get your API key and start making authenticated requests"
+icon: "key"
 ---
 
 # API Authentication
@@ -108,14 +108,17 @@ If you're using our official SDKs, authentication is handled automatically:
 from scope3 import Client
 
 # Initialize with API key
+
 client = Client(api_key="your_scope3_api_key_here")
 
 # All subsequent requests are automatically authenticated
+
 brand_agent = client.create_brand_agent(
-    name="My Brand Agent",
-    description="Test brand agent"
+name="My Brand Agent",
+description="Test brand agent"
 )
-```
+
+````
 
 ```javascript JavaScript SDK
 import { Scope3Client } from '@scope3/agentic-api';
@@ -130,7 +133,7 @@ const brandAgent = await client.createBrandAgent({
     name: 'My Brand Agent',
     description: 'Test brand agent'
 });
-```
+````
 
 ```claude MCP Server
 # Add to your Claude Desktop configuration
@@ -146,6 +149,7 @@ const brandAgent = await client.createBrandAgent({
   }
 }
 ```
+
 </CodeGroup>
 
 ## Environment Configuration
@@ -241,12 +245,12 @@ Use the authentication check endpoint to verify your setup:
 import requests
 
 def test_auth(api_key):
-    """Test API key authentication"""
-    response = requests.get(
-        "https://api.agentic.scope3.com/auth/check",
-        headers={"x-scope3-api-key": api_key}
-    )
-    
+"""Test API key authentication"""
+response = requests.get(
+"https://api.agentic.scope3.com/auth/check",
+headers={"x-scope3-api-key": api_key}
+)
+
     if response.status_code == 200:
         data = response.json()
         print(f"✅ Authentication successful!")
@@ -259,8 +263,10 @@ def test_auth(api_key):
         return False
 
 # Test your key
+
 test_auth("your_api_key_here")
-```
+
+````
 
 ```javascript JavaScript
 async function testAuth(apiKey) {
@@ -270,7 +276,7 @@ async function testAuth(apiKey) {
                 "x-scope3-api-key": apiKey
             }
         });
-        
+
         if (response.ok) {
             const data = await response.json();
             console.log("✅ Authentication successful!");
@@ -290,7 +296,7 @@ async function testAuth(apiKey) {
 
 // Test your key
 testAuth("your_api_key_here");
-```
+````
 
 ```bash cURL
 #!/bin/bash
@@ -316,6 +322,7 @@ else
     echo "$body"
 fi
 ```
+
 </CodeGroup>
 
 ## Security Best Practices
@@ -326,42 +333,40 @@ fi
 Your API key provides full access to your Scope3 account. Follow these security practices:
 
 ❌ **Never do:**
+
 - Commit API keys to version control
 - Include keys in client-side code
 - Share keys via email or chat
 - Use production keys in development
 
 ✅ **Always do:**
+
 - Store keys in environment variables or secure key management
 - Use different keys for different environments
 - Rotate keys regularly
 - Monitor API usage for suspicious activity
-</Warning>
+  </Warning>
 
 ### Key Management Checklist
 
 <AccordionGroup>
   <Accordion title="Development Environment">
-    - [ ] API key stored in `.env` file (not committed to git)
-    - [ ] `.env` file added to `.gitignore`
-    - [ ] Test key used (not production key)
-    - [ ] Key rotation schedule established
+    - [ ] API key stored in `.env` file (not committed to git) - [ ] `.env` file
+    added to `.gitignore` - [ ] Test key used (not production key) - [ ] Key
+    rotation schedule established
   </Accordion>
-  
+
   <Accordion title="Production Environment">
-    - [ ] API key stored in secure environment variables
-    - [ ] Key management system in use (AWS Secrets Manager, etc.)
-    - [ ] Monitoring and alerting set up for API usage
-    - [ ] Regular key rotation scheduled
-    - [ ] Access logs reviewed regularly
+    - [ ] API key stored in secure environment variables - [ ] Key management
+    system in use (AWS Secrets Manager, etc.) - [ ] Monitoring and alerting set
+    up for API usage - [ ] Regular key rotation scheduled - [ ] Access logs
+    reviewed regularly
   </Accordion>
-  
+
   <Accordion title="Team Access">
-    - [ ] Individual API keys for each team member
-    - [ ] Keys tied to specific user accounts
-    - [ ] Access permissions properly scoped
-    - [ ] Offboarding process includes key revocation
-    - [ ] Key usage tracked and audited
+    - [ ] Individual API keys for each team member - [ ] Keys tied to specific
+    user accounts - [ ] Access permissions properly scoped - [ ] Offboarding
+    process includes key revocation - [ ] Key usage tracked and audited
   </Accordion>
 </AccordionGroup>
 
@@ -369,60 +374,47 @@ Your API key provides full access to your Scope3 account. Follow these security 
 
 The API includes rate limiting to ensure fair usage:
 
-| Endpoint Type | Rate Limit | Burst Limit |
-|---------------|------------|-------------|
-| **Authentication** | 100 requests/minute | 10 requests/second |
-| **Brand Agent Operations** | 1000 requests/minute | 50 requests/second |
-| **Campaign Management** | 2000 requests/minute | 100 requests/second |
-| **Creative Upload** | 100 requests/minute | 5 requests/second |
-| **Performance Data** | 500 requests/minute | 25 requests/second |
+| Endpoint Type              | Rate Limit           | Burst Limit         |
+| -------------------------- | -------------------- | ------------------- |
+| **Authentication**         | 100 requests/minute  | 10 requests/second  |
+| **Brand Agent Operations** | 1000 requests/minute | 50 requests/second  |
+| **Campaign Management**    | 2000 requests/minute | 100 requests/second |
+| **Creative Upload**        | 100 requests/minute  | 5 requests/second   |
+| **Performance Data**       | 500 requests/minute  | 25 requests/second  |
 
 <Info>
 **Rate Limit Headers**
 
 Each API response includes rate limiting information:
+
 - `X-RateLimit-Limit`: Your rate limit per window
-- `X-RateLimit-Remaining`: Requests remaining in current window  
+- `X-RateLimit-Remaining`: Requests remaining in current window
 - `X-RateLimit-Reset`: Unix timestamp when the window resets
-</Info>
+  </Info>
 
 ## Troubleshooting
 
 <AccordionGroup>
   <Accordion title="401 Unauthorized Error">
-    **Common causes:**
-    - API key is missing or incorrect
-    - Key has been revoked or expired
-    - Wrong authentication header format
-    
-    **Solutions:**
-    - Verify your API key is correct and active
-    - Check header format: `x-scope3-api-key: your_key_here`
-    - Test with the `/auth/check` endpoint
+    **Common causes:** - API key is missing or incorrect - Key has been revoked
+    or expired - Wrong authentication header format **Solutions:** - Verify your
+    API key is correct and active - Check header format: `x-scope3-api-key:
+    your_key_here` - Test with the `/auth/check` endpoint
   </Accordion>
-  
+
   <Accordion title="403 Forbidden Error">
-    **Common causes:**
-    - API key doesn't have required permissions
-    - Account suspended or restricted
-    - IP address not allowlisted (if IP restrictions are enabled)
-    
-    **Solutions:**
-    - Check your account permissions and limits
-    - Contact support if account appears suspended
-    - Verify IP restrictions if configured
+    **Common causes:** - API key doesn't have required permissions - Account
+    suspended or restricted - IP address not allowlisted (if IP restrictions are
+    enabled) **Solutions:** - Check your account permissions and limits -
+    Contact support if account appears suspended - Verify IP restrictions if
+    configured
   </Accordion>
-  
+
   <Accordion title="429 Rate Limited Error">
-    **Common causes:**
-    - Exceeded rate limits for your account
-    - Too many concurrent requests
-    - Burst limit exceeded
-    
-    **Solutions:**
-    - Implement exponential backoff retry logic
-    - Reduce request frequency
-    - Contact support for higher rate limits if needed
+    **Common causes:** - Exceeded rate limits for your account - Too many
+    concurrent requests - Burst limit exceeded **Solutions:** - Implement
+    exponential backoff retry logic - Reduce request frequency - Contact support
+    for higher rate limits if needed
   </Accordion>
 </AccordionGroup>
 
@@ -436,25 +428,13 @@ Each API response includes rate limiting information:
   >
     Now that you're authenticated, launch your first agentic campaign
   </Card>
-  <Card
-    title="API Reference"
-    icon="code"
-    href="/api-reference/overview"
-  >
+  <Card title="API Reference" icon="code" href="/api-reference/overview">
     Explore the complete API documentation with interactive examples
   </Card>
-  <Card
-    title="SDK Documentation"
-    icon="book"
-    href="/sdks/overview"
-  >
+  <Card title="SDK Documentation" icon="book" href="/sdks/overview">
     Learn more about our Python, JavaScript, and MCP integrations
   </Card>
-  <Card
-    title="Security Guide"
-    icon="shield"
-    href="/resources/security"
-  >
+  <Card title="Security Guide" icon="shield" href="/resources/security">
     Best practices for securing your API integrations
   </Card>
 </CardGroup>

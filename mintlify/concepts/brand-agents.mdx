@@ -1,7 +1,7 @@
 ---
-title: 'Understanding Brand Agents'
-description: 'Your advertiser account in Scope3 - the container for all your campaigns, creatives, and settings'
-icon: 'building'
+title: "Understanding Brand Agents"
+description: "Your advertiser account in Scope3 - the container for all your campaigns, creatives, and settings"
+icon: "building"
 ---
 
 # Brand Agents: Your Advertiser Account
@@ -17,9 +17,10 @@ icon: 'building'
 A **Brand Agent** is Scope3's equivalent of an advertiser account in traditional DSPs. It serves as the top-level container that owns and organizes all your advertising assets and configurations.
 
 <Note>
-**Coming from The Trade Desk or DV360?** 
+**Coming from The Trade Desk or DV360?**
 
 A Brand Agent is exactly like your Advertiser account - it's the top-level container that owns all your campaigns, creatives, audiences, and brand safety settings. The key difference is that Scope3's Brand Agents are designed for AI-powered management and natural language control.
+
 </Note>
 
 ## What Brand Agents Contain
@@ -31,7 +32,7 @@ A Brand Agent is exactly like your Advertiser account - it's the top-level conta
     ```python
     # All campaigns belong to a brand agent
     campaigns = scope3.list_campaigns(brand_agent_id="ba_nike_123")
-    
+
     # Create campaign within brand agent
     campaign = scope3.create_campaign(
         brand_agent_id="ba_nike_123",
@@ -42,9 +43,10 @@ A Brand Agent is exactly like your Advertiser account - it's the top-level conta
 
     **Key Benefits:**
     - Natural language campaign creation
-    - AI-powered targeting and optimization  
+    - AI-powered targeting and optimization
     - Automatic budget allocation and pacing
     - Real-time performance adjustments
+
   </Tab>
 
   <Tab title="Creatives">
@@ -60,10 +62,10 @@ A Brand Agent is exactly like your Advertiser account - it's the top-level conta
         headline="Push Your Limits",
         cta="Shop Now"
     )
-    
+
     # Creative automatically available to all campaigns
     campaign = scope3.create_campaign(
-        brand_agent_id="ba_nike_123", 
+        brand_agent_id="ba_nike_123",
         name="Video Campaign",
         prompt="Use our summer running video to target marathon enthusiasts",
         creative_ids=[creative['id']]
@@ -75,6 +77,7 @@ A Brand Agent is exactly like your Advertiser account - it's the top-level conta
     - Centralized creative performance analytics
     - Easy A/B testing across campaign contexts
     - Automatic creative optimization
+
   </Tab>
 
   <Tab title="Audiences">
@@ -84,10 +87,10 @@ A Brand Agent is exactly like your Advertiser account - it's the top-level conta
     # Create synthetic audience
     audience = scope3.create_audience(
         brand_agent_id="ba_nike_123",
-        name="Marathon Enthusiasts", 
+        name="Marathon Enthusiasts",
         description="Serious runners training for marathons, interested in performance gear and nutrition"
     )
-    
+
     # Use across multiple campaigns
     campaign1 = scope3.create_campaign(
         brand_agent_id="ba_nike_123",
@@ -95,9 +98,9 @@ A Brand Agent is exactly like your Advertiser account - it's the top-level conta
         prompt="Promote marathon running shoes to serious runners",
         audience_ids=[audience['id']]
     )
-    
+
     campaign2 = scope3.create_campaign(
-        brand_agent_id="ba_nike_123", 
+        brand_agent_id="ba_nike_123",
         name="Apparel Campaign",
         prompt="Target marathon runners with performance apparel",
         audience_ids=[audience['id']]
@@ -109,6 +112,7 @@ A Brand Agent is exactly like your Advertiser account - it's the top-level conta
     - AI-enhanced with lookalike modeling
     - Continuous learning and optimization
     - Cross-campaign audience insights
+
   </Tab>
 
   <Tab title="Brand Standards">
@@ -120,7 +124,7 @@ A Brand Agent is exactly like your Advertiser account - it's the top-level conta
         brand_agent_id="ba_nike_123",
         domain_blocklist=[
             "competitor1.com",
-            "competitor2.com", 
+            "competitor2.com",
             "inappropriate-content.com"
         ],
         keyword_filters=[
@@ -130,7 +134,7 @@ A Brand Agent is exactly like your Advertiser account - it's the top-level conta
             "sports-positive", "fitness", "health", "motivation"
         ]
     )
-    
+
     # Standards automatically apply to all campaigns
     ```
 
@@ -139,23 +143,24 @@ A Brand Agent is exactly like your Advertiser account - it's the top-level conta
     - Automatic content filtering
     - Competitor blocking
     - Custom brand suitability rules
+
   </Tab>
 
   <Tab title="Measurement">
     **Measurement Sources** configure your analytics and conversion tracking integrations.
 
-    ```python  
+    ```python
     # Add Google Analytics integration
     ga_source = scope3.add_measurement_source(
         brand_agent_id="ba_nike_123",
         name="Google Analytics",
-        type="analytics", 
+        type="analytics",
         configuration={
             "property_id": "GA-NIKE-123",
             "conversion_events": ["purchase", "newsletter_signup"]
         }
     )
-    
+
     # Add Facebook Conversions API
     fb_source = scope3.add_measurement_source(
         brand_agent_id="ba_nike_123",
@@ -173,6 +178,7 @@ A Brand Agent is exactly like your Advertiser account - it's the top-level conta
     - Multiple tracking integration support
     - Real-time performance optimization
     - Cross-platform measurement
+
   </Tab>
 </Tabs>
 
@@ -205,24 +211,15 @@ A Brand Agent is exactly like your Advertiser account - it's the top-level conta
     ```
   </Tab>
 
-  <Tab title="The Trade Desk Structure">
-    ```
-    Advertiser: Nike Global
-    ├── Campaign: Summer 2024
-    │   ├── Line Item: Running Shoes ($25K)
-    │   │   ├── Creatives: Running Video, Shoe Images
-    │   │   └── Audiences: Running Enthusiasts  
-    │   ├── Line Item: Marathon Gear ($25K)
-    │   │   ├── Creatives: Gear Images (separate upload)
-    │   │   └── Audiences: Marathon Runners (separate)
-    │   └── Brand Safety: Global Rules
-    ├── Campaign: Basketball 2024  
-    │   ├── Line Item: Shoes ($50K)
-    │   ├── Line Item: Apparel ($25K)
-    │   └── [Separate creative uploads & audiences]
-    └── Data Partners: [Measurement integrations]
-    ```
-  </Tab>
+<Tab title="The Trade Desk Structure">
+  ``` Advertiser: Nike Global ├── Campaign: Summer 2024 │ ├── Line Item: Running
+  Shoes ($25K) │ │ ├── Creatives: Running Video, Shoe Images │ │ └── Audiences:
+  Running Enthusiasts │ ├── Line Item: Marathon Gear ($25K) │ │ ├── Creatives:
+  Gear Images (separate upload) │ │ └── Audiences: Marathon Runners (separate) │
+  └── Brand Safety: Global Rules ├── Campaign: Basketball 2024 │ ├── Line Item:
+  Shoes ($50K) │ ├── Line Item: Apparel ($25K) │ └── [Separate creative uploads
+  & audiences] └── Data Partners: [Measurement integrations] ```
+</Tab>
 
   <Tab title="DV360 Structure">
     ```
@@ -279,18 +276,13 @@ A Brand Agent is exactly like your Advertiser account - it's the top-level conta
     </CodeGroup>
   </Step>
 
-  <Step title="Set Brand Standards">
-    Configure your brand safety and content preferences:
-    
-    ```python
-    scope3.set_brand_standards(
-        brand_agent_id=brand_agent_id,
-        domain_blocklist=["adidas.com", "competitor.com"],
-        keyword_filters=["controversial", "scandal"],
-        content_categories=["sports", "fitness", "motivation"]
-    )
-    ```
-  </Step>
+<Step title="Set Brand Standards">
+  Configure your brand safety and content preferences: ```python
+  scope3.set_brand_standards( brand_agent_id=brand_agent_id,
+  domain_blocklist=["adidas.com", "competitor.com"],
+  keyword_filters=["controversial", "scandal"], content_categories=["sports",
+  "fitness", "motivation"] ) ```
+</Step>
 
   <Step title="Add Measurement">
     Set up your analytics and conversion tracking:
@@ -305,18 +297,11 @@ A Brand Agent is exactly like your Advertiser account - it's the top-level conta
     ```
   </Step>
 
-  <Step title="Upload Creatives">
-    Add your creative assets to the shared library:
-    
-    ```python
-    creative = scope3.create_creative(
-        brand_agent_id=brand_agent_id,
-        name="Hero Video",
-        type="video", 
-        url="https://cdn.nike.com/hero-video.mp4"
-    )
-    ```
-  </Step>
+<Step title="Upload Creatives">
+  Add your creative assets to the shared library: ```python creative =
+  scope3.create_creative( brand_agent_id=brand_agent_id, name="Hero Video",
+  type="video", url="https://cdn.nike.com/hero-video.mp4" ) ```
+</Step>
 
   <Step title="Create Campaigns">
     Launch your first agentic campaign:
@@ -339,13 +324,13 @@ For agencies or companies with multiple brands, create separate brand agents:
 ```python
 # Create multiple brand agents
 nike = scope3.create_brand_agent(name="Nike", description="Athletic wear")
-jordan = scope3.create_brand_agent(name="Jordan", description="Basketball brand")  
+jordan = scope3.create_brand_agent(name="Jordan", description="Basketball brand")
 converse = scope3.create_brand_agent(name="Converse", description="Casual footwear")
 
 # Each has separate campaigns, creatives, and settings
 nike_campaign = scope3.create_campaign(
     brand_agent_id=nike['id'],
-    name="Running Campaign", 
+    name="Running Campaign",
     prompt="Target serious runners with performance gear"
 )
 
@@ -378,14 +363,14 @@ jordan_campaign = scope3.create_campaign(
     ```
   </Accordion>
 
-  <Accordion title="Shared Resource Optimization">
-    AI automatically optimizes shared resources across campaigns:
-    
-    - **Creative Performance:** High-performing creatives get more exposure across campaigns
-    - **Audience Learning:** Audience performance in one campaign improves targeting in others  
-    - **Budget Allocation:** Budget automatically shifts to highest-performing campaigns
-    - **Frequency Management:** Cross-campaign frequency capping prevents overexposure
-  </Accordion>
+<Accordion title="Shared Resource Optimization">
+  AI automatically optimizes shared resources across campaigns: - **Creative
+  Performance:** High-performing creatives get more exposure across campaigns -
+  **Audience Learning:** Audience performance in one campaign improves targeting
+  in others - **Budget Allocation:** Budget automatically shifts to
+  highest-performing campaigns - **Frequency Management:** Cross-campaign
+  frequency capping prevents overexposure
+</Accordion>
 
   <Accordion title="Brand Agent Cloning">
     Quickly set up new brand agents based on existing ones:
@@ -411,17 +396,19 @@ jordan_campaign = scope3.create_campaign(
 **Brand Agent Organization**
 
 ✅ **Do:**
+
 - Use descriptive names that reflect your actual business structure
 - Set up brand standards immediately after creation
 - Create shared audiences for common targeting profiles
 - Upload high-quality creatives to the shared library
 
 ❌ **Don't:**
+
 - Create separate brand agents for minor campaign variations
 - Skip brand safety configuration - it applies to all campaigns
 - Upload the same creative multiple times for different campaigns
 - Use generic names that don't reflect your brand structure
-</Tip>
+  </Tip>
 
 <Warning>
 **Important Considerations**
@@ -429,7 +416,7 @@ jordan_campaign = scope3.create_campaign(
 - **Brand Agent Deletion:** Deleting a brand agent removes ALL associated campaigns, creatives, and data. This cannot be undone.
 - **Resource Limits:** Each brand agent can contain up to 1000 campaigns, 10000 creatives, and unlimited audiences.
 - **Cross-Brand Agent Sharing:** Resources cannot be shared between different brand agents for security and organization.
-</Warning>
+  </Warning>
 
 ## Next Steps
 
@@ -441,15 +428,11 @@ jordan_campaign = scope3.create_campaign(
   >
     Launch a campaign within your brand agent
   </Card>
-  <Card
-    title="Upload Creative Assets"
-    icon="image"
-    href="/concepts/creatives"
-  >
+  <Card title="Upload Creative Assets" icon="image" href="/concepts/creatives">
     Build your creative library for campaign use
   </Card>
   <Card
-    title="Build Synthetic Audiences"  
+    title="Build Synthetic Audiences"
     icon="users"
     href="/concepts/targeting"
   >

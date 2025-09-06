@@ -1,7 +1,7 @@
 ---
-title: 'Platform Concept Mapping'
-description: 'Detailed mapping between traditional DSP concepts and Scope3 agentic campaigns'
-icon: 'map'
+title: "Platform Concept Mapping"
+description: "Detailed mapping between traditional DSP concepts and Scope3 agentic campaigns"
+icon: "map"
 ---
 
 # Platform Concept Mapping
@@ -14,15 +14,16 @@ Understanding how your existing DSP concepts translate to Scope3's agentic model
 **Universal Mapping**
 All major DSPs follow similar hierarchical patterns. Here's how they map to Scope3:
 
-| Traditional DSP Layer | Scope3 Equivalent | Purpose |
-|----------------------|------------------|---------|
-| **Account/Advertiser** | Brand Agent | Top-level container for all assets |
-| **Campaign/Order** | Brand Agent Context | Organizational grouping (flattened) |  
-| **Line Item/Insertion Order** | Campaign | Individual budget allocation |
-| **Creative** | Creative | Ad assets (enhanced sharing) |
-| **Audience/Segment** | Synthetic Audience | AI-enhanced targeting profiles |
-| **Conversion/Pixel** | Measurement Source | Analytics and tracking |
-| **Brand Safety** | Brand Standards | Content filtering and compliance |
+| Traditional DSP Layer         | Scope3 Equivalent   | Purpose                             |
+| ----------------------------- | ------------------- | ----------------------------------- |
+| **Account/Advertiser**        | Brand Agent         | Top-level container for all assets  |
+| **Campaign/Order**            | Brand Agent Context | Organizational grouping (flattened) |
+| **Line Item/Insertion Order** | Campaign            | Individual budget allocation        |
+| **Creative**                  | Creative            | Ad assets (enhanced sharing)        |
+| **Audience/Segment**          | Synthetic Audience  | AI-enhanced targeting profiles      |
+| **Conversion/Pixel**          | Measurement Source  | Analytics and tracking              |
+| **Brand Safety**              | Brand Standards     | Content filtering and compliance    |
+
 </Note>
 
 ## The Trade Desk → Scope3
@@ -37,7 +38,7 @@ All major DSPs follow similar hierarchical patterns. Here's how they map to Scop
     ├── Campaign
     │   ├── Line Item
     │   │   ├── Creatives
-    │   │   ├── Audiences  
+    │   │   ├── Audiences
     │   │   └── Targeting
     │   └── Brand Safety
     └── Data Partners
@@ -57,6 +58,7 @@ All major DSPs follow similar hierarchical patterns. Here's how they map to Scop
     - **Flatter Hierarchy:** TTD's Campaign layer is removed; Line Items become our Campaigns
     - **Shared Resources:** Creatives and audiences are shared across all campaigns within a brand agent
     - **Natural Language:** Campaign targeting defined through prompts, not parameter forms
+
   </Tab>
 
   <Tab title="Campaign Management">
@@ -81,9 +83,10 @@ All major DSPs follow similar hierarchical patterns. Here's how they map to Scop
       "daypart": "evening"
     }
 
-    // Scope3 Campaign Prompt  
+    // Scope3 Campaign Prompt
     "Target tech-savvy males aged 25-34 in New York and California during evening hours"
     ```
+
   </Tab>
 
   <Tab title="Creative & Audiences">
@@ -94,7 +97,7 @@ All major DSPs follow similar hierarchical patterns. Here's how they map to Scop
     - Manual creative rotation settings
     - Separate approval workflow
 
-    **Scope3 Approach:**  
+    **Scope3 Approach:**
     - Creatives belong to brand agent
     - Automatically available to all campaigns
     - AI-optimized creative selection
@@ -112,7 +115,7 @@ All major DSPs follow similar hierarchical patterns. Here's how they map to Scop
     ```python
     # TTD Audience Creation
     audience = ttd.create_audience({
-        "name": "Tech Enthusiasts", 
+        "name": "Tech Enthusiasts",
         "segments": ["tech_interest", "high_income"],
         "lookalike_seed": "customer_list_id"
     })
@@ -124,6 +127,7 @@ All major DSPs follow similar hierarchical patterns. Here's how they map to Scop
         description="People interested in latest technology with disposable income for premium products"
     )
     ```
+
   </Tab>
 </Tabs>
 
@@ -135,7 +139,7 @@ All major DSPs follow similar hierarchical patterns. Here's how they map to Scop
 
     **DV360 Structure:**
     ```
-    Advertiser  
+    Advertiser
     ├── Campaign
     │   ├── Insertion Order
     │   │   ├── Line Items
@@ -149,7 +153,7 @@ All major DSPs follow similar hierarchical patterns. Here's how they map to Scop
     **Scope3 Structure:**
     ```
     Brand Agent (Advertiser)
-    ├── Campaigns (Insertion Orders)  
+    ├── Campaigns (Insertion Orders)
     ├── Creatives (shared)
     ├── Synthetic Audiences (shared)
     ├── Brand Standards
@@ -158,9 +162,10 @@ All major DSPs follow similar hierarchical patterns. Here's how they map to Scop
 
     ### Translation Notes
     - **Insertion Orders** become Scope3 Campaigns
-    - **Line Items** become targeting configurations within campaigns  
+    - **Line Items** become targeting configurations within campaigns
     - **Audience Lists** become Synthetic Audiences with AI enhancement
     - **Floodlight** becomes Measurement Sources with broader integration
+
   </Tab>
 
   <Tab title="Campaign Setup">
@@ -179,7 +184,7 @@ All major DSPs follow similar hierarchical patterns. Here's how they map to Scop
 
     **DV360 Insertion Order Setup:**
     ```
-    Name: "Summer Sale Campaign"  
+    Name: "Summer Sale Campaign"
     Budget: $50,000
     Flight: June 1-30
     Goal: Drive website conversions
@@ -200,13 +205,14 @@ All major DSPs follow similar hierarchical patterns. Here's how they map to Scop
         }
     )
     ```
+
   </Tab>
 
   <Tab title="Measurement & Optimization">
     ### Conversion Tracking
 
     **DV360 Floodlight Setup:**
-    - Create conversion activities in Campaign Manager  
+    - Create conversion activities in Campaign Manager
     - Configure Floodlight tags on website
     - Link to DV360 for optimization
     - Manual bid adjustments based on performance
@@ -215,7 +221,7 @@ All major DSPs follow similar hierarchical patterns. Here's how they map to Scop
     ```python
     # Add conversion tracking
     measurement = scope3.add_measurement_source(
-        brand_agent_id="ba_123", 
+        brand_agent_id="ba_123",
         name="Website Conversions",
         type="conversion_api",
         configuration={
@@ -223,7 +229,7 @@ All major DSPs follow similar hierarchical patterns. Here's how they map to Scop
             "events": ["purchase", "signup", "download"]
         }
     )
-    
+
     # AI automatically optimizes based on conversion data
     ```
 
@@ -235,6 +241,7 @@ All major DSPs follow similar hierarchical patterns. Here's how they map to Scop
     | Creative rotation rules | Intelligent creative selection | Performance-based creative serving |
     | Audience refinement | Synthetic audience learning | Self-improving targeting |
     | Budget reallocation | Dynamic budget optimization | Automatic budget distribution |
+
   </Tab>
 </Tabs>
 
@@ -257,6 +264,7 @@ All major DSPs follow similar hierarchical patterns. Here's how they map to Scop
     - Line Item targeting gets converted to natural language prompts
     - Amazon audience segments become enhanced Synthetic Audiences
     - Deal ID targeting is handled automatically by AI optimization
+
   </Accordion>
 
   <Accordion title="Creative & Audience Assets">
@@ -264,22 +272,23 @@ All major DSPs follow similar hierarchical patterns. Here's how they map to Scop
     **Amazon:** Creatives tied to specific line items with limited sharing
     **Scope3:** Brand agent-level creative library with automatic optimization
 
-    ### Audience Segments  
+    ### Audience Segments
     ```python
     # Amazon DSP Audience Targeting
     amazon_targeting = {
         "audiences": ["amazon_shoppers", "electronics_intenders"],
         "lookalikes": ["customer_list_lookalike_1pct"],
-        "demographics": {"age": "25-54"} 
+        "demographics": {"age": "25-54"}
     }
 
     # Scope3 Synthetic Audience
     audience = scope3.create_audience(
         brand_agent_id="ba_123",
-        name="Electronics Shoppers", 
+        name="Electronics Shoppers",
         description="Amazon shoppers showing intent for electronics purchases, similar to our existing customers"
     )
     ```
+
   </Accordion>
 </AccordionGroup>
 
@@ -296,10 +305,12 @@ brand_agent = scope3.create_brand_agent(
 )
 
 print(f"Created brand agent: {brand_agent['id']}")
-# Use this ID for all subsequent campaign and asset creation
-```
 
-```javascript JavaScript  
+# Use this ID for all subsequent campaign and asset creation
+
+````
+
+```javascript JavaScript
 // Create advertiser account
 const brandAgent = await scope3.createBrandAgent({
     name: "Nike Global",
@@ -307,7 +318,7 @@ const brandAgent = await scope3.createBrandAgent({
 });
 
 console.log(`Created brand agent: ${brandAgent.id}`);
-```
+````
 
 ```bash cURL
 curl -X POST https://api.agentic.scope3.com/brand-agents \
@@ -315,9 +326,10 @@ curl -X POST https://api.agentic.scope3.com/brand-agents \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Nike Global",
-    "description": "Global sportswear and athletic brand"  
+    "description": "Global sportswear and athletic brand"
   }'
 ```
+
 </CodeGroup>
 
 ### Campaign Migration
@@ -346,22 +358,23 @@ campaign = scope3.create_campaign(
 ```javascript JavaScript
 // Natural language campaign creation
 const campaign = await scope3.createCampaign({
-    brandAgentId: brandAgent.id,
-    name: "Back to School Push", 
-    prompt: `
+  brandAgentId: brandAgent.id,
+  name: "Back to School Push",
+  prompt: `
         Target college students and young professionals aged 18-25
         interested in athletic wear and fitness. Focus on back-to-school
         season with emphasis on performance and style. Budget $75K over  
         6 weeks with emphasis on video and social formats.
     `,
-    budget: {
-        total: 7500000,
-        currency: "USD",
-        dailyCap: 178571,
-        pacing: "even"
-    }
+  budget: {
+    total: 7500000,
+    currency: "USD",
+    dailyCap: 178571,
+    pacing: "even",
+  },
 });
 ```
+
 </CodeGroup>
 
 ## Best Practices for Migration
@@ -370,10 +383,10 @@ const campaign = await scope3.createCampaign({
 **Migration Gotchas**
 
 1. **Don't Over-Specify:** Scope3's AI works best with natural language goals, not technical parameters
-2. **Think Business Outcomes:** Focus on what you want to achieve, not how to achieve it  
+2. **Think Business Outcomes:** Focus on what you want to achieve, not how to achieve it
 3. **Leverage Shared Resources:** Take advantage of brand agent-level creative and audience sharing
 4. **Start Small:** Migrate a few campaigns first to understand the differences before bulk migration
-</Warning>
+   </Warning>
 
 <Tip>
 **Migration Success Tips**
@@ -386,30 +399,19 @@ const campaign = await scope3.createCampaign({
 ❌ **Don't:** Try to recreate exact targeting parameter combinations
 ❌ **Don't:** Create separate creatives for each campaign - use the shared library
 ❌ **Don't:** Over-optimize initially - let the AI learn your performance patterns
+
 </Warning>
 
 ## Ready to Start Migration?
 
 <CardGroup cols={3}>
-  <Card 
-    title="Use Migration Wizard" 
-    icon="magic-wand"
-    href="/migration/wizard"
-  >
+  <Card title="Use Migration Wizard" icon="magic-wand" href="/migration/wizard">
     Interactive step-by-step migration tool
   </Card>
-  <Card 
-    title="Platform-Specific Guide"
-    icon="book" 
-    href="/migration/from-ttd"
-  >
+  <Card title="Platform-Specific Guide" icon="book" href="/migration/from-ttd">
     Detailed guides for TTD, DV360, Amazon DSP
   </Card>
-  <Card 
-    title="API Documentation"
-    icon="code"
-    href="/api-reference/overview" 
-  >
+  <Card title="API Documentation" icon="code" href="/api-reference/overview">
     Complete API reference for programmatic migration
   </Card>
 </CardGroup>

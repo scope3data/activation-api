@@ -43,7 +43,7 @@
       "group": "Get Started",
       "pages": [
         "introduction",
-        "quickstart/authentication", 
+        "quickstart/authentication",
         "quickstart/first-campaign",
         "quickstart/mcp-setup"
       ]
@@ -59,11 +59,11 @@
       ]
     },
     {
-      "group": "Core Concepts", 
+      "group": "Core Concepts",
       "pages": [
         "concepts/overview",
         "concepts/brand-agents",
-        "concepts/campaigns", 
+        "concepts/campaigns",
         "concepts/creatives",
         "concepts/targeting",
         "concepts/measurement"
@@ -79,7 +79,7 @@
             "api-reference/brand-agents/create",
             "api-reference/brand-agents/list",
             "api-reference/brand-agents/get",
-            "api-reference/brand-agents/update", 
+            "api-reference/brand-agents/update",
             "api-reference/brand-agents/delete"
           ]
         },
@@ -92,7 +92,7 @@
           ]
         },
         {
-          "group": "Creatives", 
+          "group": "Creatives",
           "pages": [
             "api-reference/creatives/create",
             "api-reference/creatives/list",
@@ -103,7 +103,7 @@
           "group": "Targeting",
           "pages": [
             "api-reference/audiences/create",
-            "api-reference/audiences/list", 
+            "api-reference/audiences/list",
             "api-reference/standards/set",
             "api-reference/standards/get"
           ]
@@ -121,7 +121,7 @@
       "group": "Resources",
       "pages": [
         "resources/glossary",
-        "resources/best-practices", 
+        "resources/best-practices",
         "resources/troubleshooting",
         "resources/changelog"
       ]
