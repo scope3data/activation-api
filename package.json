@@ -55,7 +55,7 @@
       "prettier --write",
       "eslint --fix"
     ],
-    "*.ts": [
+    "src/**/*.{test,spec}.ts": [
       "npm run test"
     ],
     "openapi.yaml": [
