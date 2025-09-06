@@ -1,5 +1,5 @@
 <svg width="800" height="400" viewBox="0 0 800 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Dark theme hero for Scope3 Ad Platform - Sustainability focused -->
+  <!-- Dark theme hero for Scope3 Ad Platform - Sustainability focused - Updated -->
   <rect width="800" height="400" fill="#1A202C"/>
   
   <!-- Sustainable gradient background for dark theme -->
@@ -35,8 +35,8 @@
   
   <!-- Main title with sustainability messaging -->
   <text x="320" y="120" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="42" font-weight="bold">Scope3 Ad Platform</text>
-  <text x="320" y="155" fill="#22c55e" font-family="Arial, sans-serif" font-size="20">Decarbonizing Media & Advertising</text>
-  <text x="320" y="180" fill="#A0AEC0" font-family="Arial, sans-serif" font-size="16">The sustainable ad buying platform for people & agents</text>
+  <text x="320" y="155" fill="#22c55e" font-family="Arial, sans-serif" font-size="20">Decarbonizing Media &amp; Advertising</text>
+  <text x="320" y="180" fill="#A0AEC0" font-family="Arial, sans-serif" font-size="16">The sustainable ad buying platform for people &amp; agents</text>
   
   <!-- Sustainable feature showcase -->
   <g transform="translate(120,260)">
