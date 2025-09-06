@@ -199,10 +199,10 @@ graph TD
 **Core Parameters:**
 - `buyerAgentId`: Database partition key and security boundary
 - `creativeName`: Human-readable identifier for management UIs  
-- `format`: { type: 'adcp'|'publisher'|'creative_agent', formatId: 'display_banner' }
+- `format`: Object with type ('adcp', 'publisher', or 'creative_agent') and formatId
 - `content`: HTML snippets, JS tags, VAST tags, asset IDs, product URLs
 - `advertiserDomains[]`: Click destination validation (required for compliance)
-- `assemblyMethod`: 'publisher'|'creative_agent'|'pre_assembled'
+- `assemblyMethod`: One of 'publisher', 'creative_agent', or 'pre_assembled'
 
 **Real-World Examples:**
 ```bash
@@ -280,7 +280,7 @@ graph TD
 **Core Parameters:**
 - `creativeId`: ID of creative to update
 - `updates.name`: New creative name
-- `updates.status`: 'draft'|'pending_review'|'active'|'paused'|'archived'|'rejected'
+- `updates.status`: One of 'draft', 'pending_review', 'active', 'paused', 'archived', or 'rejected'
 - `updates.content`: Updated HTML snippets, JS tags, VAST tags, asset IDs
 - `updates.advertiserDomains`: Updated click destination domains
 
@@ -346,7 +346,7 @@ Remove a creative from a campaign.
 **Core Parameters:**
 - `buyerAgentId`: Asset owner and security boundary
 - `assetName`: Human-readable name for management
-- `assetType`: 'image'|'video'|'text'|'audio'|'html'|'native_component'
+- `assetType`: One of 'image', 'video', 'text', 'audio', 'html', or 'native_component'
 - `assetUrl`: URL to asset (CDN, presigned URL, etc.)
 - `uploadId`: Reference to REST API upload
 - `metadata`: Technical specs, tags, dimensions
@@ -380,7 +380,7 @@ Remove a creative from a campaign.
 - **Real-Time**: Shows current publisher and creative agent capabilities
 
 **Core Parameters:**
-- `type`: 'adcp'|'publisher'|'creative_agent' (optional filter)
+- `type`: One of 'adcp', 'publisher', or 'creative_agent' (optional filter)
 - `search`: Search in format names and descriptions
 - `assemblyCapable`: Filter formats that can assemble from assets
 - `acceptsThirdPartyTags`: Filter formats accepting ad server tags
