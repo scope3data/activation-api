@@ -14,13 +14,14 @@ When you create a campaign without specifying `inventoryManagement` parameters, 
 await create_campaign({
   brandAgentId: "ba_123",
   name: "Brand Awareness Q4",
-  prompt: "Maximize reach for our new product launch targeting tech-savvy millennials",
-  budget: { 
+  prompt:
+    "Maximize reach for our new product launch targeting tech-savvy millennials",
+  budget: {
     total: 100000,
-    currency: "USD"
+    currency: "USD",
   },
   startDate: "2024-10-01",
-  endDate: "2024-12-31"
+  endDate: "2024-12-31",
   // No inventoryManagement specified = scope3_managed mode
 });
 ```
@@ -28,21 +29,25 @@ await create_campaign({
 ### What Scope3 Handles Automatically
 
 **Inventory Mix Optimization**
+
 - Analyzes available publisher inventory for your campaign goals
 - Selects optimal mix of premium and programmatic options
 - Balances reach, efficiency, and brand safety requirements
 
 **Signal Selection**
+
 - Chooses appropriate targeting signals based on campaign prompt
 - Combines first-party data, contextual signals, and audience insights
 - Optimizes signal costs against performance goals
 
 **Budget Allocation**
+
 - Distributes budget across selected inventory sources
 - Sets appropriate daily caps and pacing strategies
 - Adjusts allocation based on early performance indicators
 
 **Performance-Based Rebalancing**
+
 - Monitors campaign performance across all inventory sources
 - Automatically shifts budget toward higher-performing options
 - Maintains overall campaign goals while maximizing efficiency
@@ -54,15 +59,16 @@ await create_campaign({
 const campaign = await create_campaign({
   brandAgentId: "ba_456",
   name: "Holiday Electronics Campaign",
-  prompt: "Target electronics enthusiasts ages 25-45 with premium video inventory",
+  prompt:
+    "Target electronics enthusiasts ages 25-45 with premium video inventory",
   budget: { total: 75000, currency: "USD" },
   startDate: "2024-11-15",
-  endDate: "2024-12-24"
+  endDate: "2024-12-24",
 });
 
 // 2. Scope3 automatically creates inventory options like:
 // - Premium CTV (Hulu, Samsung TV+) with contextual targeting: $30,000
-// - YouTube Select with electronics affinity data: $25,000  
+// - YouTube Select with electronics affinity data: $25,000
 // - Premium display on tech sites with 1P lookalikes: $20,000
 
 // 3. Daily optimization adjustments:
@@ -91,9 +97,9 @@ Specify `user_managed` mode to take full control over inventory selection and al
 await create_campaign({
   brandAgentId: "ba_123",
   name: "Performance Campaign Q4",
-  budget: { 
+  budget: {
     total: 100000,
-    currency: "USD"
+    currency: "USD",
   },
   inventoryManagement: {
     mode: "user_managed",
@@ -101,9 +107,9 @@ await create_campaign({
     constraints: {
       maxCpm: 45,
       brandSafetyLevel: "high",
-      minimumReach: 5000000
-    }
-  }
+      minimumReach: 5000000,
+    },
+  },
 });
 ```
 
@@ -121,81 +127,83 @@ await create_inventory_option({
     signalType: "buyer",
     signalProvider: "customer_data_platform",
     signalConfiguration: {
-      audiences: ["high_ltv_customers", "lookalike_premium"]
-    }
+      audiences: ["high_ltv_customers", "lookalike_premium"],
+    },
   },
-  budgetAllocation: { 
+  budgetAllocation: {
     amount: 40000,
     percentage: 40,
     dailyCap: 2000,
     pacing: "even",
-    currency: "USD"
-  }
+    currency: "USD",
+  },
 });
 
 // Contextual targeting on premium sites
 await create_inventory_option({
-  campaignId: "camp_123", 
+  campaignId: "camp_123",
   name: "Premium Display + Contextual",
   mediaProductId: "premium_display_network",
   targeting: {
     signalType: "scope3",
     signalConfiguration: {
       contextualKeywords: ["luxury", "premium", "high-end"],
-      categories: ["automotive", "technology"]
-    }
+      categories: ["automotive", "technology"],
+    },
   },
   budgetAllocation: {
     amount: 35000,
     percentage: 35,
     pacing: "front_loaded",
-    currency: "USD"
-  }
+    currency: "USD",
+  },
 });
 
 // Programmatic scale with third-party data
 await create_inventory_option({
   campaignId: "camp_123",
-  name: "Programmatic Scale + 3P Data", 
+  name: "Programmatic Scale + 3P Data",
   mediaProductId: "open_exchange_display",
   targeting: {
     signalType: "third_party",
     signalProvider: "liveramp",
     signalConfiguration: {
-      segments: ["auto_intenders", "luxury_shoppers"]
-    }
+      segments: ["auto_intenders", "luxury_shoppers"],
+    },
   },
   budgetAllocation: {
     amount: 25000,
     percentage: 25,
     dailyCap: 1500,
     pacing: "asap",
-    currency: "USD"
-  }
+    currency: "USD",
+  },
 });
 ```
 
 ### Advanced Portfolio Management
 
 **Allocation Adjustments**
+
 ```javascript
 // Shift budget based on performance
 await adjust_inventory_allocation({
   campaignId: "camp_123",
   adjustments: [
-    { inventoryOptionId: "io_premium_ctv", newAmount: 50000 },    // Increase top performer
-    { inventoryOptionId: "io_programmatic", newAmount: 15000 }    // Reduce underperformer  
-  ]
+    { inventoryOptionId: "io_premium_ctv", newAmount: 50000 }, // Increase top performer
+    { inventoryOptionId: "io_programmatic", newAmount: 15000 }, // Reduce underperformer
+  ],
 });
 ```
 
 **Performance Analysis**
+
 ```javascript
 // Get detailed performance breakdown
 const performance = await analyze_inventory_performance({
   campaignId: "camp_123",
   dateRange: { start: "2024-10-01", end: "2024-10-07" },
-  groupBy: ["inventoryOption", "signalType", "dayOfWeek"]
+  groupBy: ["inventoryOption", "signalType", "dayOfWeek"],
 });
 ```
 
@@ -220,23 +228,25 @@ await create_campaign({
       maxCpmOverride: 35,
       preferredInventory: ["premium_ctv", "youtube_select"],
       budgetConstraints: {
-        premiumMinimum: 0.6  // 60% minimum to premium inventory
-      }
-    }
-  }
+        premiumMinimum: 0.6, // 60% minimum to premium inventory
+      },
+    },
+  },
 });
 ```
 
 ## Choosing the Right Mode
 
 ### Use Built-in Optimization When:
+
 - ✅ Launching campaigns quickly is priority
-- ✅ Team lacks deep programmatic expertise  
+- ✅ Team lacks deep programmatic expertise
 - ✅ Campaign goals are standard (reach, awareness, performance)
 - ✅ Trust in platform optimization is high
 - ✅ Focus should be on creative and messaging strategy
 
 ### Use Granular Control When:
+
 - ✅ Specific inventory relationships need to be maintained
 - ✅ Custom allocation strategies are required
 - ✅ Team has strong programmatic trading experience
@@ -245,13 +255,13 @@ await create_campaign({
 
 ### Decision Framework
 
-| Factor | Built-in Optimization | Granular Control |
-|--------|---------------------|------------------|
-| **Speed to Launch** | ⭐⭐⭐⭐⭐ | ⭐⭐ |
-| **Strategic Control** | ⭐⭐ | ⭐⭐⭐⭐⭐ |
-| **Learning Required** | ⭐ | ⭐⭐⭐⭐ |
-| **Custom Requirements** | ⭐⭐ | ⭐⭐⭐⭐⭐ |
-| **Optimization Quality** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| Factor                   | Built-in Optimization | Granular Control |
+| ------------------------ | --------------------- | ---------------- |
+| **Speed to Launch**      | ⭐⭐⭐⭐⭐            | ⭐⭐             |
+| **Strategic Control**    | ⭐⭐                  | ⭐⭐⭐⭐⭐       |
+| **Learning Required**    | ⭐                    | ⭐⭐⭐⭐         |
+| **Custom Requirements**  | ⭐⭐                  | ⭐⭐⭐⭐⭐       |
+| **Optimization Quality** | ⭐⭐⭐⭐⭐            | ⭐⭐⭐⭐         |
 
 ## Mode Switching
 
@@ -263,8 +273,8 @@ await update_campaign({
   campaignId: "camp_123",
   inventoryManagement: {
     mode: "user_managed",
-    transitionStrategy: "preserve_performance"  // Maintain current allocation as starting point
-  }
+    transitionStrategy: "preserve_performance", // Maintain current allocation as starting point
+  },
 });
 ```
 
@@ -273,12 +283,14 @@ This creates inventory options matching your current auto-optimized allocation, 
 ## Best Practices
 
 ### For Built-in Optimization
+
 1. **Provide Rich Context** - Detailed campaign prompts help our AI understand your goals
 2. **Set Clear Budgets** - Include total budget, currency, and date ranges
 3. **Monitor Early Performance** - Review first week results to ensure alignment
 4. **Trust the Process** - Allow 7-14 days for optimization to stabilize
 
-### For Granular Control  
+### For Granular Control
+
 1. **Start with Discovery** - Use `discover_publisher_products` to explore options
 2. **Plan Your Portfolio** - Design allocation strategy before creating options
 3. **Test Systematically** - Create similar inventory options with single variable changes
@@ -286,4 +298,4 @@ This creates inventory options matching your current auto-optimized allocation, 
 
 ---
 
-*Both modes are designed to help you achieve your campaign goals - choose the one that best fits your team's needs and expertise level.*
+_Both modes are designed to help you achieve your campaign goals - choose the one that best fits your team's needs and expertise level._

@@ -12,7 +12,7 @@ Welcome to Scope3 - where campaigns are conversations and complexity is optional
 // Step 1: Create your advertiser (brand agent)
 const advertiser = await create_brand_agent({
   name: "Acme Corp",
-  description: "Sustainable fashion brand"
+  description: "Sustainable fashion brand",
 });
 
 // Step 2: Add a creative
@@ -20,7 +20,7 @@ const creative = await create_creative({
   brandAgentId: advertiser.id,
   name: "Summer Sale Video",
   type: "video",
-  url: "https://cdn.example.com/summer-sale.mp4"
+  url: "https://cdn.example.com/summer-sale.mp4",
 });
 
 // Step 3: Launch your campaign
@@ -28,13 +28,13 @@ await create_campaign({
   brandAgentId: advertiser.id,
   name: "Summer Sale 2024",
   prompt: "Reach eco-conscious millennials interested in sustainable fashion",
-  budget: { 
+  budget: {
     total: 50000,
-    currency: "USD"
+    currency: "USD",
   },
   startDate: "2024-06-01",
   endDate: "2024-08-31",
-  creativeIds: [creative.id]
+  creativeIds: [creative.id],
 });
 ```
 
@@ -57,6 +57,7 @@ Run Scope3 in parallel with your existing platforms. Test new inventory sources,
 ## Choose Your Optimization Approach
 
 ### 🎯 Built-in Optimization
+
 **Perfect for: Teams seeking efficiency and simplicity**
 
 ```javascript
@@ -65,23 +66,25 @@ await create_campaign({
   brandAgentId: "ba_123",
   name: "Brand Awareness Q4",
   prompt: "Maximize reach for our new product launch",
-  budget: { 
+  budget: {
     total: 100000,
-    currency: "USD"
+    currency: "USD",
   },
   startDate: "2024-10-01",
-  endDate: "2024-12-31"
+  endDate: "2024-12-31",
   // inventoryManagement defaults to scope3_managed
 });
 ```
 
 **What we handle:**
+
 - Inventory mix optimization
 - Signal selection
 - Budget allocation across publishers
 - Performance-based rebalancing
 
 ### 🎛️ Granular Control
+
 **Perfect for: Teams with specific strategies**
 
 ```javascript
@@ -89,14 +92,14 @@ await create_campaign({
 await create_campaign({
   brandAgentId: "ba_123",
   name: "Performance Campaign Q4",
-  budget: { 
+  budget: {
     total: 100000,
-    currency: "USD"
+    currency: "USD",
   },
   inventoryManagement: {
     mode: "user_managed",
-    optimizationGoal: "conversions"
-  }
+    optimizationGoal: "conversions",
+  },
 });
 
 // Configure your inventory mix
@@ -105,12 +108,12 @@ await create_inventory_option({
   name: "Premium CTV + 1P Data",
   mediaProductId: "hulu_premium_ctv",
   targeting: {
-    signalType: "buyer"
+    signalType: "buyer",
   },
-  budgetAllocation: { 
+  budgetAllocation: {
     amount: 40000,
-    currency: "USD"
-  }
+    currency: "USD",
+  },
 });
 ```
 
@@ -129,7 +132,7 @@ Think of inventory options as building blocks for your campaign portfolio:
 const portfolioApproach = [
   { name: "Premium CTV + Scope3 signals", allocation: "30%" },
   { name: "Programmatic display + 1P data", allocation: "40%" },
-  { name: "Contextual targeting premium sites", allocation: "30%" }
+  { name: "Contextual targeting premium sites", allocation: "30%" },
 ];
 ```
 
@@ -149,22 +152,26 @@ AI Agent: → discover_publisher_products({ formats: ["video"], maxCpm: 40 })
 ## Available Tools
 
 ### Brand Agent Management
+
 - `create_brand_agent` - Set up advertiser accounts
-- `update_brand_agent` - Modify account settings  
+- `update_brand_agent` - Modify account settings
 - `list_brand_agents` - View all accounts
 
 ### Campaign Management
+
 - `create_campaign` - Launch campaigns with smart defaults
 - `update_campaign` - Modify campaigns and inventory
 - `list_campaigns` - Track campaign performance
 
 ### Inventory Control
+
 - `discover_publisher_products` - Find available inventory
 - `create_inventory_option` - Configure custom allocation
 - `adjust_inventory_allocation` - Optimize budget distribution
 - `analyze_inventory_performance` - Get performance insights
 
 ### Creative Management
+
 - `create_creative` - Upload creative assets
 - `update_creative` - Modify creative details
 - `list_creatives` - View creative library
@@ -228,6 +235,7 @@ npm run docs:validate
 ```
 
 **Prerequisites for documentation validation**: Install Mintlify CLI globally:
+
 ```bash
 npm install -g mintlify
 ```
@@ -242,6 +250,7 @@ npm start
 The server runs on `http://localhost:3001/mcp` by default.
 
 **Authentication**: Include your Scope3 API key in requests:
+
 ```bash
 curl -H "x-scope3-api-key: your_api_key" http://localhost:3001/mcp
 ```
@@ -253,7 +262,7 @@ curl -H "x-scope3-api-key: your_api_key" http://localhost:3001/mcp
 ```
 BrandAgent (Advertiser/Account)
   ├── Campaigns (multiple, owned by brand agent)
-  ├── Creatives (multiple, shared across campaigns)  
+  ├── Creatives (multiple, shared across campaigns)
   ├── Standards (brand safety configuration)
   ├── SyntheticAudiences (multiple, shared across campaigns)
   └── MeasurementSources (tracking integrations)
@@ -262,8 +271,9 @@ BrandAgent (Advertiser/Account)
 ### Inventory Options
 
 Each **Inventory Option** combines:
+
 - **Publisher Media Product** (raw inventory from AdCP)
-- **Targeting Strategy** (signal type + configuration)  
+- **Targeting Strategy** (signal type + configuration)
 - **Budget Allocation** (amount + pacing)
 
 ## Documentation
@@ -276,6 +286,7 @@ Each **Inventory Option** combines:
 ## Support
 
 For questions or support:
+
 - [GitHub Issues](https://github.com/anthropics/claude-code/issues)
 - [Documentation](docs/)
 

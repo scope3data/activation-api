@@ -25,22 +25,12 @@ This guide walks you through setting up the Scope3 MCP server for natural langua
 
 <Tabs>
   <Tab title="NPM Installation">
-    ```bash
-    npm install -g @scope3/campaign-mcp-server
-    ```
+    ```bash npm install -g @scope3/campaign-mcp-server ```
   </Tab>
   <Tab title="Local Development">
-    ```bash
-    # Clone the repository
-    git clone https://github.com/scope3/campaign-mcp-server.git
-    cd campaign-mcp-server
-    
-    # Install dependencies
-    npm install
-    
-    # Build the server
-    npm run build
-    ```
+    ```bash # Clone the repository git clone
+    https://github.com/scope3/campaign-mcp-server.git cd campaign-mcp-server #
+    Install dependencies npm install # Build the server npm run build ```
   </Tab>
 </Tabs>
 
@@ -49,6 +39,7 @@ This guide walks you through setting up the Scope3 MCP server for natural langua
 Add the Scope3 MCP server to your Claude Desktop configuration:
 
 **On macOS/Linux:**
+
 ```json
 // ~/.config/claude/claude_desktop_config.json
 {
@@ -66,6 +57,7 @@ Add the Scope3 MCP server to your Claude Desktop configuration:
 ```
 
 **On Windows:**
+
 ```json
 // %APPDATA%\Claude\claude_desktop_config.json
 {
@@ -83,12 +75,14 @@ Add the Scope3 MCP server to your Claude Desktop configuration:
 ```
 
 <Warning>
-**Security Note:** Never commit your API key to version control. Consider using environment variables or secure credential storage.
+  **Security Note:** Never commit your API key to version control. Consider
+  using environment variables or secure credential storage.
 </Warning>
 
 ### 3. Restart Claude Desktop
 
 After updating your configuration:
+
 1. Completely quit Claude Desktop
 2. Restart the application
 3. Look for the MCP server connection indicator
@@ -158,13 +152,13 @@ export SCOPE3_API_KEY=your-api-key-here
 
 ### Environment Variables
 
-| Variable | Required | Description | Default |
-|----------|----------|-------------|---------|
-| `SCOPE3_API_KEY` | Yes | Your Scope3 API key | - |
-| `SCOPE3_API_URL` | No | API endpoint URL | `https://api.scope3.com` |
-| `MCP_SERVER_PORT` | No | Server port (HTTP mode) | `3001` |
-| `LOG_LEVEL` | No | Logging verbosity | `info` |
-| `CACHE_TTL` | No | Response cache duration | `300` seconds |
+| Variable          | Required | Description             | Default                  |
+| ----------------- | -------- | ----------------------- | ------------------------ |
+| `SCOPE3_API_KEY`  | Yes      | Your Scope3 API key     | -                        |
+| `SCOPE3_API_URL`  | No       | API endpoint URL        | `https://api.scope3.com` |
+| `MCP_SERVER_PORT` | No       | Server port (HTTP mode) | `3001`                   |
+| `LOG_LEVEL`       | No       | Logging verbosity       | `info`                   |
+| `CACHE_TTL`       | No       | Response cache duration | `300` seconds            |
 
 ### Server Modes
 
@@ -234,7 +228,7 @@ Configure different agents for specialized tasks:
       }
     },
     "scope3-campaign-agent": {
-      "command": "node", 
+      "command": "node",
       "args": ["/path/to/server.js"],
       "env": {
         "SCOPE3_API_KEY": "campaign-agent-key",
@@ -260,15 +254,11 @@ Configure different agents for specialized tasks:
     - Review Claude Desktop logs
   </Accordion>
 
-  <Accordion title="Authentication Failures">
-    **Symptoms:** "Invalid API key" or "Unauthorized" errors
-    
-    **Solutions:**
-    - Verify your API key is correct
-    - Check API key hasn't expired
-    - Ensure proper environment variable setup
-    - Contact support for API key issues
-  </Accordion>
+<Accordion title="Authentication Failures">
+  **Symptoms:** "Invalid API key" or "Unauthorized" errors **Solutions:** -
+  Verify your API key is correct - Check API key hasn't expired - Ensure proper
+  environment variable setup - Contact support for API key issues
+</Accordion>
 
   <Accordion title="Tool Calls Failing">
     **Symptoms:** Tools return errors or unexpected results
@@ -314,12 +304,9 @@ curl http://localhost:3001/health
 ## Security Best Practices
 
 <Note>
-**API Key Security:**
-- Store API keys in secure environment variables
-- Never commit keys to version control
-- Rotate keys regularly
-- Use different keys for development/production
-- Monitor API key usage
+  **API Key Security:** - Store API keys in secure environment variables - Never
+  commit keys to version control - Rotate keys regularly - Use different keys
+  for development/production - Monitor API key usage
 </Note>
 
 ### Secure Configuration
@@ -372,11 +359,7 @@ Once your MCP server is configured:
   >
     Create your first campaign through natural language
   </Card>
-  <Card
-    title="API Reference"
-    icon="code"
-    href="/api-reference/overview"
-  >
+  <Card title="API Reference" icon="code" href="/api-reference/overview">
     Detailed documentation for all available tools
   </Card>
 </CardGroup>
@@ -384,5 +367,6 @@ Once your MCP server is configured:
 ---
 
 <Tip>
-**Setup Complete?** Test your integration by asking Claude: "Show me all available Scope3 campaign tools"
+  **Setup Complete?** Test your integration by asking Claude: "Show me all
+  available Scope3 campaign tools"
 </Tip>

@@ -37,29 +37,30 @@ For advertising teams, this means you can manage campaigns through **natural lan
             sneaker line, targeting eco-conscious millennials with a $75K budget"
 
     AI Agent: I'll create that campaign for you. Let me set up:
-    
+
     → create_brand_agent({ name: "EcoStep Footwear" })
-    → create_campaign({ 
-        brandAgentId: "ba_123", 
+    → create_campaign({
+        brandAgentId: "ba_123",
         name: "Sustainable Sneaker Launch",
         prompt: "Target eco-conscious millennials interested in sustainable fashion",
         budget: { total: 75000, currency: "USD" }
       })
 
-    ✅ Campaign created! Using built-in optimization to find the best 
+    ✅ Campaign created! Using built-in optimization to find the best
        inventory mix for eco-conscious millennials. Expected reach: 2.5M people.
     ```
+
   </Tab>
   
   <Tab title="Inventory Discovery">
     ```
     Human: "Find me premium CTV inventory under $35 CPM"
 
-    AI Agent: → discover_publisher_products({ 
-        formats: ["video"], 
+    AI Agent: → discover_publisher_products({
+        formats: ["video"],
         deliveryType: "ctv",
         maxCpm: 35,
-        quality: "premium" 
+        quality: "premium"
       })
 
     Found 12 premium CTV options under $35 CPM:
@@ -69,6 +70,7 @@ For advertising teams, this means you can manage campaigns through **natural lan
     📺 YouTube Select CTV - $34 CPM, high engagement
     ...
     ```
+
   </Tab>
   
   <Tab title="Performance Analysis">
@@ -81,18 +83,19 @@ For advertising teams, this means you can manage campaigns through **natural lan
       })
 
     📊 Performance Breakdown (Last 7 days):
-    
+
     CTV Inventory:
     • $45K spent, 1.8M impressions, 0.85% CTR
     • Top performer: Hulu Premium (1.2% CTR)
-    
+
     Display Inventory:
     • $22K spent, 3.2M impressions, 0.31% CTR
     • Best: Premium tech sites (0.48% CTR)
 
-    💡 Recommendation: CTV is delivering 2.7x higher engagement. 
+    💡 Recommendation: CTV is delivering 2.7x higher engagement.
        Consider shifting more budget to CTV formats.
     ```
+
   </Tab>
 </Tabs>
 
@@ -101,59 +104,68 @@ For advertising teams, this means you can manage campaigns through **natural lan
 The Scope3 platform exposes **20+ tools** through the MCP interface, organized by category:
 
 ### Brand Agent Management
+
 Tools for managing advertiser accounts and organizational structure.
 
-| Tool | Purpose | Natural Language Examples |
-|------|---------|---------------------------|
+| Tool                 | Purpose                    | Natural Language Examples               |
+| -------------------- | -------------------------- | --------------------------------------- |
 | `create_brand_agent` | Set up advertiser accounts | "Create an advertiser account for Nike" |
-| `list_brand_agents` | View all accounts | "Show me all our advertiser accounts" |
-| `update_brand_agent` | Modify account details | "Update the Nike account description" |
+| `list_brand_agents`  | View all accounts          | "Show me all our advertiser accounts"   |
+| `update_brand_agent` | Modify account details     | "Update the Nike account description"   |
 
 ### Campaign Lifecycle
+
 Tools for creating, managing, and optimizing advertising campaigns.
 
-| Tool | Purpose | Natural Language Examples |
-|------|---------|---------------------------|
-| `create_campaign` | Launch new campaigns | "Create a $50K performance campaign for Q4" |
+| Tool              | Purpose                  | Natural Language Examples                      |
+| ----------------- | ------------------------ | ---------------------------------------------- |
+| `create_campaign` | Launch new campaigns     | "Create a $50K performance campaign for Q4"    |
 | `update_campaign` | Modify running campaigns | "Increase the holiday campaign budget to $75K" |
-| `list_campaigns` | View campaign status | "Show me all active campaigns for Nike" |
+| `list_campaigns`  | View campaign status     | "Show me all active campaigns for Nike"        |
 
 ### Inventory Management
+
 Tools for discovering, configuring, and optimizing inventory allocation.
 
-| Tool | Purpose | Natural Language Examples |
-|------|---------|---------------------------|
-| `discover_publisher_products` | Find available inventory | "Find video inventory under $40 CPM" |
-| `create_inventory_option` | Configure custom allocation | "Add premium CTV with 1P data targeting" |
-| `adjust_inventory_allocation` | Optimize budget distribution | "Move $10K from display to CTV" |
-| `analyze_inventory_performance` | Get performance insights | "Show me performance by inventory source" |
+| Tool                            | Purpose                      | Natural Language Examples                 |
+| ------------------------------- | ---------------------------- | ----------------------------------------- |
+| `discover_publisher_products`   | Find available inventory     | "Find video inventory under $40 CPM"      |
+| `create_inventory_option`       | Configure custom allocation  | "Add premium CTV with 1P data targeting"  |
+| `adjust_inventory_allocation`   | Optimize budget distribution | "Move $10K from display to CTV"           |
+| `analyze_inventory_performance` | Get performance insights     | "Show me performance by inventory source" |
 
 ### Creative Assets
+
 Tools for managing creative assets across campaigns.
 
-| Tool | Purpose | Natural Language Examples |
-|------|---------|---------------------------|
-| `create_creative` | Upload creative assets | "Add our new video creative for the holiday campaign" |
-| `list_creatives` | View creative library | "Show me all video creatives for Nike" |
-| `update_creative` | Modify creative details | "Update the headline for the summer sale banner" |
+| Tool              | Purpose                 | Natural Language Examples                             |
+| ----------------- | ----------------------- | ----------------------------------------------------- |
+| `create_creative` | Upload creative assets  | "Add our new video creative for the holiday campaign" |
+| `list_creatives`  | View creative library   | "Show me all video creatives for Nike"                |
+| `update_creative` | Modify creative details | "Update the headline for the summer sale banner"      |
 
 <Note>
-**Human-Readable Results:** All tools return both structured data for AI agents and formatted summaries for human users. This dual approach ensures seamless collaboration between humans and AI.
+  **Human-Readable Results:** All tools return both structured data for AI
+  agents and formatted summaries for human users. This dual approach ensures
+  seamless collaboration between humans and AI.
 </Note>
 
 ## Integration Benefits
 
 ### For Campaign Managers
+
 - **Faster Operations**: Execute complex campaigns through simple conversations
 - **Strategic Focus**: Spend time on goals and creative, not technical configuration
 - **Natural Interface**: No need to learn complex programmatic interfaces
 
 ### For AI Agents
+
 - **Rich Context**: Access to complete campaign history and performance data
 - **Real Actions**: Make actual changes to live advertising campaigns
 - **Structured Data**: Consistent, typed responses for reliable automation
 
 ### For Teams
+
 - **Collaborative**: Humans and AI agents can work on the same campaigns
 - **Transparent**: All actions are logged and auditable
 - **Scalable**: Automate routine tasks while maintaining human oversight
@@ -166,10 +178,10 @@ Tools for managing creative assets across campaigns.
     [See setup guide →](/mcp/setup)
   </Accordion>
 
-  <Accordion title="Custom AI Agents">
-    Any system supporting the MCP protocol can integrate with Scope3.
-    [See advanced workflows →](/mcp/advanced-workflows)
-  </Accordion>
+<Accordion title="Custom AI Agents">
+  Any system supporting the MCP protocol can integrate with Scope3. [See
+  advanced workflows →](/mcp/advanced-workflows)
+</Accordion>
 
   <Accordion title="API Integration">
     Traditional REST API access alongside MCP for hybrid implementations.
@@ -180,19 +192,24 @@ Tools for managing creative assets across campaigns.
 ## Why MCP for Advertising?
 
 Traditional advertising platforms require:
+
 - Complex UI navigation
-- Technical expertise in programmatic advertising  
+- Technical expertise in programmatic advertising
 - Manual optimization and monitoring
 - Separate tools for different functions
 
 **MCP-enabled advertising allows:**
+
 - Natural language campaign management
 - AI-powered optimization and analysis
 - Unified interface for all advertising functions
 - Collaborative human-AI workflows
 
 <Tip>
-**The Future of AdTech:** MCP represents a fundamental shift toward conversational interfaces in advertising technology. Instead of learning complex systems, teams can focus on strategy while AI handles tactical execution.
+  **The Future of AdTech:** MCP represents a fundamental shift toward
+  conversational interfaces in advertising technology. Instead of learning
+  complex systems, teams can focus on strategy while AI handles tactical
+  execution.
 </Tip>
 
 ## Getting Started
@@ -200,11 +217,7 @@ Traditional advertising platforms require:
 Ready to experience natural language campaign management?
 
 <CardGroup cols={2}>
-  <Card
-    title="Set Up Claude Desktop"
-    icon="desktop"
-    href="/mcp/setup"
-  >
+  <Card title="Set Up Claude Desktop" icon="desktop" href="/mcp/setup">
     Configure Scope3 MCP server with Claude Desktop
   </Card>
   <Card
@@ -221,11 +234,7 @@ Ready to experience natural language campaign management?
   >
     Multi-agent coordination and custom integrations
   </Card>
-  <Card
-    title="API Reference"
-    icon="code"
-    href="/api-reference/overview"
-  >
+  <Card title="API Reference" icon="code" href="/api-reference/overview">
     Detailed documentation for all MCP tools
   </Card>
 </CardGroup>
@@ -233,5 +242,6 @@ Ready to experience natural language campaign management?
 ---
 
 <Note>
-**Next:** Ready to set up your first MCP integration? Start with our [Claude Desktop setup guide →](/mcp/setup)
+  **Next:** Ready to set up your first MCP integration? Start with our [Claude
+  Desktop setup guide →](/mcp/setup)
 </Note>

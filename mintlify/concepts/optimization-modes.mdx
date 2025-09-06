@@ -17,13 +17,14 @@ When you create a campaign without specifying `inventoryManagement` parameters, 
 await create_campaign({
   brandAgentId: "ba_123",
   name: "Brand Awareness Q4",
-  prompt: "Maximize reach for our new product launch targeting tech-savvy millennials",
-  budget: { 
+  prompt:
+    "Maximize reach for our new product launch targeting tech-savvy millennials",
+  budget: {
     total: 100000,
-    currency: "USD"
+    currency: "USD",
   },
   startDate: "2024-10-01",
-  endDate: "2024-12-31"
+  endDate: "2024-12-31",
   // No inventoryManagement specified = scope3_managed mode
 });
 ```
@@ -32,27 +33,27 @@ await create_campaign({
 
 <Tabs>
   <Tab title="Inventory Mix Optimization">
-    - Analyzes available publisher inventory for your campaign goals
-    - Selects optimal mix of premium and programmatic options
-    - Balances reach, efficiency, and brand safety requirements
+    - Analyzes available publisher inventory for your campaign goals - Selects
+    optimal mix of premium and programmatic options - Balances reach,
+    efficiency, and brand safety requirements
   </Tab>
-  
-  <Tab title="Signal Selection">
-    - Chooses appropriate targeting signals based on campaign prompt
-    - Combines first-party data, contextual signals, and audience insights
-    - Optimizes signal costs against performance goals
-  </Tab>
-  
-  <Tab title="Budget Allocation">
-    - Distributes budget across selected inventory sources
-    - Sets appropriate daily caps and pacing strategies
-    - Adjusts allocation based on early performance indicators
-  </Tab>
-  
+
+<Tab title="Signal Selection">
+  - Chooses appropriate targeting signals based on campaign prompt - Combines
+  first-party data, contextual signals, and audience insights - Optimizes signal
+  costs against performance goals
+</Tab>
+
+<Tab title="Budget Allocation">
+  - Distributes budget across selected inventory sources - Sets appropriate
+  daily caps and pacing strategies - Adjusts allocation based on early
+  performance indicators
+</Tab>
+
   <Tab title="Performance-Based Rebalancing">
-    - Monitors campaign performance across all inventory sources
-    - Automatically shifts budget toward higher-performing options
-    - Maintains overall campaign goals while maximizing efficiency
+    - Monitors campaign performance across all inventory sources - Automatically
+    shifts budget toward higher-performing options - Maintains overall campaign
+    goals while maximizing efficiency
   </Tab>
 </Tabs>
 
@@ -94,6 +95,7 @@ await create_campaign({
 ✅ **Continuous Improvement** - Benefit from platform-wide learning  
 ✅ **Reduced Complexity** - Focus on creative and messaging, not tactical details  
 ✅ **Consistent Performance** - Proven strategies applied to your campaigns
+
 </Note>
 
 ## 🎛️ Granular Control
@@ -108,9 +110,9 @@ Specify `user_managed` mode to take full control over inventory selection and al
 await create_campaign({
   brandAgentId: "ba_123",
   name: "Performance Campaign Q4",
-  budget: { 
+  budget: {
     total: 100000,
-    currency: "USD"
+    currency: "USD",
   },
   inventoryManagement: {
     mode: "user_managed",
@@ -118,9 +120,9 @@ await create_campaign({
     constraints: {
       maxCpm: 45,
       brandSafetyLevel: "high",
-      minimumReach: 5000000
-    }
-  }
+      minimumReach: 5000000,
+    },
+  },
 });
 ```
 
@@ -249,6 +251,7 @@ After creating a user-managed campaign, configure your specific inventory mix:
 ✅ **Institutional Knowledge** - Build and leverage team expertise  
 ✅ **Custom Requirements** - Handle unique brand or compliance needs  
 ✅ **Maximum Transparency** - Full visibility into allocation decisions
+
 </Note>
 
 ## 🔄 Hybrid Mode (Coming Soon)
@@ -264,15 +267,16 @@ await create_campaign({
       maxCpmOverride: 35,
       preferredInventory: ["premium_ctv", "youtube_select"],
       budgetConstraints: {
-        premiumMinimum: 0.6  // 60% minimum to premium inventory
-      }
-    }
-  }
+        premiumMinimum: 0.6, // 60% minimum to premium inventory
+      },
+    },
+  },
 });
 ```
 
 <Tip>
-**Hybrid Mode** will launch in Q2 2024, offering AI-powered optimization with strategic human overrides and constraints.
+  **Hybrid Mode** will launch in Q2 2024, offering AI-powered optimization with
+  strategic human overrides and constraints.
 </Tip>
 
 ## Choosing the Right Mode
@@ -282,40 +286,39 @@ await create_campaign({
 <Tabs>
   <Tab title="Team Factors">
     | Factor | Built-in Optimization | Granular Control |
-    |--------|---------------------|------------------|
-    | **Programmatic Experience** | Any level | Advanced |
-    | **Available Time** | Limited | Flexible |
-    | **Team Size** | Small to large | Medium to large |
-    | **Strategic Requirements** | Standard | Custom |
+    |--------|---------------------|------------------| | **Programmatic
+    Experience** | Any level | Advanced | | **Available Time** | Limited |
+    Flexible | | **Team Size** | Small to large | Medium to large | |
+    **Strategic Requirements** | Standard | Custom |
   </Tab>
-  
-  <Tab title="Campaign Factors">
-    | Factor | Built-in Optimization | Granular Control |
-    |--------|---------------------|------------------|
-    | **Launch Timeline** | Urgent (hours) | Flexible (days) |
-    | **Budget Size** | Any | $50K+ recommended |
-    | **Complexity** | Standard goals | Unique requirements |
-    | **Testing Needs** | Basic A/B | Advanced multivariate |
-  </Tab>
-  
+
+<Tab title="Campaign Factors">
+  | Factor | Built-in Optimization | Granular Control |
+  |--------|---------------------|------------------| | **Launch Timeline** |
+  Urgent (hours) | Flexible (days) | | **Budget Size** | Any | $50K+ recommended
+  | | **Complexity** | Standard goals | Unique requirements | | **Testing
+  Needs** | Basic A/B | Advanced multivariate |
+</Tab>
+
   <Tab title="Business Factors">
     | Factor | Built-in Optimization | Granular Control |
-    |--------|---------------------|------------------|
-    | **Performance Priority** | Efficiency | Precision |
-    | **Learning Goals** | Quick wins | Deep expertise |
-    | **Risk Tolerance** | Conservative | Moderate |
-    | **Reporting Needs** | Summary | Detailed |
+    |--------|---------------------|------------------| | **Performance
+    Priority** | Efficiency | Precision | | **Learning Goals** | Quick wins |
+    Deep expertise | | **Risk Tolerance** | Conservative | Moderate | |
+    **Reporting Needs** | Summary | Detailed |
   </Tab>
 </Tabs>
 
 ### Use Built-in Optimization When:
+
 - ✅ Launching campaigns quickly is priority
-- ✅ Team lacks deep programmatic expertise  
+- ✅ Team lacks deep programmatic expertise
 - ✅ Campaign goals are standard (reach, awareness, performance)
 - ✅ Trust in platform optimization is high
 - ✅ Focus should be on creative and messaging strategy
 
 ### Use Granular Control When:
+
 - ✅ Specific inventory relationships need to be maintained
 - ✅ Custom allocation strategies are required
 - ✅ Team has strong programmatic trading experience
@@ -332,16 +335,15 @@ await update_campaign({
   campaignId: "camp_123",
   inventoryManagement: {
     mode: "user_managed",
-    transitionStrategy: "preserve_performance"  // Maintain current allocation as starting point
-  }
+    transitionStrategy: "preserve_performance", // Maintain current allocation as starting point
+  },
 });
 ```
 
 <Warning>
-**Mode Switching Considerations:** 
-- Performance data resets when switching modes
-- Allow 24-48 hours for optimization to stabilize
-- Consider timing switches during low-traffic periods
+  **Mode Switching Considerations:** - Performance data resets when switching
+  modes - Allow 24-48 hours for optimization to stabilize - Consider timing
+  switches during low-traffic periods
 </Warning>
 
 ## Best Practices

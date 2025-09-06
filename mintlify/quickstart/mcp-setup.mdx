@@ -65,21 +65,25 @@ You should see your account details and available tools.
 Once configured, Claude can manage your campaigns using these tools:
 
 ### Brand Agent Management
+
 - `create_brand_agent` - Set up advertiser accounts
 - `list_brand_agents` - View all accounts
 - `update_brand_agent` - Modify account settings
 
 ### Campaign Operations
+
 - `create_campaign` - Launch campaigns with smart defaults
 - `update_campaign` - Modify campaigns and inventory
 - `list_campaigns` - Track campaign performance
 
 ### Creative Management
+
 - `create_creative` - Upload creative assets
 - `list_creatives` - View creative library
 - `update_creative` - Modify creative details
 
 ### Inventory Control
+
 - `discover_publisher_products` - Find available inventory
 - `create_inventory_option` - Configure custom allocation
 - `adjust_inventory_allocation` - Optimize budget distribution
@@ -138,11 +142,13 @@ NODE_ENV=production         # Environment mode
 The MCP server supports multiple authentication methods:
 
 1. **Environment variable** (recommended for local development):
+
    ```bash
    export SCOPE3_API_KEY=your_key
    ```
 
 2. **Configuration file** (for Claude Desktop):
+
    ```json
    {
      "env": {
@@ -161,16 +167,19 @@ The MCP server supports multiple authentication methods:
 ### Common Issues
 
 **MCP server won't start:**
+
 - Check Node.js version (18+ required)
 - Verify all dependencies are installed: `npm install`
 - Ensure port 3001 is available
 
 **Authentication failed:**
+
 - Verify your API key is correct
 - Check environment variables are set
 - Confirm API key has proper permissions
 
 **Tools not appearing in Claude:**
+
 - Restart Claude Desktop after config changes
 - Check configuration file syntax (valid JSON)
 - Verify file paths in configuration
@@ -244,5 +253,6 @@ With MCP configured, you can:
 4. **Create synthetic audiences** - Build targeting profiles for campaign optimization
 
 <Tip>
-**Pro Tip**: Start conversations with context like "Using my Nike brand agent..." to help Claude understand which advertiser account to work with.
+  **Pro Tip**: Start conversations with context like "Using my Nike brand
+  agent..." to help Claude understand which advertiser account to work with.
 </Tip>

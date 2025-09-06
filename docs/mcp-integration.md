@@ -18,13 +18,14 @@ For advertising teams, this means you can manage campaigns through natural langu
 ### Conversational Workflow Examples
 
 **Campaign Creation**
+
 ```
 Human: "Create a brand awareness campaign for our new sustainable sneaker line, targeting eco-conscious millennials with a $75K budget"
 
 AI Agent: I'll create that campaign for you. Let me set up:
 → create_brand_agent({ name: "EcoStep Footwear" })
-→ create_campaign({ 
-    brandAgentId: "ba_123", 
+→ create_campaign({
+    brandAgentId: "ba_123",
     name: "Sustainable Sneaker Launch",
     prompt: "Target eco-conscious millennials interested in sustainable fashion and footwear",
     budget: { total: 75000, currency: "USD" }
@@ -34,14 +35,15 @@ AI Agent: I'll create that campaign for you. Let me set up:
 ```
 
 **Inventory Discovery**
+
 ```
 Human: "Find me premium CTV inventory under $35 CPM"
 
-AI Agent: → discover_publisher_products({ 
-    formats: ["video"], 
+AI Agent: → discover_publisher_products({
+    formats: ["video"],
     deliveryType: "ctv",
     maxCpm: 35,
-    quality: "premium" 
+    quality: "premium"
   })
 
 Found 12 premium CTV options under $35 CPM:
@@ -52,6 +54,7 @@ Found 12 premium CTV options under $35 CPM:
 ```
 
 **Performance Analysis**
+
 ```
 Human: "How is our sneaker campaign performing? Focus on CTV vs display"
 
@@ -70,41 +73,45 @@ Recommendation: CTV is delivering 2.7x higher engagement. Consider shifting more
 ## MCP Tools Overview
 
 ### Brand Agent Management
+
 Tools for managing advertiser accounts and organizational structure.
 
-| Tool | Purpose | Natural Language Examples |
-|------|---------|---------------------------|
+| Tool                 | Purpose                    | Natural Language Examples               |
+| -------------------- | -------------------------- | --------------------------------------- |
 | `create_brand_agent` | Set up advertiser accounts | "Create an advertiser account for Nike" |
-| `list_brand_agents` | View all accounts | "Show me all our advertiser accounts" |
-| `update_brand_agent` | Modify account details | "Update the Nike account description" |
+| `list_brand_agents`  | View all accounts          | "Show me all our advertiser accounts"   |
+| `update_brand_agent` | Modify account details     | "Update the Nike account description"   |
 
 ### Campaign Lifecycle
+
 Tools for creating, managing, and optimizing advertising campaigns.
 
-| Tool | Purpose | Natural Language Examples |
-|------|---------|---------------------------|
-| `create_campaign` | Launch new campaigns | "Create a $50K performance campaign for Q4" |
+| Tool              | Purpose                  | Natural Language Examples                      |
+| ----------------- | ------------------------ | ---------------------------------------------- |
+| `create_campaign` | Launch new campaigns     | "Create a $50K performance campaign for Q4"    |
 | `update_campaign` | Modify running campaigns | "Increase the holiday campaign budget to $75K" |
-| `list_campaigns` | View campaign status | "Show me all active campaigns for Nike" |
+| `list_campaigns`  | View campaign status     | "Show me all active campaigns for Nike"        |
 
 ### Inventory Management
+
 Tools for discovering, configuring, and optimizing inventory allocation.
 
-| Tool | Purpose | Natural Language Examples |
-|------|---------|---------------------------|
-| `discover_publisher_products` | Find available inventory | "Find video inventory under $40 CPM" |
-| `create_inventory_option` | Configure custom allocation | "Add premium CTV with 1P data targeting" |
-| `adjust_inventory_allocation` | Optimize budget distribution | "Move $10K from display to CTV" |
-| `analyze_inventory_performance` | Get performance insights | "Show me performance by inventory source" |
+| Tool                            | Purpose                      | Natural Language Examples                 |
+| ------------------------------- | ---------------------------- | ----------------------------------------- |
+| `discover_publisher_products`   | Find available inventory     | "Find video inventory under $40 CPM"      |
+| `create_inventory_option`       | Configure custom allocation  | "Add premium CTV with 1P data targeting"  |
+| `adjust_inventory_allocation`   | Optimize budget distribution | "Move $10K from display to CTV"           |
+| `analyze_inventory_performance` | Get performance insights     | "Show me performance by inventory source" |
 
 ### Creative Assets
+
 Tools for managing creative assets across campaigns.
 
-| Tool | Purpose | Natural Language Examples |
-|------|---------|---------------------------|
-| `create_creative` | Upload creative assets | "Add our new video creative for the holiday campaign" |
-| `list_creatives` | View creative library | "Show me all video creatives for Nike" |
-| `update_creative` | Modify creative details | "Update the headline for the summer sale banner" |
+| Tool              | Purpose                 | Natural Language Examples                             |
+| ----------------- | ----------------------- | ----------------------------------------------------- |
+| `create_creative` | Upload creative assets  | "Add our new video creative for the holiday campaign" |
+| `list_creatives`  | View creative library   | "Show me all video creatives for Nike"                |
+| `update_creative` | Modify creative details | "Update the headline for the summer sale banner"      |
 
 ## Integration Patterns
 
@@ -154,7 +161,7 @@ Different agents can specialize in different aspects:
 Creative Agent: Manages creative assets and A/B testing
 → create_creative(), update_creative()
 
-Campaign Manager Agent: Handles campaign setup and goals  
+Campaign Manager Agent: Handles campaign setup and goals
 → create_campaign(), update_campaign()
 
 Optimization Agent: Manages inventory and performance
@@ -226,11 +233,11 @@ Human: "I want to spend more on premium inventory"
 ↓
 Agent Processing: Identify campaign, determine "premium" criteria, calculate budget shift
 ↓
-Tool Call: adjust_inventory_allocation({ 
+Tool Call: adjust_inventory_allocation({
   campaignId: "current_campaign",
-  adjustments: [{ 
-    inventoryOptionId: "premium_options", 
-    budgetIncrease: calculated_amount 
+  adjustments: [{
+    inventoryOptionId: "premium_options",
+    budgetIncrease: calculated_amount
   }]
 })
 ```
@@ -248,9 +255,9 @@ Transform structured data into actionable insights:
   ]
 }
 
-// AI Agent Response  
-"Your CTV Premium inventory is performing 2.7x better than Display (0.85% vs 0.31% CTR), 
-but costs 2.3x more ($28 vs $12 CPM). The efficiency is worth the premium - 
+// AI Agent Response
+"Your CTV Premium inventory is performing 2.7x better than Display (0.85% vs 0.31% CTR),
+but costs 2.3x more ($28 vs $12 CPM). The efficiency is worth the premium -
 consider shifting more budget to CTV."
 ```
 
@@ -260,11 +267,11 @@ Help users understand their options:
 
 ```
 After creating campaign:
-"✅ Campaign created with built-in optimization. 
+"✅ Campaign created with built-in optimization.
 
 Next steps:
 • discover_publisher_products() - Explore specific inventory options
-• create_creative() - Add creative assets  
+• create_creative() - Add creative assets
 • analyze_inventory_performance() - Monitor performance after 48 hours"
 ```
 
@@ -308,14 +315,14 @@ Test individual tools with sample data:
 
 ```javascript
 // Test campaign creation
-const result = await testTool('create_campaign', {
-  brandAgentId: 'test_brand_agent',
-  name: 'Test Campaign',
-  prompt: 'Test targeting tech enthusiasts',
-  budget: { total: 10000, currency: 'USD' }
+const result = await testTool("create_campaign", {
+  brandAgentId: "test_brand_agent",
+  name: "Test Campaign",
+  prompt: "Test targeting tech enthusiasts",
+  budget: { total: 10000, currency: "USD" },
 });
 
-console.log('Campaign created:', result.data.campaignId);
+console.log("Campaign created:", result.data.campaignId);
 ```
 
 ### Error Simulation
@@ -324,12 +331,12 @@ Test error handling:
 
 ```javascript
 // Test insufficient budget error
-const result = await testTool('create_inventory_option', {
-  campaignId: 'camp_123',
-  budgetAllocation: { amount: 999999, currency: 'USD' }  // Exceeds campaign budget
+const result = await testTool("create_inventory_option", {
+  campaignId: "camp_123",
+  budgetAllocation: { amount: 999999, currency: "USD" }, // Exceeds campaign budget
 });
 
-console.log('Error handled:', result.error);
+console.log("Error handled:", result.error);
 ```
 
 ## Security Considerations
@@ -351,18 +358,19 @@ const CreateCampaignParams = z.object({
   name: z.string().min(1).max(100),
   budget: z.object({
     total: z.number().positive(),
-    currency: z.string().length(3)
-  })
+    currency: z.string().length(3),
+  }),
 });
 ```
 
 ### Rate Limiting
 
 The MCP server implements rate limiting to prevent abuse:
+
 - 100 requests per minute per API key
 - Burst protection for sudden spikes
 - Graceful degradation with helpful error messages
 
 ---
 
-*MCP integration makes sophisticated advertising operations accessible through natural language, enabling AI agents to work alongside human teams effectively.*
+_MCP integration makes sophisticated advertising operations accessible through natural language, enabling AI agents to work alongside human teams effectively._

@@ -7,7 +7,7 @@
   "favicon": "/favicon.svg",
   "colors": {
     "primary": "#16a34a",
-    "light": "#22c55e", 
+    "light": "#22c55e",
     "dark": "#15803d"
   },
   "topbarLinks": [
@@ -47,10 +47,7 @@
     },
     {
       "group": "MCP Integration",
-      "pages": [
-        "mintlify/mcp/overview",
-        "mintlify/mcp/setup"
-      ]
+      "pages": ["mintlify/mcp/overview", "mintlify/mcp/setup"]
     },
     {
       "group": "Platform Migration",
@@ -61,9 +58,7 @@
     },
     {
       "group": "Resources",
-      "pages": [
-        "mintlify/resources/glossary"
-      ]
+      "pages": ["mintlify/resources/glossary"]
     }
   ],
   "api": {
