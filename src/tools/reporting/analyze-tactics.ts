@@ -5,7 +5,12 @@ import type {
   AnalyzeTacticsParams,
   MCPToolExecuteContext,
 } from "../../types/mcp.js";
-import type { TacticAnalysisResult } from "../../types/reporting.js";
+import type {
+  SignalPerformanceMetrics,
+  StoryPerformanceMetrics,
+  TacticAnalysisResult,
+  TacticPerformanceData,
+} from "../../types/reporting.js";
 
 import {
   createAuthErrorResponse,
@@ -111,7 +116,7 @@ export const analyzeTacticsTool = (client: Scope3ApiClient) => ({
 });
 
 async function analyzeAttribution(
-  tacticData: Record<string, unknown>[],
+  tacticData: TacticPerformanceData[],
   _dateRange: { end: Date; start: Date },
   _params: AnalyzeTacticsParams,
 ): Promise<TacticAnalysisResult> {
@@ -181,18 +186,18 @@ async function analyzeAttribution(
 }
 
 async function analyzeEfficiency(
-  tacticData: Record<string, unknown>[],
+  tacticData: TacticPerformanceData[],
   _params: AnalyzeTacticsParams,
 ): Promise<TacticAnalysisResult> {
   const tacticPerformance = tacticData.map((data) => {
-    const tactic = data.tactic as Record<string, unknown>;
-    const perf = data.performance as Record<string, unknown>;
+    const tactic = data.tactic;
+    const perf = data.performance;
 
     // Calculate efficiency metrics
-    const spend = (perf.totalSpend as number) || 0;
-    const impressions = (perf.totalImpressions as number) || 0;
-    const conversions = (perf.totalConversions as number) || 0;
-    const clicks = (perf.totalClicks as number) || 0;
+    const spend = perf.totalSpend || 0;
+    const impressions = perf.totalImpressions || 0;
+    const conversions = perf.totalConversions || 0;
+    const clicks = perf.totalClicks || 0;
 
     const cpm = impressions > 0 ? (spend / impressions) * 1000 : 0;
     const ctr = impressions > 0 ? clicks / impressions : 0;
@@ -200,7 +205,7 @@ async function analyzeEfficiency(
     const cpa = conversions > 0 ? spend / conversions : 0;
 
     // Efficiency score (0-1, higher is better)
-    const targetCpm = (tactic.targetPrice as number) || 3.5;
+    const targetCpm = tactic.targetPrice || 3.5;
     const cpmEfficiency =
       targetCpm > 0 ? Math.max(0, Math.min(1, targetCpm / cpm)) : 0.5;
     const conversionEfficiency = cvr * 10; // Scale CVR to 0-1 range roughly
@@ -219,9 +224,8 @@ async function analyzeEfficiency(
         spend,
       },
       rank: 0, // Will be set after sorting
-      tacticId: tactic.id as string,
-      tacticName:
-        (tactic.name as string) || `Tactic ${(tactic.id as string).slice(-8)}`,
+      tacticId: tactic.id,
+      tacticName: tactic.name || `Tactic ${tactic.id.slice(-8)}`,
     };
   });
 
@@ -256,7 +260,7 @@ async function analyzeEfficiency(
 }
 
 async function analyzeOptimization(
-  tacticData: Record<string, unknown>[],
+  tacticData: TacticPerformanceData[],
   _params: AnalyzeTacticsParams,
 ): Promise<TacticAnalysisResult> {
   const tacticPerformance = tacticData.map((data) => {
@@ -269,7 +273,7 @@ async function analyzeOptimization(
     const conversions = perf.totalConversions || 0;
 
     const currentCpm = impressions > 0 ? (spend / impressions) * 1000 : 0;
-    const targetCpm = tactic.targetPrice || 3.5;
+    const targetCpm = (tactic.targetPrice as number) || 3.5;
     const cpmVariance = Math.abs(currentCpm - targetCpm) / targetCpm;
 
     // Optimization score (0-1, higher means more room for improvement)
@@ -326,10 +330,10 @@ async function analyzeOptimization(
 }
 
 async function analyzeSignals(
-  tacticData: Record<string, unknown>[],
+  tacticData: TacticPerformanceData[],
   _params: AnalyzeTacticsParams,
 ): Promise<TacticAnalysisResult> {
-  const signalPerformance: Record<string, Record<string, unknown>> = {};
+  const signalPerformance: Record<string, SignalPerformanceMetrics> = {};
 
   // Aggregate performance by signal
   tacticData.forEach((data) => {
@@ -355,7 +359,7 @@ async function analyzeSignals(
 
   // Calculate signal effectiveness
   const signalAnalysis = Object.entries(signalPerformance).map(
-    ([signal, data]: [string, Record<string, unknown>]) => {
+    ([signal, data]) => {
       const cpm =
         data.totalImpressions > 0
           ? (data.totalSpend / data.totalImpressions) * 1000
@@ -404,10 +408,10 @@ async function analyzeSignals(
 }
 
 async function analyzeStories(
-  tacticData: Record<string, unknown>[],
+  tacticData: TacticPerformanceData[],
   _params: AnalyzeTacticsParams,
 ): Promise<TacticAnalysisResult> {
-  const storyPerformance: Record<string, Record<string, unknown>> = {};
+  const storyPerformance: Record<string, StoryPerformanceMetrics> = {};
 
   // Aggregate performance by story
   tacticData.forEach((data) => {
@@ -435,7 +439,7 @@ async function analyzeStories(
 
   // Calculate story effectiveness
   const storyAnalysis = Object.entries(storyPerformance).map(
-    ([story, data]: [string, Record<string, unknown>]) => {
+    ([story, data]) => {
       const ctr =
         data.totalImpressions > 0
           ? data.totalClicks / data.totalImpressions
@@ -521,13 +525,13 @@ function formatAnalysisResponse(analysis: TacticAnalysisResult): string {
 
       // Show relevant metrics based on analysis type
       if (analysis.analysisType === "efficiency") {
-        response += `• Efficiency: ${Math.round((tactic.metrics.efficiency || 0) * 100)}%\n`;
-        response += `• CPM: $${(tactic.metrics.cpm || 0).toFixed(2)}\n`;
-        response += `• Conversions: ${tactic.metrics.conversions || 0}\n`;
+        response += `• Efficiency: ${Math.round(((tactic.metrics as { efficiency?: number })?.efficiency || 0) * 100)}%\n`;
+        response += `• CPM: $${((tactic.metrics as { cpm?: number })?.cpm || 0).toFixed(2)}\n`;
+        response += `• Conversions: ${(tactic.metrics as { conversions?: number })?.conversions || 0}\n`;
       } else if (analysis.analysisType === "attribution") {
-        response += `• Attribution Score: ${Math.round((tactic.metrics.attributionScore || 0) * 100)}%\n`;
-        response += `• First Touch: ${tactic.metrics.firstTouchConversions || 0}\n`;
-        response += `• Last Touch: ${tactic.metrics.lastTouchConversions || 0}\n`;
+        response += `• Attribution Score: ${Math.round(((tactic.metrics as { attributionScore?: number })?.attributionScore || 0) * 100)}%\n`;
+        response += `• First Touch: ${(tactic.metrics as { firstTouchConversions?: number })?.firstTouchConversions || 0}\n`;
+        response += `• Last Touch: ${(tactic.metrics as { lastTouchConversions?: number })?.lastTouchConversions || 0}\n`;
       }
 
       // Add insights
@@ -587,8 +591,8 @@ function formatAnalysisResponse(analysis: TacticAnalysisResult): string {
 }
 
 function generateEfficiencyInsights(
-  tactic: Record<string, unknown>,
-  performance: Record<string, unknown>,
+  tactic: { targetPrice?: number },
+  performance: { totalImpressions?: number; totalSpend?: number },
   efficiency: number,
 ): string[] {
   const insights: string[] = [];
@@ -604,8 +608,9 @@ function generateEfficiencyInsights(
   }
 
   const currentCpm =
-    performance.totalImpressions > 0
-      ? (performance.totalSpend / performance.totalImpressions) * 1000
+    (performance.totalImpressions || 0) > 0
+      ? ((performance.totalSpend || 0) / (performance.totalImpressions || 0)) *
+        1000
       : 0;
   const targetCpm = tactic.targetPrice || 3.5;
 
@@ -619,15 +624,15 @@ function generateEfficiencyInsights(
 }
 
 function generateEfficiencyRecommendations(
-  tactics: Record<string, unknown>[],
+  tactics: { metrics?: { efficiency?: number } }[],
 ): string[] {
   const recommendations: string[] = [];
 
   const underperformers = tactics.filter(
-    (t) => (t.metrics.efficiency || 0) < 0.4,
+    (t) => (t.metrics?.efficiency || 0) < 0.4,
   );
   const topPerformers = tactics.filter(
-    (t) => (t.metrics.efficiency || 0) > 0.8,
+    (t) => (t.metrics?.efficiency || 0) > 0.8,
   );
 
   if (topPerformers.length > 0) {
@@ -652,16 +657,16 @@ function generateEfficiencyRecommendations(
 }
 
 function generateEfficiencySummary(
-  tactics: Record<string, unknown>[],
-  bestTactic: Record<string, unknown>,
+  tactics: { metrics?: { efficiency?: number } }[],
+  bestTactic: { metrics?: { efficiency?: number }; tacticName?: string },
   avgEfficiency: number,
 ): string {
   const totalTactics = tactics.length;
   const highPerformers = tactics.filter(
-    (t) => (t.metrics.efficiency || 0) > 0.7,
+    (t) => (t.metrics?.efficiency || 0) > 0.7,
   ).length;
   const underperformers = tactics.filter(
-    (t) => (t.metrics.efficiency || 0) < 0.4,
+    (t) => (t.metrics?.efficiency || 0) < 0.4,
   ).length;
 
   let summary = `## 🎯 Efficiency Analysis\n\n`;
@@ -671,7 +676,7 @@ function generateEfficiencySummary(
   summary += `**Underperformers**: ${underperformers} (${Math.round((underperformers / totalTactics) * 100)}%)\n\n`;
 
   if (bestTactic) {
-    summary += `**Top Performer**: ${bestTactic.tacticName} (${Math.round((bestTactic.metrics.efficiency || 0) * 100)}% efficiency)\n`;
+    summary += `**Top Performer**: ${bestTactic.tacticName} (${Math.round((bestTactic.metrics?.efficiency || 0) * 100)}% efficiency)\n`;
   }
 
   return summary;
@@ -680,7 +685,7 @@ function generateEfficiencySummary(
 async function performTacticAnalysis(
   client: Scope3ApiClient,
   apiKey: string,
-  campaign: Record<string, unknown>,
+  campaign: { id: string },
   params: AnalyzeTacticsParams,
   dateRange: { end: Date; start: Date },
 ): Promise<TacticAnalysisResult> {
@@ -718,26 +723,38 @@ async function performTacticAnalysis(
   switch (params.analysisType) {
     case "attribution":
       analysisResult = await analyzeAttribution(
-        tacticPerformance,
+        tacticPerformance as unknown as TacticPerformanceData[],
         dateRange,
         params,
       );
       break;
     case "efficiency":
-      analysisResult = await analyzeEfficiency(tacticPerformance, params);
+      analysisResult = await analyzeEfficiency(
+        tacticPerformance as unknown as TacticPerformanceData[],
+        params,
+      );
       break;
     case "optimization":
-      analysisResult = await analyzeOptimization(tacticPerformance, params);
+      analysisResult = await analyzeOptimization(
+        tacticPerformance as unknown as TacticPerformanceData[],
+        params,
+      );
       break;
     case "signals":
-      analysisResult = await analyzeSignals(tacticPerformance, params);
+      analysisResult = await analyzeSignals(
+        tacticPerformance as unknown as TacticPerformanceData[],
+        params,
+      );
       break;
     case "stories":
-      analysisResult = await analyzeStories(tacticPerformance, params);
+      analysisResult = await analyzeStories(
+        tacticPerformance as unknown as TacticPerformanceData[],
+        params,
+      );
       break;
   }
 
-  analysisResult.campaignId = campaign.id as string;
+  analysisResult.campaignId = campaign.id;
   analysisResult.analysisType = params.analysisType;
   analysisResult.generatedAt = now;
 

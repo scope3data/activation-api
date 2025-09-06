@@ -167,7 +167,7 @@ async function exportAllocationData(
       rows.push({
         allocated_budget: allocation.allocatedBudget,
         campaign_id: campaignId,
-        date: allocation.date.toISOString().split("T")[0],
+        date: (allocation.date as Date).toISOString().split("T")[0],
         tactic_id: allocation.tacticId,
         utilization_rate: allocation.utilizationRate,
         utilized_budget: allocation.utilizedBudget,
@@ -225,47 +225,43 @@ async function exportDeliveryData(
     const campaign = await client.getBrandAgentCampaign(apiKey, campaignId);
 
     // Transform delivery data based on groupBy parameters
-    for (const delivery of deliveryData.dailyDeliveries || []) {
+    for (const delivery of (deliveryData as { dailyDeliveries?: unknown[] })
+      ?.dailyDeliveries || []) {
+      const d = delivery as Record<string, unknown>;
       const baseRow = {
         campaign_id: campaignId,
         campaign_name: campaign?.name || "Unknown",
-        currency: delivery.currency,
-        current_price: delivery.currentPrice,
-        date: delivery.date.toISOString().split("T")[0],
-        delivery_unit: delivery.deliveryUnit,
-        spend: delivery.spend,
-        tactic_id: delivery.tacticId,
-        units_delivered: delivery.unitsDelivered,
+        currency: d.currency,
+        current_price: d.currentPrice,
+        date: d.date.toISOString().split("T")[0],
+        delivery_unit: d.deliveryUnit,
+        spend: d.spend,
+        tactic_id: d.tacticId,
+        units_delivered: d.unitsDelivered,
       };
 
       // Handle grouping by signals
-      if (params.groupBy.includes("signal") && delivery.signalBreakdown) {
-        for (const [signal, signalSpend] of Object.entries(
-          delivery.signalBreakdown,
-        )) {
+      if (params.groupBy.includes("signal") && d.signalBreakdown) {
+        for (const [signal, signalSpend] of Object.entries(d.signalBreakdown)) {
           rows.push({
             ...baseRow,
             signal,
             spend: signalSpend as number,
             units_delivered: Math.round(
-              ((signalSpend as number) / delivery.spend) *
-                delivery.unitsDelivered,
+              ((signalSpend as number) / d.spend) * d.unitsDelivered,
             ),
           });
         }
       }
       // Handle grouping by stories
-      else if (params.groupBy.includes("story") && delivery.storyBreakdown) {
-        for (const [story, storySpend] of Object.entries(
-          delivery.storyBreakdown,
-        )) {
+      else if (params.groupBy.includes("story") && d.storyBreakdown) {
+        for (const [story, storySpend] of Object.entries(d.storyBreakdown)) {
           rows.push({
             ...baseRow,
             spend: storySpend as number,
             story,
             units_delivered: Math.round(
-              ((storySpend as number) / delivery.spend) *
-                delivery.unitsDelivered,
+              ((storySpend as number) / d.spend) * d.unitsDelivered,
             ),
           });
         }
@@ -273,18 +269,17 @@ async function exportDeliveryData(
       // Handle grouping by publisher products
       else if (
         params.groupBy.includes("publisher_product") &&
-        delivery.publisherBreakdown
+        d.publisherBreakdown
       ) {
         for (const [publisherProduct, publisherSpend] of Object.entries(
-          delivery.publisherBreakdown,
+          d.publisherBreakdown,
         )) {
           rows.push({
             ...baseRow,
             publisher_product: publisherProduct,
             spend: publisherSpend as number,
             units_delivered: Math.round(
-              ((publisherSpend as number) / delivery.spend) *
-                delivery.unitsDelivered,
+              ((publisherSpend as number) / d.spend) * d.unitsDelivered,
             ),
           });
         }
@@ -394,14 +389,18 @@ async function exportTacticData(
       rows.push({
         campaign_id: campaignId,
         daily_budget: tactic.dailyBudget || null,
-        end_date: tactic.endDate.toISOString().split("T")[0],
-        publisher_products: tactic.publisherProducts?.join(",") || null,
-        signals: tactic.signals?.join(",") || null,
-        start_date: tactic.startDate.toISOString().split("T")[0],
+        end_date: (tactic.endDate as Date)?.toISOString().split("T")[0] || null,
+        publisher_products:
+          (tactic.publisherProducts as string[])?.join(",") || null,
+        signals: (tactic.signals as string[])?.join(",") || null,
+        start_date:
+          (tactic.startDate as Date)?.toISOString().split("T")[0] || null,
         status: tactic.status,
-        stories: tactic.stories?.join(",") || null,
-        tactic_id: tactic.id,
-        tactic_name: tactic.name || `Tactic ${tactic.id.slice(-8)}`,
+        stories: (tactic.stories as string[])?.join(",") || null,
+        tactic_id: tactic.id as string,
+        tactic_name:
+          (tactic.name as string) ||
+          `Tactic ${(tactic.id as string).slice(-8)}`,
         target_price: tactic.targetPrice,
       });
     }

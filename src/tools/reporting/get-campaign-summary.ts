@@ -5,7 +5,13 @@ import type {
   GetCampaignSummaryParams,
   MCPToolExecuteContext,
 } from "../../types/mcp.js";
-import type { CampaignSummary } from "../../types/reporting.js";
+import type {
+  BrandAgentData,
+  CampaignAlert,
+  CampaignData,
+  CampaignSummary,
+  DeliveryData,
+} from "../../types/reporting.js";
 
 import {
   createAuthErrorResponse,
@@ -181,16 +187,17 @@ function formatSummaryResponse(summary: CampaignSummary): string {
 
 // Generate campaign summary based on data
 function generateCampaignSummary(
-  campaign: Record<string, unknown>,
-  brandAgent: Record<string, unknown>,
-  deliveryData: Record<string, unknown>,
-  tacticBreakdown: Record<string, unknown>[],
+  campaign: CampaignData,
+  brandAgent: BrandAgentData,
+  deliveryData: DeliveryData,
+  tacticBreakdown: { efficiency?: number }[],
   verbosity: string,
   includeCharts: boolean,
 ): CampaignSummary {
   const now = new Date();
   const campaignAge = Math.ceil(
-    (now.getTime() - campaign.createdAt.getTime()) / (1000 * 60 * 60 * 24),
+    (now.getTime() - (campaign.createdAt || now).getTime()) /
+      (1000 * 60 * 60 * 24),
   );
 
   // Base summary
@@ -221,20 +228,20 @@ function generateCampaignSummary(
           : "🐌";
 
     summaryText += `### 💰 Budget & Pacing\n`;
-    summaryText += `• **Total Budget**: ${campaign.budget.total.toLocaleString()} ${campaign.budget.currency}\n`;
-    summaryText += `• **Utilization**: ${(pacing.budgetUtilized * 100).toFixed(1)}%\n`;
-    summaryText += `• **Pacing**: ${pacingEmoji} ${pacing.status.replace("_", " ")}\n`;
-    summaryText += `• **Days Remaining**: ${pacing.daysRemaining}\n`;
-    summaryText += `• **Projected End**: ${pacing.projectedCompletion.toLocaleDateString()}\n\n`;
+    summaryText += `• **Total Budget**: ${campaign.budget.total?.toLocaleString() || 0} ${campaign.budget.currency || "USD"}\n`;
+    summaryText += `• **Utilization**: ${((pacing.budgetUtilized || 0) * 100).toFixed(1)}%\n`;
+    summaryText += `• **Pacing**: ${pacingEmoji} ${(pacing.status || "unknown").replace("_", " ")}\n`;
+    summaryText += `• **Days Remaining**: ${pacing.daysRemaining || 0}\n`;
+    summaryText += `• **Projected End**: ${(pacing.projectedCompletion || new Date()).toLocaleDateString()}\n\n`;
   }
 
   // Today's performance
   if (campaign.deliverySummary?.today) {
     const today = campaign.deliverySummary.today;
     summaryText += `### 📈 Today's Performance\n`;
-    summaryText += `• **Spend**: ${today.spend.toLocaleString()} ${campaign.budget?.currency || "USD"}\n`;
-    summaryText += `• **Impressions**: ${today.impressions.toLocaleString()}\n`;
-    summaryText += `• **Average Price**: ${today.averagePrice.toFixed(2)} CPM\n\n`;
+    summaryText += `• **Spend**: ${(today.spend || 0).toLocaleString()} ${campaign.budget?.currency || "USD"}\n`;
+    summaryText += `• **Impressions**: ${(today.impressions || 0).toLocaleString()}\n`;
+    summaryText += `• **Average Price**: ${(today.averagePrice || 0).toFixed(2)} CPM\n\n`;
   }
 
   // Generate insights
@@ -258,9 +265,9 @@ function generateCampaignSummary(
   }
 
   return {
-    alerts,
-    campaignId: campaign.id,
-    campaignName: campaign.name,
+    alerts: alerts as CampaignAlert[],
+    campaignId: campaign.id || "",
+    campaignName: campaign.name || "",
     charts,
     generatedAt: now,
     insights,
@@ -270,8 +277,8 @@ function generateCampaignSummary(
 }
 
 function generateCharts(
-  deliveryData: Record<string, unknown>,
-  tacticBreakdown: Record<string, unknown>[],
+  deliveryData: DeliveryData,
+  tacticBreakdown: { efficiency?: number }[],
 ): Record<string, unknown> {
   const charts: Record<string, unknown> = {};
 
@@ -291,9 +298,9 @@ function generateCharts(
 }
 
 function generateInsights(
-  campaign: Record<string, unknown>,
-  _deliveryData: Record<string, unknown>,
-  tacticBreakdown: Record<string, unknown>[],
+  campaign: CampaignData,
+  _deliveryData: DeliveryData,
+  tacticBreakdown: { efficiency?: number }[],
 ): string[] {
   const insights: string[] = [];
 
@@ -332,15 +339,11 @@ function generateInsights(
 
   // Tactic performance insights
   if (tacticBreakdown && tacticBreakdown.length > 1) {
-    const bestTactic = tacticBreakdown.reduce(
-      (best: Record<string, unknown>, current: Record<string, unknown>) =>
-        ((current.efficiency as number) || 0) >
-        ((best.efficiency as number) || 0)
-          ? current
-          : best,
+    const bestTactic = tacticBreakdown.reduce((best, current) =>
+      (current.efficiency || 0) > (best.efficiency || 0) ? current : best,
     );
     insights.push(
-      `🏆 Best performing tactic: "${bestTactic.name}" with ${((bestTactic.efficiency as number) * 100).toFixed(0)}% efficiency`,
+      `🏆 Best performing tactic: "${(bestTactic as { name?: string }).name || "Unknown"}" with ${((bestTactic.efficiency || 0) * 100).toFixed(0)}% efficiency`,
     );
   }
 
@@ -348,9 +351,9 @@ function generateInsights(
 }
 
 function generateNextSteps(
-  campaign: Record<string, unknown>,
-  _deliveryData: Record<string, unknown>,
-  tacticBreakdown: Record<string, unknown>[],
+  campaign: CampaignData,
+  _deliveryData: DeliveryData,
+  tacticBreakdown: { efficiency?: number }[],
   _insights: string[],
 ): string[] {
   const nextSteps: string[] = [];
@@ -368,8 +371,8 @@ function generateNextSteps(
 
   // Based on alerts
   const alerts = campaign.deliverySummary?.alerts || [];
-  const criticalAlerts = alerts.filter(
-    (a: Record<string, unknown>) => a.severity === "critical",
+  const criticalAlerts = (alerts as { severity: string }[]).filter(
+    (a) => a.severity === "critical",
   );
   if (criticalAlerts.length > 0) {
     nextSteps.push("Address critical alerts to prevent campaign disruption");
@@ -378,7 +381,7 @@ function generateNextSteps(
   // Performance optimization
   if (tacticBreakdown && tacticBreakdown.length > 1) {
     const underperforming = tacticBreakdown.filter(
-      (t: Record<string, unknown>) => (t.efficiency || 0) < 0.5,
+      (t) => (t.efficiency || 0) < 0.5,
     );
     if (underperforming.length > 0) {
       nextSteps.push(

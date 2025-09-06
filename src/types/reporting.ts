@@ -19,6 +19,10 @@ export interface AnalyzeTacticsParams {
   timeframe?: "14d" | "30d" | "7d" | "custom";
 }
 
+export interface BrandAgentData {
+  name?: string;
+}
+
 // Alert types
 export interface CampaignAlert {
   acknowledged?: boolean;
@@ -31,6 +35,33 @@ export interface CampaignAlert {
   tacticId?: string; // If alert is tactic-specific
   timestamp: Date;
   type: "budget" | "delivery" | "pacing" | "performance" | "threshold";
+}
+
+export interface CampaignData {
+  budget?: {
+    currency?: string;
+    total?: number;
+  };
+  createdAt?: Date;
+  deliverySummary?: {
+    alerts?: unknown[];
+    healthScore?: string;
+    pacing?: {
+      budgetUtilized?: number;
+      daysRemaining?: number;
+      projectedCompletion?: Date;
+      status?: string;
+    };
+    status?: string;
+    today?: {
+      averagePrice?: number;
+      impressions?: number;
+      spend?: number;
+    };
+  };
+  id?: string;
+  name?: string;
+  status?: string;
 }
 
 // Campaign summary for casual users
@@ -127,6 +158,11 @@ export interface DataExportResponse {
   };
 }
 
+export interface DeliveryData {
+  dailyDeliveries?: unknown[];
+  dailySpend?: unknown[];
+}
+
 export interface ExportCampaignDataParams {
   brandAgentId?: string;
   campaignIds?: string[];
@@ -186,6 +222,16 @@ export interface InsightContext {
   trends: TrendData[];
 }
 
+export interface PerformanceData {
+  assistedConversions?: number;
+  firstTouchConversions?: number;
+  lastTouchConversions?: number;
+  totalClicks?: number;
+  totalConversions?: number;
+  totalImpressions?: number;
+  totalSpend?: number;
+}
+
 // Performance metrics for summaries
 export interface PerformanceMetrics {
   // Pacing
@@ -210,6 +256,21 @@ export interface PerformanceMetrics {
   // Core metrics
   spend: number;
   winRate?: number;
+}
+
+export interface SignalPerformanceMetrics {
+  tacticCount: number;
+  totalConversions: number;
+  totalImpressions: number;
+  totalSpend: number;
+}
+
+export interface StoryPerformanceMetrics {
+  tacticCount: number;
+  totalClicks: number;
+  totalConversions: number;
+  totalImpressions: number;
+  totalSpend: number;
 }
 
 // Tactic analysis parameters
@@ -271,6 +332,25 @@ export interface TacticAnalysisResult {
     tacticId: string;
     tacticName?: string;
   }>;
+}
+
+// Basic tactic and performance data structures for analysis
+export interface TacticData {
+  dailyBudget?: number;
+  endDate?: Date;
+  id: string;
+  name?: string;
+  publisherProducts?: string[];
+  signals?: string[];
+  startDate?: Date;
+  status?: string;
+  stories?: string[];
+  targetPrice?: number;
+}
+
+export interface TacticPerformanceData {
+  performance: PerformanceData;
+  tactic: TacticData;
 }
 
 // Trend data for time series analysis
