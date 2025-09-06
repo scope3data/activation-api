@@ -1,5 +1,7 @@
 // Brand Agent types - represents advertiser/account level entities
 
+import type { InventoryManagement } from "./inventory-options.js";
+
 export interface BrandAgent {
   createdAt: Date;
   customerId: number;
@@ -22,6 +24,10 @@ export interface BrandAgentCampaign {
   createdAt: Date;
   creativeIds: string[];
   id: string;
+
+  // Inventory management configuration
+  inventoryManagement?: InventoryManagement;
+
   name: string;
   prompt: string;
   status: string;
@@ -38,6 +44,10 @@ export interface BrandAgentCampaignInput {
     total: number;
   };
   creativeIds?: string[];
+
+  // Inventory management configuration
+  inventoryManagement?: InventoryManagement;
+
   name: string;
   prompt: string;
 }
@@ -55,6 +65,10 @@ export interface BrandAgentCampaignUpdateInput {
     total?: number;
   };
   creativeIds?: string[];
+
+  // Inventory management configuration
+  inventoryManagement?: Partial<InventoryManagement>;
+
   name?: string;
   prompt?: string;
   status?: string;

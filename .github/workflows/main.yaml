@@ -22,10 +22,14 @@ jobs:
           node-version-file: ".nvmrc"
       - name: Install dependencies
         run: npm install
+      - name: Install Mintlify CLI
+        run: npm install -g mintlify
       - name: Run lint
         run: npm run lint
       - name: Run tests
         run: npm run test
+      - name: Check documentation links
+        run: npm run docs:validate:links
       - name: Build
         run: npm run build
       - name: Release

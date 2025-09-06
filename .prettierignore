@@ -1,0 +1,13 @@
+# Documentation files
+*.mdx
+
+# Build artifacts
+dist/
+node_modules/
+
+# Generated files
+openapi.yaml
+
+# Environment files
+.env
+.env.local

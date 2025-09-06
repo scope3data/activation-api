@@ -19,6 +19,24 @@ export interface CreateBrandAgentCampaignParams {
     total: number;
   };
   creativeIds?: string[];
+
+  // Inventory management configuration
+  inventoryManagement?: {
+    autoDiscoverProducts?: boolean;
+    autoOptimize?: boolean;
+    budgetSplit?: {
+      guaranteed: number;
+      nonGuaranteed: number;
+    };
+    mode: "hybrid" | "scope3_managed" | "user_managed";
+    optimizationGoal?:
+      | "clicks"
+      | "conversions"
+      | "cost_efficiency"
+      | "impressions";
+    preferredSignals?: ("buyer" | "scope3" | "third_party")[];
+  };
+
   name: string;
   prompt: string;
 }

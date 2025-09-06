@@ -1,158 +1,295 @@
-# Scope3 Campaign API MCP Server
+# Scope3 Ad Platform
 
-An MCP (Model Context Protocol) server for comprehensive advertising campaign management through the Scope3 API.
+**The Ad Buying Platform for People & Agents**
 
-## Development Environment Setup
+🚀 Start Simple, Scale Sophisticated
 
-### Prerequisites
+Welcome to Scope3 - where campaigns are conversations and complexity is optional.
 
-This project requires **Node.js 22+** for consistency with CI environments.
+## Quick Start: Your First Campaign
 
-#### Using nvm (recommended):
+```javascript
+// Step 1: Create your advertiser (brand agent)
+const advertiser = await create_brand_agent({
+  name: "Acme Corp",
+  description: "Sustainable fashion brand",
+});
 
-```bash
-# Install/use the correct Node version
-nvm use
+// Step 2: Add a creative
+const creative = await create_creative({
+  brandAgentId: advertiser.id,
+  name: "Summer Sale Video",
+  type: "video",
+  url: "https://cdn.example.com/summer-sale.mp4",
+});
 
-# Or install if you don't have Node 22
-nvm install 22
-nvm use 22
+// Step 3: Launch your campaign
+await create_campaign({
+  brandAgentId: advertiser.id,
+  name: "Summer Sale 2024",
+  prompt: "Reach eco-conscious millennials interested in sustainable fashion",
+  budget: {
+    total: 50000,
+    currency: "USD",
+  },
+  startDate: "2024-06-01",
+  endDate: "2024-08-31",
+  creativeIds: [creative.id],
+});
 ```
 
-#### Manual setup:
+**That's it. Our built-in optimization handles the rest.**
 
-- Ensure you have Node.js 22+ installed
-- Check your version: `node --version`
+## Our Philosophy
 
-### Local CI Checking
+### 1. People & Agents, Together
 
-Before pushing changes, run our local CI simulation:
+Your team and AI agents work side-by-side. Humans set strategy, agents execute tactics. Full transparency and control when you want it.
+
+### 2. Allocation, Not Bidding
+
+Unlike traditional DSPs with complex bidding algorithms, we focus on intelligent allocation - distributing your budget across the right inventory mix. Think portfolio management, not auction mechanics.
+
+### 3. Works Alongside Your Stack
+
+Run Scope3 in parallel with your existing platforms. Test new inventory sources, explore emerging channels, or optimize specific campaign types.
+
+## Choose Your Optimization Approach
+
+### 🎯 Built-in Optimization
+
+**Perfect for: Teams seeking efficiency and simplicity**
+
+```javascript
+// We optimize inventory allocation automatically
+await create_campaign({
+  brandAgentId: "ba_123",
+  name: "Brand Awareness Q4",
+  prompt: "Maximize reach for our new product launch",
+  budget: {
+    total: 100000,
+    currency: "USD",
+  },
+  startDate: "2024-10-01",
+  endDate: "2024-12-31",
+  // inventoryManagement defaults to scope3_managed
+});
+```
+
+**What we handle:**
+
+- Inventory mix optimization
+- Signal selection
+- Budget allocation across publishers
+- Performance-based rebalancing
+
+### 🎛️ Granular Control
+
+**Perfect for: Teams with specific strategies**
+
+```javascript
+// You control the inventory allocation
+await create_campaign({
+  brandAgentId: "ba_123",
+  name: "Performance Campaign Q4",
+  budget: {
+    total: 100000,
+    currency: "USD",
+  },
+  inventoryManagement: {
+    mode: "user_managed",
+    optimizationGoal: "conversions",
+  },
+});
+
+// Configure your inventory mix
+await create_inventory_option({
+  campaignId: "camp_123",
+  name: "Premium CTV + 1P Data",
+  mediaProductId: "hulu_premium_ctv",
+  targeting: {
+    signalType: "buyer",
+  },
+  budgetAllocation: {
+    amount: 40000,
+    currency: "USD",
+  },
+});
+```
+
+## How We're Different
+
+### Allocation vs. Bidding
+
+Traditional DSPs focus on bid optimization - how much to pay for each impression. We focus on allocation optimization - where to spend your budget for maximum impact.
+
+### Inventory as Building Blocks
+
+Think of inventory options as building blocks for your campaign portfolio:
+
+```javascript
+// Build your campaign like a diversified portfolio
+const portfolioApproach = [
+  { name: "Premium CTV + Scope3 signals", allocation: "30%" },
+  { name: "Programmatic display + 1P data", allocation: "40%" },
+  { name: "Contextual targeting premium sites", allocation: "30%" },
+];
+```
+
+## MCP: Built for AI Collaboration
+
+### Natural Language, Real Actions
+
+As an MCP (Model Context Protocol) server, Scope3 is designed for AI agents to work directly with humans:
+
+```
+Human: "Find me premium video inventory under $40 CPM"
+AI Agent: → discover_publisher_products({ formats: ["video"], maxCpm: 40 })
+```
+
+**Human readable results:** AI agents get structured data, humans get clear insights.
+
+## Available Tools
+
+### Brand Agent Management
+
+- `create_brand_agent` - Set up advertiser accounts
+- `update_brand_agent` - Modify account settings
+- `list_brand_agents` - View all accounts
+
+### Campaign Management
+
+- `create_campaign` - Launch campaigns with smart defaults
+- `update_campaign` - Modify campaigns and inventory
+- `list_campaigns` - Track campaign performance
+
+### Inventory Control
+
+- `discover_publisher_products` - Find available inventory
+- `create_inventory_option` - Configure custom allocation
+- `adjust_inventory_allocation` - Optimize budget distribution
+- `analyze_inventory_performance` - Get performance insights
+
+### Creative Management
+
+- `create_creative` - Upload creative assets
+- `update_creative` - Modify creative details
+- `list_creatives` - View creative library
+
+[View complete tool documentation →](docs/tools/)
+
+## Getting Started
+
+### For Claude Users
+
+Add this server to your Claude Desktop configuration:
+
+```json
+{
+  "mcpServers": {
+    "scope3-campaigns": {
+      "command": "npm",
+      "args": ["start"],
+      "cwd": "/path/to/scope3-campaign-api",
+      "env": {
+        "SCOPE3_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
+
+### For Developers
+
+This is an MCP server implementation that can be integrated with any MCP-compatible client.
+
+#### Development Setup
+
+**Prerequisites**: Node.js 22+
 
 ```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Run tests
+npm test
+
+# Run local CI validation
 npm run ci:local
 ```
 
-This runs the same checks as our CI pipeline and catches issues early.
-
-## Development
-
-To get started, clone the repository and install the dependencies.
+#### Documentation Development
 
 ```bash
-git clone https://github.com/punkpeye/fastmcp-boilerplate.git
-cd fastmcp-boilerplate
-npm install
-npm run dev
-```
-
-> [!NOTE]
-> If you are starting a new project, you may want to fork [fastmcp-boilerplate](https://github.com/punkpeye/fastmcp-boilerplate) and start from there.
-
-### Start the server
-
-If you simply want to start the server, you can use the `start` script.
-
-```bash
-npm run start
-```
-
-However, you can also interact with the server using the `dev` script.
-
-```bash
-npm run dev
-```
-
-This will start the server and allow you to interact with it using CLI.
-
-### Testing
-
-A good MCP server should have tests. However, you don't need to test the MCP server itself, but rather the tools you implement.
-
-```bash
-npm run test
-```
-
-In the case of this boilerplate, we only test the implementation of the `add` tool.
-
-### Linting
-
-Having a good linting setup reduces the friction for other developers to contribute to your project.
-
-```bash
-npm run lint
-```
-
-This boilerplate uses [Prettier](https://prettier.io/), [ESLint](https://eslint.org/) and [TypeScript ESLint](https://typescript-eslint.io/) to lint the code.
-
-### Formatting
-
-Use `npm run format` to format the code.
-
-```bash
-npm run format
-```
-
-### Documentation
-
-The project includes comprehensive documentation built with [Mintlify](https://mintlify.com).
-
-#### Local Documentation Development
-
-Start the documentation server locally:
-
-```bash
+# Start documentation development server
 npm run docs:dev
-```
 
-This will start a local Mintlify server, typically at http://localhost:3000.
-
-#### Documentation Validation
-
-**Prerequisites**: Install Mintlify CLI globally: `npm install -g mintlify`
-
-Validate documentation before committing:
-
-```bash
-# Validate OpenAPI spec used in docs (requires Mintlify CLI)
-npm run docs:validate:openapi
-
-# Check for broken internal links (informational, requires Mintlify CLI)
+# Check for broken links in documentation
 npm run docs:validate:links
 
-# Run all documentation validation (requires Mintlify CLI)
+# Full documentation validation (links + OpenAPI)
 npm run docs:validate
 ```
 
-#### Documentation Guidelines
-
-- All documentation files are in the `mintlify/` directory
-- The `mint.json` file contains navigation and configuration
-- **Mintlify CLI required**: Documentation validation commands require `mintlify` to be installed globally
-- **Optional validation**: Documentation validation is separate from main lint/CI pipeline
-- Run `npm run docs:validate:openapi` locally to ensure OpenAPI compatibility (when Mintlify CLI is available)
-- Broken links are checked but don't fail CI (since docs may be incomplete)
-
-### CI/Local Environment Parity
-
-To ensure your local environment matches CI and prevent "works on my machine" issues:
+**Prerequisites for documentation validation**: Install Mintlify CLI globally:
 
 ```bash
-# Setup correct Node version
-nvm use
-
-# Run local CI simulation before pushing
-npm run ci:local
+npm install -g mintlify
 ```
 
-See [CI/Local Parity Guide](docs/CI_LOCAL_PARITY.md) for detailed information.
+#### Production Setup
 
-### GitHub Actions
+```bash
+# Start the server
+npm start
+```
 
-This repository has a GitHub Actions workflow that runs linting, formatting, tests, and publishes package updates to NPM using [semantic-release](https://semantic-release.gitbook.io/semantic-release/).
+The server runs on `http://localhost:3001/mcp` by default.
 
-In order to use this workflow, you need to:
+**Authentication**: Include your Scope3 API key in requests:
 
-1. Add `NPM_TOKEN` to the repository secrets
-   1. [Create a new automation token](https://www.npmjs.com/settings/punkpeye/tokens/new)
-   2. Add token as `NPM_TOKEN` environment secret (Settings → Secrets and Variables → Actions → "Manage environment secrets" → "release" → Add environment secret)
-1. Grant write access to the workflow (Settings → Actions → General → Workflow permissions → "Read and write permissions")
+```bash
+curl -H "x-scope3-api-key: your_api_key" http://localhost:3001/mcp
+```
+
+## Architecture
+
+### Brand Agent Model
+
+```
+BrandAgent (Advertiser/Account)
+  ├── Campaigns (multiple, owned by brand agent)
+  ├── Creatives (multiple, shared across campaigns)
+  ├── Standards (brand safety configuration)
+  ├── SyntheticAudiences (multiple, shared across campaigns)
+  └── MeasurementSources (tracking integrations)
+```
+
+### Inventory Options
+
+Each **Inventory Option** combines:
+
+- **Publisher Media Product** (raw inventory from AdCP)
+- **Targeting Strategy** (signal type + configuration)
+- **Budget Allocation** (amount + pacing)
+
+## Documentation
+
+- [Complete Tool Reference](docs/tools/)
+- [Architecture Guide](docs/architecture/)
+- [MCP Integration](docs/mcp-integration/)
+- [API Reference](docs/api/)
+
+## Support
+
+For questions or support:
+
+- [GitHub Issues](https://github.com/anthropics/claude-code/issues)
+- [Documentation](docs/)
+
+---
+
+**Built with ❤️ for the future of advertising**

@@ -1,6 +1,6 @@
 ---
-title: Welcome to Scope3 Agentic Campaign API
-description: "The AI-powered advertising API that makes campaign management conversational"
+title: Welcome to Scope3 Ad Platform
+description: "Decarbonizing Media & Advertising - The Sustainable Ad Buying Platform for People & Agents"
 ---
 
 <img
@@ -14,82 +14,221 @@ description: "The AI-powered advertising API that makes campaign management conv
   alt="Hero Dark"
 />
 
-## What is the Scope3 Agentic Campaign API?
+## 🌱 Sustainable Advertising Technology
 
-The Scope3 Agentic Campaign API is a revolutionary advertising platform that brings **natural language campaign management** to programmatic advertising. Instead of navigating complex UIs, you simply describe what you want in plain English, and our AI agents handle the technical implementation.
+Welcome to Scope3 - where sustainable campaigns meet conversational simplicity.
+
+The Scope3 Ad Platform is built for the future of advertising: **decarbonizing media through People & Agents working together**. Instead of replacing human expertise, we amplify it through AI collaboration, sustainable practices, and intelligent carbon-conscious automation.
 
 <CardGroup cols={2}>
   <Card
-    title="Natural Language Campaigns"
-    icon="comments"
+    title="🌱 Carbon-Efficient Campaigns"
+    icon="leaf"
     href="/quickstart/first-campaign"
   >
-    Create campaigns by describing your goals: "Launch a $50K video campaign
-    targeting tech enthusiasts in major cities"
+    Launch sustainable campaigns with AI-powered optimization that minimizes
+    carbon footprint while maximizing performance.
   </Card>
   <Card
-    title="Platform Migration Made Easy"
-    icon="arrow-right-arrow-left"
-    href="/migration/overview"
+    title="🎯 Smart Allocation"
+    icon="target"
+    href="/concepts/optimization-modes"
   >
-    Seamlessly migrate from The Trade Desk, DV360, or other DSPs with our guided
-    migration tools
-  </Card>
-  <Card title="AI-Powered Optimization" icon="brain" href="/concepts/targeting">
-    Synthetic audiences, intelligent budget allocation, and automated
-    performance optimization
+    Portfolio-based allocation strategies that reduce waste and improve
+    efficiency through intelligent budget distribution.
   </Card>
   <Card
-    title="Enterprise-Ready APIs"
-    icon="code"
-    href="/api-reference/overview"
+    title="🤖 AI-Powered Sustainability"
+    icon="robot"
+    href="/concepts/philosophy"
   >
-    Comprehensive REST APIs with interactive playground, multiple SDKs, and MCP
-    server integration
+    Advanced algorithms that optimize for both performance and environmental
+    impact across your media investments.
+  </Card>
+  <Card
+    title="♻️ Sustainable Future"
+    icon="recycle"
+    href="/quickstart/mcp-setup"
+  >
+    Part of Scope3's mission to decarbonize advertising through innovative
+    technology and responsible media buying.
   </Card>
 </CardGroup>
 
-## Why Choose Agentic Campaign Management?
+## Quick Start: Your First Campaign
+
+```javascript
+// Step 1: Create your advertiser (brand agent)
+const advertiser = await create_brand_agent({
+  name: "Acme Corp",
+  description: "Sustainable fashion brand",
+});
+
+// Step 2: Add a creative
+const creative = await create_creative({
+  brandAgentId: advertiser.id,
+  name: "Summer Sale Video",
+  type: "video",
+  url: "https://cdn.example.com/summer-sale.mp4",
+});
+
+// Step 3: Launch your campaign
+await create_campaign({
+  brandAgentId: advertiser.id,
+  name: "Summer Sale 2024",
+  prompt: "Reach eco-conscious millennials interested in sustainable fashion",
+  budget: {
+    total: 50000,
+    currency: "USD",
+  },
+  startDate: "2024-06-01",
+  endDate: "2024-08-31",
+  creativeIds: [creative.id],
+});
+```
+
+**That's it. Our built-in optimization handles the rest.**
+
+## Our Philosophy
 
 <AccordionGroup>
-  <Accordion title="Faster Campaign Setup">
-    Traditional DSPs require dozens of clicks and complex configuration. With Scope3, describe your campaign in natural language and launch in minutes, not hours.
+  <Accordion title="1. People & Agents, Together">
+    Your team and AI agents work side-by-side. Humans set strategy, agents execute tactics. Full transparency and control when you want it.
   </Accordion>
 
-<Accordion title="Better Performance">
-  Our AI agents continuously optimize your campaigns using real-time signals,
-  synthetic audiences, and intelligent allocation algorithms that outperform
-  manual management.
+<Accordion title="2. Allocation, Not Bidding">
+  Unlike traditional DSPs with complex bidding algorithms, we focus on
+  intelligent allocation - distributing your budget across the right inventory
+  mix. Think portfolio management, not auction mechanics.
 </Accordion>
 
-<Accordion title="Simplified Operations">
-  No more jumping between screens to manage campaigns, creatives, and audiences.
-  Everything is managed through conversational interfaces or simple API calls.
-</Accordion>
-
-  <Accordion title="Enterprise Integration">
-    Built for large-scale operations with brand agent hierarchies, bulk operations, compliance tools, and comprehensive measurement integration.
+  <Accordion title="3. Works Alongside Your Stack">
+    Run Scope3 in parallel with your existing platforms. Test new inventory sources, explore emerging channels, or optimize specific campaign types.
   </Accordion>
 </AccordionGroup>
 
-## For Users Coming From Other Platforms
+## How We're Different
+
+<Note>
+**Traditional DSP Focus:** Bid optimization - how much to pay for each impression
+
+**Scope3 Focus:** Allocation optimization - where to spend your budget for maximum impact
+
+Think of inventory options as building blocks for your campaign portfolio:
+
+- Premium CTV + Scope3 signals: 30%
+- Programmatic display + 1P data: 40%
+- Contextual targeting premium sites: 30%
+</Note>
+
+## Choose Your Optimization Approach
+
+### 🎯 Built-in Optimization
+
+**Perfect for: Teams seeking efficiency and simplicity**
+
+```javascript
+// We optimize inventory allocation automatically
+await create_campaign({
+  brandAgentId: "ba_123",
+  name: "Brand Awareness Q4",
+  prompt: "Maximize reach for our new product launch",
+  budget: { total: 100000, currency: "USD" },
+  startDate: "2024-10-01",
+  endDate: "2024-12-31",
+  // inventoryManagement defaults to scope3_managed
+});
+```
+
+**What we handle automatically:**
+
+- Inventory mix optimization
+- Signal selection
+- Budget allocation across publishers
+- Performance-based rebalancing
+
+### 🎛️ Granular Control
+
+**Perfect for: Teams with specific strategies**
+
+```javascript
+// You control the inventory allocation
+await create_campaign({
+  brandAgentId: "ba_123",
+  name: "Performance Campaign Q4",
+  budget: { total: 100000, currency: "USD" },
+  inventoryManagement: {
+    mode: "user_managed",
+    optimizationGoal: "conversions",
+  },
+});
+
+// Configure your inventory mix
+await create_inventory_option({
+  campaignId: "camp_123",
+  name: "Premium CTV + 1P Data",
+  budgetAllocation: { amount: 40000, currency: "USD" },
+});
+```
+
+## For Teams Coming From Other Platforms
 
 <Tip>
-**Migrating from The Trade Desk or DV360?**
+**From The Trade Desk, DV360, or other DSPs?**
 
-We've made the transition seamless. Our [Platform Migration Guide](/migration/overview) provides step-by-step instructions, concept mapping, and automated migration tools to get you up and running quickly.
+Scope3 doesn't replace your existing platform - it **complements** it. Use our [Migration Guide](/migration/overview) to understand how Scope3 concepts map to your current workflows and where it fits in your media strategy.
 
 </Tip>
 
 ### Quick Concept Mapping
 
-| Your Platform             | Scope3 Equivalent  | What It Does                     |
-| ------------------------- | ------------------ | -------------------------------- |
-| Advertiser                | Brand Agent        | Top-level account container      |
-| Line Item/Insertion Order | Campaign           | Budget allocation and targeting  |
-| Creative                  | Creative           | Ad assets (same concept!)        |
-| Audience Segment          | Synthetic Audience | AI-powered targeting profiles    |
-| Brand Safety Rules        | Brand Standards    | Content filtering and compliance |
+| Your Platform             | Scope3 Equivalent  | Key Difference                         |
+| ------------------------- | ------------------ | -------------------------------------- |
+| Advertiser                | Brand Agent        | Same concept, enhanced with AI agents  |
+| Line Item/Insertion Order | Campaign           | Focus on allocation vs. bidding        |
+| Creative                  | Creative           | Shared across campaigns within brand   |
+| Audience Segment          | Synthetic Audience | AI-enhanced targeting profiles         |
+| Brand Safety Rules        | Brand Standards    | Applied automatically across campaigns |
+
+## MCP: Built for AI Collaboration
+
+### Natural Language Campaign Management
+
+As an MCP (Model Context Protocol) server, Scope3 enables natural conversations:
+
+```
+Human: "Find me premium video inventory under $40 CPM"
+AI Agent: → discover_publisher_products({ formats: ["video"], maxCpm: 40 })
+```
+
+**Human readable results:** AI agents get structured data, humans get clear insights.
+
+## Available Tools
+
+### Brand Agent Management
+
+- `create_brand_agent` - Set up advertiser accounts
+- `update_brand_agent` - Modify account settings
+- `list_brand_agents` - View all accounts
+
+### Campaign Management
+
+- `create_campaign` - Launch campaigns with smart defaults
+- `update_campaign` - Modify campaigns and inventory
+- `list_campaigns` - Track campaign performance
+
+### Inventory Control
+
+- `discover_publisher_products` - Find available inventory
+- `create_inventory_option` - Configure custom allocation
+- `adjust_inventory_allocation` - Optimize budget distribution
+- `analyze_inventory_performance` - Get performance insights
+
+### Creative Management
+
+- `create_creative` - Upload creative assets
+- `update_creative` - Modify creative details
+- `list_creatives` - View creative library
 
 ## Getting Started
 
@@ -98,17 +237,18 @@ We've made the transition seamless. Our [Platform Migration Guide](/migration/ov
     [Request access](mailto:api@scope3.com) to get your Scope3 API key and join
     the beta program.
   </Step>
-  <Step title="Try the Quick Start">
-    Follow our [5-minute tutorial](/quickstart/first-campaign) to create your
-    first agentic campaign.
+  <Step title="Choose Your Approach">
+    Start with [Built-in Optimization](/quickstart/first-campaign) for quick
+    launches, or explore [Granular Control](/concepts/optimization-modes) for
+    advanced strategies.
   </Step>
-  <Step title="Explore Platform Migration">
-    Use our [Migration Wizard](/migration/wizard) to map your existing campaigns
-    to Scope3's agentic model.
+  <Step title="Set Up AI Integration">
+    Configure our [MCP server](/quickstart/mcp-setup) to manage campaigns
+    through Claude Desktop or custom AI agents.
   </Step>
-  <Step title="Integrate with Your Workflow">
-    Set up our [MCP server](/quickstart/mcp-setup) to manage campaigns directly
-    from Claude Desktop or other AI tools.
+  <Step title="Explore Platform Integration">
+    Review our [Philosophy Guide](/concepts/philosophy) to understand how Scope3
+    fits alongside your existing advertising technology.
   </Step>
 </Steps>
 
@@ -117,18 +257,19 @@ We've made the transition seamless. Our [Platform Migration Guide](/migration/ov
 <Note>
 **Traditional DSP Workflow:**
 1. Log into complex UI
-2. Navigate through multiple screens
-3. Manually configure targeting parameters
-4. Set up creatives and audiences separately
-5. Monitor and optimize manually
+2. Navigate through multiple configuration screens
+3. Manually set up targeting, budgets, and creative assignments
+4. Monitor performance through separate dashboards
+5. Make optimization changes through multiple interfaces
 
-**Agentic Workflow:**
+**Scope3 Workflow:**
 
 1. Describe your campaign goals in natural language
-2. AI agents handle configuration, targeting, and optimization
-3. Monitor performance through conversational queries
-4. Automatic optimization based on real-time performance data
-   </Note>
+2. Choose built-in optimization or configure custom allocation
+3. AI agents handle technical implementation and optimization
+4. Monitor and adjust through conversational queries
+5. Focus on strategy while AI handles tactics
+</Note>
 
 ## Ready to Get Started?
 
@@ -138,10 +279,16 @@ We've made the transition seamless. Our [Platform Migration Guide](/migration/ov
     icon="rocket"
     href="/quickstart/first-campaign"
   >
-    Launch your first campaign in 5 minutes
+    Launch your first campaign in 5 minutes with built-in optimization
   </Card>
-  <Card title="Migration Guide" icon="migrate" href="/migration/overview">
-    Migrate from your existing DSP platform
+  <Card title="Philosophy Deep Dive" icon="brain" href="/concepts/philosophy">
+    Understand allocation-focused approach and AI-human collaboration
+  </Card>
+  <Card title="Platform Integration" icon="link" href="/migration/overview">
+    Learn how Scope3 complements your existing advertising stack
+  </Card>
+  <Card title="MCP Integration" icon="comments" href="/quickstart/mcp-setup">
+    Set up natural language campaign management through AI agents
   </Card>
 </CardGroup>
 

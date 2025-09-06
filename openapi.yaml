@@ -336,8 +336,7 @@ paths:
           description: Unauthorized
   /amp-agentss/{id}:
     get:
-      description:
-        Get all agents and their models from Scope3 API. Optionally filter by customer ID or
+      description: Get all agents and their models from Scope3 API. Optionally filter by customer ID or
         agent name. Requires authentication.
       operationId: get_amp_agents
       summary: Get Scope3 AMP Agents
@@ -393,8 +392,7 @@ paths:
           description: Unauthorized
   /brand-agents:
     post:
-      description:
-        Create a new brand agent (advertiser account). This creates the top-level container
+      description: Create a new brand agent (advertiser account). This creates the top-level container
         that will own campaigns, creatives, audiences, standards, and measurement sources. Requires
         authentication.
       operationId: create_brand_agent
@@ -467,8 +465,7 @@ paths:
           description: Unauthorized
   /brand-agents/{id}:
     put:
-      description:
-        Update the name or description of an existing brand agent (advertiser account). This
+      description: Update the name or description of an existing brand agent (advertiser account). This
         only updates metadata - campaigns, creatives, and other resources remain unchanged. Requires
         authentication.
       operationId: update_brand_agent
@@ -537,8 +534,7 @@ paths:
                 type: object
           description: Unauthorized
     delete:
-      description:
-        "⚠️ DANGER: Permanently delete a brand agent (advertiser account) and ALL associated
+      description: "⚠️ DANGER: Permanently delete a brand agent (advertiser account) and ALL associated
         data including campaigns, creatives, audiences, standards, and measurement sources. This
         action cannot be undone. Requires authentication."
       operationId: delete_brand_agent
@@ -597,8 +593,7 @@ paths:
                 type: object
           description: Unauthorized
     get:
-      description:
-        Get detailed information about a specific brand agent (advertiser account) by ID.
+      description: Get detailed information about a specific brand agent (advertiser account) by ID.
         Requires authentication.
       operationId: get_brand_agent
       summary: Get Brand Agent
@@ -655,8 +650,7 @@ paths:
           description: Unauthorized
   /brand-agentss:
     get:
-      description:
-        List all brand agents (advertiser accounts) for the authenticated user. Optionally
+      description: List all brand agents (advertiser accounts) for the authenticated user. Optionally
         filter by name or customer ID. Requires authentication.
       operationId: list_brand_agents
       summary: List Brand Agents
@@ -706,8 +700,7 @@ paths:
           description: Unauthorized
   /campaigns:
     post:
-      description:
-        Create a complete campaign in Scope3 by parsing a natural language prompt and
+      description: Create a complete campaign in Scope3 by parsing a natural language prompt and
         automatically creating the strategy and targeting profiles. Returns the created strategy ID
         and a human-readable summary of what was created. Uses INTELLIGENT_PMPS strategy type by
         default (future versions will support media buys). Requires authentication.
@@ -736,8 +729,7 @@ paths:
                     pacing: even
                     total: 5000000
                   name: Holiday Sale 2024
-                  prompt:
-                    Target gift buyers during holiday season with our premium athletic wear, focusing on people
+                  prompt: Target gift buyers during holiday season with our premium athletic wear, focusing on people
                     shopping for fitness enthusiasts and athletes
               product_launch:
                 summary: Product launch campaign
@@ -747,8 +739,7 @@ paths:
                     currency: USD
                     total: 7500000
                   name: New Running Shoe Launch
-                  prompt:
-                    Launch our latest running shoe to serious runners and marathon enthusiasts aged 25-45 in
+                  prompt: Launch our latest running shoe to serious runners and marathon enthusiasts aged 25-45 in
                     major metropolitan areas
             schema:
               properties: {}
@@ -797,8 +788,7 @@ paths:
           description: Unauthorized
   /campaigns/{id}:
     put:
-      description:
-        Update an existing campaign strategy with a new prompt. This tool parses the new
+      description: Update an existing campaign strategy with a new prompt. This tool parses the new
         prompt, updates the strategy with new targeting, agents, channels, and countries, and
         provides a summary of changes made. Requires strategy ID and authentication.
       operationId: update_campaign
@@ -868,8 +858,7 @@ paths:
           description: Unauthorized
   /campaignss:
     get:
-      description:
-        List all campaigns for a specific brand agent (advertiser account). Optionally filter
+      description: List all campaigns for a specific brand agent (advertiser account). Optionally filter
         by campaign status. Shows campaign details including budget, creative assignments, and
         current status. Requires authentication.
       operationId: list_campaigns
@@ -921,8 +910,7 @@ paths:
           description: Unauthorized
   /creatives:
     post:
-      description:
-        Create a new creative asset within a brand agent (advertiser account). The creative
+      description: Create a new creative asset within a brand agent (advertiser account). The creative
         will be owned by the specified brand agent and can be used across multiple campaigns within
         that brand agent. Supports image, video, native, and HTML5 creative types. Requires
         authentication.
@@ -1004,8 +992,7 @@ paths:
           description: Unauthorized
   /creatives/{id}:
     put:
-      description:
-        Update an existing creative asset's details including name, type, URL, headline, body
+      description: Update an existing creative asset's details including name, type, URL, headline, body
         text, or call-to-action. This tool supports partial updates - only provide the fields you
         want to change. Changes affect all campaigns using this creative. Requires authentication.
       operationId: update_creative
@@ -1075,8 +1062,7 @@ paths:
           description: Unauthorized
   /creativess:
     get:
-      description:
-        List all creative assets for a specific brand agent (advertiser account). Shows
+      description: List all creative assets for a specific brand agent (advertiser account). Shows
         creative details including type, URLs, and metadata. These creatives can be assigned to any
         campaign within the same brand agent. Requires authentication.
       operationId: list_creatives
@@ -1127,8 +1113,7 @@ paths:
           description: Unauthorized
   /set-brand-standards:
     post:
-      description:
-        Set or update brand safety standards and media controls for a brand agent. These
+      description: Set or update brand safety standards and media controls for a brand agent. These
         standards apply to all campaigns within the brand agent and help ensure brand-safe media
         placements. Currently supports domain blocklists/allowlists, keyword filters, and content
         categories (stub implementation). Requires authentication.
@@ -1197,8 +1182,7 @@ paths:
           description: Unauthorized
   /brand-standardss/{id}:
     get:
-      description:
-        Retrieve the current brand safety standards and media controls for a brand agent. Shows
+      description: Retrieve the current brand safety standards and media controls for a brand agent. Shows
         all configured domain lists, keyword filters, and content categories that apply to campaigns
         within this brand agent. Requires authentication.
       operationId: get_brand_standards
@@ -1257,8 +1241,7 @@ paths:
           description: Unauthorized
   /audiences:
     post:
-      description:
-        Create a new synthetic audience for a brand agent. Synthetic audiences represent target
+      description: Create a new synthetic audience for a brand agent. Synthetic audiences represent target
         customer or prospect profiles that can be used across multiple campaigns within the same
         brand agent. Currently supports basic name and description (stub implementation). Requires
         authentication.
@@ -1325,8 +1308,7 @@ paths:
           description: Unauthorized
   /audiencess:
     get:
-      description:
-        List all synthetic audiences for a specific brand agent. Shows audience profiles that
+      description: List all synthetic audiences for a specific brand agent. Shows audience profiles that
         can be assigned to campaigns for targeting. These audiences represent customer or prospect
         profiles for better campaign targeting. Requires authentication.
       operationId: list_audiences
@@ -1377,8 +1359,7 @@ paths:
           description: Unauthorized
   /add-measurement-source:
     post:
-      description:
-        Add a measurement source to a brand agent for tracking campaign performance. Supports
+      description: Add a measurement source to a brand agent for tracking campaign performance. Supports
         conversion APIs, analytics platforms, brand studies, and MMM (Media Mix Modeling)
         integrations. Currently supports basic configuration (stub implementation). Requires
         authentication.
@@ -1441,8 +1422,7 @@ paths:
           description: Unauthorized
   /measurement-sourcess:
     get:
-      description:
-        List all measurement sources configured for a specific brand agent. Shows all tracking
+      description: List all measurement sources configured for a specific brand agent. Shows all tracking
         and analytics integrations including conversion APIs, analytics platforms, brand studies,
         and MMM sources. Requires authentication.
       operationId: list_measurement_sources
