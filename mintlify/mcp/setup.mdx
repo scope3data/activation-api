@@ -25,12 +25,22 @@ This guide walks you through setting up the Scope3 MCP server for natural langua
 
 <Tabs>
   <Tab title="NPM Installation">
-    ```bash npm install -g @scope3/campaign-mcp-server ```
+    ```bash
+    npm install -g @scope3/campaign-mcp-server
+    ```
   </Tab>
   <Tab title="Local Development">
-    ```bash # Clone the repository git clone
-    https://github.com/scope3/campaign-mcp-server.git cd campaign-mcp-server #
-    Install dependencies npm install # Build the server npm run build ```
+    ```bash
+    # Clone the repository
+    git clone https://github.com/scope3/campaign-mcp-server.git
+    cd campaign-mcp-server
+    
+    # Install dependencies
+    npm install
+    
+    # Build the server
+    npm run build
+    ```
   </Tab>
 </Tabs>
 
@@ -254,11 +264,15 @@ Configure different agents for specialized tasks:
     - Review Claude Desktop logs
   </Accordion>
 
-<Accordion title="Authentication Failures">
-  **Symptoms:** "Invalid API key" or "Unauthorized" errors **Solutions:** -
-  Verify your API key is correct - Check API key hasn't expired - Ensure proper
-  environment variable setup - Contact support for API key issues
-</Accordion>
+  <Accordion title="Authentication Failures">
+    **Symptoms:** "Invalid API key" or "Unauthorized" errors
+    
+    **Solutions:**
+    - Verify your API key is correct
+    - Check API key hasn't expired
+    - Ensure proper environment variable setup
+    - Contact support for API key issues
+  </Accordion>
 
   <Accordion title="Tool Calls Failing">
     **Symptoms:** Tools return errors or unexpected results
