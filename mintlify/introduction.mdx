@@ -28,7 +28,7 @@ Transform how you run advertising campaigns:
 
 **Just add our MCP server:** **https://docs.agentic.scope3.com/mcp**
 
-Works with Claude, ChatGPT, Claude Code, Cursor, and any MCP-compatible agent.
+Works with Claude Desktop, Claude Code, Cursor, and any MCP-compatible agent.
 </Warning>
 
 ### ⚡ Immediate Time Savings
@@ -255,8 +255,8 @@ Just add our MCP server to your favorite AI assistant:
     {
       "mcpServers": {
         "scope3-campaigns": {
-          "command": "npx",
-          "args": ["-y", "@scope3/campaign-mcp-server"],
+          "command": "node",
+          "args": ["/path/to/activation-api/dist/server.js"],
           "env": {
             "SCOPE3_API_KEY": "your-api-key-here"
           }
@@ -265,39 +265,43 @@ Just add our MCP server to your favorite AI assistant:
     }
     ```
     
+    **Setup:** Clone https://github.com/conductor/activation-api, run `npm install && npm run build`
+    
     Then just ask Claude: **"Create a sustainable fashion campaign targeting millennials with a $50K budget"**
   </Tab>
   
   <Tab title="ChatGPT (Custom GPTs)">
     ```yaml
-    # In your Custom GPT configuration
-    MCP Server URL: https://api.agentic.scope3.com/mcp
-    Headers: 
-      x-scope3-api-key: your-api-key-here
+    # Note: ChatGPT Custom GPTs don't currently support MCP protocol
+    # For ChatGPT integration, you'll need to run the server locally
+    # and use it through API calls or wait for MCP support
+    
+    Alternative: Use Claude Desktop, Claude Code, or Cursor for full MCP integration
     ```
     
-    Then ask: **"Show me premium CTV inventory under $35 CPM and create a campaign using the best options"**
+    **Currently not supported** - ChatGPT doesn't support MCP protocol yet. Use Claude or Cursor instead.
   </Tab>
   
   <Tab title="Claude Code">
     ```bash
     # Terminal setup
+    git clone https://github.com/conductor/activation-api.git
+    cd activation-api
     export SCOPE3_API_KEY="your-api-key"
-    npx @scope3/campaign-mcp-server --http --port 3001
+    npm install && npm start
     ```
     
     Then in Claude Code: **"Connect to http://localhost:3001/mcp and help me optimize our Q4 campaign performance"**
   </Tab>
   
   <Tab title="Cursor">
-    ```typescript
-    // Add to your project's MCP configuration
-    import { MCPClient } from '@modelcontextprotocol/sdk';
-    
-    const scope3 = new MCPClient({
-      serverUrl: 'https://api.agentic.scope3.com/mcp',
-      headers: { 'x-scope3-api-key': process.env.SCOPE3_API_KEY }
-    });
+    ```bash
+    # Clone and run MCP server locally
+    git clone https://github.com/conductor/activation-api.git
+    cd activation-api
+    export SCOPE3_API_KEY="your-api-key"
+    npm install && npm start
+    # Server runs on http://localhost:3001/mcp
     ```
     
     Then use Cursor's chat: **"Use the Scope3 MCP tools to analyze our campaign performance and suggest optimizations"**
@@ -465,7 +469,7 @@ Built for teams and agencies managing complex advertising operations:
 
 Just add this URL to your AI agent: **https://docs.agentic.scope3.com/mcp**
 
-Works with Claude Desktop, ChatGPT, Claude Code, Cursor, and any MCP-compatible agent.
+Works with Claude Desktop, Claude Code, Cursor, and any MCP-compatible agent.
 </Note>
 
 ---
