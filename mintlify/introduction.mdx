@@ -19,22 +19,23 @@ description: "Decarbonizing Media & Advertising - The Sustainable Ad Buying Plat
 **From idea to live campaign in 2 minutes through natural language:**
 
 <Warning>
-**🚀 Revolutionary Campaign Management**
+**🚀 Interactive Documentation Experience**
 
-Transform how you run advertising campaigns:
+Explore our campaign management tools directly in your AI agent:
 - *"Create a $50K CTV campaign for eco-conscious millennials"*
 - *"Find premium inventory under $35 CPM and optimize allocation"*
 - *"Show me performance by channel and suggest budget reallocation"*
 
-**Just add our MCP server:** **https://docs.agentic.scope3.com/mcp**
+**Connect to our docs MCP server:** **https://docs.agentic.scope3.com/mcp**
 
-Works with Claude Desktop, Claude Code, Cursor, and any MCP-compatible agent.
+Experience live examples and see how our tools work - no setup required with Claude Desktop, Claude Code, and Cursor.
 </Warning>
 
 ### ⚡ Immediate Time Savings
 
 | Task | Traditional DSP | Scope3 MCP | Time Saved |
 |------|-----------------|-------------|-------------|
+| **Initial Setup** | Hours of integration | 30 seconds URL connection | **99% faster** |
 | **Campaign Setup** | 45-60 minutes | 2 minutes | **95% faster** |
 | **Inventory Discovery** | Manual research | AI-powered search | **90% faster** |  
 | **Performance Analysis** | Multiple dashboards | Conversational queries | **80% faster** |
@@ -254,78 +255,90 @@ Just add our MCP server to your favorite AI assistant:
     // ~/.config/claude/claude_desktop_config.json
     {
       "mcpServers": {
-        "scope3-campaigns": {
-          "command": "node",
-          "args": ["/path/to/activation-api/dist/server.js"],
-          "env": {
-            "SCOPE3_API_KEY": "your-api-key-here"
+        "scope3-docs": {
+          "transport": {
+            "type": "http",
+            "uri": "https://docs.agentic.scope3.com/mcp"
           }
         }
       }
     }
     ```
     
-    **Setup:** Clone https://github.com/conductor/activation-api, run `npm install && npm run build`
+    **That's it!** This connects you to our interactive documentation server.
     
-    Then just ask Claude: **"Create a sustainable fashion campaign targeting millennials with a $50K budget"**
+    Try asking Claude: **"Show me how Scope3 campaign tools work"** or **"What can I do with Scope3 MCP tools?"**
   </Tab>
   
   <Tab title="ChatGPT (Custom GPTs)">
     ```yaml
-    # Note: ChatGPT Custom GPTs don't currently support MCP protocol
-    # For ChatGPT integration, you'll need to run the server locally
-    # and use it through API calls or wait for MCP support
+    # ChatGPT Custom GPTs don't support MCP protocol yet
+    # Use Claude Desktop, Claude Code, or Cursor instead
     
-    Alternative: Use Claude Desktop, Claude Code, or Cursor for full MCP integration
+    Coming soon: Direct ChatGPT integration
     ```
     
-    **Currently not supported** - ChatGPT doesn't support MCP protocol yet. Use Claude or Cursor instead.
+    **Not yet supported** - ChatGPT doesn't support MCP protocol. Use Claude Desktop or Claude Code instead.
   </Tab>
   
   <Tab title="Claude Code">
     ```bash
-    # Terminal setup
-    git clone https://github.com/conductor/activation-api.git
-    cd activation-api
-    export SCOPE3_API_KEY="your-api-key"
-    npm install && npm start
+    # Simply connect to the docs MCP server
+    # URL: https://docs.agentic.scope3.com/mcp
     ```
     
-    Then in Claude Code: **"Connect to http://localhost:3001/mcp and help me optimize our Q4 campaign performance"**
+    Then in Claude Code: **"Connect to https://docs.agentic.scope3.com/mcp and show me how Scope3 campaign tools work"**
   </Tab>
   
   <Tab title="Cursor">
     ```bash
-    # Clone and run MCP server locally
-    git clone https://github.com/conductor/activation-api.git
-    cd activation-api
-    export SCOPE3_API_KEY="your-api-key"
-    npm install && npm start
-    # Server runs on http://localhost:3001/mcp
+    # Simply connect to the docs MCP server
+    # URL: https://docs.agentic.scope3.com/mcp
+    # Interactive documentation and examples
     ```
     
-    Then use Cursor's chat: **"Use the Scope3 MCP tools to analyze our campaign performance and suggest optimizations"**
+    Then use Cursor's chat: **"Connect to https://docs.agentic.scope3.com/mcp and explore Scope3 campaign management tools"**
   </Tab>
 </Tabs>
 
-### What Your AI Agent Can Do
+### What Our Documentation MCP Server Provides
 
-Once connected, your AI assistant can handle the entire campaign lifecycle:
+The `https://docs.agentic.scope3.com/mcp` server is an **interactive documentation experience** that lets you:
+
+<Info>
+**📚 This is Documentation, Not Production**
+
+This MCP server provides interactive examples and demonstrations of our campaign tools. For production campaign management, you'll need to integrate with the full Scope3 API.
+
+**What you can explore:**
+- Live tool demonstrations
+- Example campaign workflows  
+- Interactive API exploration
+- Real-time documentation
+
+**For production use:** Contact us for API access and production MCP server details.
+</Info>
+
+### What You Can Explore
+
+Once connected to our docs server, your AI assistant can demonstrate:
 
 ```
-Human: "Create a brand awareness campaign for our sustainable sneaker launch"
+Human: "Show me how to create a brand awareness campaign for sustainable sneakers"
 
-AI Agent: I'll set that up for you!
-→ create_brand_agent({ name: "EcoStep Footwear" })
+AI Agent: I'll demonstrate our campaign creation tools!
+→ create_brand_agent({ name: "EcoStep Footwear" }) [DEMO]
 → create_campaign({ 
     name: "Sustainable Sneaker Launch",
     prompt: "Target eco-conscious millennials, premium inventory only",
     budget: { total: 75000, currency: "USD" }
-  })
+  }) [DEMO]
 
-✅ Campaign created! Using carbon-efficient inventory mix.
-   Expected reach: 2.3M eco-conscious consumers.
-   Estimated carbon reduction: 34% vs. traditional DSPs.
+📋 Demo Result: Campaign structure created successfully!
+   This shows how our tools work - in production, this would:
+   • Launch real campaigns with carbon-efficient inventory
+   • Target 2.3M+ eco-conscious consumers  
+   • Reduce carbon footprint by 34% vs traditional DSPs
 ```
 
 <Info>
