@@ -3,7 +3,8 @@ import type { FastMCPSessionAuth } from "../types/mcp.js";
 export const getAuthContext = (request?: {
   headers?: Record<string, string>;
 }): FastMCPSessionAuth => {
-  const canLog = process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test";
+  const canLog =
+    process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test";
 
   let apiKey: string | undefined;
 
@@ -32,7 +33,9 @@ export const getAuthContext = (request?: {
     if (canLog) {
       console.log("[Auth Debug] No API key found in headers");
     }
-    throw new Error("API key required in headers (x-scope3-api-key or Authorization: Bearer)");
+    throw new Error(
+      "API key required in headers (x-scope3-api-key or Authorization: Bearer)",
+    );
   }
 
   return {

@@ -12,6 +12,7 @@ This guide walks you through setting up automatic deployment to Google Cloud Run
 ## Step 1: Enable Required APIs
 
 In Google Cloud Console, enable these APIs:
+
 - Cloud Run Admin API
 - Cloud Build API
 - Artifact Registry API (if using custom images)
@@ -39,28 +40,35 @@ In Google Cloud Console, enable these APIs:
 ## Step 5: Configure Service Settings
 
 ### Basic Settings
+
 - **Service Name**: `scope3-campaign-api` (or your preferred name)
 - **Region**: Choose your preferred region (e.g., `us-central1`)
 
 ### Environment Variables (Optional)
+
 Add these optional environment variables:
+
 - `SCOPE3_GRAPHQL_URL`: https://api.scope3.com/graphql (if different)
 - `NODE_ENV`: production
 
 **Important**: API keys are NOT stored as environment variables. They must be provided by clients in HTTP headers.
 
 ### Scaling Settings (Recommended)
+
 - **Minimum instances**: 0 (scales to zero when no traffic)
 - **Maximum instances**: 10 (adjust based on expected load)
 - **CPU allocation**: CPU is only allocated during request processing
 - **Memory**: 512 MB (increase if needed)
 
 ### Security Settings
+
 - **Allow unauthenticated invocations**: Enable (for public API access)
 - Or configure authentication based on your needs
 
 ### Health Check Settings
+
 Cloud Run will automatically detect the built-in health check at `/health`:
+
 - **Health check path**: `/health` (automatically configured)
 - **Health check timeout**: 4 seconds (default)
 - **Health check interval**: 10 seconds (default)
@@ -75,11 +83,13 @@ Cloud Run will automatically detect the built-in health check at `/health`:
 ## Step 7: Verify Deployment
 
 Once deployed, your service will be available at:
+
 ```
 https://YOUR_SERVICE_NAME-PROJECT_ID-REGION.a.run.app
 ```
 
 ### Test the MCP Server
+
 ```bash
 # Test health check (no authentication required)
 curl https://YOUR_SERVICE_URL/health
@@ -94,6 +104,7 @@ curl -H "Authorization: Bearer YOUR_API_KEY" https://YOUR_SERVICE_URL/mcp
 ## Ongoing Deployment
 
 After initial setup:
+
 1. Push changes to the `main` branch
 2. Cloud Run automatically detects changes
 3. Builds new container using Buildpacks
@@ -103,6 +114,7 @@ After initial setup:
 ## Monitoring and Logs
 
 ### View Logs
+
 ```bash
 # Using gcloud CLI
 gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=YOUR_SERVICE_NAME"
@@ -111,6 +123,7 @@ gcloud logging read "resource.type=cloud_run_revision AND resource.labels.servic
 ```
 
 ### Monitoring Metrics
+
 - Request count and latency
 - Error rates
 - Memory and CPU usage
@@ -119,16 +132,19 @@ gcloud logging read "resource.type=cloud_run_revision AND resource.labels.servic
 ## Troubleshooting
 
 ### Build Failures
+
 - Check Cloud Build logs in Google Cloud Console
 - Verify all dependencies in package.json
 - Ensure start script is defined
 
 ### Runtime Issues
+
 - Check Cloud Run logs
 - Verify environment variables are set
 - Check that PORT environment variable is handled correctly
 
 ### Authentication Issues
+
 - Verify API key is sent in request headers (x-scope3-api-key or Authorization: Bearer)
 - Check API key permissions in Scope3 dashboard
 - API keys are never stored on the server - they must come from client requests
@@ -150,6 +166,7 @@ gcloud logging read "resource.type=cloud_run_revision AND resource.labels.servic
 ## Rollback
 
 If you need to rollback a deployment:
+
 1. Go to Cloud Console → Cloud Run → Your Service
 2. Click "Manage Traffic"
 3. Allocate 100% traffic to a previous revision

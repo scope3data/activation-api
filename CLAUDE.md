@@ -92,11 +92,13 @@ npm start
 The server will be available at `http://localhost:3001/mcp`.
 
 **Health Check**: Built-in health endpoint at `/health`:
+
 ```bash
 curl http://localhost:3001/health  # Returns "ok"
 ```
 
 **Authentication**: Include your Scope3 API key in requests:
+
 ```bash
 curl -H "x-scope3-api-key: your_api_key" http://localhost:3001/mcp
 ```
@@ -110,6 +112,7 @@ npm start  # Starts on port 3001
 ```
 
 Or specify a custom port:
+
 ```bash
 PORT=8080 npm start
 ```
