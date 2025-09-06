@@ -19,6 +19,7 @@ node --version  # Should match .nvmrc (currently v22)
 ```
 
 **Why this matters:** Different Node.js versions can produce subtly different output in:
+
 - TypeScript compilation
 - YAML serialization
 - Prettier formatting
@@ -33,6 +34,7 @@ npm run ci:local
 ```
 
 This script:
+
 - ✅ Verifies Node.js version matches `.nvmrc`
 - ✅ Performs clean install (`npm ci`)
 - ✅ Runs build process (including OpenAPI generation)
@@ -60,7 +62,7 @@ All GitHub Actions workflows use `.nvmrc` for Node version:
 ```yaml
 - uses: actions/setup-node@v4
   with:
-    node-version-file: '.nvmrc'
+    node-version-file: ".nvmrc"
 ```
 
 ## 🚨 Common Issues and Solutions
@@ -70,6 +72,7 @@ All GitHub Actions workflows use `.nvmrc` for Node version:
 **Cause:** Generated OpenAPI differs from committed version.
 
 **Solution:**
+
 ```bash
 npm run generate:openapi
 npm run format
@@ -82,6 +85,7 @@ git commit -m "Update generated OpenAPI spec"
 **Cause:** Local Node version doesn't match `.nvmrc`.
 
 **Solution:**
+
 ```bash
 nvm use            # Switch to correct version
 npm ci             # Reinstall dependencies
@@ -93,6 +97,7 @@ npm run ci:local   # Verify everything works
 **Cause:** Different Node/Prettier versions format differently.
 
 **Solution:**
+
 ```bash
 nvm use           # Ensure correct Node version
 npm ci            # Clean install dependencies

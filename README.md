@@ -9,6 +9,7 @@ An MCP (Model Context Protocol) server for comprehensive advertising campaign ma
 This project requires **Node.js 22+** for consistency with CI environments.
 
 #### Using nvm (recommended):
+
 ```bash
 # Install/use the correct Node version
 nvm use
@@ -19,6 +20,7 @@ nvm use 22
 ```
 
 #### Manual setup:
+
 - Ensure you have Node.js 22+ installed
 - Check your version: `node --version`
 
