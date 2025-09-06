@@ -12,20 +12,15 @@ jobs:
   test:
     runs-on: ubuntu-latest
     name: Test
-    strategy:
-      fail-fast: true
-      matrix:
-        node:
-          - 22
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Setup NodeJS ${{ matrix.node }}
+      - name: Setup NodeJS
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
+          node-version-file: ".nvmrc"
       - name: Install dependencies
         run: npm install
       - name: Run lint

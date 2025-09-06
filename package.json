@@ -3,13 +3,18 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "npm run generate:openapi && tsc",
     "start": "node dist/server.js",
     "dev": "fastmcp dev src/server.ts",
-    "lint": "prettier --check . && eslint . && tsc --noEmit && node scripts/validate-openapi.js",
+    "lint": "prettier --check . && eslint . && tsc --noEmit && npm run validate:openapi",
     "test": "vitest run",
     "format": "prettier --write . && eslint --fix .",
-    "validate-openapi": "node scripts/validate-openapi.js",
+    "generate:openapi": "tsx scripts/generate-openapi.ts",
+    "validate:openapi": "node scripts/validate-openapi.js",
+    "ci:local": "bash scripts/ci-check.sh",
+    "docs:dev": "cd mintlify && mintlify dev",
+    "docs:build": "cd mintlify && mintlify build",
+    "prebuild": "npm run generate:openapi",
     "prepare": "husky",
     "postinstall": "npm run build"
   },
@@ -27,6 +32,10 @@
   "homepage": "https://github.com/conductor/activation-api",
   "type": "module",
   "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=8.0.0"
+  },
   "description": "MCP server for Scope3 campaign creation and management",
   "dependencies": {
     "@types/node": "^24.3.1",
@@ -46,12 +55,19 @@
     ]
   },
   "lint-staged": {
+    "src/tools/**/*.ts": [
+      "npm run generate:openapi",
+      "git add openapi.yaml"
+    ],
     "*.{ts,js}": [
       "prettier --write",
       "eslint --fix"
     ],
-    "*.ts": [
+    "src/**/*.{test,spec}.ts": [
       "npm run test"
+    ],
+    "openapi.yaml": [
+      "npm run validate:openapi"
     ]
   },
   "devDependencies": {
