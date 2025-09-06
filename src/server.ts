@@ -9,6 +9,12 @@ const scope3Client = new Scope3ApiClient(config.scope3GraphQLUrl);
 const server = new FastMCP({
   name: "Scope3 Campaign API Server",
   version: "1.0.0",
+  health: {
+    enabled: true,
+    path: "/health",
+    message: "ok",
+    status: 200,
+  },
 });
 
 // Register all tools
@@ -28,4 +34,5 @@ if (process.env.NODE_ENV !== "test") {
   
   console.log(`MCP Server started on port ${port}`);
   console.log(`Endpoint: http://localhost:${port}${config.endpoint}`);
+  console.log(`Health check: http://localhost:${port}/health`);
 }

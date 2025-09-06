@@ -59,6 +59,13 @@ Add these optional environment variables:
 - **Allow unauthenticated invocations**: Enable (for public API access)
 - Or configure authentication based on your needs
 
+### Health Check Settings
+Cloud Run will automatically detect the built-in health check at `/health`:
+- **Health check path**: `/health` (automatically configured)
+- **Health check timeout**: 4 seconds (default)
+- **Health check interval**: 10 seconds (default)
+- No authentication required for health checks
+
 ## Step 6: Deploy
 
 1. Click "Create" to set up the service
@@ -74,7 +81,10 @@ https://YOUR_SERVICE_NAME-PROJECT_ID-REGION.a.run.app
 
 ### Test the MCP Server
 ```bash
-# Test with API key in headers
+# Test health check (no authentication required)
+curl https://YOUR_SERVICE_URL/health
+
+# Test MCP endpoint with API key in headers
 curl -H "x-scope3-api-key: YOUR_API_KEY" https://YOUR_SERVICE_URL/mcp
 
 # Or using Bearer token
