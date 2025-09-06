@@ -231,13 +231,13 @@ async function exportDeliveryData(
       const baseRow = {
         campaign_id: campaignId,
         campaign_name: campaign?.name || "Unknown",
-        currency: d.currency,
-        current_price: d.currentPrice,
-        date: d.date.toISOString().split("T")[0],
-        delivery_unit: d.deliveryUnit,
-        spend: d.spend,
-        tactic_id: d.tacticId,
-        units_delivered: d.unitsDelivered,
+        currency: d.currency as string,
+        current_price: d.currentPrice as number,
+        date: (d.date as Date).toISOString().split("T")[0],
+        delivery_unit: d.deliveryUnit as string,
+        spend: d.spend as number,
+        tactic_id: d.tacticId as string,
+        units_delivered: d.unitsDelivered as number,
       };
 
       // Handle grouping by signals
@@ -248,7 +248,8 @@ async function exportDeliveryData(
             signal,
             spend: signalSpend as number,
             units_delivered: Math.round(
-              ((signalSpend as number) / d.spend) * d.unitsDelivered,
+              ((signalSpend as number) / (d.spend as number)) *
+                (d.unitsDelivered as number),
             ),
           });
         }
@@ -261,7 +262,8 @@ async function exportDeliveryData(
             spend: storySpend as number,
             story,
             units_delivered: Math.round(
-              ((storySpend as number) / d.spend) * d.unitsDelivered,
+              ((storySpend as number) / (d.spend as number)) *
+                (d.unitsDelivered as number),
             ),
           });
         }
@@ -279,7 +281,8 @@ async function exportDeliveryData(
             publisher_product: publisherProduct,
             spend: publisherSpend as number,
             units_delivered: Math.round(
-              ((publisherSpend as number) / d.spend) * d.unitsDelivered,
+              ((publisherSpend as number) / (d.spend as number)) *
+                (d.unitsDelivered as number),
             ),
           });
         }
