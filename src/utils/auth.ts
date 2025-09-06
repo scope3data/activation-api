@@ -3,31 +3,13 @@ import type { FastMCPSessionAuth } from "../types/mcp.js";
 export const getAuthContext = (request?: {
   headers?: Record<string, string>;
 }): FastMCPSessionAuth => {
-  // Only log in HTTP mode to avoid interfering with stdio JSON protocol
   const canLog =
-    (process.env.NODE_ENV === "development" ||
-      process.env.NODE_ENV === "test") &&
-    process.env.MCP_TRANSPORT === "http";
-
-  if (canLog) {
-    console.log(
-      "[Auth Debug] Checking environment API key:",
-      process.env.SCOPE3_API_KEY ? "present" : "missing",
-    );
-  }
+    process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test";
 
   let apiKey: string | undefined;
 
-  // Priority 1: Environment variable (for stdio mode)
-  if (process.env.SCOPE3_API_KEY) {
-    apiKey = process.env.SCOPE3_API_KEY;
-    if (canLog) {
-      console.log("[Auth Debug] Using environment API key");
-    }
-  }
-
-  // Priority 2: HTTP headers (for HTTP mode)
-  else if (request && request.headers) {
+  // Only use HTTP headers for authentication
+  if (request && request.headers) {
     // Try custom header first
     if (request.headers["x-scope3-api-key"]) {
       apiKey = request.headers["x-scope3-api-key"];
@@ -49,9 +31,11 @@ export const getAuthContext = (request?: {
 
   if (!apiKey) {
     if (canLog) {
-      console.log("[Auth Debug] No API key found");
+      console.log("[Auth Debug] No API key found in headers");
     }
-    throw new Error("No API key found");
+    throw new Error(
+      "API key required in headers (x-scope3-api-key or Authorization: Bearer)",
+    );
   }
 
   return {
