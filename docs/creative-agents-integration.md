@@ -37,6 +37,7 @@ Campaign Assignment   Real-time Inference
 ### 1. Enhanced Creative Creation Tools
 
 #### Current: `creative/create`
+
 ```typescript
 // Current implementation
 creative/create {
@@ -47,14 +48,15 @@ creative/create {
 ```
 
 #### Enhanced: `creative/create` with Creative Agent
+
 ```typescript
 // Enhanced implementation
 creative/create {
   creativeName: string,
-  
+
   // Existing manual asset creation
   assets?: ManualAsset[],
-  
+
   // NEW: Creative agent generation
   generateWithAgent?: {
     mode: 'manifest' | 'code',
@@ -63,7 +65,7 @@ creative/create {
     targetFormats?: CreativeFormat[],
     optimizationGoals?: OptimizationGoal[]
   },
-  
+
   advertiserDomains: string[]
 }
 ```
@@ -73,12 +75,13 @@ creative/create {
 Based on AdCP PR #23, we'll add these tools:
 
 #### `creative/build_creative`
+
 Conversational creative generation with iterative refinement.
 
 ```typescript
 Parameters:
 - buyerAgentId: string
-- initialPrompt: string  
+- initialPrompt: string
 - mode: 'manifest' | 'code'
 - brandGuidelines?: object
 - targetPlatforms?: string[]
@@ -92,6 +95,7 @@ Workflow:
 ```
 
 #### `creative/manage_creative_library`
+
 AI-powered creative library management and optimization.
 
 ```typescript
@@ -102,7 +106,7 @@ Parameters:
 
 Capabilities:
 - Auto-tag creatives based on content analysis
-- Identify performance patterns across creatives  
+- Identify performance patterns across creatives
 - Recommend creative variants for A/B testing
 - Suggest creative retirement based on performance
 - Detect brand guideline violations
@@ -120,7 +124,7 @@ Capabilities:
    - Analyzes brand guidelines
    - Generates asset manifest:
      * Hero image: Holiday-themed banner (1200x628)
-     * Headline: "Holiday Sale - 50% Off"  
+     * Headline: "Holiday Sale - 50% Off"
      * CTA: "Shop Now"
      * Logo: Brand logo overlay
      * Colors: Brand color palette
@@ -174,10 +178,10 @@ Capabilities:
 2. Iterative Refinement:
    User: "Make it more energetic and add a video element"
    Agent: *Updates with dynamic video background*
-   
-   User: "The text is too small for mobile"  
+
+   User: "The text is too small for mobile"
    Agent: *Adjusts typography for mobile optimization*
-   
+
    User: "Perfect! Deploy this to campaign camp_123"
    Agent: *Finalizes and assigns to campaign*
 
@@ -191,24 +195,28 @@ Capabilities:
 ## Technical Implementation Plan
 
 ### Phase 1: Foundation (Week 1-2)
+
 - [ ] Extend `creative/create` tool with `generateWithAgent` parameter
 - [ ] Add creative agent client interface to `Scope3ApiClient`
 - [ ] Create manifest-to-asset conversion utilities
 - [ ] Update GraphQL schema for creative agent integration
 
-### Phase 2: Manifest Mode (Week 3-4)  
+### Phase 2: Manifest Mode (Week 3-4)
+
 - [ ] Implement `creative/build_creative` tool
 - [ ] Add manifest processing pipeline
 - [ ] Create brand guidelines integration
 - [ ] Add asset optimization and validation
 
 ### Phase 3: Code Mode (Week 5-6)
+
 - [ ] Implement dynamic creative code deployment
-- [ ] Add real-time inference endpoint management  
+- [ ] Add real-time inference endpoint management
 - [ ] Create performance monitoring for dynamic creatives
 - [ ] Add AdCP publisher integration for code mode
 
 ### Phase 4: Advanced Features (Week 7-8)
+
 - [ ] Implement `creative/manage_creative_library` tool
 - [ ] Add conversational creative refinement
 - [ ] Create performance-based optimization
@@ -223,21 +231,21 @@ class Scope3ApiClient {
   // NEW: Creative agent integration
   async generateCreativeWithAgent(
     apiKey: string,
-    buyerAgentId: string, 
-    request: CreativeAgentRequest
-  ): Promise<CreativeAgentResponse>
-  
+    buyerAgentId: string,
+    request: CreativeAgentRequest,
+  ): Promise<CreativeAgentResponse>;
+
   async buildCreativeConversational(
     apiKey: string,
     sessionId: string,
-    message: string
-  ): Promise<ConversationalResponse>
-  
+    message: string,
+  ): Promise<ConversationalResponse>;
+
   async deployDynamicCreative(
     apiKey: string,
     creativeCode: string,
-    publisherEndpoints: string[]
-  ): Promise<DeploymentResult>
+    publisherEndpoints: string[],
+  ): Promise<DeploymentResult>;
 }
 ```
 
@@ -245,53 +253,55 @@ class Scope3ApiClient {
 
 ```typescript
 interface CreativeAgentRequest {
-  mode: 'manifest' | 'code'
-  prompt: string
-  brandGuidelines?: BrandGuidelines
-  targetFormats?: CreativeFormat[]
-  optimizationGoals?: OptimizationGoal[]
+  mode: "manifest" | "code";
+  prompt: string;
+  brandGuidelines?: BrandGuidelines;
+  targetFormats?: CreativeFormat[];
+  optimizationGoals?: OptimizationGoal[];
 }
 
 interface CreativeAgentResponse {
-  mode: 'manifest' | 'code'
-  
+  mode: "manifest" | "code";
+
   // Manifest mode response
   manifest?: {
-    assets: GeneratedAsset[]
-    metadata: CreativeMetadata
-  }
-  
-  // Code mode response  
+    assets: GeneratedAsset[];
+    metadata: CreativeMetadata;
+  };
+
+  // Code mode response
   code?: {
-    executable: string
-    dependencies: string[]
-    endpoints: string[]
-  }
-  
+    executable: string;
+    dependencies: string[];
+    endpoints: string[];
+  };
+
   // Common response data
-  brandCompliance: ComplianceCheck
-  estimatedPerformance: PerformanceProjection
+  brandCompliance: ComplianceCheck;
+  estimatedPerformance: PerformanceProjection;
 }
 
 interface BrandGuidelines {
-  logoUsage: LogoGuidelines
-  colorPalette: ColorSpecs[]
-  typography: TypographySpecs
-  messaging: MessagingGuidelines
-  restrictions: string[]
+  logoUsage: LogoGuidelines;
+  colorPalette: ColorSpecs[];
+  typography: TypographySpecs;
+  messaging: MessagingGuidelines;
+  restrictions: string[];
 }
 ```
 
 ## Creative Agent Capabilities
 
 ### Static Generation (Manifest Mode)
+
 - **Image Generation**: Brand-compliant images, banners, product shots
 - **Text Generation**: Headlines, body copy, CTAs, legal disclaimers
 - **Layout Optimization**: Responsive design, platform-specific sizing
 - **Asset Variants**: A/B test variations, format adaptations
 - **Brand Consistency**: Automatic brand guideline adherence
 
-### Dynamic Generation (Code Mode)  
+### Dynamic Generation (Code Mode)
+
 - **Personalization Logic**: Location, demographic, behavioral targeting
 - **Real-time Content**: Live pricing, inventory, weather integration
 - **Interactive Elements**: Clickable hotspots, product carousels
@@ -299,7 +309,8 @@ interface BrandGuidelines {
 - **Cross-device Adaptation**: Responsive creative logic
 
 ### AI-Powered Management
-- **Performance Analysis**: Identify high/low performing creative elements  
+
+- **Performance Analysis**: Identify high/low performing creative elements
 - **Optimization Suggestions**: Recommend improvements based on data
 - **Creative Scoring**: Rate creatives against brand and performance criteria
 - **Trend Analysis**: Suggest creative directions based on market trends
@@ -308,6 +319,7 @@ interface BrandGuidelines {
 ## Benefits for Users
 
 ### For Advertisers
+
 - **Faster Creative Development**: AI generates assets in minutes vs. days
 - **Brand Consistency**: Automatic adherence to brand guidelines
 - **Performance Optimization**: Data-driven creative improvements
@@ -315,6 +327,7 @@ interface BrandGuidelines {
 - **Scale**: Generate variations for multiple campaigns simultaneously
 
 ### For Campaign Managers
+
 - **Natural Language Interface**: "Create banner ads for our spring sale"
 - **Iterative Refinement**: Conversational creative optimization
 - **Automatic Assignment**: Creatives auto-assigned to appropriate campaigns
@@ -322,6 +335,7 @@ interface BrandGuidelines {
 - **A/B Testing**: Automatic variant generation and testing
 
 ### For Developers
+
 - **Seamless Integration**: Creative agents work with existing tools
 - **Flexible Architecture**: Support for both static and dynamic creatives
 - **AdCP Compliance**: Full compatibility with AdCP publisher network
@@ -331,16 +345,19 @@ interface BrandGuidelines {
 ## Migration Path
 
 ### Immediate (No Changes Required)
+
 - All existing creative tools continue to work unchanged
-- Existing creatives and workflows remain functional  
+- Existing creatives and workflows remain functional
 - No disruption to current users
 
 ### Optional Enhancement (When Creative Agents Available)
+
 - Users can opt-in to creative agent features
 - Enhanced tools provide additional `generateWithAgent` parameters
 - Backward compatibility maintained for all existing functionality
 
 ### Future Integration (Full Creative Agents Deployment)
+
 - Creative agents become the default for creative generation
 - Manual asset creation remains available as alternative
 - AI-powered creative management becomes standard workflow
@@ -348,18 +365,21 @@ interface BrandGuidelines {
 ## Success Metrics
 
 ### Adoption Metrics
+
 - **Creative Agent Usage**: % of creatives generated via agents
-- **User Satisfaction**: Ratings for AI-generated creatives  
+- **User Satisfaction**: Ratings for AI-generated creatives
 - **Time to Market**: Reduction in creative development time
 - **Creative Volume**: Increase in creatives generated per user
 
-### Performance Metrics  
+### Performance Metrics
+
 - **Creative Performance**: CTR/CVR improvements with AI creatives
 - **Brand Compliance**: Reduction in brand guideline violations
 - **A/B Testing**: Increase in creative testing frequency
 - **Cost Efficiency**: Reduction in creative production costs
 
 ### Technical Metrics
+
 - **Response Time**: Creative generation speed (target: under 30 seconds)
 - **Success Rate**: % of successful creative generations
 - **Code Quality**: Dynamic creative performance and stability

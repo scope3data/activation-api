@@ -27,22 +27,22 @@ export const assetsAddTool = (client: Scope3ApiClient) => ({
 
   execute: async (
     args: {
-      buyerAgentId: string;
       assets: Array<{
-        name: string;
-        type: 'image' | 'video' | 'audio' | 'logo' | 'font';
-        source: {
-          url?: string;           // External URL to fetch from
-          uploadId?: string;      // ID from REST upload
-          cdnUrl?: string;        // Already on CDN
-        };
         metadata?: {
-          dimensions?: { width: number; height: number };
+          dimensions?: { height: number; width: number };
           duration?: number;
           fileSize?: number;
           tags?: string[];
         };
+        name: string;
+        source: {
+          cdnUrl?: string; // Already on CDN
+          uploadId?: string; // ID from REST upload
+          url?: string; // External URL to fetch from
+        };
+        type: "audio" | "font" | "image" | "logo" | "video";
       }>;
+      buyerAgentId: string;
     },
     context: MCPToolExecuteContext,
   ): Promise<string> => {
@@ -60,19 +60,19 @@ export const assetsAddTool = (client: Scope3ApiClient) => ({
     try {
       // Validate that each asset has at least one source
       for (const asset of args.assets) {
-        const { url, uploadId, cdnUrl } = asset.source;
+        const { cdnUrl, uploadId, url } = asset.source;
         if (!url && !uploadId && !cdnUrl) {
           return createErrorResponse(
             `Asset "${asset.name}" must have at least one source: url, uploadId, or cdnUrl`,
-            new Error("Missing asset source")
+            new Error("Missing asset source"),
           );
         }
       }
 
       // Add assets through reference management
       const result = await client.addAssets(apiKey, {
-        buyerAgentId: args.buyerAgentId,
         assets: args.assets,
+        buyerAgentId: args.buyerAgentId,
       });
 
       // Create human-readable response
@@ -91,7 +91,7 @@ export const assetsAddTool = (client: Scope3ApiClient) => ({
         const status = assetResult.success ? "✅" : "❌";
         response += `
 ${status} **${assetResult.assetId || "Failed"}**`;
-        
+
         if (assetResult.originalUrl) {
           response += `
    • Source: ${assetResult.originalUrl}`;
@@ -111,7 +111,10 @@ ${status} **${assetResult.assetId || "Failed"}**`;
 
 💡 **Next Steps**
 • Use these assets in creatives with \`creative/create\`
-• Reference them by asset ID: ${result.results.filter(r => r.success).map(r => r.assetId).join(', ')}
+• Reference them by asset ID: ${result.results
+          .filter((r) => r.success)
+          .map((r) => r.assetId)
+          .join(", ")}
 • Find them in your asset library with \`assets/list\`
 
 🔄 **[ARCHITECTURE]** Assets added via reference management:
@@ -121,7 +124,6 @@ ${status} **${assetResult.assetId || "Failed"}**`;
       }
 
       return createMCPResponse({ message: response, success: true });
-
     } catch (error) {
       return createErrorResponse("Failed to add assets", error);
     }
@@ -130,31 +132,53 @@ ${status} **${assetResult.assetId || "Failed"}**`;
   name: "assets/add",
 
   parameters: z.object({
-    buyerAgentId: z.string().describe("The buyer agent that will own these assets"),
-    
-    assets: z.array(z.object({
-      name: z.string().describe("Human-readable name for the asset"),
-      type: z.enum(['image', 'video', 'audio', 'logo', 'font']).describe("Type of asset"),
-      
-      source: z.object({
-        url: z.string().optional().describe("External URL to fetch from"),
-        uploadId: z.string().optional().describe("ID from REST upload"),
-        cdnUrl: z.string().optional().describe("Already on CDN"),
-      }).refine(
-        (data) => data.url || data.uploadId || data.cdnUrl,
-        { message: "At least one source (url, uploadId, or cdnUrl) must be provided" }
-      ),
-      
-      metadata: z.object({
-        dimensions: z.object({
-          width: z.number(),
-          height: z.number(),
-        }).optional().describe("Dimensions for visual assets"),
-        duration: z.number().optional().describe("Duration in seconds for video/audio"),
-        fileSize: z.number().optional().describe("File size in bytes"),
-        tags: z.array(z.string()).optional().describe("Tags for organization"),
-      }).optional().describe("Optional metadata for the asset"),
-      
-    })).min(1).describe("Array of assets to add"),
+    assets: z
+      .array(
+        z.object({
+          metadata: z
+            .object({
+              dimensions: z
+                .object({
+                  height: z.number(),
+                  width: z.number(),
+                })
+                .optional()
+                .describe("Dimensions for visual assets"),
+              duration: z
+                .number()
+                .optional()
+                .describe("Duration in seconds for video/audio"),
+              fileSize: z.number().optional().describe("File size in bytes"),
+              tags: z
+                .array(z.string())
+                .optional()
+                .describe("Tags for organization"),
+            })
+            .optional()
+            .describe("Optional metadata for the asset"),
+          name: z.string().describe("Human-readable name for the asset"),
+
+          source: z
+            .object({
+              cdnUrl: z.string().optional().describe("Already on CDN"),
+              uploadId: z.string().optional().describe("ID from REST upload"),
+              url: z.string().optional().describe("External URL to fetch from"),
+            })
+            .refine((data) => data.url || data.uploadId || data.cdnUrl, {
+              message:
+                "At least one source (url, uploadId, or cdnUrl) must be provided",
+            }),
+
+          type: z
+            .enum(["image", "video", "audio", "logo", "font"])
+            .describe("Type of asset"),
+        }),
+      )
+      .min(1)
+      .describe("Array of assets to add"),
+
+    buyerAgentId: z
+      .string()
+      .describe("The buyer agent that will own these assets"),
   }),
 });

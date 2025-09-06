@@ -27,10 +27,10 @@ export const listCreativeFormatsTool = (client: Scope3ApiClient) => ({
 
   execute: async (
     args: {
-      type?: 'adcp' | 'publisher' | 'creative_agent';
-      search?: string;
-      assemblyCapable?: boolean;
       acceptsThirdPartyTags?: boolean;
+      assemblyCapable?: boolean;
+      search?: string;
+      type?: "adcp" | "creative_agent" | "publisher";
     },
     context: MCPToolExecuteContext,
   ): Promise<string> => {
@@ -48,10 +48,10 @@ export const listCreativeFormatsTool = (client: Scope3ApiClient) => ({
     try {
       // Get creative formats from all providers
       const formats = await client.listCreativeFormats(apiKey, {
-        type: args.type,
-        search: args.search,
-        assemblyCapable: args.assemblyCapable,
         acceptsThirdPartyTags: args.acceptsThirdPartyTags,
+        assemblyCapable: args.assemblyCapable,
+        search: args.search,
+        type: args.type,
       });
 
       // Create human-readable response
@@ -83,12 +83,14 @@ export const listCreativeFormatsTool = (client: Scope3ApiClient) => ({
 
           // Show capabilities
           const capabilities: string[] = [];
-          if (format.requirements.assemblyCapable) capabilities.push("Assembly from assets");
-          if (format.requirements.acceptsThirdPartyTags) capabilities.push("Third-party ad tags");
-          
+          if (format.requirements.assemblyCapable)
+            capabilities.push("Assembly from assets");
+          if (format.requirements.acceptsThirdPartyTags)
+            capabilities.push("Third-party ad tags");
+
           if (capabilities.length > 0) {
             response += `
-• **Capabilities**: ${capabilities.join(', ')}`;
+• **Capabilities**: ${capabilities.join(", ")}`;
           }
 
           // Show required assets
@@ -98,9 +100,12 @@ export const listCreativeFormatsTool = (client: Scope3ApiClient) => ({
             for (const asset of format.requirements.requiredAssets) {
               response += `
   - ${asset.type}`;
-              if (asset.specs.dimensions) response += ` (${asset.specs.dimensions})`;
-              if (asset.specs.maxSize) response += ` (max: ${asset.specs.maxSize})`;
-              if (asset.specs.formats?.length) response += ` [${asset.specs.formats.join(', ')}]`;
+              if (asset.specs.dimensions)
+                response += ` (${asset.specs.dimensions})`;
+              if (asset.specs.maxSize)
+                response += ` (max: ${asset.specs.maxSize})`;
+              if (asset.specs.formats?.length)
+                response += ` [${asset.specs.formats.join(", ")}]`;
             }
           }
         }
@@ -128,12 +133,14 @@ export const listCreativeFormatsTool = (client: Scope3ApiClient) => ({
 
           // Show capabilities
           const capabilities: string[] = [];
-          if (format.requirements.assemblyCapable) capabilities.push("Assembly from assets");
-          if (format.requirements.acceptsThirdPartyTags) capabilities.push("Third-party ad tags");
-          
+          if (format.requirements.assemblyCapable)
+            capabilities.push("Assembly from assets");
+          if (format.requirements.acceptsThirdPartyTags)
+            capabilities.push("Third-party ad tags");
+
           if (capabilities.length > 0) {
             response += `
-• **Capabilities**: ${capabilities.join(', ')}`;
+• **Capabilities**: ${capabilities.join(", ")}`;
           }
 
           // Show required assets
@@ -143,9 +150,12 @@ export const listCreativeFormatsTool = (client: Scope3ApiClient) => ({
             for (const asset of format.requirements.requiredAssets) {
               response += `
   - ${asset.type}`;
-              if (asset.specs.dimensions) response += ` (${asset.specs.dimensions})`;
-              if (asset.specs.maxSize) response += ` (max: ${asset.specs.maxSize})`;
-              if (asset.specs.formats?.length) response += ` [${asset.specs.formats.join(', ')}]`;
+              if (asset.specs.dimensions)
+                response += ` (${asset.specs.dimensions})`;
+              if (asset.specs.maxSize)
+                response += ` (max: ${asset.specs.maxSize})`;
+              if (asset.specs.formats?.length)
+                response += ` [${asset.specs.formats.join(", ")}]`;
             }
           }
         }
@@ -173,12 +183,14 @@ export const listCreativeFormatsTool = (client: Scope3ApiClient) => ({
 
           // Show capabilities
           const capabilities: string[] = [];
-          if (format.requirements.assemblyCapable) capabilities.push("Assembly from assets");
-          if (format.requirements.acceptsThirdPartyTags) capabilities.push("Third-party ad tags");
-          
+          if (format.requirements.assemblyCapable)
+            capabilities.push("Assembly from assets");
+          if (format.requirements.acceptsThirdPartyTags)
+            capabilities.push("Third-party ad tags");
+
           if (capabilities.length > 0) {
             response += `
-• **Capabilities**: ${capabilities.join(', ')}`;
+• **Capabilities**: ${capabilities.join(", ")}`;
           }
 
           // Show required assets
@@ -188,9 +200,12 @@ export const listCreativeFormatsTool = (client: Scope3ApiClient) => ({
             for (const asset of format.requirements.requiredAssets) {
               response += `
   - ${asset.type}`;
-              if (asset.specs.dimensions) response += ` (${asset.specs.dimensions})`;
-              if (asset.specs.maxSize) response += ` (max: ${asset.specs.maxSize})`;
-              if (asset.specs.formats?.length) response += ` [${asset.specs.formats.join(', ')}]`;
+              if (asset.specs.dimensions)
+                response += ` (${asset.specs.dimensions})`;
+              if (asset.specs.maxSize)
+                response += ` (max: ${asset.specs.maxSize})`;
+              if (asset.specs.formats?.length)
+                response += ` [${asset.specs.formats.join(", ")}]`;
             }
           }
         }
@@ -223,7 +238,6 @@ creative/create format.type="creative_agent" format.formatId="dynamic_product"
 • Check capabilities before choosing assembly methods`;
 
       return createMCPResponse({ message: response, success: true });
-
     } catch (error) {
       return createErrorResponse("Failed to list creative formats", error);
     }
@@ -232,14 +246,22 @@ creative/create format.type="creative_agent" format.formatId="dynamic_product"
   name: "list_creative_formats",
 
   parameters: z.object({
-    // Optional filters
-    type: z.enum(['adcp', 'publisher', 'creative_agent']).optional()
-      .describe("Filter by format provider type"),
-    search: z.string().optional()
-      .describe("Search in format names and descriptions"),
-    assemblyCapable: z.boolean().optional()
-      .describe("Filter formats that can assemble from assets"),
-    acceptsThirdPartyTags: z.boolean().optional()
+    acceptsThirdPartyTags: z
+      .boolean()
+      .optional()
       .describe("Filter formats that accept ad server tags"),
+    assemblyCapable: z
+      .boolean()
+      .optional()
+      .describe("Filter formats that can assemble from assets"),
+    search: z
+      .string()
+      .optional()
+      .describe("Search in format names and descriptions"),
+    // Optional filters
+    type: z
+      .enum(["adcp", "publisher", "creative_agent"])
+      .optional()
+      .describe("Filter by format provider type"),
   }),
 });

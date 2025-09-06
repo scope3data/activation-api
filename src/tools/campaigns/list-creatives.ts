@@ -28,8 +28,8 @@ export const campaignListCreativesTool = (client: Scope3ApiClient) => ({
   execute: async (
     args: {
       campaignId: string;
-      includePerformance?: boolean;
       includeAssets?: boolean;
+      includePerformance?: boolean;
     },
     context: MCPToolExecuteContext,
   ): Promise<string> => {
@@ -45,7 +45,10 @@ export const campaignListCreativesTool = (client: Scope3ApiClient) => ({
     }
 
     try {
-      const creatives = await client.getCampaignCreatives(apiKey, args.campaignId);
+      const creatives = await client.getCampaignCreatives(
+        apiKey,
+        args.campaignId,
+      );
 
       if (!creatives.length) {
         return createMCPResponse({
@@ -62,7 +65,7 @@ export const campaignListCreativesTool = (client: Scope3ApiClient) => ({
 • Optimize creative mix based on campaign goals
 
 🔄 **[STUB]** This will query AdCP publishers for campaign-creative assignments.`,
-          success: true
+          success: true,
         });
       }
 
@@ -84,17 +87,19 @@ export const campaignListCreativesTool = (client: Scope3ApiClient) => ({
 
         // Show asset info if requested
         if (args.includeAssets !== false && creative.assetIds?.length) {
-          response += `   📊 Asset IDs: ${creative.assetIds.join(', ')}\n`;
+          response += `   📊 Asset IDs: ${creative.assetIds.join(", ")}\n`;
           if (creative.assetIds.length > 1) {
             response += `   📎 Total Assets: ${creative.assetIds.length}\n`;
           }
         }
 
         // Show campaign assignment details
-        const assignment = creative.campaignAssignments?.find(a => a.campaignId === args.campaignId);
+        const assignment = creative.campaignAssignments?.find(
+          (a) => a.campaignId === args.campaignId,
+        );
         if (assignment) {
           response += `   📅 Assigned: ${new Date(assignment.assignedDate).toLocaleDateString()}\n`;
-          response += `   🔄 Active: ${assignment.isActive ? 'Yes' : 'No'}\n`;
+          response += `   🔄 Active: ${assignment.isActive ? "Yes" : "No"}\n`;
 
           // Performance data would be fetched separately in production
           // For now, performance metrics are not included in the assignment object
@@ -104,15 +109,17 @@ export const campaignListCreativesTool = (client: Scope3ApiClient) => ({
 
         // Show target audience if available
         if (creative.targetAudience) {
-          response += `   👥 Audience: ${creative.targetAudience.substring(0, 60)}${creative.targetAudience.length > 60 ? '...' : ''}\n`;
+          response += `   👥 Audience: ${creative.targetAudience.substring(0, 60)}${creative.targetAudience.length > 60 ? "..." : ""}\n`;
         }
 
-        response += '\n';
+        response += "\n";
       }
 
       // Add summary statistics
-      const activeCreatives = creatives.filter(c => 
-        c.campaignAssignments?.some(a => a.campaignId === args.campaignId && a.isActive)
+      const activeCreatives = creatives.filter((c) =>
+        c.campaignAssignments?.some(
+          (a) => a.campaignId === args.campaignId && a.isActive,
+        ),
       ).length;
 
       // Performance metrics would be fetched separately from analytics API
@@ -121,7 +128,7 @@ export const campaignListCreativesTool = (client: Scope3ApiClient) => ({
 
       response += `📈 **Campaign Creative Summary**\n`;
       response += `• Active Creatives: ${activeCreatives} / ${creatives.length}\n`;
-      
+
       if (totalImpressions > 0) {
         response += `• Total Impressions: ${totalImpressions.toLocaleString()}\n`;
         response += `• Total Clicks: ${totalClicks.toLocaleString()}\n`;
@@ -139,7 +146,6 @@ export const campaignListCreativesTool = (client: Scope3ApiClient) => ({
       response += `🔄 **[STUB]** This will query AdCP publishers for real campaign-creative performance data.`;
 
       return createMCPResponse({ message: response, success: true });
-
     } catch (error) {
       return createErrorResponse("Failed to list campaign creatives", error);
     }
@@ -148,8 +154,18 @@ export const campaignListCreativesTool = (client: Scope3ApiClient) => ({
   name: "campaign/list_creatives",
 
   parameters: z.object({
-    campaignId: z.string().describe("Campaign/strategy ID to list creatives for"),
-    includePerformance: z.boolean().default(true).optional().describe("Include performance metrics for each creative"),
-    includeAssets: z.boolean().default(true).optional().describe("Include asset details for each creative"),
+    campaignId: z
+      .string()
+      .describe("Campaign/strategy ID to list creatives for"),
+    includeAssets: z
+      .boolean()
+      .default(true)
+      .optional()
+      .describe("Include asset details for each creative"),
+    includePerformance: z
+      .boolean()
+      .default(true)
+      .optional()
+      .describe("Include performance metrics for each creative"),
   }),
 });

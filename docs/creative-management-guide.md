@@ -3,6 +3,7 @@
 This guide provides a comprehensive walkthrough of creative management in the Scope3 Campaign API, following AdCP (Ad Context Protocol) standards and integrating creative agents for AI-powered creative generation.
 
 ## Table of Contents
+
 - [Quick Start](#quick-start)
 - [Understanding the Creative Hierarchy](#understanding-the-creative-hierarchy)
 - [Core Workflows](#core-workflows)
@@ -78,18 +79,21 @@ Creative (Container)
 ### Key Concepts
 
 **Creative**: A conceptual advertising unit that contains multiple assets
+
 - Has a name, description, and version
-- Contains 1+ assets that work together  
+- Contains 1+ assets that work together
 - Can be assigned to multiple campaigns
 - Owned by a buyer agent
 
 **Asset**: Individual files or content pieces
+
 - Images, videos, text, audio, HTML, native components
 - Has specific technical properties (dimensions, duration, format)
 - Can have different roles (primary, companion, fallback)
 - Reusable across creatives
 
 **Buyer Agent**: The advertiser account that owns creatives
+
 - All creatives belong to a buyer agent
 - Campaigns can only use creatives from their buyer agent
 - Enables resource sharing and brand consistency
@@ -104,13 +108,13 @@ Creative (Container)
 🤖 Uses: creative/upload_asset
 📎 Asset uploaded: logo_image_001
 
-2️⃣ Create Creative with Assets  
+2️⃣ Create Creative with Assets
 👤 "Create a display creative called 'Q1 Campaign' using the logo plus headline 'New Products'"
 🤖 Uses: creative/create
 🎨 Creative created with 2 assets
 
 3️⃣ Assign to Campaign
-👤 "Assign creative cr_789 to campaign camp_123"  
+👤 "Assign creative cr_789 to campaign camp_123"
 🤖 Uses: creative/assign
 ✅ Assignment complete
 ```
@@ -127,12 +131,12 @@ Option A - Use Existing:
 👤 "Attach existing creatives cr_111 and cr_222"
 🤖 Uses: campaign/attach_creative
 
-Option B - Create New:  
+Option B - Create New:
 👤 "Create a new video creative called 'Product Demo' and attach it"
 🤖 Uses: campaign/attach_creative (with newCreatives)
 
 Option C - Natural Language:
-👤 "Create banner creatives for our spring sale targeting millennials"  
+👤 "Create banner creatives for our spring sale targeting millennials"
 🤖 Uses: campaign/attach_creative (with prompt)
 ```
 
@@ -162,9 +166,10 @@ Creative agents provide AI-powered creative generation following AdCP PR #23. He
 ### What are Creative Agents?
 
 Creative agents are AI-powered tools that can:
+
 - **Generate creatives conversationally** through natural language
 - **Create both static assets** (images, text) and **dynamic code** (interactive ads)
-- **Optimize creatives in real-time** based on performance data  
+- **Optimize creatives in real-time** based on performance data
 - **Understand brand guidelines** and maintain consistency
 
 ### Integration Points
@@ -178,13 +183,13 @@ Creative agents are AI-powered tools that can:
 
 *Behind the scenes:*
 1. Creative agent generates asset manifest
-2. Assets are created (images, text, layouts)  
+2. Assets are created (images, text, layouts)
 3. Manifest feeds into creative/create
 4. Creative is ready for campaign assignment
 
 ✅ Creative generated via creative agent:
 - Primary: Coffee cup hero image (1200x628)
-- Text: "Premium Coffee, Premium Experience"  
+- Text: "Premium Coffee, Premium Experience"
 - CTA: "Order Now"
 - Brand colors and fonts automatically applied
 ```
@@ -222,7 +227,7 @@ Creative agents are AI-powered tools that can:
 🎨 Agent: Generating updated banner version
 
 ✅ Creative updated:
-- New version with green color scheme  
+- New version with green color scheme
 - All brand guidelines maintained
 - Ready for A/B testing against original
 ```
@@ -235,7 +240,7 @@ Our creative management system integrates creative agents through:
 1. Natural Language Interface
    User Request → Claude → Creative Agent → Asset Generation
 
-2. Asset Pipeline Integration  
+2. Asset Pipeline Integration
    Creative Agent Output → creative/create → Campaign Assignment
 
 3. Performance Feedback Loop
@@ -250,12 +255,14 @@ Our creative management system integrates creative agents through:
 When creative agents are available, these tools will integrate seamlessly:
 
 **`build_creative`**: Conversational creative generation
+
 - Natural language creative briefs
 - Iterative refinement through conversation
 - Brand guideline adherence
 - Multi-format output (static + dynamic)
 
-**`manage_creative_library`**: AI-powered asset organization  
+**`manage_creative_library`**: AI-powered asset organization
+
 - Auto-tagging of assets
 - Content similarity detection
 - Usage pattern analysis
@@ -268,7 +275,7 @@ When creative agents are available, these tools will integrate seamlessly:
 ```
 ✅ Good: Separate buyer agents by brand
 - Nike buyer agent → Nike creatives
-- Adidas buyer agent → Adidas creatives  
+- Adidas buyer agent → Adidas creatives
 
 ❌ Avoid: Mixing brands in one buyer agent
 - Single agent with mixed brand creatives
@@ -281,7 +288,7 @@ When creative agents are available, these tools will integrate seamlessly:
 - Creative: "Summer Sale 2024 - Video Series"
 - Asset: "Hero video - Summer sale announcement (30s)"
 
-❌ Poor Naming:  
+❌ Poor Naming:
 - Creative: "Creative_001"
 - Asset: "video.mp4"
 ```
@@ -291,7 +298,7 @@ When creative agents are available, these tools will integrate seamlessly:
 ```
 ✅ Smart Reuse:
 1. Upload logo once → Use in multiple creatives
-2. Create brand text templates → Reuse across campaigns  
+2. Create brand text templates → Reuse across campaigns
 3. Standard CTA buttons → Consistent experience
 
 📈 Benefits:
@@ -305,7 +312,7 @@ When creative agents are available, these tools will integrate seamlessly:
 ```
 ✅ Strategic Assignment:
 - A/B test: Same campaign, multiple creative variants
-- Seasonal: Rotate creatives by time period  
+- Seasonal: Rotate creatives by time period
 - Audience: Different creatives for different segments
 
 📊 Track Performance:
@@ -340,7 +347,7 @@ When creative agents are integrated:
 
 *Configuration:*
 - Template: Base creative with variable elements
-- Dynamic Elements: Headlines, images, CTAs  
+- Dynamic Elements: Headlines, images, CTAs
 - Optimization Goal: Click-through rate
 - Personalization: Location, device, time of day
 
@@ -356,7 +363,7 @@ When creative agents are integrated:
 
 *Package Contents:*
 - Desktop: 728x90 leaderboard
-- Mobile: 320x50 banner  
+- Mobile: 320x50 banner
 - Tablet: 300x250 rectangle
 - CTV: 16:9 video format
 
@@ -373,13 +380,13 @@ When creative agents are integrated:
 
 📊 Creative Performance (Last 30 Days):
 - Total Impressions: 847,392
-- Clicks: 12,834 (1.51% CTR)  
+- Clicks: 12,834 (1.51% CTR)
 - Conversions: 432 (3.37% CVR)
 
 📈 Performance by Asset:
 - Hero image: 89% of impressions
 - Headline A: 2.1% CTR
-- Headline B: 1.8% CTR  
+- Headline B: 1.8% CTR
 
 💡 Optimization Suggestions:
 - Test new hero image variants
@@ -396,7 +403,7 @@ When creative agents are integrated:
 
 *Compliance Checks:*
 - Required disclaimers: ✅ Present
-- Font size minimums: ✅ Met  
+- Font size minimums: ✅ Met
 - Required legal text: ✅ Included
 - Prohibited claims: ✅ None detected
 
@@ -407,18 +414,23 @@ When creative agents are integrated:
 ## Common Questions
 
 ### Q: How many assets can a creative have?
+
 **A:** No hard limit, but we recommend 3-5 assets per creative for optimal performance and management.
 
-### Q: Can I use the same creative across multiple campaigns?  
+### Q: Can I use the same creative across multiple campaigns?
+
 **A:** Yes! That's a key feature. Assign one creative to multiple campaigns within the same buyer agent.
 
 ### Q: What happens if I update a creative that's assigned to active campaigns?
+
 **A:** Updates create new versions. Active campaigns continue using the assigned version unless you explicitly update the assignment.
 
 ### Q: How do I organize creatives for multiple brands?
+
 **A:** Use separate buyer agents for each brand. Each buyer agent has its own creative library.
 
-### Q: Can creative agents work with my existing brand guidelines?  
+### Q: Can creative agents work with my existing brand guidelines?
+
 **A:** Yes! Creative agents can be trained on your brand guidelines, logo usage, color palettes, and messaging frameworks.
 
 ---

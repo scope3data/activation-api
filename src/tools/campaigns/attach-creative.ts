@@ -27,21 +27,27 @@ export const campaignAttachCreativeTool = (client: Scope3ApiClient) => ({
 
   execute: async (
     args: {
-      campaignId: string;
       buyerAgentId: string;
+      campaignId: string;
       creativeIds?: string[];
       newCreatives?: Array<{
-        creativeName: string;
         assets: Array<{
           assetName: string;
-          assetType: 'image' | 'video' | 'text' | 'audio' | 'html' | 'native_component';
+          assetType:
+            | "audio"
+            | "html"
+            | "image"
+            | "native_component"
+            | "text"
+            | "video";
           fileUrl?: string;
           textContent?: {
-            headline?: string;
             bodyText?: string;
             callToAction?: string;
+            headline?: string;
           };
         }>;
+        creativeName: string;
       }>;
       prompt?: string;
     },
@@ -58,10 +64,14 @@ export const campaignAttachCreativeTool = (client: Scope3ApiClient) => ({
       return createAuthErrorResponse();
     }
 
-    if (!args.creativeIds?.length && !args.newCreatives?.length && !args.prompt) {
+    if (
+      !args.creativeIds?.length &&
+      !args.newCreatives?.length &&
+      !args.prompt
+    ) {
       return createErrorResponse(
         "Must provide either existing creative IDs, new creatives to create, or a prompt",
-        new Error("No creatives specified")
+        new Error("No creatives specified"),
       );
     }
 
@@ -76,13 +86,15 @@ export const campaignAttachCreativeTool = (client: Scope3ApiClient) => ({
             apiKey,
             creativeId,
             args.campaignId,
-            args.buyerAgentId
+            args.buyerAgentId,
           );
           if (result.success) {
             results.push(`✅ Attached existing creative ${creativeId}`);
             attachedCreativeIds.push(creativeId);
           } else {
-            results.push(`❌ Failed to attach creative ${creativeId}: ${result.message}`);
+            results.push(
+              `❌ Failed to attach creative ${creativeId}: ${result.message}`,
+            );
           }
         }
       }
@@ -93,26 +105,32 @@ export const campaignAttachCreativeTool = (client: Scope3ApiClient) => ({
           try {
             const creative = await client.createCreative(apiKey, {
               buyerAgentId: args.buyerAgentId,
+              content: { htmlSnippet: "<div>New creative content</div>" },
               creativeName: newCreative.creativeName,
-              format: { type: 'publisher', formatId: 'display_banner' },
-              content: { htmlSnippet: '<div>New creative content</div>' },
+              format: { formatId: "display_banner", type: "publisher" },
             });
 
             const assignResult = await client.assignCreativeToCampaign(
               apiKey,
               creative.creativeId,
               args.campaignId,
-              args.buyerAgentId
+              args.buyerAgentId,
             );
 
             if (assignResult.success) {
-              results.push(`✅ Created and attached new creative "${newCreative.creativeName}" (${creative.creativeId})`);
+              results.push(
+                `✅ Created and attached new creative "${newCreative.creativeName}" (${creative.creativeId})`,
+              );
               attachedCreativeIds.push(creative.creativeId);
             } else {
-              results.push(`⚠️ Created creative "${newCreative.creativeName}" but failed to attach: ${assignResult.message}`);
+              results.push(
+                `⚠️ Created creative "${newCreative.creativeName}" but failed to attach: ${assignResult.message}`,
+              );
             }
           } catch (error) {
-            results.push(`❌ Failed to create creative "${newCreative.creativeName}": ${error}`);
+            results.push(
+              `❌ Failed to create creative "${newCreative.creativeName}": ${error}`,
+            );
           }
         }
       }
@@ -122,23 +140,27 @@ export const campaignAttachCreativeTool = (client: Scope3ApiClient) => ({
         try {
           const creative = await client.createCreative(apiKey, {
             buyerAgentId: args.buyerAgentId,
+            content: { htmlSnippet: "<div>Generated from prompt</div>" },
             creativeName: `Creative from prompt: ${args.prompt}`,
-            format: { type: 'publisher', formatId: 'display_banner' },
-            content: { htmlSnippet: '<div>Generated from prompt</div>' },
+            format: { formatId: "display_banner", type: "publisher" },
           });
 
           const assignResult = await client.assignCreativeToCampaign(
             apiKey,
             creative.creativeId,
             args.campaignId,
-            args.buyerAgentId
+            args.buyerAgentId,
           );
 
           if (assignResult.success) {
-            results.push(`✅ Created and attached creative from prompt: "${creative.creativeName}" (${creative.creativeId})`);
+            results.push(
+              `✅ Created and attached creative from prompt: "${creative.creativeName}" (${creative.creativeId})`,
+            );
             attachedCreativeIds.push(creative.creativeId);
           } else {
-            results.push(`⚠️ Created creative from prompt but failed to attach: ${assignResult.message}`);
+            results.push(
+              `⚠️ Created creative from prompt but failed to attach: ${assignResult.message}`,
+            );
           }
         } catch (error) {
           results.push(`❌ Failed to process prompt: ${error}`);
@@ -151,10 +173,14 @@ export const campaignAttachCreativeTool = (client: Scope3ApiClient) => ({
 🏢 **Buyer Agent**: ${args.buyerAgentId}
 
 📋 **Results (${results.length} operations):**
-${results.join('\n')}
+${results.join("\n")}
 
-${attachedCreativeIds.length > 0 ? `✅ **Successfully Attached (${attachedCreativeIds.length} creatives):**
-${attachedCreativeIds.map(id => `• ${id}`).join('\n')}` : ''}
+${
+  attachedCreativeIds.length > 0
+    ? `✅ **Successfully Attached (${attachedCreativeIds.length} creatives):**
+${attachedCreativeIds.map((id) => `• ${id}`).join("\n")}`
+    : ""
+}
 
 💡 **What's Next:**
 • Check campaign performance with updated creatives
@@ -167,37 +193,67 @@ ${attachedCreativeIds.map(id => `• ${id}`).join('\n')}` : ''}
 • Real-time performance tracking setup`;
 
       return createMCPResponse({ message: response, success: true });
-
     } catch (error) {
-      return createErrorResponse("Failed to attach creatives to campaign", error);
+      return createErrorResponse(
+        "Failed to attach creatives to campaign",
+        error,
+      );
     }
   },
 
   name: "campaign/attach_creative",
 
   parameters: z.object({
-    campaignId: z.string().describe("Campaign/strategy ID to attach creatives to"),
-    buyerAgentId: z.string().describe("Buyer agent ID (must match campaign's agent)"),
-    
+    buyerAgentId: z
+      .string()
+      .describe("Buyer agent ID (must match campaign's agent)"),
+    campaignId: z
+      .string()
+      .describe("Campaign/strategy ID to attach creatives to"),
+
     // Option 1: Attach existing creatives
-    creativeIds: z.array(z.string()).optional().describe("Existing creative IDs to attach"),
-    
+    creativeIds: z
+      .array(z.string())
+      .optional()
+      .describe("Existing creative IDs to attach"),
+
     // Option 2: Create and attach new creatives
-    newCreatives: z.array(z.object({
-      creativeName: z.string().describe("Name for the new creative"),
-      assets: z.array(z.object({
-        assetName: z.string(),
-        assetType: z.enum(['image', 'video', 'text', 'audio', 'html', 'native_component']),
-        fileUrl: z.string().optional(),
-        textContent: z.object({
-          headline: z.string().optional(),
-          bodyText: z.string().optional(),
-          callToAction: z.string().optional(),
-        }).optional(),
-      })),
-    })).optional().describe("New creatives to create and attach"),
-    
+    newCreatives: z
+      .array(
+        z.object({
+          assets: z.array(
+            z.object({
+              assetName: z.string(),
+              assetType: z.enum([
+                "image",
+                "video",
+                "text",
+                "audio",
+                "html",
+                "native_component",
+              ]),
+              fileUrl: z.string().optional(),
+              textContent: z
+                .object({
+                  bodyText: z.string().optional(),
+                  callToAction: z.string().optional(),
+                  headline: z.string().optional(),
+                })
+                .optional(),
+            }),
+          ),
+          creativeName: z.string().describe("Name for the new creative"),
+        }),
+      )
+      .optional()
+      .describe("New creatives to create and attach"),
+
     // Option 3: Natural language prompt
-    prompt: z.string().optional().describe("Natural language description of creatives to create and attach"),
+    prompt: z
+      .string()
+      .optional()
+      .describe(
+        "Natural language description of creatives to create and attach",
+      ),
   }),
 });

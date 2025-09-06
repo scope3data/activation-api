@@ -3,6 +3,8 @@ import type { FastMCP } from "fastmcp";
 import type { Scope3ApiClient } from "../client/scope3-client.js";
 
 import { getAmpAgentsTool } from "./agents/get-amp-agents.js";
+// New Creative Management Tools (MCP Orchestration)
+import { assetsAddTool } from "./assets/add.js";
 import { checkAuthTool } from "./auth/check-auth.js";
 // Brand Agent audience tools
 import { createSyntheticAudienceTool } from "./brand-agents/audiences/create-audience.js";
@@ -33,20 +35,21 @@ import { listMeasurementSourcesTool } from "./brand-agents/measurement/list-meas
 // Brand Agent standards tools
 import { getBrandStandardsTool } from "./brand-agents/standards/get-brand-standards.js";
 import { setBrandStandardsTool } from "./brand-agents/standards/set-brand-standards.js";
-import { createCampaignTool } from "./campaigns/create-campaign.js";
-import { updateCampaignTool } from "./campaigns/update-campaign.js";
 // Campaign creative tools
 import { campaignAttachCreativeTool } from "./campaigns/attach-creative.js";
+import { createCampaignTool } from "./campaigns/create-campaign.js";
 import { campaignListCreativesTool } from "./campaigns/list-creatives.js";
-// New Creative Management Tools (MCP Orchestration)
-import { assetsAddTool } from "./assets/add.js";
-import { creativeAssignTool, creativeUnassignTool } from "./creatives/assign.js";
-import { creativeCreateTool } from "./creatives/create.js";
-import { creativeUpdateTool } from "./creatives/update.js";
-import { creativeListTool } from "./creatives/list.js";
-import { creativeSyncPublishersTool } from "./creatives/sync-publishers.js";
+import { updateCampaignTool } from "./campaigns/update-campaign.js";
 import { creativeApprovalStatusTool } from "./creatives/approval-status.js";
+import {
+  creativeAssignTool,
+  creativeUnassignTool,
+} from "./creatives/assign.js";
+import { creativeCreateTool } from "./creatives/create.js";
+import { creativeListTool } from "./creatives/list.js";
 import { creativeReviseTool } from "./creatives/revise.js";
+import { creativeSyncPublishersTool } from "./creatives/sync-publishers.js";
+import { creativeUpdateTool } from "./creatives/update.js";
 import { listCreativeFormatsTool } from "./formats/list.js";
 
 export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
@@ -95,26 +98,26 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(listMeasurementSourcesTool(client));
 
   // New Creative Management Tools (MCP Orchestration)
-  server.addTool(creativeCreateTool(client));        // creative/create
-  server.addTool(creativeUpdateTool(client));        // creative/update  
-  server.addTool(creativeListTool(client));          // creative/list
-  server.addTool(creativeAssignTool(client));        // creative/assign
-  server.addTool(creativeUnassignTool(client));      // creative/unassign
-  
-  // Publisher Approval Workflow
-  server.addTool(creativeSyncPublishersTool(client));    // creative/sync_publishers
-  server.addTool(creativeApprovalStatusTool(client));    // creative/approval_status
-  server.addTool(creativeReviseTool(client));           // creative/revise
-  
-  // Asset Management (Reference-Based)
-  server.addTool(assetsAddTool(client));             // assets/add
-  
-  // Format Discovery
-  server.addTool(listCreativeFormatsTool(client));   // list_creative_formats
+  server.addTool(creativeCreateTool(client)); // creative/create
+  server.addTool(creativeUpdateTool(client)); // creative/update
+  server.addTool(creativeListTool(client)); // creative/list
+  server.addTool(creativeAssignTool(client)); // creative/assign
+  server.addTool(creativeUnassignTool(client)); // creative/unassign
 
-  // Campaign Creative Tools  
+  // Publisher Approval Workflow
+  server.addTool(creativeSyncPublishersTool(client)); // creative/sync_publishers
+  server.addTool(creativeApprovalStatusTool(client)); // creative/approval_status
+  server.addTool(creativeReviseTool(client)); // creative/revise
+
+  // Asset Management (Reference-Based)
+  server.addTool(assetsAddTool(client)); // assets/add
+
+  // Format Discovery
+  server.addTool(listCreativeFormatsTool(client)); // list_creative_formats
+
+  // Campaign Creative Tools
   server.addTool(campaignAttachCreativeTool(client)); // campaign/attach_creative
-  server.addTool(campaignListCreativesTool(client));  // campaign/list_creatives
+  server.addTool(campaignListCreativesTool(client)); // campaign/list_creatives
 };
 
 // Export individual tools for testing
@@ -124,19 +127,34 @@ export {
   // Brand Agent inventory tools
   adjustInventoryAllocationTool,
   analyzeInventoryPerformanceTool,
+  // Asset Management
+  assetsAddTool,
+  // Campaign Creative Tools
+  campaignAttachCreativeTool,
+  campaignListCreativesTool,
+
   // Original tools
   checkAuthTool,
   // Brand Agent campaign tools
   createBrandAgentCampaignTool,
   // Brand Agent creative tools
   createBrandAgentCreativeTool,
-
   // Brand Agent core tools
   createBrandAgentTool,
   createCampaignTool,
   createInventoryOptionTool,
   // Brand Agent audience tools
   createSyntheticAudienceTool,
+  creativeApprovalStatusTool,
+  creativeAssignTool,
+  // New Creative Management Tools
+  creativeCreateTool,
+  creativeListTool,
+  creativeReviseTool,
+  // Publisher Approval Workflow
+  creativeSyncPublishersTool,
+  creativeUnassignTool,
+  creativeUpdateTool,
   deleteBrandAgentTool,
   discoverPublisherProductsTool,
   getAmpAgentsTool,
@@ -145,6 +163,8 @@ export {
   listBrandAgentCampaignsTool,
   listBrandAgentCreativesTool,
   listBrandAgentsTool,
+  // Format Discovery
+  listCreativeFormatsTool,
   listInventoryOptionsTool,
   listMeasurementSourcesTool,
   listSyntheticAudiencesTool,
@@ -154,21 +174,4 @@ export {
   updateBrandAgentCreativeTool,
   updateBrandAgentTool,
   updateCampaignTool,
-  // New Creative Management Tools
-  creativeCreateTool,
-  creativeUpdateTool,
-  creativeListTool,
-  creativeAssignTool,
-  creativeUnassignTool,
-  // Publisher Approval Workflow
-  creativeSyncPublishersTool,
-  creativeApprovalStatusTool,
-  creativeReviseTool,
-  // Asset Management
-  assetsAddTool,
-  // Format Discovery
-  listCreativeFormatsTool,
-  // Campaign Creative Tools
-  campaignAttachCreativeTool,
-  campaignListCreativesTool,
 };

@@ -29,16 +29,22 @@ export const creativeUpdateTool = (client: Scope3ApiClient) => ({
     args: {
       creativeId: string;
       updates: {
-        name?: string;
-        status?: 'draft' | 'pending_review' | 'active' | 'paused' | 'archived' | 'rejected';
+        advertiserDomains?: string[];
         content?: {
+          assetIds?: string[];
           htmlSnippet?: string;
           javascriptTag?: string;
-          vastTag?: string;
-          assetIds?: string[];
           productUrl?: string;
+          vastTag?: string;
         };
-        advertiserDomains?: string[];
+        name?: string;
+        status?:
+          | "active"
+          | "archived"
+          | "draft"
+          | "paused"
+          | "pending_review"
+          | "rejected";
       };
     },
     context: MCPToolExecuteContext,
@@ -56,11 +62,11 @@ export const creativeUpdateTool = (client: Scope3ApiClient) => ({
 
     try {
       // Validate that at least one update is provided
-      const { name, status, content, advertiserDomains } = args.updates;
+      const { advertiserDomains, content, name, status } = args.updates;
       if (!name && !status && !content && !advertiserDomains) {
         return createErrorResponse(
           "At least one update field must be provided: name, status, content, or advertiserDomains",
-          new Error("No updates provided")
+          new Error("No updates provided"),
         );
       }
 
@@ -87,29 +93,30 @@ export const creativeUpdateTool = (client: Scope3ApiClient) => ({
         response += `
 • Name updated to: ${name}`;
       }
-      
+
       if (status) {
         response += `
 • Status changed to: ${status}`;
       }
-      
+
       if (content) {
         const contentUpdates: string[] = [];
         if (content.htmlSnippet) contentUpdates.push("HTML Snippet");
         if (content.javascriptTag) contentUpdates.push("JavaScript Tag");
         if (content.vastTag) contentUpdates.push("VAST Tag");
-        if (content.assetIds?.length) contentUpdates.push(`${content.assetIds.length} Asset References`);
+        if (content.assetIds?.length)
+          contentUpdates.push(`${content.assetIds.length} Asset References`);
         if (content.productUrl) contentUpdates.push("Product URL");
-        
+
         if (contentUpdates.length > 0) {
           response += `
-• Content updated: ${contentUpdates.join(', ')}`;
+• Content updated: ${contentUpdates.join(", ")}`;
         }
       }
-      
+
       if (advertiserDomains) {
         response += `
-• Advertiser Domains updated: ${advertiserDomains.join(', ')}`;
+• Advertiser Domains updated: ${advertiserDomains.join(", ")}`;
       }
 
       response += `
@@ -121,7 +128,7 @@ export const creativeUpdateTool = (client: Scope3ApiClient) => ({
       // Show asset references
       if (updatedCreative.assetIds?.length) {
         response += `
-• Referenced Assets: ${updatedCreative.assetIds.join(', ')}`;
+• Referenced Assets: ${updatedCreative.assetIds.join(", ")}`;
       }
 
       // Show campaign assignments
@@ -149,7 +156,6 @@ ${statusIcon} ${assignment.campaignName} (${assignment.campaignId})`;
 • Changes processed through appropriate ${updatedCreative.format.type} provider`;
 
       return createMCPResponse({ message: response, success: true });
-
     } catch (error) {
       return createErrorResponse("Failed to update creative", error);
     }
@@ -159,28 +165,58 @@ ${statusIcon} ${assignment.campaignName} (${assignment.campaignId})`;
 
   parameters: z.object({
     creativeId: z.string().describe("ID of the creative to update"),
-    
-    updates: z.object({
-      // Basic properties
-      name: z.string().optional().describe("New name for the creative"),
-      status: z.enum(['draft', 'pending_review', 'active', 'paused', 'archived', 'rejected'])
-        .optional().describe("New status for the creative"),
-      
-      // Content updates (partial update)
-      content: z.object({
-        htmlSnippet: z.string().optional().describe("Updated HTML5 creative snippet"),
-        javascriptTag: z.string().optional().describe("Updated JavaScript ad tag"),
-        vastTag: z.string().optional().describe("Updated VAST XML tag"),
-        assetIds: z.array(z.string()).optional().describe("Updated array of asset ID references"),
-        productUrl: z.string().optional().describe("Updated product page URL"),
-      }).optional().describe("Content sources to update"),
-      
-      // Marketing metadata
-      advertiserDomains: z.array(z.string()).optional().describe("Updated advertiser click domains"),
-      
-    }).refine(
-      (data) => data.name || data.status || data.content || data.advertiserDomains,
-      { message: "At least one update field must be provided" }
-    ).describe("Update fields - at least one must be provided"),
+
+    updates: z
+      .object({
+        // Marketing metadata
+        advertiserDomains: z
+          .array(z.string())
+          .optional()
+          .describe("Updated advertiser click domains"),
+        // Content updates (partial update)
+        content: z
+          .object({
+            assetIds: z
+              .array(z.string())
+              .optional()
+              .describe("Updated array of asset ID references"),
+            htmlSnippet: z
+              .string()
+              .optional()
+              .describe("Updated HTML5 creative snippet"),
+            javascriptTag: z
+              .string()
+              .optional()
+              .describe("Updated JavaScript ad tag"),
+            productUrl: z
+              .string()
+              .optional()
+              .describe("Updated product page URL"),
+            vastTag: z.string().optional().describe("Updated VAST XML tag"),
+          })
+          .optional()
+          .describe("Content sources to update"),
+
+        // Basic properties
+        name: z.string().optional().describe("New name for the creative"),
+
+        status: z
+          .enum([
+            "draft",
+            "pending_review",
+            "active",
+            "paused",
+            "archived",
+            "rejected",
+          ])
+          .optional()
+          .describe("New status for the creative"),
+      })
+      .refine(
+        (data) =>
+          data.name || data.status || data.content || data.advertiserDomains,
+        { message: "At least one update field must be provided" },
+      )
+      .describe("Update fields - at least one must be provided"),
   }),
 });

@@ -22,15 +22,15 @@ export const creativeSyncPublishersTool = (client: Scope3ApiClient) => ({
     title: "Sync Creative to Publishers",
   },
 
-  description: 
+  description:
     "Sync a creative to one or more publishers for approval. Can be used for pre-approval before campaign launch or when inventory is selected. Publishers may auto-approve standard formats or require manual review.",
 
   execute: async (
     args: {
-      creativeId: string;
-      publisherIds: string[];
       campaignId?: string;
+      creativeId: string;
       preApproval?: boolean;
+      publisherIds: string[];
     },
     context: MCPToolExecuteContext,
   ): Promise<string> => {
@@ -48,33 +48,37 @@ export const creativeSyncPublishersTool = (client: Scope3ApiClient) => ({
     try {
       // Sync creative to publishers
       const syncResults = await client.syncCreativeToPublishers(apiKey, {
-        creativeId: args.creativeId,
-        publisherIds: args.publisherIds,
         campaignId: args.campaignId,
+        creativeId: args.creativeId,
         preApproval: args.preApproval || false,
+        publisherIds: args.publisherIds,
       });
 
       // Create human-readable response
       let response = `🔄 **Creative Publisher Sync Results**
 
 📦 **Creative ID**: ${args.creativeId}
-${args.campaignId ? `🎯 **Campaign**: ${args.campaignId}` : ''}
-${args.preApproval ? '✅ **Pre-Approval Request**' : ''}
+${args.campaignId ? `🎯 **Campaign**: ${args.campaignId}` : ""}
+${args.preApproval ? "✅ **Pre-Approval Request**" : ""}
 
 📊 **Sync Summary**
 • Publishers Targeted: ${args.publisherIds.length}
-• Successfully Synced: ${syncResults.filter(r => r.syncStatus === 'success').length}
-• Failed: ${syncResults.filter(r => r.syncStatus === 'failed').length}
-• Pending: ${syncResults.filter(r => r.syncStatus === 'pending').length}
+• Successfully Synced: ${syncResults.filter((r) => r.syncStatus === "success").length}
+• Failed: ${syncResults.filter((r) => r.syncStatus === "failed").length}
+• Pending: ${syncResults.filter((r) => r.syncStatus === "pending").length}
 
 ---
 
 ## 🏢 **Publisher Status**`;
 
       // Group by status
-      const autoApproved = syncResults.filter(r => r.approvalStatus === 'auto_approved');
-      const pendingReview = syncResults.filter(r => r.approvalStatus === 'pending');
-      const failed = syncResults.filter(r => r.syncStatus === 'failed');
+      const autoApproved = syncResults.filter(
+        (r) => r.approvalStatus === "auto_approved",
+      );
+      const pendingReview = syncResults.filter(
+        (r) => r.approvalStatus === "pending",
+      );
+      const failed = syncResults.filter((r) => r.syncStatus === "failed");
 
       if (autoApproved.length > 0) {
         response += `
@@ -93,7 +97,7 @@ ${args.preApproval ? '✅ **Pre-Approval Request**' : ''}
         for (const result of pendingReview) {
           response += `
 • **${result.publisherName}**: Manual review required
-  - Estimated review time: ${result.estimatedReviewTime || 'Within 24 hours'}`;
+  - Estimated review time: ${result.estimatedReviewTime || "Within 24 hours"}`;
         }
       }
 
@@ -103,7 +107,7 @@ ${args.preApproval ? '✅ **Pre-Approval Request**' : ''}
 ❌ **Sync Failed** (${failed.length})`;
         for (const result of failed) {
           response += `
-• **${result.publisherName}**: ${result.error || 'Sync failed'}`;
+• **${result.publisherName}**: ${result.error || "Sync failed"}`;
         }
       }
 
@@ -141,18 +145,28 @@ ${args.preApproval ? '✅ **Pre-Approval Request**' : ''}
       }
 
       return createMCPResponse({ message: response, success: true });
-
     } catch (error) {
-      return createErrorResponse("Failed to sync creative to publishers", error);
+      return createErrorResponse(
+        "Failed to sync creative to publishers",
+        error,
+      );
     }
   },
 
   name: "creative/sync_publishers",
 
   parameters: z.object({
+    campaignId: z
+      .string()
+      .optional()
+      .describe("Campaign ID if syncing for specific campaign"),
     creativeId: z.string().describe("ID of the creative to sync"),
-    publisherIds: z.array(z.string()).describe("Array of publisher IDs to sync to"),
-    campaignId: z.string().optional().describe("Campaign ID if syncing for specific campaign"),
-    preApproval: z.boolean().optional().describe("Request pre-approval before campaign launch (default: false)"),
+    preApproval: z
+      .boolean()
+      .optional()
+      .describe("Request pre-approval before campaign launch (default: false)"),
+    publisherIds: z
+      .array(z.string())
+      .describe("Array of publisher IDs to sync to"),
   }),
 });

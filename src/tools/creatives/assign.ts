@@ -27,9 +27,9 @@ export const creativeAssignTool = (client: Scope3ApiClient) => ({
 
   execute: async (
     args: {
-      creativeId: string;
-      campaignId: string;
       buyerAgentId: string;
+      campaignId: string;
+      creativeId: string;
     },
     context: MCPToolExecuteContext,
   ): Promise<string> => {
@@ -50,7 +50,7 @@ export const creativeAssignTool = (client: Scope3ApiClient) => ({
         apiKey,
         args.creativeId,
         args.campaignId,
-        args.buyerAgentId
+        args.buyerAgentId,
       );
 
       if (result.success) {
@@ -62,7 +62,7 @@ export const creativeAssignTool = (client: Scope3ApiClient) => ({
 • Buyer Agent: ${args.buyerAgentId}
 
 📊 **Assignment Information**
-• Assignment Status: ${result.success ? '✅ Success' : '❌ Failed'}
+• Assignment Status: ${result.success ? "✅ Success" : "❌ Failed"}
 • Assignment Date: ${new Date().toLocaleDateString()}
 • Message: ${result.message}
 
@@ -82,21 +82,27 @@ export const creativeAssignTool = (client: Scope3ApiClient) => ({
       } else {
         return createErrorResponse(
           `Failed to assign creative: ${result.message}`,
-          new Error("Assignment failed")
+          new Error("Assignment failed"),
         );
       }
-
     } catch (error) {
-      return createErrorResponse("Failed to assign creative to campaign", error);
+      return createErrorResponse(
+        "Failed to assign creative to campaign",
+        error,
+      );
     }
   },
 
   name: "creative/assign",
 
   parameters: z.object({
+    buyerAgentId: z
+      .string()
+      .describe("The buyer agent that owns both the creative and campaign"),
+    campaignId: z
+      .string()
+      .describe("ID of the campaign/strategy to assign the creative to"),
     creativeId: z.string().describe("ID of the creative to assign"),
-    campaignId: z.string().describe("ID of the campaign/strategy to assign the creative to"),
-    buyerAgentId: z.string().describe("The buyer agent that owns both the creative and campaign"),
   }),
 });
 
@@ -106,7 +112,7 @@ export const creativeAssignTool = (client: Scope3ApiClient) => ({
 export const creativeUnassignTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "creative-management",
-    dangerLevel: "medium", 
+    dangerLevel: "medium",
     openWorldHint: true,
     readOnlyHint: false,
     title: "Unassign Creative from Campaign",
@@ -117,8 +123,8 @@ export const creativeUnassignTool = (client: Scope3ApiClient) => ({
 
   execute: async (
     args: {
-      creativeId: string;
       campaignId: string;
+      creativeId: string;
     },
     context: MCPToolExecuteContext,
   ): Promise<string> => {
@@ -137,7 +143,7 @@ export const creativeUnassignTool = (client: Scope3ApiClient) => ({
       const result = await client.unassignCreativeFromCampaign(
         apiKey,
         args.creativeId,
-        args.campaignId
+        args.campaignId,
       );
 
       if (result.success) {
@@ -165,19 +171,23 @@ export const creativeUnassignTool = (client: Scope3ApiClient) => ({
       } else {
         return createErrorResponse(
           `Failed to unassign creative: ${result.message}`,
-          new Error("Unassignment failed")
+          new Error("Unassignment failed"),
         );
       }
-
     } catch (error) {
-      return createErrorResponse("Failed to unassign creative from campaign", error);
+      return createErrorResponse(
+        "Failed to unassign creative from campaign",
+        error,
+      );
     }
   },
 
   name: "creative/unassign",
 
   parameters: z.object({
+    campaignId: z
+      .string()
+      .describe("ID of the campaign to remove the creative from"),
     creativeId: z.string().describe("ID of the creative to unassign"),
-    campaignId: z.string().describe("ID of the campaign to remove the creative from"),
   }),
 });

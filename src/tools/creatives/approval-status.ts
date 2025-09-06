@@ -22,7 +22,7 @@ export const creativeApprovalStatusTool = (client: Scope3ApiClient) => ({
     title: "Check Creative Approval Status",
   },
 
-  description: 
+  description:
     "Check the publisher approval status for a creative. Shows which publishers have approved, rejected, or are still reviewing the creative, along with any feedback or requested changes.",
 
   execute: async (
@@ -50,7 +50,7 @@ export const creativeApprovalStatusTool = (client: Scope3ApiClient) => ({
       if (!creative) {
         return createErrorResponse(
           "Creative not found",
-          new Error(`Creative ${args.creativeId} does not exist`)
+          new Error(`Creative ${args.creativeId} does not exist`),
         );
       }
 
@@ -71,7 +71,7 @@ export const creativeApprovalStatusTool = (client: Scope3ApiClient) => ({
         } else {
           response += `
 ⚠️ **Asset Issues Detected**`;
-          
+
           if (creative.assetValidation.invalidAssets) {
             for (const invalid of creative.assetValidation.invalidAssets) {
               response += `
@@ -79,28 +79,28 @@ export const creativeApprovalStatusTool = (client: Scope3ApiClient) => ({
 ❌ **Asset ${invalid.assetId}**
 • Error: ${invalid.error}
 • Message: ${invalid.errorMessage}`;
-              
+
               // Provide helpful suggestions based on error type
               switch (invalid.error) {
-                case 'not_found':
+                case "corrupted":
                   response += `
-• **Action Required**: Re-upload the asset or provide a valid URL`;
+• **Action Required**: Re-upload a valid, uncorrupted asset file`;
                   break;
-                case 'download_failed':
+                case "download_failed":
                   response += `
 • **Action Required**: Check asset URL accessibility and permissions`;
                   break;
-                case 'format_mismatch':
+                case "format_mismatch":
                   response += `
 • **Action Required**: Convert asset to required format or upload correct version`;
                   break;
-                case 'size_exceeded':
+                case "not_found":
+                  response += `
+• **Action Required**: Re-upload the asset or provide a valid URL`;
+                  break;
+                case "size_exceeded":
                   response += `
 • **Action Required**: Compress asset or provide smaller file`;
-                  break;
-                case 'corrupted':
-                  response += `
-• **Action Required**: Re-upload a valid, uncorrupted asset file`;
                   break;
               }
             }
@@ -117,14 +117,19 @@ export const creativeApprovalStatusTool = (client: Scope3ApiClient) => ({
 
 ## 🏢 **Publisher Approvals**`;
 
-      if (!creative.publisherApprovals || creative.publisherApprovals.length === 0) {
+      if (
+        !creative.publisherApprovals ||
+        creative.publisherApprovals.length === 0
+      ) {
         response += `
 ℹ️ No publisher syncs yet - use creative/sync_publishers to submit for approval`;
       } else {
         // Filter by publisher if specified
         let approvals = creative.publisherApprovals;
         if (args.publisherId) {
-          approvals = approvals.filter(a => a.publisherId === args.publisherId);
+          approvals = approvals.filter(
+            (a) => a.publisherId === args.publisherId,
+          );
           if (approvals.length === 0) {
             response += `
 ℹ️ Creative not synced to publisher ${args.publisherId}`;
@@ -133,10 +138,18 @@ export const creativeApprovalStatusTool = (client: Scope3ApiClient) => ({
         }
 
         // Group by status
-        const approved = approvals.filter(a => a.approvalStatus === 'approved' || a.approvalStatus === 'auto_approved');
-        const rejected = approvals.filter(a => a.approvalStatus === 'rejected');
-        const changesRequested = approvals.filter(a => a.approvalStatus === 'changes_requested');
-        const pending = approvals.filter(a => a.approvalStatus === 'pending');
+        const approved = approvals.filter(
+          (a) =>
+            a.approvalStatus === "approved" ||
+            a.approvalStatus === "auto_approved",
+        );
+        const rejected = approvals.filter(
+          (a) => a.approvalStatus === "rejected",
+        );
+        const changesRequested = approvals.filter(
+          (a) => a.approvalStatus === "changes_requested",
+        );
+        const pending = approvals.filter((a) => a.approvalStatus === "pending");
 
         response += `
 
@@ -149,7 +162,7 @@ export const creativeApprovalStatusTool = (client: Scope3ApiClient) => ({
           for (const approval of approved) {
             response += `
 • **${approval.publisherName}**`;
-            if (approval.approvalStatus === 'auto_approved') {
+            if (approval.approvalStatus === "auto_approved") {
               response += ` (Auto-approved)`;
             }
             if (approval.reviewedAt) {
@@ -167,8 +180,8 @@ export const creativeApprovalStatusTool = (client: Scope3ApiClient) => ({
             response += `
 • **${approval.publisherName}**
   - Rejected: ${approval.reviewedAt}
-  - Reason: ${approval.rejectionReason || 'No reason provided'}`;
-            
+  - Reason: ${approval.rejectionReason || "No reason provided"}`;
+
             response += `
   - **Action Required**: Use creative/revise to address rejection or create new creative`;
           }
@@ -182,8 +195,11 @@ export const creativeApprovalStatusTool = (client: Scope3ApiClient) => ({
             response += `
 • **${approval.publisherName}**
   - Reviewed: ${approval.reviewedAt}`;
-            
-            if (approval.requestedChanges && approval.requestedChanges.length > 0) {
+
+            if (
+              approval.requestedChanges &&
+              approval.requestedChanges.length > 0
+            ) {
               response += `
   - **Requested Changes**:`;
               for (const change of approval.requestedChanges) {
@@ -191,7 +207,7 @@ export const creativeApprovalStatusTool = (client: Scope3ApiClient) => ({
     • ${change}`;
               }
             }
-            
+
             response += `
   - **Action Required**: Use creative/revise to make requested changes`;
           }
@@ -206,7 +222,7 @@ export const creativeApprovalStatusTool = (client: Scope3ApiClient) => ({
 • **${approval.publisherName}**
   - Synced: ${approval.syncedAt}
   - Status: Awaiting publisher review`;
-            
+
             if (approval.autoApprovalPolicy) {
               response += `
   - Note: Publisher typically auto-approves standard formats`;
@@ -216,20 +232,26 @@ export const creativeApprovalStatusTool = (client: Scope3ApiClient) => ({
       }
 
       // Campaign sync status
-      if (creative.campaignAssignments && creative.campaignAssignments.length > 0) {
+      if (
+        creative.campaignAssignments &&
+        creative.campaignAssignments.length > 0
+      ) {
         response += `
 
 ---
 
 ## 🎯 **Campaign Assignments**`;
-        
+
         for (const assignment of creative.campaignAssignments) {
           response += `
 
 **${assignment.campaignName}** (${assignment.campaignId})`;
-          if (assignment.publishersSynced && assignment.publishersSynced.length > 0) {
+          if (
+            assignment.publishersSynced &&
+            assignment.publishersSynced.length > 0
+          ) {
             response += `
-• Publishers synced: ${assignment.publishersSynced.join(', ')}`;
+• Publishers synced: ${assignment.publishersSynced.join(", ")}`;
           } else {
             response += `
 • No publishers synced yet`;
@@ -244,35 +266,47 @@ export const creativeApprovalStatusTool = (client: Scope3ApiClient) => ({
 ## 💡 **Recommendations**`;
 
       // Provide actionable recommendations
-      if (creative.assetValidation && !creative.assetValidation.allAssetsValid) {
+      if (
+        creative.assetValidation &&
+        !creative.assetValidation.allAssetsValid
+      ) {
         response += `
 1. **Fix asset issues** before syncing to publishers`;
       }
 
-      const hasRejections = creative.publisherApprovals?.some(a => 
-        a.approvalStatus === 'rejected' || a.approvalStatus === 'changes_requested'
+      const hasRejections = creative.publisherApprovals?.some(
+        (a) =>
+          a.approvalStatus === "rejected" ||
+          a.approvalStatus === "changes_requested",
       );
-      
+
       if (hasRejections) {
         response += `
 2. **Address publisher feedback** using creative/revise command`;
       }
 
-      const hasPending = creative.publisherApprovals?.some(a => a.approvalStatus === 'pending');
+      const hasPending = creative.publisherApprovals?.some(
+        (a) => a.approvalStatus === "pending",
+      );
       if (hasPending) {
         response += `
 3. **Monitor pending approvals** - check back in 24 hours`;
       }
 
-      if (!creative.publisherApprovals || creative.publisherApprovals.length === 0) {
+      if (
+        !creative.publisherApprovals ||
+        creative.publisherApprovals.length === 0
+      ) {
         response += `
 4. **Submit for approval** using creative/sync_publishers`;
       }
 
       return createMCPResponse({ message: response, success: true });
-
     } catch (error) {
-      return createErrorResponse("Failed to get creative approval status", error);
+      return createErrorResponse(
+        "Failed to get creative approval status",
+        error,
+      );
     }
   },
 
@@ -280,6 +314,9 @@ export const creativeApprovalStatusTool = (client: Scope3ApiClient) => ({
 
   parameters: z.object({
     creativeId: z.string().describe("ID of the creative to check"),
-    publisherId: z.string().optional().describe("Filter to specific publisher (optional)"),
+    publisherId: z
+      .string()
+      .optional()
+      .describe("Filter to specific publisher (optional)"),
   }),
 });
