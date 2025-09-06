@@ -1,14 +1,18 @@
 {
-  "name": "Scope3 Ad Platform",
+  "name": "Scope3 Campaign API",
   "logo": {
     "dark": "/logo/dark.svg",
     "light": "/logo/light.svg"
   },
   "favicon": "/favicon.svg",
   "colors": {
-    "primary": "#16a34a",
-    "light": "#22c55e",
-    "dark": "#15803d"
+    "primary": "#0D9373",
+    "light": "#07C983",
+    "dark": "#0D9373",
+    "anchors": {
+      "from": "#0D9373",
+      "to": "#07C983"
+    }
   },
   "topbarLinks": [
     {
@@ -16,7 +20,10 @@
       "url": "https://api.agentic.scope3.com"
     }
   ],
-  "tabs": [],
+  "topbarCtaButton": {
+    "name": "Get API Key",
+    "url": "https://app.scope3.com/api-keys"
+  },
   "anchors": [
     {
       "name": "GitHub",
@@ -32,39 +39,39 @@
   "navigation": [
     {
       "group": "Get Started",
+      "pages": ["quickstart", "concepts"]
+    },
+    {
+      "group": "Reporting & Analytics",
       "pages": [
-        "mintlify/introduction",
-        "mintlify/quickstart/authentication",
-        "mintlify/quickstart/first-campaign"
+        "reporting-overview",
+        "api-reference/reporting/get-campaign-summary",
+        "api-reference/reporting/export-campaign-data",
+        "api-reference/reporting/analyze-tactics"
       ]
     },
     {
-      "group": "Core Concepts",
+      "group": "Integration Guides",
       "pages": [
-        "mintlify/concepts/philosophy",
-        "mintlify/concepts/optimization-modes"
+        "guides/casual-users",
+        "guides/enterprise-developers",
+        "guides/power-users",
+        "guides/workflow-examples"
       ]
     },
     {
-      "group": "MCP Integration",
-      "pages": ["mintlify/mcp/overview", "mintlify/mcp/setup"]
+      "group": "MCP & Claude Integration",
+      "pages": ["mcp/claude-desktop", "mcp/conversational-examples"]
     },
     {
-      "group": "Platform Migration",
-      "pages": [
-        "mintlify/migration/overview",
-        "mintlify/migration/concept-mapping"
-      ]
-    },
-    {
-      "group": "Resources",
-      "pages": ["mintlify/resources/glossary"]
+      "group": "Webhooks",
+      "pages": ["webhooks/overview"]
     }
   ],
   "api": {
     "baseUrl": "https://api.agentic.scope3.com",
     "auth": {
-      "method": "bearer",
+      "method": "key",
       "name": "x-scope3-api-key"
     },
     "playground": {

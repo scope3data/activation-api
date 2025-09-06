@@ -21,6 +21,7 @@ import type {
   SyntheticAudienceInput,
   SyntheticAudiencesData,
 } from "../types/brand-agent.js";
+import type { CampaignEvent, CampaignEventInput } from "../types/events.js";
 import type {
   InventoryOption,
   InventoryOptionInput,
@@ -52,6 +53,10 @@ import type {
   TargetingDimension,
   UpdateStrategyInput,
 } from "../types/scope3.js";
+import type {
+  WebhookSubscription,
+  WebhookSubscriptionInput,
+} from "../types/webhooks.js";
 
 import { GET_AGENTS_QUERY } from "./queries/agents.js";
 import { GET_API_ACCESS_KEYS_QUERY } from "./queries/auth.js";
@@ -88,6 +93,18 @@ import {
   LIST_INVENTORY_OPTIONS_QUERY,
   UPDATE_INVENTORY_OPTION_MUTATION,
 } from "./queries/inventory-options.js";
+import {
+  CREATE_CAMPAIGN_EVENT_MUTATION,
+  CREATE_WEBHOOK_SUBSCRIPTION_MUTATION,
+  GET_BRAND_AGENT_CAMPAIGN_WITH_DELIVERY_QUERY,
+  GET_BUDGET_ALLOCATIONS_QUERY,
+  GET_CAMPAIGN_DELIVERY_DATA_QUERY,
+  GET_CAMPAIGN_EVENTS_QUERY,
+  GET_CAMPAIGN_TACTICS_QUERY,
+  GET_TACTIC_BREAKDOWN_QUERY,
+  GET_TACTIC_PERFORMANCE_QUERY,
+  LIST_WEBHOOK_SUBSCRIPTIONS_QUERY,
+} from "./queries/reporting.js";
 import {
   CREATE_BITMAP_TARGETING_PROFILE_MUTATION,
   GET_TARGETING_DIMENSIONS_QUERY,
@@ -324,6 +341,38 @@ export class Scope3ApiClient {
     return result.data.createBrandAgentCreative;
   }
 
+  async createCampaignEvent(
+    apiKey: string,
+    input: CampaignEventInput,
+  ): Promise<CampaignEvent> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: CREATE_CAMPAIGN_EVENT_MUTATION,
+        variables: { input },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    const result = (await response.json()) as GraphQLResponse<{
+      createCampaignEvent: CampaignEvent;
+    }>;
+
+    if (result.errors) {
+      throw new Error(`GraphQL errors: ${JSON.stringify(result.errors)}`);
+    }
+
+    if (!result.data?.createCampaignEvent) {
+      throw new Error("Failed to create campaign event");
+    }
+
+    return result.data.createCampaignEvent;
+  }
+
   // Create inventory option (product + targeting)
   async createInventoryOption(
     apiKey: string,
@@ -472,6 +521,38 @@ export class Scope3ApiClient {
     }
 
     return result.data.createSyntheticAudience;
+  }
+
+  async createWebhookSubscription(
+    apiKey: string,
+    input: WebhookSubscriptionInput,
+  ): Promise<WebhookSubscription> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: CREATE_WEBHOOK_SUBSCRIPTION_MUTATION,
+        variables: { input },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    const result = (await response.json()) as GraphQLResponse<{
+      createWebhookSubscription: WebhookSubscription;
+    }>;
+
+    if (result.errors) {
+      throw new Error(`GraphQL errors: ${JSON.stringify(result.errors)}`);
+    }
+
+    if (!result.data?.createWebhookSubscription) {
+      throw new Error("Failed to create webhook subscription");
+    }
+
+    return result.data.createWebhookSubscription;
   }
 
   async deleteBrandAgent(apiKey: string, id: string): Promise<boolean> {
@@ -682,6 +763,39 @@ export class Scope3ApiClient {
     return result.data.brandAgent;
   }
 
+  // Reporting methods
+  async getBrandAgentCampaign(
+    apiKey: string,
+    campaignId: string,
+  ): Promise<BrandAgentCampaign> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: GET_BRAND_AGENT_CAMPAIGN_WITH_DELIVERY_QUERY,
+        variables: { id: campaignId },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    const result = (await response.json()) as GraphQLResponse<{
+      brandAgentCampaign: BrandAgentCampaign;
+    }>;
+
+    if (result.errors) {
+      throw new Error(`GraphQL errors: ${JSON.stringify(result.errors)}`);
+    }
+
+    if (!result.data?.brandAgentCampaign) {
+      throw new Error("Campaign not found");
+    }
+
+    return result.data.brandAgentCampaign;
+  }
+
   async getBrandStandards(
     apiKey: string,
     brandAgentId: string,
@@ -722,6 +836,135 @@ export class Scope3ApiClient {
     }
 
     return result.data.brandStandards;
+  }
+
+  async getBudgetAllocations(
+    apiKey: string,
+    campaignId: string,
+    dateRange: { end: Date; start: Date },
+  ): Promise<Record<string, unknown>[]> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: GET_BUDGET_ALLOCATIONS_QUERY,
+        variables: {
+          campaignId,
+          endDate: dateRange.end.toISOString().split("T")[0],
+          startDate: dateRange.start.toISOString().split("T")[0],
+        },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    const result = (await response.json()) as GraphQLResponse<{
+      budgetAllocations: Record<string, unknown>[];
+    }>;
+
+    if (result.errors) {
+      throw new Error(`GraphQL errors: ${JSON.stringify(result.errors)}`);
+    }
+
+    return result.data?.budgetAllocations || [];
+  }
+
+  async getCampaignDeliveryData(
+    apiKey: string,
+    campaignId: string,
+    dateRange: { end: Date; start: Date },
+  ): Promise<Record<string, unknown>> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: GET_CAMPAIGN_DELIVERY_DATA_QUERY,
+        variables: {
+          campaignId,
+          endDate: dateRange.end.toISOString().split("T")[0],
+          startDate: dateRange.start.toISOString().split("T")[0],
+        },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    const result = (await response.json()) as GraphQLResponse<{
+      campaignDeliveryData: Record<string, unknown>;
+    }>;
+
+    if (result.errors) {
+      throw new Error(`GraphQL errors: ${JSON.stringify(result.errors)}`);
+    }
+
+    return (
+      result.data?.campaignDeliveryData || { dailyDeliveries: [], summary: {} }
+    );
+  }
+
+  async getCampaignEvents(
+    apiKey: string,
+    campaignId: string,
+    dateRange: { end: Date; start: Date },
+  ): Promise<CampaignEvent[]> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: GET_CAMPAIGN_EVENTS_QUERY,
+        variables: {
+          campaignId,
+          endDate: dateRange.end.toISOString().split("T")[0],
+          startDate: dateRange.start.toISOString().split("T")[0],
+        },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    const result = (await response.json()) as GraphQLResponse<{
+      campaignEvents: CampaignEvent[];
+    }>;
+
+    if (result.errors) {
+      throw new Error(`GraphQL errors: ${JSON.stringify(result.errors)}`);
+    }
+
+    return result.data?.campaignEvents || [];
+  }
+
+  async getCampaignTactics(
+    apiKey: string,
+    campaignId: string,
+  ): Promise<Record<string, unknown>[]> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: GET_CAMPAIGN_TACTICS_QUERY,
+        variables: { campaignId },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    const result = (await response.json()) as GraphQLResponse<{
+      campaignTactics: Record<string, unknown>[];
+    }>;
+
+    if (result.errors) {
+      throw new Error(`GraphQL errors: ${JSON.stringify(result.errors)}`);
+    }
+
+    return result.data?.campaignTactics || [];
   }
 
   // Authentication methods
@@ -878,6 +1121,8 @@ export class Scope3ApiClient {
     return result.data.optimizationRecommendations;
   }
 
+  // Inventory Option Management Methods
+
   // Get product recommendations
   async getProductRecommendations(
     apiKey: string,
@@ -897,6 +1142,72 @@ export class Scope3ApiClient {
     }[];
   }> {
     return this.productDiscovery.getRecommendedProducts(apiKey, params);
+  }
+
+  async getTacticBreakdown(
+    apiKey: string,
+    campaignId: string,
+    dateRange: { end: Date; start: Date },
+  ): Promise<Record<string, unknown>[]> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: GET_TACTIC_BREAKDOWN_QUERY,
+        variables: {
+          campaignId,
+          endDate: dateRange.end.toISOString().split("T")[0],
+          startDate: dateRange.start.toISOString().split("T")[0],
+        },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    const result = (await response.json()) as GraphQLResponse<{
+      tacticBreakdown: Record<string, unknown>[];
+    }>;
+
+    if (result.errors) {
+      throw new Error(`GraphQL errors: ${JSON.stringify(result.errors)}`);
+    }
+
+    return result.data?.tacticBreakdown || [];
+  }
+
+  async getTacticPerformance(
+    apiKey: string,
+    tacticId: string,
+    dateRange: { end: Date; start: Date },
+  ): Promise<Record<string, unknown>> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: GET_TACTIC_PERFORMANCE_QUERY,
+        variables: {
+          endDate: dateRange.end.toISOString().split("T")[0],
+          startDate: dateRange.start.toISOString().split("T")[0],
+          tacticId,
+        },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    const result = (await response.json()) as GraphQLResponse<{
+      tacticPerformance: Record<string, unknown>;
+    }>;
+
+    if (result.errors) {
+      throw new Error(`GraphQL errors: ${JSON.stringify(result.errors)}`);
+    }
+
+    return result.data?.tacticPerformance || {};
   }
 
   // Targeting methods
@@ -1145,8 +1456,6 @@ export class Scope3ApiClient {
     return result.data.measurementSources;
   }
 
-  // Inventory Option Management Methods
-
   async listSyntheticAudiences(
     apiKey: string,
     brandAgentId: string,
@@ -1186,6 +1495,34 @@ export class Scope3ApiClient {
     }
 
     return result.data.syntheticAudiences;
+  }
+
+  async listWebhookSubscriptions(
+    apiKey: string,
+    brandAgentId: string,
+  ): Promise<WebhookSubscription[]> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: LIST_WEBHOOK_SUBSCRIPTIONS_QUERY,
+        variables: { brandAgentId },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    const result = (await response.json()) as GraphQLResponse<{
+      webhookSubscriptions: WebhookSubscription[];
+    }>;
+
+    if (result.errors) {
+      throw new Error(`GraphQL errors: ${JSON.stringify(result.errors)}`);
+    }
+
+    return result.data?.webhookSubscriptions || [];
   }
 
   // Campaign methods

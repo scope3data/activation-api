@@ -1,0 +1,706 @@
+---
+title: "Workflow Examples"
+description: "End-to-end workflows for common advertising scenarios"
+---
+
+## Complete Campaign Lifecycle
+
+### Setting up a New Brand Agent
+
+**Scenario**: Setting up Nike as a new advertiser with brand safety and tracking
+
+```javascript
+// 1. Create brand agent
+const nike = await createBrandAgent({
+  name: "Nike",
+  description: "Athletic wear and lifestyle brand"
+});
+// Returns: { id: "ba_nike_123", name: "Nike", ... }
+
+// 2. Configure brand safety
+await setBrandStandards({
+  brandAgentId: "ba_nike_123",
+  domainBlocklist: ["adidas.com", "underarmour.com", "puma.com"],
+  keywordFilters: ["competitor", "knockoff", "fake"],
+  contentCategories: ["adult", "political", "violence"]
+});
+
+// 3. Add tracking integration
+await addMeasurementSource({
+  brandAgentId: "ba_nike_123",
+  name: "Nike GA4",
+  type: "analytics",
+  configuration: {
+    propertyId: "GA4-NIKE-TRACKING",
+    conversionEvents: ["purchase", "add_to_cart"]
+  }
+});
+
+// 4. Create target audience
+const techEnthusiasts = await createAudience({
+  brandAgentId: "ba_nike_123",
+  name: "Tech Enthusiasts 25-34",
+  description: "Tech-savvy millennials interested in performance gear"
+});
+```
+
+**Conversational Equivalent**:
+```
+User: "Set up Nike as a new advertiser with competitor blocking"
+Claude: Creates brand agent ba_nike_123, sets domain blocklist for competitors, 
+        and configures basic brand safety rules
+
+User: "Add Google Analytics tracking for purchases"  
+Claude: Configures measurement source with GA4 integration
+
+User: "Create an audience for tech enthusiasts aged 25-34"
+Claude: Creates synthetic audience profile for targeting
+```
+
+### Creating and Managing Creatives
+
+**Scenario**: Adding multiple creative assets for a campaign
+
+```javascript
+// 1. Add video creative
+const videoCreative = await createCreative({
+  brandAgentId: "ba_nike_123",
+  name: "Air Max Launch Video",
+  type: "video",
+  url: "https://cdn.nike.com/videos/airmax-launch-30s.mp4",
+  headline: "Step into the Future",
+  body: "The new Air Max collection combines cutting-edge technology with iconic style",
+  cta: "Shop Now"
+});
+
+// 2. Add companion display creative
+const displayCreative = await createCreative({
+  brandAgentId: "ba_nike_123", 
+  name: "Air Max Launch Display",
+  type: "image",
+  url: "https://cdn.nike.com/images/airmax-launch-display.jpg",
+  headline: "Revolutionary Comfort",
+  cta: "Discover Air Max"
+});
+
+// 3. Add native creative for social
+const nativeCreative = await createCreative({
+  brandAgentId: "ba_nike_123",
+  name: "Air Max Social Native",
+  type: "native",
+  headline: "Game-Changing Comfort Technology",
+  body: "Experience the innovation that's redefining athletic footwear. The new Air Max collection features advanced cushioning that adapts to every step.",
+  cta: "Learn More"
+});
+
+// 4. List all creatives for review
+const allCreatives = await listCreatives({
+  brandAgentId: "ba_nike_123"
+});
+```
+
+### Campaign Launch with Multi-Creative Assignment
+
+**Scenario**: Launching a comprehensive campaign with multiple creatives and optimization
+
+```javascript
+// Create campaign with all creatives assigned
+const airMaxCampaign = await createCampaign({
+  brandAgentId: "ba_nike_123",
+  name: "Air Max Q1 Launch",
+  prompt: "$75,000 premium video and display campaign targeting tech enthusiasts and athletes aged 25-44 interested in innovative footwear, emphasizing performance and style",
+  budget: {
+    total: 75000,
+    daily: 2500,
+    currency: "USD"
+  },
+  creativeIds: [
+    videoCreative.id,
+    displayCreative.id, 
+    nativeCreative.id
+  ],
+  audienceIds: [techEnthusiasts.id],
+  // Set up notification thresholds during creation
+  notificationThresholds: {
+    spend: {
+      dailyMax: 3000,      // Alert if daily spend exceeds $3K
+      pacingVariance: 0.25  // Alert if 25% off pace
+    },
+    performance: {
+      minCtr: 0.008,       // Alert if CTR drops below 0.8%
+      maxCpm: 18.00        // Alert if CPM exceeds $18
+    },
+    delivery: {
+      minDailyImpressions: 50000,  // Alert if under 50K daily impressions
+      fillRateThreshold: 0.85      // Alert if fill rate below 85%
+    }
+  }
+});
+```
+
+## Real-time Monitoring & Optimization
+
+### Setting up Comprehensive Monitoring
+
+**Scenario**: Real-time campaign monitoring with multiple webhook endpoints
+
+```javascript
+// 1. Register webhook for immediate performance alerts
+await registerWebhook({
+  brandAgentId: "ba_nike_123",
+  endpoint: {
+    url: "https://nike-ops.com/webhooks/critical-alerts",
+    method: "POST",
+    authentication: {
+      type: "hmac",
+      credentials: process.env.NIKE_WEBHOOK_SECRET
+    }
+  },
+  eventTypes: ["threshold_alert"],
+  filters: {
+    campaigns: [airMaxCampaign.id],
+    minSeverity: "critical"
+  },
+  retryPolicy: {
+    maxRetries: 10,
+    backoffMultiplier: 2.0
+  }
+});
+
+// 2. Register webhook for optimization engine
+await registerWebhook({
+  brandAgentId: "ba_nike_123", 
+  endpoint: {
+    url: "https://nike-optimization.com/events",
+    headers: {
+      "X-Campaign-ID": airMaxCampaign.id,
+      "X-Optimization-Model": "v2.1"
+    }
+  },
+  eventTypes: ["performance_event", "delivery_update"],
+  filters: {
+    campaigns: [airMaxCampaign.id],
+    metrics: ["cpm_efficiency", "conversion_rate", "video_completion_rate"]
+  }
+});
+
+// 3. Register webhook for BI dashboard
+await registerWebhook({
+  brandAgentId: "ba_nike_123",
+  endpoint: {
+    url: "https://nike-analytics.com/campaign-data",
+    authentication: {
+      type: "bearer", 
+      credentials: process.env.ANALYTICS_TOKEN
+    }
+  },
+  eventTypes: ["delivery_update"],
+  filters: {
+    minSeverity: "info"  // All events for comprehensive tracking
+  }
+});
+```
+
+### Daily Performance Monitoring
+
+**Scenario**: Daily campaign check-in workflow
+
+```javascript
+// Morning briefing workflow
+async function dailyCampaignBriefing(campaignId) {
+  // 1. Get conversational summary
+  const summary = await getCampaignSummary({
+    campaignId: campaignId,
+    includeCharts: true,
+    verbosity: "executive"
+  });
+  
+  console.log("🎯 DAILY CAMPAIGN BRIEFING");
+  console.log(summary.content);
+  
+  // 2. Check for any critical issues
+  if (summary.alerts && summary.alerts.length > 0) {
+    console.log("\n⚠️ ACTIVE ALERTS:");
+    summary.alerts.forEach(alert => {
+      console.log(`- ${alert.severity.toUpperCase()}: ${alert.message}`);
+    });
+  }
+  
+  // 3. Get detailed performance for deeper analysis
+  if (summary.healthScore === "critical" || summary.healthScore === "warning") {
+    const detailedData = await exportCampaignData({
+      campaignIds: [campaignId],
+      datasets: ["delivery", "tactics"],
+      groupBy: ["date", "tactic", "signal"],
+      dateRange: {
+        start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Last 7 days
+        end: new Date().toISOString().split('T')[0]
+      },
+      format: "json"
+    });
+    
+    console.log("\n📊 DETAILED PERFORMANCE DATA:");
+    console.log(`Records: ${detailedData.totalRecords}`);
+    console.log(`Data available at: ${detailedData.downloadUrl || 'inline'}`);
+  }
+}
+
+// Run daily briefing
+await dailyCampaignBriefing("camp_airmax_123");
+```
+
+**Conversational Equivalent**:
+```
+User: "How's my Air Max campaign doing this morning?"
+Claude: 🎯 Campaign Health Score: 78/100 (Healthy)
+        📊 Yesterday: $2,247 spend, 127K impressions, $17.68 CPM
+        📈 Pacing: Slightly ahead (54% budget used, 48% through flight)
+        🔧 Recommendation: Video creative showing 23% higher completion rates
+        
+User: "Any issues I should know about?"
+Claude: ⚠️ One warning: CPM trending higher than $18 threshold
+        Consider adjusting bid strategy or expanding targeting
+        
+User: "Show me which signals are working best"
+Claude: 📈 Top performing signals:
+        1. age_25_34: $16.2 CPM, 1.2% CTR
+        2. interest_tech: $17.8 CPM, 0.9% CTR
+        3. lookalike_existing: $19.1 CPM, 0.7% CTR
+```
+
+## Advanced Analytics Workflows
+
+### Weekly Performance Deep Dive
+
+**Scenario**: Comprehensive weekly analysis with tactic optimization
+
+```javascript
+async function weeklyPerformanceAnalysis(campaignId) {
+  console.log("📈 WEEKLY PERFORMANCE DEEP DIVE");
+  
+  // 1. Get tactic efficiency analysis
+  const tacticAnalysis = await analyzeTactics({
+    campaignId: campaignId,
+    analysisType: "efficiency", 
+    compareSignals: true,
+    compareStories: true,
+    timeframe: "7d"
+  });
+  
+  console.log("\n🎯 TACTIC EFFICIENCY RANKINGS:");
+  tacticAnalysis.tacticRankings.forEach((tactic, index) => {
+    console.log(`${index + 1}. ${tactic.tacticId}: ${tactic.efficiencyScore} efficiency score`);
+    console.log(`   Signals: ${tactic.topSignals.join(', ')}`);
+    console.log(`   Stories: ${tactic.topStories.join(', ')}`);
+  });
+  
+  // 2. Analyze signal performance across all tactics
+  const signalAnalysis = await analyzeTactics({
+    campaignId: campaignId,
+    analysisType: "signals",
+    timeframe: "7d"
+  });
+  
+  console.log("\n🔍 SIGNAL PERFORMANCE ANALYSIS:");
+  signalAnalysis.signalEffectiveness.forEach(signal => {
+    console.log(`${signal.signal}: ${signal.effectivenessScore} (p-value: ${signal.pValue})`);
+    if (signal.pValue < 0.05) {
+      console.log(`   ✅ Statistically significant improvement`);
+    }
+  });
+  
+  // 3. Export detailed data for custom analysis
+  const weeklyExport = await exportCampaignData({
+    campaignIds: [campaignId],
+    datasets: ["delivery", "events", "tactics"],
+    groupBy: ["date", "tactic", "signal", "story"],
+    dateRange: {
+      start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      end: new Date().toISOString().split('T')[0]
+    },
+    format: "parquet",
+    compression: "gzip"
+  });
+  
+  console.log("\n💾 WEEKLY DATA EXPORT:");
+  console.log(`Format: ${weeklyExport.format}`);
+  console.log(`Records: ${weeklyExport.totalRecords}`);
+  console.log(`Download: ${weeklyExport.downloadUrl}`);
+  
+  return {
+    tacticAnalysis,
+    signalAnalysis, 
+    dataExport: weeklyExport
+  };
+}
+
+// Run weekly analysis
+const weeklyReport = await weeklyPerformanceAnalysis("camp_airmax_123");
+```
+
+### Attribution Analysis Workflow
+
+**Scenario**: Multi-touch attribution analysis for conversion optimization
+
+```javascript
+async function attributionAnalysis(campaignId, conversionWindow = 30) {
+  console.log("🔗 ATTRIBUTION ANALYSIS");
+  
+  // 1. Get conversion path analysis
+  const attribution = await analyzeTactics({
+    campaignId: campaignId,
+    analysisType: "attribution",
+    compareSignals: true,
+    customDateRange: {
+      start: new Date(Date.now() - conversionWindow * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      end: new Date().toISOString().split('T')[0]
+    }
+  });
+  
+  // 2. Export event data for path analysis
+  const eventData = await exportCampaignData({
+    campaignIds: [campaignId],
+    datasets: ["events"],
+    groupBy: ["date", "hour", "tactic", "signal", "story"],
+    dateRange: {
+      start: new Date(Date.now() - conversionWindow * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      end: new Date().toISOString().split('T')[0]  
+    },
+    format: "json"
+  });
+  
+  console.log("\n🎯 CONVERSION ATTRIBUTION:");
+  attribution.conversionPaths.forEach(path => {
+    console.log(`Path: ${path.touchpoints.join(' → ')}`);
+    console.log(`Conversions: ${path.conversions}`);
+    console.log(`Attribution Weight: ${path.attributionWeight}`);
+  });
+  
+  console.log("\n📊 SIGNAL ATTRIBUTION:");
+  attribution.signalAttribution.forEach(signal => {
+    console.log(`${signal.signal}: ${signal.attributionScore}% of conversions`);
+    console.log(`  First Touch: ${signal.firstTouch}%`);
+    console.log(`  Last Touch: ${signal.lastTouch}%`);
+    console.log(`  Assisted: ${signal.assisted}%`);
+  });
+  
+  return { attribution, eventData };
+}
+
+// Analyze conversion paths
+const attributionResults = await attributionAnalysis("camp_airmax_123", 14);
+```
+
+## Campaign Optimization Workflows
+
+### Budget Reallocation Based on Performance
+
+**Scenario**: Reallocating budget based on tactic performance
+
+```javascript
+async function optimizeBudgetAllocation(campaignId) {
+  // 1. Get current tactic performance
+  const tacticAnalysis = await analyzeTactics({
+    campaignId: campaignId,
+    analysisType: "efficiency",
+    timeframe: "7d"
+  });
+  
+  // 2. Get current campaign details
+  const campaign = await getBrandAgentCampaign({ campaignId });
+  
+  // 3. Calculate optimal allocation
+  const totalBudget = campaign.budget.total;
+  const remainingBudget = totalBudget - campaign.deliverySummary.today.spend;
+  
+  const optimizedAllocation = tacticAnalysis.tacticRankings.map(tactic => {
+    const allocationPercentage = tactic.efficiencyScore / 
+      tacticAnalysis.tacticRankings.reduce((sum, t) => sum + t.efficiencyScore, 0);
+    
+    return {
+      tacticId: tactic.tacticId,
+      currentAllocation: tactic.currentBudgetAllocation,
+      recommendedAllocation: Math.round(remainingBudget * allocationPercentage),
+      efficiencyScore: tactic.efficiencyScore,
+      change: Math.round(remainingBudget * allocationPercentage) - tactic.currentBudgetAllocation
+    };
+  });
+  
+  console.log("💰 BUDGET REALLOCATION RECOMMENDATIONS:");
+  optimizedAllocation.forEach(allocation => {
+    const changeSign = allocation.change >= 0 ? '+' : '';
+    console.log(`Tactic ${allocation.tacticId}:`);
+    console.log(`  Current: $${allocation.currentAllocation.toLocaleString()}`);
+    console.log(`  Recommended: $${allocation.recommendedAllocation.toLocaleString()} (${changeSign}${allocation.change.toLocaleString()})`);
+    console.log(`  Efficiency: ${allocation.efficiencyScore}`);
+  });
+  
+  return optimizedAllocation;
+}
+
+// Get optimization recommendations
+const budgetOptimization = await optimizeBudgetAllocation("camp_airmax_123");
+```
+
+### Creative Performance Optimization
+
+**Scenario**: A/B testing creative variants and optimizing based on performance
+
+```javascript
+async function creativeOptimizationWorkflow(campaignId) {
+  // 1. Get campaign creative performance
+  const creativePerformance = await exportCampaignData({
+    campaignIds: [campaignId],
+    datasets: ["delivery", "events"],
+    groupBy: ["creative", "date"],
+    dateRange: {
+      start: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      end: new Date().toISOString().split('T')[0]
+    },
+    format: "json"
+  });
+  
+  // 2. Analyze creative effectiveness
+  const creativeAnalysis = creativePerformance.data.reduce((acc, record) => {
+    if (!acc[record.creative]) {
+      acc[record.creative] = {
+        spend: 0,
+        impressions: 0, 
+        clicks: 0,
+        conversions: 0
+      };
+    }
+    
+    acc[record.creative].spend += record.spend;
+    acc[record.creative].impressions += record.impressions;
+    acc[record.creative].clicks += record.clicks;
+    acc[record.creative].conversions += record.conversions;
+    
+    return acc;
+  }, {});
+  
+  // Calculate performance metrics
+  const creativeMetrics = Object.entries(creativeAnalysis).map(([creativeId, metrics]) => ({
+    creativeId,
+    cpm: (metrics.spend / metrics.impressions) * 1000,
+    ctr: metrics.clicks / metrics.impressions,
+    conversionRate: metrics.conversions / metrics.impressions,
+    costPerConversion: metrics.spend / metrics.conversions,
+    ...metrics
+  }));
+  
+  // Sort by conversion efficiency
+  creativeMetrics.sort((a, b) => a.costPerConversion - b.costPerConversion);
+  
+  console.log("🎨 CREATIVE PERFORMANCE ANALYSIS:");
+  creativeMetrics.forEach((creative, index) => {
+    console.log(`${index + 1}. Creative ${creative.creativeId}:`);
+    console.log(`   CPM: $${creative.cpm.toFixed(2)}`);
+    console.log(`   CTR: ${(creative.ctr * 100).toFixed(3)}%`);
+    console.log(`   Conversion Rate: ${(creative.conversionRate * 100).toFixed(3)}%`);
+    console.log(`   Cost/Conversion: $${creative.costPerConversion.toFixed(2)}`);
+    console.log("");
+  });
+  
+  return creativeMetrics;
+}
+
+// Analyze creative performance
+const creativeAnalysis = await creativeOptimizationWorkflow("camp_airmax_123");
+```
+
+## Enterprise Integration Workflows
+
+### BI Dashboard Data Pipeline
+
+**Scenario**: Automated data pipeline for enterprise dashboard
+
+```javascript
+class NikeDashboardPipeline {
+  constructor(brandAgentId, dashboardAPI) {
+    this.brandAgentId = brandAgentId;
+    this.dashboardAPI = dashboardAPI;
+  }
+  
+  async dailyDataSync() {
+    console.log("📊 Starting daily dashboard sync...");
+    
+    // 1. Get all active campaigns
+    const campaigns = await listCampaigns({ 
+      brandAgentId: this.brandAgentId,
+      status: "active"
+    });
+    
+    // 2. Export yesterday's data for all campaigns
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
+      .toISOString().split('T')[0];
+    
+    const dailyData = await exportCampaignData({
+      brandAgentId: this.brandAgentId,
+      datasets: ["delivery", "events", "tactics"],
+      groupBy: ["campaign", "date", "signal", "story"],
+      dateRange: { start: yesterday, end: yesterday },
+      format: "json"
+    });
+    
+    // 3. Transform and load into dashboard database
+    const transformedData = this.transformForDashboard(dailyData.data);
+    await this.dashboardAPI.loadDailyData(transformedData);
+    
+    console.log(`✅ Synced ${dailyData.totalRecords} records to dashboard`);
+    
+    // 4. Update campaign summaries
+    for (const campaign of campaigns.campaigns) {
+      const summary = await getCampaignSummary({
+        campaignId: campaign.id,
+        verbosity: "brief"
+      });
+      
+      await this.dashboardAPI.updateCampaignSummary(campaign.id, {
+        healthScore: summary.healthScore,
+        pacingStatus: summary.pacing.status,
+        alerts: summary.alerts
+      });
+    }
+    
+    console.log("🎯 Dashboard sync completed");
+  }
+  
+  transformForDashboard(rawData) {
+    return rawData.map(record => ({
+      date: record.date,
+      campaign_id: record.campaign,
+      signal: record.signal,
+      story: record.story,
+      spend_usd: record.spend,
+      impressions: record.impressions,
+      clicks: record.clicks,
+      conversions: record.conversions,
+      cpm: (record.spend / record.impressions) * 1000,
+      ctr: record.clicks / record.impressions,
+      conversion_rate: record.conversions / record.impressions
+    }));
+  }
+  
+  async setupRealtimeUpdates() {
+    // Register webhook for real-time dashboard updates
+    await registerWebhook({
+      brandAgentId: this.brandAgentId,
+      endpoint: {
+        url: "https://nike-dashboard.com/webhook/campaign-updates",
+        authentication: {
+          type: "bearer",
+          credentials: process.env.DASHBOARD_TOKEN
+        }
+      },
+      eventTypes: ["delivery_update", "threshold_alert"],
+      filters: {
+        minSeverity: "info"
+      }
+    });
+    
+    console.log("🔔 Real-time dashboard updates configured");
+  }
+}
+
+// Set up Nike dashboard pipeline
+const dashboardPipeline = new NikeDashboardPipeline("ba_nike_123", dashboardAPI);
+await dashboardPipeline.setupRealtimeUpdates();
+await dashboardPipeline.dailyDataSync();
+```
+
+### Multi-Campaign Portfolio Analysis
+
+**Scenario**: Quarterly portfolio review across all Nike campaigns
+
+```javascript
+async function quarterlyPortfolioReview(brandAgentId) {
+  console.log("📈 QUARTERLY PORTFOLIO REVIEW");
+  
+  const quarterStart = new Date();
+  quarterStart.setMonth(quarterStart.getMonth() - 3);
+  
+  // 1. Export comprehensive data for all campaigns
+  const portfolioData = await exportCampaignData({
+    brandAgentId: brandAgentId,
+    datasets: ["delivery", "events", "tactics", "allocations"],
+    groupBy: ["campaign", "month", "signal", "story"],
+    dateRange: {
+      start: quarterStart.toISOString().split('T')[0],
+      end: new Date().toISOString().split('T')[0]
+    },
+    format: "parquet",
+    compression: "gzip"
+  });
+  
+  // 2. Get individual campaign summaries
+  const campaigns = await listCampaigns({ brandAgentId });
+  const campaignSummaries = await Promise.all(
+    campaigns.campaigns.map(campaign => 
+      getCampaignSummary({
+        campaignId: campaign.id,
+        verbosity: "executive",
+        dateRange: {
+          start: quarterStart.toISOString().split('T')[0],
+          end: new Date().toISOString().split('T')[0]
+        }
+      })
+    )
+  );
+  
+  // 3. Cross-campaign signal analysis
+  const signalAnalysis = await Promise.all(
+    campaigns.campaigns.map(campaign =>
+      analyzeTactics({
+        campaignId: campaign.id,
+        analysisType: "signals",
+        timeframe: "custom",
+        customDateRange: {
+          start: quarterStart.toISOString().split('T')[0],
+          end: new Date().toISOString().split('T')[0]
+        }
+      })
+    )
+  );
+  
+  console.log("\n📊 PORTFOLIO PERFORMANCE:");
+  campaignSummaries.forEach((summary, index) => {
+    console.log(`\n${campaigns.campaigns[index].name}:`);
+    console.log(`  Status: ${summary.status}`);
+    console.log(`  Health Score: ${summary.healthScore}/100`);
+    console.log(`  Total Spend: $${summary.totalSpend.toLocaleString()}`);
+    console.log(`  Impressions: ${summary.totalImpressions.toLocaleString()}`);
+  });
+  
+  console.log("\n🔍 CROSS-CAMPAIGN SIGNAL INSIGHTS:");
+  const consolidatedSignals = signalAnalysis.reduce((acc, analysis) => {
+    analysis.signalEffectiveness.forEach(signal => {
+      if (!acc[signal.signal]) {
+        acc[signal.signal] = {
+          effectivenessScores: [],
+          campaigns: 0
+        };
+      }
+      acc[signal.signal].effectivenessScores.push(signal.effectivenessScore);
+      acc[signal.signal].campaigns++;
+    });
+    return acc;
+  }, {});
+  
+  Object.entries(consolidatedSignals).forEach(([signal, data]) => {
+    const avgEffectiveness = data.effectivenessScores.reduce((a, b) => a + b, 0) / data.effectivenessScores.length;
+    console.log(`${signal}: ${avgEffectiveness.toFixed(3)} avg effectiveness (${data.campaigns} campaigns)`);
+  });
+  
+  return {
+    portfolioData,
+    campaignSummaries,
+    signalAnalysis: consolidatedSignals
+  };
+}
+
+// Run quarterly review
+const quarterlyReport = await quarterlyPortfolioReview("ba_nike_123");
+```
+
+These workflows demonstrate the power of the dual-mode reporting architecture, supporting both conversational interactions and enterprise-grade data analysis across the complete campaign lifecycle.

@@ -1,0 +1,417 @@
+---
+title: "Power Users Guide"
+description: "Advanced analytics, ML insights, and custom signal/story performance analysis"
+---
+
+## Advanced Analytics Capabilities
+
+Power users can leverage sophisticated ML-powered insights and custom analysis tools for deep campaign optimization.
+
+### Multi-Campaign Attribution Analysis
+
+Compare signal effectiveness across campaigns with statistical significance testing:
+
+```javascript
+// Compare signal effectiveness across campaigns
+const analysis = await analyzeTactics({
+  campaignId: "camp_123",
+  analysisType: "attribution", 
+  compareSignals: true,
+  timeframe: "30d"
+});
+
+// Returns signal performance ranking with confidence intervals
+console.log(analysis.signalEffectiveness);
+// Output: [
+//   { signal: "age_25_34", effectivenessScore: 0.87, pValue: 0.003 },
+//   { signal: "interest_sports", effectivenessScore: 0.82, pValue: 0.012 }
+// ]
+```
+
+### Custom Signal/Story Performance Deep Dive
+
+Analyze tactic components with custom date ranges and detailed breakdowns:
+
+```javascript
+// Deep dive into tactic components
+const tacticAnalysis = await analyzeTactics({
+  campaignId: "camp_123", 
+  analysisType: "signals",
+  customDateRange: { 
+    start: "2024-01-01", 
+    end: "2024-01-31" 
+  }
+});
+
+// Returns efficiency scores, conversion attribution, optimization recommendations
+console.log(tacticAnalysis.recommendations);
+// Output: [
+//   "Increase budget allocation to age_25_34 signal (+23% efficiency)",
+//   "Test performance story variant for lifestyle segment"
+// ]
+```
+
+### Real-time Optimization Loops
+
+Set up ML-driven optimization triggers with custom thresholds:
+
+```javascript
+// Set up performance-based webhook triggers
+await registerWebhook({
+  brandAgentId: "ba_123",
+  endpoint: {
+    url: "https://your-optimization-engine.com/webhooks",
+    authentication: {
+      type: "bearer",
+      credentials: process.env.OPTIMIZATION_TOKEN
+    }
+  },
+  eventTypes: ["performance_event"],
+  filters: { 
+    minSeverity: "warning",
+    metrics: ["cpm_efficiency", "conversion_rate"] 
+  }
+});
+```
+
+## Statistical Analysis Features
+
+### A/B Testing Framework
+
+Automated significance testing for tactic variations:
+
+<CodeGroup>
+
+```javascript Statistical Testing
+const abTest = await analyzeTactics({
+  campaignId: "camp_123",
+  analysisType: "optimization",
+  compareSignals: true,
+  compareStories: true
+});
+
+// Automatic statistical significance calculation
+console.log(abTest.statisticalSignificance);
+// Output: {
+//   testType: "t-test",
+//   confidenceInterval: 0.95,
+//   significant: true,
+//   pValue: 0.0032
+// }
+```
+
+```python Data Science Integration
+# Export for custom ML models
+import pandas as pd
+import requests
+
+# Get structured data for analysis
+response = requests.post('/mcp/export_campaign_data', json={
+  "brandAgentId": "ba_123",
+  "datasets": ["events", "tactics"],
+  "groupBy": ["signal", "story", "outcome"],
+  "dateRange": {"start": "2024-01-01", "end": "2024-01-31"},
+  "format": "json"
+})
+
+# Convert to pandas for ML pipeline
+df = pd.DataFrame(response.json()['data'])
+```
+
+</CodeGroup>
+
+### Attribution Modeling
+
+Multi-touch attribution with confidence intervals:
+
+- **Last Click Attribution**: 95% confidence intervals
+- **First Touch Attribution**: Statistical significance testing  
+- **Linear Attribution**: Time-decay modeling
+- **Data-Driven Attribution**: ML-powered weighting
+
+### Seasonality Detection
+
+Algorithm automatically detects and accounts for seasonal patterns in your data, adjusting baselines and forecasts accordingly.
+
+### Anomaly Detection
+
+Real-time alerts for statistical performance outliers with configurable sensitivity:
+
+```javascript
+const thresholds = {
+  spend: {
+    dailyMax: 5000,
+    pacingVariance: 0.2  // 20% variance threshold
+  },
+  performance: {
+    minCtr: 0.01,        // Alert if CTR drops below 1%
+    maxCpm: 15.00        // Alert if CPM exceeds $15
+  }
+};
+```
+
+## Advanced Export Options
+
+### Custom Aggregations
+
+Export data with precise control over dimensions and granularity:
+
+```javascript
+const customExport = await exportCampaignData({
+  brandAgentId: "ba_123",
+  datasets: ["delivery", "events"],
+  groupBy: ["hour", "signal", "publisher_product"], // Hourly granularity
+  format: "parquet",                                // Optimized for analytics
+  filters: {
+    signals: ["age_25_34", "interest_sports"],      // Specific segments
+    minSpend: 100                                   // Filter low-spend tactics
+  },
+  dateRange: {
+    start: "2024-01-01",
+    end: "2024-01-31"
+  }
+});
+
+// Returns download URL for large exports
+console.log(customExport.downloadUrl);
+// Output: "https://exports.scope3.com/data/export_abc123.parquet.gz"
+```
+
+### Data Warehouse Integration
+
+Perfect for business intelligence and custom dashboards:
+
+<CodeGroup>
+
+```sql BigQuery Integration
+-- Example BigQuery schema after import
+SELECT 
+  date,
+  signal,
+  story,
+  SUM(spend) as total_spend,
+  SUM(impressions) as total_impressions,
+  AVG(average_price) as avg_cpm
+FROM scope3_campaign_data
+WHERE date BETWEEN '2024-01-01' AND '2024-01-31'
+GROUP BY date, signal, story
+ORDER BY total_spend DESC;
+```
+
+```python Pandas Analysis
+# Advanced signal performance analysis
+signal_performance = df.groupby(['signal', 'story']).agg({
+    'spend': 'sum',
+    'impressions': 'sum', 
+    'conversions': 'sum',
+    'reward': 'mean'
+}).reset_index()
+
+# Calculate efficiency metrics
+signal_performance['cpm'] = signal_performance['spend'] / signal_performance['impressions'] * 1000
+signal_performance['conversion_rate'] = signal_performance['conversions'] / signal_performance['impressions']
+signal_performance['efficiency_score'] = signal_performance['reward'] / signal_performance['cpm']
+```
+
+</CodeGroup>
+
+## ML Integration Patterns
+
+### Reinforcement Learning Rewards
+
+The API supports RL training through event rewards with immediate and delayed signals:
+
+```typescript
+interface CampaignEvent {
+  eventType: "impression" | "click" | "conversion" | "purchase";
+  campaignId: string;
+  tacticId: string;
+  signals: string[];        // ["age_25_34", "interest_sports"]
+  stories: string[];        // ["performance", "lifestyle"]  
+  reward: {
+    immediate: number;      // 0.0 to 1.0 reward score
+    delayed?: number;       // Optional future reward (e.g., LTV)
+    confidence?: number;    // ML confidence in reward accuracy
+  };
+  amount?: number;          // Purchase value, items in cart, etc.
+  parameters?: Record<string, any>; // Flexible event context
+}
+```
+
+### Custom Signal Development
+
+Export signal performance data for developing custom ML models:
+
+```javascript
+// Export for custom model training
+const signalData = await exportCampaignData({
+  brandAgentId: "ba_123",
+  datasets: ["events", "tactics"],
+  groupBy: ["signal", "story", "outcome", "hour"],
+  dateRange: { start: "2024-01-01", end: "2024-01-31" },
+  format: "json"  // For ML pipeline ingestion
+});
+
+// Use in custom RL training pipeline
+const trainingData = signalData.data.map(row => ({
+  state: { signals: row.signals, stories: row.stories },
+  action: row.tacticId,
+  reward: row.reward,
+  nextState: row.nextSignals || null
+}));
+```
+
+## Advanced Webhook Patterns
+
+### High-Frequency Event Processing
+
+For real-time optimization engines processing thousands of events per minute:
+
+```javascript
+await registerWebhook({
+  brandAgentId: "ba_123",
+  endpoint: {
+    url: "https://your-optimization-engine.com/events",
+    method: "POST",
+    authentication: {
+      type: "hmac",
+      credentials: process.env.WEBHOOK_SECRET
+    }
+  },
+  eventTypes: ["performance_event"],
+  retryPolicy: {
+    maxRetries: 5,           // Reduced retries for high-frequency
+    backoffMultiplier: 1.5,  // Faster backoff
+    maxBackoffSeconds: 30    // Quick failure detection
+  }
+});
+```
+
+### Batch Processing Webhooks
+
+For analytics systems that prefer batch processing:
+
+```javascript
+await registerWebhook({
+  brandAgentId: "ba_123",
+  endpoint: {
+    url: "https://your-analytics.com/batch-events",
+    headers: {
+      "X-Batch-Size": "100",
+      "X-Batch-Timeout": "300"
+    }
+  },
+  eventTypes: ["delivery_update"],
+  filters: {
+    campaigns: ["camp_123", "camp_456"],
+    minSeverity: "info"  // Include all events for comprehensive analysis
+  }
+});
+```
+
+## Performance Optimization
+
+### Batching and Caching
+
+- **Batch Exports**: Large exports (>10MB) return download URLs
+- **Cache Strategy**: Campaign summaries cached for 5 minutes
+- **Webhook Delivery**: 99.9% delivery guarantee with exponential backoff
+
+### Best Practices
+
+1. **Use Parquet for Large Exports**: 60% smaller than JSON, optimized for analytics
+2. **Filter Early**: Apply `filters` in export requests rather than post-processing
+3. **Group Strategically**: Avoid high-cardinality combinations (creative + tactic + hour)
+4. **Monitor Webhook Health**: Track delivery rates and response times
+5. **Cache Webhook Responses**: Implement deduplication for high-frequency events
+
+## Integration Examples
+
+### Custom Dashboard Integration
+
+```javascript
+// Real-time dashboard data pipeline
+class Scope3Dashboard {
+  async refreshCampaignData() {
+    // Get summary for UI
+    const summary = await getCampaignSummary({ 
+      campaignId: this.campaignId,
+      includeCharts: true,
+      verbosity: "detailed"
+    });
+    
+    // Get detailed data for charts
+    const detailedData = await exportCampaignData({
+      campaignIds: [this.campaignId],
+      datasets: ["delivery", "events"],
+      groupBy: ["date", "signal"],
+      dateRange: { start: this.startDate, end: this.endDate },
+      format: "json"
+    });
+    
+    this.updateUI(summary, detailedData);
+  }
+  
+  setupRealTimeUpdates() {
+    // WebSocket connection for real-time updates
+    this.websocket.on('campaign-update', (data) => {
+      this.updateMetrics(data);
+    });
+  }
+}
+```
+
+### Attribution Analysis Pipeline
+
+```python
+# Multi-touch attribution analysis
+class AttributionAnalyzer:
+    def analyze_conversion_paths(self, campaign_id, date_range):
+        # Export event data with full context
+        events_data = self.scope3_client.export_campaign_data(
+            campaign_ids=[campaign_id],
+            datasets=["events"],
+            group_by=["date", "signal", "story", "event_type"],
+            date_range=date_range
+        )
+        
+        # Build conversion funnels
+        conversion_paths = self.build_paths(events_data)
+        
+        # Calculate attribution weights
+        attribution_model = self.train_attribution_model(conversion_paths)
+        
+        return attribution_model.attribution_scores
+```
+
+## Troubleshooting Advanced Features
+
+### Common Issues
+
+**High Cardinality Exports**
+- Problem: Exports timing out with too many dimensions
+- Solution: Reduce `groupBy` dimensions or use date filters
+
+**Webhook Delivery Failures** 
+- Problem: Webhooks not being received
+- Solution: Check endpoint SSL certificate and authentication
+
+**Statistical Significance**
+- Problem: A/B tests showing inconclusive results  
+- Solution: Increase sample size or extend test duration
+
+### Performance Monitoring
+
+Monitor your integration performance:
+
+```javascript
+// Track export performance
+const startTime = Date.now();
+const exportResult = await exportCampaignData(params);
+const exportTime = Date.now() - startTime;
+
+console.log(`Export completed in ${exportTime}ms`);
+console.log(`Data size: ${exportResult.size} records`);
+```
+
+Get help with advanced integrations at [humans@conductor.build](mailto:humans@conductor.build).

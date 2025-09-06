@@ -1,0 +1,280 @@
+---
+title: "Quick Start"
+description: "Get started with the Scope3 Campaign API in 5 minutes"
+icon: "rocket"
+---
+
+## What You'll Learn
+
+Create your first programmatic advertising campaign in 5 minutes:
+1. Set up authentication
+2. Create a brand agent (advertiser account)
+3. Add a creative asset
+4. Launch a campaign
+5. Monitor performance
+
+<Note>
+This guide shows you the complete workflow. Choose your integration method:
+- **Conversational AI**: Use with Claude, ChatGPT, or other AI assistants
+- **Direct API**: Integrate into your application
+- **MCP Server**: Use the Model Context Protocol server
+</Note>
+
+## Prerequisites
+
+- Scope3 API key ([Get one here](https://app.scope3.com/api-keys))
+- $1,000+ budget (recommended: $10,000+ for meaningful optimization)
+
+## Step 1: Authentication
+
+<Tabs>
+  <Tab title="API Headers">
+    ```bash
+    curl -H "x-scope3-api-key: YOUR_API_KEY" \
+         -H "Content-Type: application/json" \
+         https://api.agentic.scope3.com/mcp
+    ```
+  </Tab>
+  <Tab title="Conversational">
+    ```
+    User: "Check my authentication status"
+    Claude: ✅ Authenticated as user@company.com
+    ```
+  </Tab>
+</Tabs>
+
+## Step 2: Create Brand Agent
+
+Your brand agent acts as an advertiser account that owns all campaigns and assets.
+
+<Tabs>
+  <Tab title="API Call">
+    ```json
+    POST /brand-agents
+    {
+      "name": "Nike",
+      "description": "Athletic footwear and apparel campaigns"
+    }
+    ```
+    **Response:**
+    ```json
+    {
+      "id": "ba_abc123",
+      "name": "Nike",
+      "status": "active"
+    }
+    ```
+  </Tab>
+  <Tab title="Conversational">
+    ```
+    User: "Create a brand agent for Nike"
+    Claude: ✅ Created brand agent ba_abc123 for Nike
+            Ready to add campaigns and creative assets!
+    ```
+  </Tab>
+</Tabs>
+
+## Step 3: Add Creative Asset
+
+<Tabs>
+  <Tab title="API Call">
+    ```json
+    POST /creatives
+    {
+      "brandAgentId": "ba_abc123",
+      "name": "Holiday Sale Video",
+      "type": "video",
+      "url": "https://cdn.nike.com/holiday-sale.mp4",
+      "headline": "Nike Holiday Sale",
+      "cta": "Shop Now"
+    }
+    ```
+  </Tab>
+  <Tab title="Conversational">
+    ```
+    User: "Add a video creative called 'Holiday Sale' to Nike brand agent"
+    Claude: ✅ Created creative cr_def456 for Nike
+            Video creative ready to use in campaigns!
+    ```
+  </Tab>
+</Tabs>
+
+## Step 4: Launch Campaign
+
+<Tabs>
+  <Tab title="API Call">
+    ```json
+    POST /campaigns
+    {
+      "brandAgentId": "ba_abc123",
+      "name": "Nike Holiday Campaign 2024",
+      "prompt": "Target sports enthusiasts aged 25-45 interested in athletic footwear during holiday shopping season",
+      "budget": {
+        "total": 50000,
+        "currency": "USD"
+      },
+      "creativeIds": ["cr_def456"]
+    }
+    ```
+  </Tab>
+  <Tab title="Conversational">
+    ```
+    User: "Create a $50,000 holiday campaign for Nike targeting sports fans with the holiday sale video"
+    Claude: 🚀 Launched campaign camp_xyz789
+            📊 Budget: $50,000
+            🎯 Targeting: Sports enthusiasts, holiday shoppers
+            ✅ Status: Live and delivering
+    ```
+  </Tab>
+</Tabs>
+
+## Step 5: Monitor Performance
+
+<Tabs>
+  <Tab title="Natural Language Summary">
+    ```
+    User: "How's my Nike campaign doing?"
+    Claude: 🎯 Nike Holiday Campaign Health Score: 87/100 (Healthy)
+            
+            📊 **Performance Summary**
+            • Spend: $12,450 of $50,000 (25%)
+            • Impressions: 2.1M delivered
+            • CPM: $5.93 (efficient)
+            • Flight Progress: Day 7 of 30
+            
+            📈 **Pacing Status: On Track**
+            • Budget utilization: 25% used, 23% of flight elapsed
+            • Projected final spend: $49,200 (98% of budget)
+            
+            ⚡ **Top Performing Tactics**
+            • Sports interest + Mobile video: $4.89 CPM
+            • Holiday shopping + CTV: $6.12 CPM
+            
+            💡 **Recommendations**
+            • Consider increasing budget 15% for high-performing mobile tactics
+            • Weekend performance is 23% stronger - optimize dayparting
+    ```
+  </Tab>
+  <Tab title="Data Export">
+    ```json
+    {
+      "campaignId": "camp_xyz789",
+      "dateRange": {
+        "start": "2024-12-01",
+        "end": "2024-12-07"
+      },
+      "summary": {
+        "spend": 12450.00,
+        "impressions": 2100000,
+        "averageCpm": 5.93,
+        "healthScore": 87
+      },
+      "tactics": [
+        {
+          "id": "tactic_123",
+          "signals": ["interest_sports", "device_mobile"],
+          "spend": 8200.00,
+          "cpm": 4.89,
+          "efficiency": "high"
+        }
+      ]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Step 6: Set Up Real-time Alerts (Optional)
+
+Get notified instantly when your campaign needs attention:
+
+<Tabs>
+  <Tab title="Dashboard Setup (Recommended)">
+    1. **Log into [Scope3](https://app.scope3.com)**
+    2. **Go to Campaign Settings** → **Notifications**  
+    3. **Choose where to send alerts:**
+       - Slack channel
+       - Email address
+       - Custom webhook URL
+       
+    You'll get simple alerts like:
+    ```
+    🚨 Budget Alert: Nike Holiday Campaign
+    💰 Daily spend: $3,247 (30% over limit)
+    🔧 Action: Review budget or pause campaign
+    📊 View: https://app.scope3.com/campaigns/123
+    ```
+  </Tab>
+  <Tab title="Conversational">
+    ```
+    User: "How do I get notified when campaigns have problems?"
+    Claude: The easiest way is through your Scope3 dashboard:
+            
+            1. Log into app.scope3.com
+            2. Go to Campaign Settings → Notifications
+            3. Add your Slack channel or email
+            
+            You'll get alerts for budget overruns, performance drops,
+            and campaign status changes. Much simpler than API setup!
+    ```
+  </Tab>
+</Tabs>
+
+## 🎉 Congratulations!
+
+You've successfully:
+- ✅ Created your first brand agent
+- ✅ Added creative assets
+- ✅ Launched a programmatic campaign
+- ✅ Set up performance monitoring
+- ✅ Configured real-time alerts
+
+## Next Steps
+
+### 📊 Explore Powerful Reporting & Analytics
+
+<CardGroup cols={3}>
+  <Card title="Campaign Insights" href="/api-reference/reporting/get-campaign-summary" icon="chart-mixed" color="#0D9373">
+    Get conversational campaign analysis: "How's my campaign doing?"
+  </Card>
+  <Card title="Export Data" href="/api-reference/reporting/export-campaign-data" icon="database" color="#0D9373">
+    Export to CSV, Parquet for BI tools with flexible grouping
+  </Card>
+  <Card title="ML Analytics" href="/api-reference/reporting/analyze-tactics" icon="microscope" color="#0D9373">
+    Statistical analysis and AI-powered optimization recommendations  
+  </Card>
+</CardGroup>
+
+### 🚀 Advanced Features
+
+<CardGroup cols={2}>
+  <Card title="Reporting Overview" href="/reporting-overview" icon="chart-line">
+    Comprehensive guide to all reporting capabilities and use cases
+  </Card>
+  <Card title="Power User Guide" href="/guides/power-users" icon="sparkles">
+    Advanced analytics, attribution modeling, and custom integrations
+  </Card>
+  <Card title="Webhooks & Alerts" href="/webhooks/overview" icon="bell">
+    Set up real-time notifications via Slack, email, or custom endpoints
+  </Card>
+  <Card title="Enterprise Integration" href="/guides/enterprise-developers" icon="building">
+    BI dashboards, data pipelines, and API integration patterns
+  </Card>
+</CardGroup>
+
+## Common Questions
+
+<Accordion title="How long until I see campaign delivery?">
+Campaigns typically start delivering within 2-4 hours of launch. Initial optimization begins immediately, with meaningful performance data available within 24-48 hours.
+</Accordion>
+
+<Accordion title="What's the minimum viable budget?">
+While campaigns can start at $1,000, we recommend $10,000+ for campaigns where performance optimization is important. Higher budgets enable more effective machine learning.
+</Accordion>
+
+<Accordion title="Can I use this with ChatGPT or Claude?">
+Yes! All tools work conversationally with AI assistants. The natural language interface makes campaign management accessible to non-technical users.
+</Accordion>
+
+<Accordion title="How do I integrate with my existing analytics?">
+Use the data export tools to push campaign data to your BI systems, or set up webhooks for real-time integration. We support all major analytics platforms.
+</Accordion>

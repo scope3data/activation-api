@@ -1,0 +1,251 @@
+---
+title: "Reporting & Analytics"
+description: "Powerful tools for campaign monitoring, optimization, and data export"
+icon: "chart-mixed"
+---
+
+## Why Scope3 Reporting is Different
+
+Unlike basic campaign platforms, Scope3 provides enterprise-grade analytics with conversational AI integration:
+
+<CardGroup cols={2}>
+  <Card title="Real-time Insights" icon="gauge-high" color="#0D9373">
+    Instant campaign health scores, pacing alerts, and performance recommendations
+  </Card>
+  <Card title="Conversational Analytics" icon="comments" color="#0D9373">
+    Ask questions like "How's my campaign doing?" and get rich, contextual answers
+  </Card>
+  <Card title="Enterprise Data Export" icon="database" color="#0D9373">
+    Export to CSV, Parquet, JSON for BI tools with flexible grouping and filtering
+  </Card>
+  <Card title="ML-Powered Optimization" icon="brain" color="#0D9373">
+    Statistical significance testing and AI-driven optimization recommendations
+  </Card>
+</CardGroup>
+
+## Core Reporting Tools
+
+### 📊 Campaign Summary & Insights
+
+Get comprehensive campaign analysis with natural language explanations:
+
+<CodeGroup>
+
+```javascript Real-time Insights
+const summary = await getCampaignSummary({
+  campaignId: "camp_airmax_123",
+  includeCharts: true,
+  verbosity: "detailed"
+});
+
+// Returns rich summary with health score, pacing, recommendations
+console.log(summary.healthScore); // "82/100 (Healthy)"
+console.log(summary.recommendations); // AI-powered optimization tips
+```
+
+```text Conversational
+User: "How's my Nike campaign performing this week?"
+
+Claude: 🎯 Nike Air Max Campaign Status:
+        
+Health Score: 82/100 (Healthy)
+Spend: $18,247 of $75,000 budget  
+Pacing: On track (52% budget, 48% through flight)
+CTR: 1.24% (34% above benchmark)
+
+💡 Key insight: age_25_34 + tech_interest performing 40% better
+🔧 Recommendation: Increase budget allocation to top signals
+```
+
+</CodeGroup>
+
+### 📈 Data Export for BI & Analytics
+
+Export structured data for business intelligence tools:
+
+<CodeGroup>
+
+```javascript Enterprise Export
+const exportResult = await exportCampaignData({
+  brandAgentId: "ba_nike_123",
+  datasets: ["delivery", "events", "tactics"],
+  groupBy: ["date", "campaign", "signal", "story"],
+  dateRange: { start: "2024-01-01", end: "2024-01-31" },
+  format: "parquet",
+  compression: "gzip"
+});
+
+// Perfect for data warehouses, dashboards, ML pipelines
+console.log(`${exportResult.totalRecords} records ready`);
+```
+
+```sql BigQuery Integration
+-- Import exported data into BigQuery
+LOAD DATA INTO campaign_performance
+FROM FILES ('gs://your-bucket/scope3_export_*.parquet.gz')
+WITH PARTITION COLUMNS;
+
+-- Analyze signal performance
+SELECT 
+  signal,
+  AVG(cpm) as avg_cpm,
+  AVG(ctr) as avg_ctr,
+  SUM(conversions) as total_conversions
+FROM campaign_performance
+GROUP BY signal
+ORDER BY avg_ctr DESC;
+```
+
+</CodeGroup>
+
+### 🎯 ML-Powered Tactic Analysis  
+
+Deep performance analysis with statistical significance testing:
+
+```javascript
+const analysis = await analyzeTactics({
+  campaignId: "camp_airmax_123",
+  analysisType: "signals",
+  compareSignals: true,
+  timeframe: "30d"
+});
+
+// Statistical analysis with confidence intervals
+analysis.signalEffectiveness.forEach(signal => {
+  console.log(`${signal.signal}: ${signal.effectivenessScore} (p=${signal.pValue})`);
+  if (signal.pValue < 0.05) {
+    console.log(`✅ Statistically significant improvement`);
+  }
+});
+```
+
+## Quick Start Examples
+
+### Morning Campaign Review
+
+```
+User: "Show me how all my campaigns performed yesterday"
+
+Claude: 📊 Portfolio Performance (Yesterday):
+
+🏃 Running Campaign: $347 spend, 28K impressions, $12.39 CPM ✅ Healthy
+👟 Air Max Campaign: $2,180 spend, 156K impressions, $13.97 CPM ✅ Healthy  
+👕 Lifestyle Campaign: $892 spend, 67K impressions, $13.31 CPM ⚠️ Warning
+
+⚠️ Alert: Lifestyle campaign CTR dropped to 0.6% (below 0.8% threshold)
+🔧 Action needed: Review creative performance or adjust targeting
+```
+
+### Weekly Performance Analysis
+
+```javascript
+// Export weekly data for team meeting
+const weeklyReport = await exportCampaignData({
+  brandAgentId: "ba_nike_123",
+  dateRange: { start: "2024-01-08", end: "2024-01-14" },
+  datasets: ["delivery", "events"],
+  groupBy: ["date", "campaign", "creative"],
+  format: "csv"
+});
+
+// Perfect for Excel analysis and presentations
+console.log("Weekly report ready for download");
+```
+
+### Signal Optimization
+
+```
+User: "Which audience signals are working best across all campaigns?"
+
+Claude: 🎯 Cross-Campaign Signal Analysis:
+
+Top Performers (30 days):
+1. age_25_34 + tech_interest: $11.24 CPM, 1.67% CTR ⭐️ Winner
+2. lookalike_existing_customers: $13.89 CPM, 1.42% CTR, 3.12% conv rate
+3. interest_premium_brands: $15.67 CPM, 1.23% CTR
+
+🔧 Recommendation: Increase budget on winners by 40%
+📊 Statistical confidence: 95% (all signals significantly different)
+```
+
+## Integration Patterns
+
+### Real-time Dashboard
+
+Monitor campaigns with live updates:
+
+```javascript
+// Get campaign insights for dashboard
+async function updateDashboard() {
+  const campaigns = await listCampaigns({ brandAgentId: "ba_nike_123" });
+  
+  for (const campaign of campaigns.campaigns) {
+    const summary = await getCampaignSummary({ 
+      campaignId: campaign.id,
+      verbosity: "brief" 
+    });
+    
+    updateCampaignWidget(campaign.id, {
+      healthScore: summary.healthScore,
+      spend: summary.todaySpend,
+      impressions: summary.todayImpressions,
+      alerts: summary.alerts
+    });
+  }
+}
+```
+
+### Data Pipeline
+
+Automated export for BI systems:
+
+```python
+# Daily ETL pipeline
+def daily_campaign_export():
+    yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+    
+    export_result = client.export_campaign_data(
+        brand_agent_id="ba_nike_123",
+        date_range={"start": yesterday, "end": yesterday},
+        datasets=["delivery", "events", "tactics"],
+        group_by=["date", "campaign", "signal", "story"],
+        format="parquet"
+    )
+    
+    # Load into data warehouse
+    load_to_warehouse(export_result['downloadUrl'])
+```
+
+## Get Started with Reporting
+
+<CardGroup cols={3}>
+  <Card title="Campaign Insights" icon="chart-line" href="/api-reference/reporting/get-campaign-summary">
+    Start with conversational campaign analysis and health monitoring
+  </Card>
+  <Card title="Export Data" icon="download" href="/api-reference/reporting/export-campaign-data">  
+    Export structured data for BI tools and custom analysis
+  </Card>
+  <Card title="Advanced Analytics" icon="microscope" href="/api-reference/reporting/analyze-tactics">
+    Deep performance analysis with ML insights and recommendations
+  </Card>
+</CardGroup>
+
+---
+
+<Note>
+**New to programmatic advertising?** Start with [Campaign Insights](/api-reference/reporting/get-campaign-summary) for conversational analysis. 
+
+**Building dashboards or BI integrations?** Jump to [Data Export](/api-reference/reporting/export-campaign-data) for structured data access.
+
+**Need optimization insights?** Use [Advanced Analytics](/api-reference/reporting/analyze-tactics) for ML-powered recommendations.
+</Note>
+
+## Why Teams Choose Scope3 Reporting
+
+> "Unlike other platforms that just show basic metrics, Scope3's conversational reporting helps us understand *why* performance changed and *what* to do about it." - Marketing Director, Fortune 500 Company
+
+> "The ability to export granular signal and story data has transformed our attribution modeling. We finally understand which tactics actually drive conversions." - Head of Analytics, Agency
+
+> "Having Claude explain campaign performance in plain English saves our team hours of manual analysis every week." - Campaign Manager, Brand
+
+Ready to experience next-generation campaign reporting? [Get started with our Quick Start guide](/quickstart) or dive into the [Campaign Insights tool](/api-reference/reporting/get-campaign-summary).

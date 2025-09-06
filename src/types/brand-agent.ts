@@ -1,6 +1,7 @@
 // Brand Agent types - represents advertiser/account level entities
 
 import type { InventoryManagement } from "./inventory-options.js";
+import type { CampaignAlert } from "./reporting.js";
 
 export interface BrandAgent {
   createdAt: Date;
@@ -23,14 +24,58 @@ export interface BrandAgentCampaign {
   };
   createdAt: Date;
   creativeIds: string[];
+  // NEW: Summary delivery status (always included, lightweight)
+  deliverySummary?: {
+    // Active alerts
+    alerts: CampaignAlert[];
+    healthScore: "critical" | "healthy" | "warning";
+    lastUpdated: Date;
+
+    // Pacing
+    pacing: {
+      budgetUtilized: number; // Percentage (0-1)
+      daysRemaining: number;
+      projectedCompletion: Date;
+      status: "on_track" | "over" | "under";
+    };
+
+    status: "completed" | "delivering" | "paused" | "scheduled";
+
+    // Key metrics for quick status
+    today: {
+      averagePrice: number;
+      impressions: number;
+      spend: number;
+    };
+  };
+
   id: string;
 
   // Inventory management configuration
   inventoryManagement?: InventoryManagement;
-
   name: string;
+  // NEW: Integrated notification thresholds
+  notificationThresholds?: {
+    delivery?: {
+      fillRateThreshold?: number; // Alert if <X% fill rate
+      minDailyImpressions?: number;
+    };
+    performance?: {
+      maxCpm?: number;
+      minConversionRate?: number;
+      minCtr?: number;
+    };
+    spend?: {
+      dailyMax?: number;
+      pacingVariance?: number; // Alert if >X% over/under pace
+      totalMax?: number;
+    };
+  };
+
   prompt: string;
+
   status: string;
+
   updatedAt: Date;
 }
 
@@ -49,6 +94,24 @@ export interface BrandAgentCampaignInput {
   inventoryManagement?: InventoryManagement;
 
   name: string;
+  // Optional notification thresholds
+  notificationThresholds?: {
+    delivery?: {
+      fillRateThreshold?: number;
+      minDailyImpressions?: number;
+    };
+    performance?: {
+      maxCpm?: number;
+      minConversionRate?: number;
+      minCtr?: number;
+    };
+    spend?: {
+      dailyMax?: number;
+      pacingVariance?: number;
+      totalMax?: number;
+    };
+  };
+
   prompt: string;
 }
 

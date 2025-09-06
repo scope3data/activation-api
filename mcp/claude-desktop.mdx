@@ -1,0 +1,378 @@
+---
+title: "Claude Desktop Integration"
+description: "Set up and use the Scope3 Campaign API with Claude Desktop"
+---
+
+## Overview
+
+The Scope3 Campaign API MCP server integrates seamlessly with Claude Desktop, enabling natural language campaign management and analytics through conversational AI.
+
+## Installation & Setup
+
+### Prerequisites
+
+- Claude Desktop app installed
+- Node.js 18+ 
+- Scope3 API key
+
+### Quick Setup
+
+1. **Clone and install the MCP server**:
+   ```bash
+   git clone <repository-url>
+   cd scope3-campaign-api
+   npm install
+   npm run build
+   ```
+
+2. **Start the MCP server**:
+   ```bash
+   npm start
+   # Server runs on http://localhost:3001/mcp
+   ```
+
+3. **Configure Claude Desktop**:
+   Add the following to your Claude Desktop MCP settings:
+   ```json
+   {
+     "mcpServers": {
+       "scope3-campaigns": {
+         "command": "node",
+         "args": ["dist/index.js"],
+         "cwd": "/path/to/scope3-campaign-api",
+         "env": {
+           "SCOPE3_API_KEY": "your-api-key-here"
+         }
+       }
+     }
+   }
+   ```
+
+4. **Restart Claude Desktop** to load the new MCP server.
+
+## Authentication Setup
+
+### Environment Variables
+
+The simplest setup uses environment variables:
+
+```bash
+# .env file
+SCOPE3_API_KEY=your_scope3_api_key_here
+```
+
+### Runtime Authentication
+
+You can also provide your API key during conversations:
+
+```
+User: "Use API key sk-scope3-abc123 to create a brand agent for Nike"
+Claude: I'll use that API key to create your brand agent...
+```
+
+<Warning>
+Never share API keys in screenshots or public conversations. Claude forgets API keys between sessions for security.
+</Warning>
+
+## Basic Usage Patterns
+
+### Getting Started
+
+**First time setup**:
+```
+User: "Create a brand agent for my company Acme Corp"
+Claude: I'll create a brand agent for Acme Corp...
+✅ Created brand agent ba_acme_123
+```
+
+**Add creative assets**:
+```  
+User: "Add a video creative called 'Holiday Sale' to brand agent ba_acme_123"
+Claude: I'll add that video creative...
+✅ Created creative cr_holiday_456 for your Holiday Sale video
+```
+
+**Launch a campaign**:
+```
+User: "Create a $10,000 holiday campaign for Acme Corp using the Holiday Sale video"
+Claude: I'll create and launch your holiday campaign...
+✅ Created campaign camp_holiday_789 with $10,000 budget
+📊 Campaign is now live and optimizing
+```
+
+### Daily Monitoring
+
+**Check campaign performance**:
+```
+User: "How's my holiday campaign doing?"
+Claude: 🎯 Campaign Health Score: 85/100 (Healthy)
+        📊 Pacing: On track (52% budget used, 48% of flight remaining)
+        💰 Performance: $2.34 CPM, strong video completion rates
+        🔧 Recommendation: Consider increasing budget for high-performing tactics
+```
+
+**Get detailed insights**:
+```
+User: "Show me which signals are working best for my campaign"
+Claude: 📈 Top performing signals for your holiday campaign:
+        1. age_25_34: $16.2 CPM, 1.2% CTR ⭐️ Best efficiency
+        2. interest_shopping: $17.8 CPM, 0.9% CTR
+        3. lookalike_existing: $19.1 CPM, 0.7% CTR
+        
+        💡 Insight: The 25-34 age group is responding 40% better than other segments
+```
+
+### Setting Up Alerts
+
+**Configure notifications**:
+```
+User: "Send me alerts when my campaign has pacing problems"
+Claude: I'll set up webhook notifications for budget pacing and performance thresholds...
+✅ Configured webhook for campaign pacing alerts
+🔔 You'll receive notifications for:
+   - Daily spend exceeding $500
+   - Pacing variance over 25%
+   - Performance drops below key thresholds
+```
+
+## Advanced Conversational Examples
+
+### Multi-Campaign Management
+
+```
+User: "I want to launch three campaigns for Nike: one for running shoes ($50K), one for lifestyle apparel ($30K), and one for basketball gear ($40K)"
+
+Claude: I'll create three targeted campaigns for Nike. Let me set these up:
+
+🏃‍♂️ Running Shoes Campaign ($50,000)
+✅ Created campaign camp_running_001
+🎯 Targeting: fitness enthusiasts, runners, performance-focused
+📱 Channels: Premium video, native, display
+
+👕 Lifestyle Apparel Campaign ($30,000) 
+✅ Created campaign camp_lifestyle_002
+🎯 Targeting: style-conscious, urban lifestyle, casual wear
+📱 Channels: Social native, lifestyle content, influencer placements
+
+🏀 Basketball Gear Campaign ($40,000)
+✅ Created campaign camp_basketball_003
+🎯 Targeting: basketball fans, athletes, sports enthusiasts
+📱 Channels: Sports content, video pre-roll, mobile display
+
+All campaigns are now live and optimizing. Would you like me to set up cross-campaign performance monitoring?
+```
+
+### Performance Troubleshooting
+
+```
+User: "My campaign CPM is really high, what's going on?"
+
+Claude: Let me analyze your campaign performance...
+
+📊 CPM Analysis for campaign camp_holiday_789:
+Current CPM: $23.45 (⚠️ 34% above industry benchmark)
+
+🔍 Root Cause Analysis:
+1. **Audience Competition**: 67% of spend going to high-competition signals
+   - "interest_luxury" driving $28.50 CPM
+   - "lookalike_premium" at $26.80 CPM
+
+2. **Time-of-Day**: Peak hours (6-9 PM) showing 45% higher costs
+
+3. **Creative Performance**: Display creative showing 23% lower CTR
+
+💡 Optimization Recommendations:
+1. Expand to mid-tier audience signals (projected 18% CPM reduction)
+2. Adjust dayparting to include more mid-day inventory
+3. Pause underperforming display creative, focus budget on video
+
+Would you like me to implement these optimizations?
+```
+
+### Data Export for Analysis
+
+```
+User: "Export all my campaign data from January for analysis in Excel"
+
+Claude: I'll export your January campaign data in Excel-friendly format...
+
+📊 Data Export Complete:
+✅ Format: CSV (Excel compatible)
+✅ Date Range: January 1-31, 2024
+✅ Datasets: Delivery, Events, Tactics breakdown
+✅ Grouping: By date, campaign, signal, story
+✅ Records: 15,847 data points
+
+📁 Download ready at: https://exports.scope3.com/data/nike_jan_2024.csv.gz
+📋 Includes: Spend, impressions, clicks, conversions, CPM, CTR by day
+🔗 Schema documentation: Attached field definitions and formulas
+
+The file includes pivot-ready columns for easy analysis in Excel. Need help creating specific reports or dashboards?
+```
+
+## Conversation Patterns
+
+### Natural Language Campaign Creation
+
+Instead of complex configuration, describe your goals naturally:
+
+<CodeGroup>
+
+```text Simple Request
+"Create a $25,000 campaign for Nike targeting runners"
+```
+
+```text Detailed Request  
+"Set up a comprehensive video campaign for our new Air Max launch, budget $75,000, targeting tech-savvy millennials aged 25-34 who are interested in performance footwear and innovative design, with a focus on premium inventory and brand-safe placements"
+```
+
+```text Multi-Creative Campaign
+"Launch a campaign using our holiday video, display banners, and native ads, targeting our existing customer lookalikes with a $50K budget, and set up alerts if we go over $2K per day"
+```
+
+</CodeGroup>
+
+### Conversational Reporting
+
+Get insights through natural conversation:
+
+<CodeGroup>
+
+```text Performance Check
+"How are my campaigns doing today?"
+→ Gets summaries for all active campaigns
+```
+
+```text Specific Analysis
+"Which creative is performing best in my Nike campaign?"
+→ Analyzes creative performance with recommendations
+```
+
+```text Comparative Analysis
+"Compare my Q1 campaigns to see which targeting worked better"
+→ Runs cross-campaign analysis with statistical insights
+```
+
+</CodeGroup>
+
+### Troubleshooting Conversations
+
+Get help when things aren't working:
+
+<CodeGroup>
+
+```text Performance Issues
+"My campaign spend is way off pace, what should I do?"
+→ Analyzes pacing, identifies issues, suggests corrections
+```
+
+```text Optimization Help
+"CPM is too high but CTR is good, how do I optimize?"
+→ Provides specific optimization recommendations
+```
+
+```text Alert Investigation
+"I got an alert about low performance, can you explain what happened?"
+→ Investigates alerts, provides context and next steps
+```
+
+</CodeGroup>
+
+## Integration Tips
+
+### Best Practices
+
+1. **Start Simple**: Begin with basic campaign creation and monitoring
+2. **Use Natural Language**: Describe goals rather than technical requirements
+3. **Ask for Explanations**: Claude can explain any metric or recommendation
+4. **Set Up Monitoring**: Configure alerts early to catch issues quickly
+5. **Export Data**: Use conversational exports for deeper analysis
+
+### Common Workflows
+
+**Morning Campaign Review**:
+```
+"Show me how all my campaigns performed yesterday and flag any issues"
+```
+
+**Weekly Optimization**:
+```
+"Analyze last week's performance and give me three optimization recommendations"
+```
+
+**Budget Management**:
+```  
+"I have $50K additional budget, which campaigns should I increase and by how much?"
+```
+
+**Competitive Analysis**:
+```
+"Compare my current campaigns to industry benchmarks and show where I can improve"
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**MCP Server Not Connecting**:
+- Verify the server is running on port 3001
+- Check Claude Desktop MCP configuration
+- Restart Claude Desktop after configuration changes
+
+**Authentication Errors**:
+- Verify your Scope3 API key is valid
+- Check environment variable configuration
+- Try providing the API key directly in conversation
+
+**Tool Not Found**:
+- Ensure `npm run build` completed successfully
+- Verify all tools are registered in `src/tools/index.ts`
+- Check Claude Desktop logs for detailed errors
+
+### Getting Help
+
+**Within Claude Desktop**:
+```
+User: "Help me debug this campaign issue"
+Claude: I can help analyze campaign performance issues, check authentication, 
+        explain any metrics, or troubleshoot technical problems. What specific 
+        issue are you experiencing?
+```
+
+**Authentication Status**:
+```
+User: "Am I authenticated?"
+Claude: I'll check your authentication status...
+```
+
+**Available Tools**:
+```
+User: "What can you help me with?"
+Claude: I can help with:
+🏢 Brand agent management (create, update, configure)
+📈 Campaign creation and optimization  
+🎨 Creative asset management
+📊 Performance analysis and reporting
+🔔 Alert configuration and monitoring
+📁 Data exports for analysis
+And much more! What would you like to work on?
+```
+
+For technical issues, contact [humans@conductor.build](mailto:humans@conductor.build).
+
+## Security & Privacy
+
+- API keys are never stored by the MCP server
+- All data remains within your Scope3 account
+- Conversations with Claude are not stored with campaign data
+- Webhook endpoints should use HTTPS and authentication
+- Regular API key rotation is recommended
+
+## Next Steps
+
+Once you have Claude Desktop integration working:
+
+1. [Explore conversational examples](/mcp/conversational-examples) for inspiration
+2. [Set up webhook notifications](/webhooks/setup) for real-time alerts  
+3. [Review enterprise integration patterns](/guides/enterprise-developers) for advanced usage
+4. [Check out workflow examples](/guides/workflow-examples) for complete campaign management

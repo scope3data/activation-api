@@ -8,6 +8,23 @@ export interface AddMeasurementSourceParams {
   type: "analytics" | "brand_study" | "conversion_api" | "mmm";
 }
 
+export interface AnalyzeTacticsParams {
+  analysisType:
+    | "attribution"
+    | "efficiency"
+    | "optimization"
+    | "signals"
+    | "stories";
+  campaignId: string;
+  compareSignals?: boolean;
+  compareStories?: boolean;
+  customDateRange?: {
+    end: string;
+    start: string;
+  };
+  timeframe?: "14d" | "30d" | "7d" | "custom";
+}
+
 // Brand Agent Campaign MCP parameter types
 export interface CreateBrandAgentCampaignParams {
   audienceIds?: string[];
@@ -75,6 +92,28 @@ export interface DeleteBrandAgentParams {
   brandAgentId: string;
 }
 
+export interface ExportCampaignDataParams {
+  brandAgentId?: string;
+  campaignIds?: string[];
+  compression?: "gzip" | "none";
+  datasets: Array<"allocations" | "delivery" | "events" | "tactics">;
+  dateRange: {
+    end: string;
+    start: string;
+  };
+  format?: "csv" | "json" | "parquet";
+  groupBy: Array<
+    | "campaign"
+    | "creative"
+    | "date"
+    | "hour"
+    | "publisher_product"
+    | "signal"
+    | "story"
+    | "tactic"
+  >;
+}
+
 // FastMCP types compatibility
 export interface FastMCPSessionAuth extends Record<string, unknown> {
   customerId?: number;
@@ -95,6 +134,17 @@ export interface GetBrandAgentParams {
 
 export interface GetBrandStandardsParams {
   brandAgentId: string;
+}
+
+// Reporting MCP parameter types
+export interface GetCampaignSummaryParams {
+  campaignId: string;
+  dateRange?: {
+    end?: string;
+    start?: string;
+  };
+  includeCharts?: boolean;
+  verbosity?: "brief" | "detailed" | "executive";
 }
 
 export interface ListBrandAgentCampaignsParams {
@@ -133,6 +183,30 @@ export interface MCPToolExecuteContext {
     customerId?: number;
     scope3ApiKey?: string;
     userId?: string;
+  };
+}
+
+export interface RegisterWebhookParams {
+  brandAgentId: string;
+  endpoint: {
+    authentication?: {
+      credentials: string;
+      type: "basic" | "bearer" | "hmac";
+    };
+    headers?: Record<string, string>;
+    method?: "POST" | "PUT";
+    url: string;
+  };
+  eventTypes: string[];
+  filters?: {
+    campaigns?: string[];
+    metrics?: string[];
+    minSeverity?: "critical" | "info" | "warning";
+  };
+  retryPolicy?: {
+    backoffMultiplier?: number;
+    maxBackoffSeconds?: number;
+    maxRetries?: number;
   };
 }
 

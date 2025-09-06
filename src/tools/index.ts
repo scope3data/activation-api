@@ -35,6 +35,11 @@ import { getBrandStandardsTool } from "./brand-agents/standards/get-brand-standa
 import { setBrandStandardsTool } from "./brand-agents/standards/set-brand-standards.js";
 import { createCampaignTool } from "./campaigns/create-campaign.js";
 import { updateCampaignTool } from "./campaigns/update-campaign.js";
+// Reporting tools
+import { analyzeTacticsTool } from "./reporting/analyze-tactics.js";
+import { exportCampaignDataTool } from "./reporting/export-campaign-data.js";
+import { getCampaignSummaryTool } from "./reporting/get-campaign-summary.js";
+import { registerWebhookTool } from "./reporting/register-webhook.js";
 
 export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   // Authentication and existing agent tools
@@ -80,6 +85,12 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   // Brand Agent measurement tools
   server.addTool(addMeasurementSourceTool(client));
   server.addTool(listMeasurementSourcesTool(client));
+
+  // Reporting tools
+  server.addTool(getCampaignSummaryTool(client));
+  server.addTool(exportCampaignDataTool(client));
+  server.addTool(registerWebhookTool(client));
+  server.addTool(analyzeTacticsTool(client));
 };
 
 // Export individual tools for testing
@@ -89,13 +100,15 @@ export {
   // Brand Agent inventory tools
   adjustInventoryAllocationTool,
   analyzeInventoryPerformanceTool,
+  // Reporting tools
+  analyzeTacticsTool,
   // Original tools
   checkAuthTool,
   // Brand Agent campaign tools
   createBrandAgentCampaignTool,
+
   // Brand Agent creative tools
   createBrandAgentCreativeTool,
-
   // Brand Agent core tools
   createBrandAgentTool,
   createCampaignTool,
@@ -104,15 +117,18 @@ export {
   createSyntheticAudienceTool,
   deleteBrandAgentTool,
   discoverPublisherProductsTool,
+  exportCampaignDataTool,
   getAmpAgentsTool,
   getBrandAgentTool,
   getBrandStandardsTool,
+  getCampaignSummaryTool,
   listBrandAgentCampaignsTool,
   listBrandAgentCreativesTool,
   listBrandAgentsTool,
   listInventoryOptionsTool,
   listMeasurementSourcesTool,
   listSyntheticAudiencesTool,
+  registerWebhookTool,
   // Brand Agent standards tools
   setBrandStandardsTool,
   updateBrandAgentCampaignTool,
