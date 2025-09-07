@@ -57,6 +57,7 @@ interface OpenAPIOperation {
     };
   };
   summary: string;
+  tags?: string[];
   "x-llm-hints": string[];
   "x-migration-notes"?: Record<string, string>;
 }
@@ -369,6 +370,53 @@ For detailed guides, see our [documentation](https://docs.scope3.com).
           url: "https://api.agentic.scope3.com",
         },
       ],
+      tags: [
+        {
+          description: "Authentication and account verification",
+          name: "Authentication",
+        },
+        {
+          description:
+            "Advertiser account management - your top-level container for campaigns and assets",
+          name: "Brand Agents",
+        },
+        {
+          description:
+            "Campaign creation and management with natural language prompts",
+          name: "Campaigns",
+        },
+        {
+          description: "Creative asset management and campaign assignments",
+          name: "Creatives",
+        },
+        {
+          description:
+            "Performance analytics, data exports, and ML-powered insights",
+          name: "Reporting & Analytics",
+        },
+        {
+          description:
+            "Brand standards, content filtering, and audience management",
+          name: "Brand Safety & Targeting",
+        },
+        {
+          description:
+            "Publisher inventory discovery and performance optimization",
+          name: "Inventory & Optimization",
+        },
+        {
+          description: "Creative asset uploads and bulk operations",
+          name: "Asset Management",
+        },
+        {
+          description: "Real-time notifications and external integrations",
+          name: "Webhooks & Integration",
+        },
+        {
+          description: "System utilities and legacy agent support",
+          name: "System",
+        },
+      ],
     };
 
     // Convert tools to OpenAPI paths
@@ -397,6 +445,18 @@ For detailed guides, see our [documentation](https://docs.scope3.com).
         const resource = toolName.replace("delete_", "").replace(/_/g, "-");
         path = `/${resource}s/{id}`;
         method = "DELETE";
+      } else if (toolName === "get_campaign_summary") {
+        path = "/campaigns/{id}/summary";
+        method = "GET";
+      } else if (toolName === "export_campaign_data") {
+        path = "/campaigns/export";
+        method = "POST";
+      } else if (toolName === "analyze_tactics") {
+        path = "/campaigns/{id}/tactics/analyze";
+        method = "POST";
+      } else if (toolName === "register_webhook") {
+        path = "/webhooks";
+        method = "POST";
       } else {
         // Custom tool handling
         path = `/${toolName.replace(/_/g, "-")}`;
@@ -419,6 +479,30 @@ For detailed guides, see our [documentation](https://docs.scope3.com).
     console.log(
       `🚀 Generated OpenAPI spec with ${Object.keys(spec.paths).length} paths`,
     );
+
+    // Validation: Check if we missed any tools that aren't in the spec
+    const toolsInSpec = Object.values(spec.paths)
+      .flatMap((pathMethods) => Object.values(pathMethods))
+      .map((op: any) => op.operationId);
+
+    const allToolNames = Object.keys(tools);
+    const missingTools = allToolNames.filter(
+      (toolName) => !toolsInSpec.includes(toolName),
+    );
+
+    if (missingTools.length > 0) {
+      console.warn(
+        `⚠️  WARNING: These tools exist but are not in the OpenAPI spec:`,
+        missingTools,
+      );
+      console.warn(
+        `   Add custom path mapping for these tools or update the naming pattern logic.`,
+      );
+    } else {
+      console.log(
+        `✅ All ${allToolNames.length} tools are included in the OpenAPI spec`,
+      );
+    }
 
     // Write OpenAPI spec to file
     const outputPath = join(process.cwd(), "openapi.yaml");
@@ -587,44 +671,111 @@ function generateSchemas(): Record<string, unknown> {
   };
 }
 
-// Create a function to get all tools
+/**
+ * IMPORTANT: Prevention Mechanism for Missing Tools in OpenAPI Generation
+ *
+ * This function automatically discovers all tools from the tools module to prevent
+ * the issue where new tools are added to the codebase but forgotten in the OpenAPI spec.
+ *
+ * Previously, tools were manually listed in a hardcoded array, which led to the
+ * reporting tools being missed. Now:
+ *
+ * 1. We dynamically scan all exports from the tools module
+ * 2. Filter for functions ending in 'Tool' (our naming convention)
+ * 3. Attempt to load each tool and log success/failure
+ * 4. After generation, validate that all tools made it into the spec
+ *
+ * If you add a new tool:
+ * - Follow the naming convention: functionNameTool (e.g., newFeatureTool)
+ * - Export it from src/tools/index.ts
+ * - The tool will automatically be included in OpenAPI generation
+ * - If it doesn't follow CRUD naming patterns, add custom mapping below
+ */
 function getAllTools(client: Scope3ApiClient): Record<string, any> {
   const tools: Record<string, any> = {};
 
-  // Extract individual tools from the tools module
-  const toolNames = [
-    "checkAuthTool",
-    "getAmpAgentsTool",
-    "createBrandAgentTool",
-    "updateBrandAgentTool",
-    "deleteBrandAgentTool",
-    "getBrandAgentTool",
-    "listBrandAgentsTool",
-    "createBrandAgentCampaignTool",
-    "updateBrandAgentCampaignTool",
-    "listBrandAgentCampaignsTool",
-    "createBrandAgentCreativeTool",
-    "updateBrandAgentCreativeTool",
-    "listBrandAgentCreativesTool",
-    "setBrandStandardsTool",
-    "getBrandStandardsTool",
-    "createSyntheticAudienceTool",
-    "listSyntheticAudiencesTool",
-    "addMeasurementSourceTool",
-    "listMeasurementSourcesTool",
-    "createCampaignTool",
-    "updateCampaignTool",
-  ];
+  // Dynamically extract all tools from the tools module to prevent missing tools
+  const allExports = Object.keys(toolsModule);
+  const toolNames = allExports.filter(
+    (name) =>
+      name.endsWith("Tool") &&
+      name !== "registerTools" &&
+      typeof (toolsModule as any)[name] === "function",
+  );
+
+  console.log(`📋 Found ${toolNames.length} tool functions:`, toolNames.sort());
 
   for (const toolName of toolNames) {
-    if ((toolsModule as any)[toolName]) {
+    try {
       const toolFactory = (toolsModule as any)[toolName];
       const tool = toolFactory(client);
       tools[tool.name] = tool;
+      console.log(`✅ Loaded tool: ${toolName} -> ${tool.name}`);
+    } catch (error) {
+      console.warn(`⚠️  Failed to load tool ${toolName}:`, error);
     }
   }
 
   return tools;
+}
+
+function getTagForTool(toolName: string): string {
+  // Map tool names to appropriate tags
+  if (toolName === "check_auth") return "Authentication";
+
+  if (
+    toolName.includes("brand_agent") ||
+    toolName === "create_brand_agent" ||
+    toolName === "update_brand_agent" ||
+    toolName === "delete_brand_agent" ||
+    toolName === "get_brand_agent" ||
+    toolName === "list_brand_agents"
+  ) {
+    return "Brand Agents";
+  }
+
+  if (
+    toolName.includes("campaign") &&
+    !toolName.includes("export") &&
+    !toolName.includes("summary")
+  ) {
+    return "Campaigns";
+  }
+
+  if (toolName.includes("creative") || toolName.startsWith("creative/")) {
+    return "Creatives";
+  }
+
+  if (
+    toolName === "get_campaign_summary" ||
+    toolName === "export_campaign_data" ||
+    toolName === "analyze_tactics"
+  ) {
+    return "Reporting & Analytics";
+  }
+
+  if (toolName.includes("brand_standards") || toolName.includes("audience")) {
+    return "Brand Safety & Targeting";
+  }
+
+  if (toolName.includes("inventory") || toolName.includes("publisher")) {
+    return "Inventory & Optimization";
+  }
+
+  if (toolName.includes("assets") || toolName.startsWith("assets/")) {
+    return "Asset Management";
+  }
+
+  if (toolName.includes("webhook") || toolName.includes("measurement")) {
+    return "Webhooks & Integration";
+  }
+
+  if (toolName === "get_amp_agents") {
+    return "System";
+  }
+
+  // Default fallback
+  return "System";
 }
 
 function toolToOpenAPIOperation(
@@ -636,6 +787,7 @@ function toolToOpenAPIOperation(
     description: (tool.description || "").replace(/\n\s+/g, " ").trim(),
     operationId: tool.name,
     summary: tool.annotations?.title || tool.name.replace(/_/g, " "),
+    tags: [getTagForTool(tool.name)],
     "x-llm-hints": extractLLMHints(tool.description),
   };
 

@@ -274,11 +274,473 @@ info:
   version: 1.0.0
 openapi: 3.1.0
 paths:
+  /add-measurement-source:
+    post:
+      description: Add a measurement source to a brand agent for tracking campaign performance. Supports
+        conversion APIs, analytics platforms, brand studies, and MMM (Media Mix Modeling)
+        integrations. Currently supports basic configuration (stub implementation). Requires
+        authentication.
+      operationId: add_measurement_source
+      summary: Add Measurement Source
+      tags:
+        - Webhooks & Integration
+      x-llm-hints:
+        - Use this tool when user wants to add a measurement source to a brand agent for tracking
+          campaign performance
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /adjust-inventory-allocation:
+    post:
+      description: Adjust budget allocation for inventory options within a campaign. Can update budget
+        amounts, percentages, daily caps, or pacing strategies. Supports bulk updates across
+        multiple options. Use this to rebalance budget based on performance or changing priorities.
+        Requires authentication.
+      operationId: adjust_inventory_allocation
+      summary: Adjust Inventory Allocation
+      tags:
+        - Inventory & Optimization
+      x-llm-hints:
+        - Use this tool when user wants to adjust budget allocation for inventory options within a
+          campaign
+        - Call this when user asks 'show me', 'list', or 'what are my'
+        - Call this when user says 'change', 'update', 'modify', or 'edit'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /analyze-inventory-performance:
+    post:
+      description: Analyze performance metrics across all inventory options in a campaign. Provides
+        detailed breakdowns by publisher, signal type, and delivery model. Includes performance
+        comparisons, efficiency metrics, and optimization recommendations. Use this to understand
+        which inventory tactics are performing best. Requires authentication.
+      operationId: analyze_inventory_performance
+      summary: Analyze Inventory Performance
+      tags:
+        - Inventory & Optimization
+      x-llm-hints:
+        - Use this tool when user wants to analyze performance metrics across all inventory options
+          in a campaign
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /campaigns/{id}/tactics/analyze:
+    post:
+      description: Deep analysis of tactic performance with ML insights. Analyzes efficiency, attribution,
+        signal effectiveness, and story performance. Provides statistical significance testing and
+        optimization recommendations for power users.
+      operationId: analyze_tactics
+      summary: Analyze Tactics
+      tags:
+        - Reporting & Analytics
+      x-llm-hints:
+        - Use this tool when user wants to deep analysis of tactic performance with ml insights
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      parameters:
+        - description: Resource identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /assets/add:
+    post:
+      description: Add assets to a buyer agent's library by referencing external URLs, REST upload IDs, or
+        existing CDN URLs. This is orchestration only - actual file uploads happen via REST API.
+        Assets can then be used in creatives via asset IDs.
+      operationId: assets/add
+      summary: Add Assets (Reference Management)
+      tags:
+        - Asset Management
+      x-llm-hints:
+        - Use this tool when user wants to add assets to a buyer agent's library by referencing
+          external urls, rest upload ids, or existing cdn urls
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /campaign/attach-creative:
+    post:
+      description: Attach existing creatives to a campaign or create new creatives and attach them in one
+        operation. This is the campaign-centric way to manage creative assignments, allowing you to
+        build a campaign's creative strategy efficiently.
+      operationId: campaign/attach_creative
+      summary: Attach Creatives to Campaign
+      tags:
+        - Campaigns
+      x-llm-hints:
+        - Use this tool when user wants to attach existing creatives to a campaign or create new
+          creatives and attach them in one operation
+        - Call this when user says 'create', 'make', 'set up', or 'add'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /campaign/list-creatives:
+    post:
+      description: List all creatives assigned to a specific campaign, showing their performance metrics,
+        assignment details, and key asset information. This provides a campaign-focused view of
+        creative performance and assignments.
+      operationId: campaign/list_creatives
+      summary: List Campaign Creatives
+      tags:
+        - Campaigns
+      x-llm-hints:
+        - Use this tool when user wants to list all creatives assigned to a specific campaign,
+          showing their performance metrics, assignment details, and key asset information
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /check-auth:
     post:
       description: Check the authentication status of the current API key and return user information.
       operationId: check_auth
       summary: Check Authentication Status
+      tags:
+        - Authentication
       x-llm-hints:
         - Use this tool when user wants to check the authentication status of the current api key
           and return user information
@@ -334,370 +796,6 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /amp-agentss/{id}:
-    get:
-      description: Get all agents and their models from Scope3 API. Optionally filter by customer ID or
-        agent name. Requires authentication.
-      operationId: get_amp_agents
-      summary: Get Scope3 AMP Agents
-      x-llm-hints:
-        - Use this tool when user wants to get all agents and their models from scope3 api
-      parameters:
-        - description: Resource identifier
-          in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-  /brand-agents:
-    post:
-      description: Create a new brand agent (advertiser account). This creates the top-level container
-        that will own campaigns, creatives, audiences, standards, and measurement sources. Requires
-        authentication.
-      operationId: create_brand_agent
-      summary: Create Brand Agent
-      x-llm-hints:
-        - Use this tool when user wants to create a new brand agent (advertiser account)
-        - Call this when user says 'create', 'make', 'set up', or 'add'
-      x-migration-notes:
-        amazon: Creates an Account equivalent
-        dv360: Creates an Advertiser account equivalent
-        ttd: Creates an Advertiser account equivalent
-      requestBody:
-        content:
-          application/json:
-            examples:
-              agency:
-                summary: Create agency client brand agent
-                value:
-                  description: B2B software company targeting enterprise customers
-                  name: Acme Corp
-              nike:
-                summary: Create Nike brand agent
-                value:
-                  description: Global athletic wear and equipment brand
-                  name: Nike Global
-            schema:
-              properties: {}
-              type: object
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-  /brand-agents/{id}:
-    put:
-      description: Update the name or description of an existing brand agent (advertiser account). This
-        only updates metadata - campaigns, creatives, and other resources remain unchanged. Requires
-        authentication.
-      operationId: update_brand_agent
-      summary: Update Brand Agent
-      x-llm-hints:
-        - Use this tool when user wants to update the name or description of an existing brand agent
-          (advertiser account)
-        - Call this when user says 'change', 'update', 'modify', or 'edit'
-      requestBody:
-        content:
-          application/json:
-            examples:
-              basic:
-                summary: Basic example
-                value: {}
-            schema:
-              properties: {}
-              type: object
-        required: true
-      parameters:
-        - description: Resource identifier
-          in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-    delete:
-      description: "⚠️ DANGER: Permanently delete a brand agent (advertiser account) and ALL associated
-        data including campaigns, creatives, audiences, standards, and measurement sources. This
-        action cannot be undone. Requires authentication."
-      operationId: delete_brand_agent
-      summary: Delete Brand Agent
-      x-llm-hints:
-        - "Use this tool when user wants to ⚠️ danger: permanently delete a brand agent (advertiser
-          account) and all associated data including campaigns, creatives, audiences, standards, and
-          measurement sources"
-        - Call this when user says 'delete', 'remove', or 'destroy'
-      parameters:
-        - description: Resource identifier
-          in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-    get:
-      description: Get detailed information about a specific brand agent (advertiser account) by ID.
-        Requires authentication.
-      operationId: get_brand_agent
-      summary: Get Brand Agent
-      x-llm-hints:
-        - Use this tool when user wants to get detailed information about a specific brand agent
-          (advertiser account) by id
-      parameters:
-        - description: Resource identifier
-          in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-  /brand-agentss:
-    get:
-      description: List all brand agents (advertiser accounts) for the authenticated user. Optionally
-        filter by name or customer ID. Requires authentication.
-      operationId: list_brand_agents
-      summary: List Brand Agents
-      x-llm-hints:
-        - Use this tool when user wants to list all brand agents (advertiser accounts) for the
-          authenticated user
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
   /campaigns:
     post:
       description: Create a complete campaign in Scope3 by parsing a natural language prompt and
@@ -706,6 +804,8 @@ paths:
         default (future versions will support media buys). Requires authentication.
       operationId: create_campaign
       summary: Create Campaign
+      tags:
+        - Campaigns
       x-llm-hints:
         - Use this tool when user wants to create a complete campaign in scope3 by parsing a natural
           language prompt and automatically creating the strategy and targeting profiles
@@ -786,128 +886,6 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /campaigns/{id}:
-    put:
-      description: Update an existing campaign strategy with a new prompt. This tool parses the new
-        prompt, updates the strategy with new targeting, agents, channels, and countries, and
-        provides a summary of changes made. Requires strategy ID and authentication.
-      operationId: update_campaign
-      summary: Update Campaign
-      x-llm-hints:
-        - Use this tool when user wants to update an existing campaign strategy with a new prompt
-        - Call this when user asks 'show me', 'list', or 'what are my'
-        - Call this when user says 'change', 'update', 'modify', or 'edit'
-      requestBody:
-        content:
-          application/json:
-            examples:
-              basic:
-                summary: Basic example
-                value: {}
-            schema:
-              properties: {}
-              type: object
-        required: true
-      parameters:
-        - description: Resource identifier
-          in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-  /campaignss:
-    get:
-      description: List all campaigns for a specific brand agent (advertiser account). Optionally filter
-        by campaign status. Shows campaign details including budget, creative assignments, and
-        current status. Requires authentication.
-      operationId: list_campaigns
-      summary: List Brand Agent Campaigns
-      x-llm-hints:
-        - Use this tool when user wants to list all campaigns for a specific brand agent (advertiser
-          account)
-        - Call this when user asks 'show me', 'list', or 'what are my'
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
   /creatives:
     post:
       description: Create a new creative asset within a brand agent (advertiser account). The creative
@@ -916,6 +894,8 @@ paths:
         authentication.
       operationId: create_creative
       summary: Create Brand Agent Creative
+      tags:
+        - Creatives
       x-llm-hints:
         - Use this tool when user wants to create a new creative asset within a brand agent
           (advertiser account)
@@ -990,6 +970,1805 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /brand-agents:
+    post:
+      description: Create a new brand agent (advertiser account). This creates the top-level container
+        that will own campaigns, creatives, audiences, standards, and measurement sources. Requires
+        authentication.
+      operationId: create_brand_agent
+      summary: Create Brand Agent
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - Use this tool when user wants to create a new brand agent (advertiser account)
+        - Call this when user says 'create', 'make', 'set up', or 'add'
+      x-migration-notes:
+        amazon: Creates an Account equivalent
+        dv360: Creates an Advertiser account equivalent
+        ttd: Creates an Advertiser account equivalent
+      requestBody:
+        content:
+          application/json:
+            examples:
+              agency:
+                summary: Create agency client brand agent
+                value:
+                  description: B2B software company targeting enterprise customers
+                  name: Acme Corp
+              nike:
+                summary: Create Nike brand agent
+                value:
+                  description: Global athletic wear and equipment brand
+                  name: Nike Global
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /inventory-options:
+    post:
+      description: Create a new inventory option by combining a publisher media product with a targeting
+        strategy. This creates a 'tactic' that represents a specific way to buy and target
+        inventory. The inventory option includes budget allocation, signal configuration, and
+        effective pricing. Requires authentication.
+      operationId: create_inventory_option
+      summary: Create Inventory Option
+      tags:
+        - Inventory & Optimization
+      x-llm-hints:
+        - Use this tool when user wants to create a new inventory option by combining a publisher
+          media product with a targeting strategy
+        - Call this when user says 'create', 'make', 'set up', or 'add'
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /audiences:
+    post:
+      description: Create a new synthetic audience for a brand agent. Synthetic audiences represent target
+        customer or prospect profiles that can be used across multiple campaigns within the same
+        brand agent. Currently supports basic name and description (stub implementation). Requires
+        authentication.
+      operationId: create_audience
+      summary: Create Synthetic Audience
+      tags:
+        - Brand Safety & Targeting
+      x-llm-hints:
+        - Use this tool when user wants to create a new synthetic audience for a brand agent
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      x-migration-notes:
+        amazon: Creates an enhanced Audience with AI modeling
+        dv360: Creates an enhanced Audience List with AI modeling
+        ttd: Creates an enhanced Audience Segment with AI modeling
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /creative/approval-status:
+    post:
+      description: Check the publisher approval status for a creative. Shows which publishers have
+        approved, rejected, or are still reviewing the creative, along with any feedback or
+        requested changes.
+      operationId: creative/approval_status
+      summary: Check Creative Approval Status
+      tags:
+        - Creatives
+      x-llm-hints:
+        - Use this tool when user wants to check the publisher approval status for a creative
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /creative/assign:
+    post:
+      description: Assign a creative to a campaign. Both the creative and campaign must belong to the same
+        buyer agent. This ensures proper ownership and access control while enabling creative reuse
+        across campaigns within the same advertiser account.
+      operationId: creative/assign
+      summary: Assign Creative to Campaign
+      tags:
+        - Creatives
+      x-llm-hints:
+        - Use this tool when user wants to assign a creative to a campaign
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /creative/create:
+    post:
+      description: Create creatives with format specification and content sources. Supports HTML snippets,
+        JavaScript ad tags, VAST tags, asset ID references, and product URLs. This is orchestration
+        only - no file uploads. Can create multiple creatives at once with different assembly
+        methods.
+      operationId: creative/create
+      summary: Create Creative (Orchestration)
+      tags:
+        - Creatives
+      x-llm-hints:
+        - Use this tool when user wants to create creatives with format specification and content
+          sources
+        - Call this when user says 'create', 'make', 'set up', or 'add'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /creative/list:
+    post:
+      description: List all creatives for a specific buyer agent, showing their assets and campaign
+        assignments. Includes filtering options and summary statistics. Results include campaign
+        assignments to reduce additional API calls.
+      operationId: creative/list
+      summary: List Creatives for Buyer Agent
+      tags:
+        - Creatives
+      x-llm-hints:
+        - Use this tool when user wants to list all creatives for a specific buyer agent, showing
+          their assets and campaign assignments
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /creative/revise:
+    post:
+      description: Revise a creative that was rejected or had changes requested by a publisher. Update
+        content, assets, or metadata based on publisher feedback, then automatically re-sync for
+        approval.
+      operationId: creative/revise
+      summary: Revise Creative for Publisher
+      tags:
+        - Creatives
+      x-llm-hints:
+        - Use this tool when user wants to revise a creative that was rejected or had changes
+          requested by a publisher
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /creative/sync-publishers:
+    post:
+      description: Sync a creative to one or more publishers for approval. Can be used for pre-approval
+        before campaign launch or when inventory is selected. Publishers may auto-approve standard
+        formats or require manual review.
+      operationId: creative/sync_publishers
+      summary: Sync Creative to Publishers
+      tags:
+        - Creatives
+      x-llm-hints:
+        - Use this tool when user wants to sync a creative to one or more publishers for approval
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /creative/unassign:
+    post:
+      description: Remove a creative assignment from a campaign. This stops the creative from being used
+        in that campaign but keeps it available for other campaigns or future reassignment.
+      operationId: creative/unassign
+      summary: Unassign Creative from Campaign
+      tags:
+        - Creatives
+      x-llm-hints:
+        - Use this tool when user wants to remove a creative assignment from a campaign
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /creative/update:
+    post:
+      description: Update existing creative properties including name, status, content sources, and
+        advertiser domains. Creates new version while preserving campaign assignments. This is
+        orchestration only - no file uploads.
+      operationId: creative/update
+      summary: Update Creative
+      tags:
+        - Creatives
+      x-llm-hints:
+        - Use this tool when user wants to update existing creative properties including name,
+          status, content sources, and advertiser domains
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /brand-agents/{id}:
+    delete:
+      description: "⚠️ DANGER: Permanently delete a brand agent (advertiser account) and ALL associated
+        data including campaigns, creatives, audiences, standards, and measurement sources. This
+        action cannot be undone. Requires authentication."
+      operationId: delete_brand_agent
+      summary: Delete Brand Agent
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - "Use this tool when user wants to ⚠️ danger: permanently delete a brand agent (advertiser
+          account) and all associated data including campaigns, creatives, audiences, standards, and
+          measurement sources"
+        - Call this when user says 'delete', 'remove', or 'destroy'
+      parameters:
+        - description: Resource identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+    get:
+      description: Get detailed information about a specific brand agent (advertiser account) by ID.
+        Requires authentication.
+      operationId: get_brand_agent
+      summary: Get Brand Agent
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - Use this tool when user wants to get detailed information about a specific brand agent
+          (advertiser account) by id
+      parameters:
+        - description: Resource identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+    put:
+      description: Update the name or description of an existing brand agent (advertiser account). This
+        only updates metadata - campaigns, creatives, and other resources remain unchanged. Requires
+        authentication.
+      operationId: update_brand_agent
+      summary: Update Brand Agent
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - Use this tool when user wants to update the name or description of an existing brand agent
+          (advertiser account)
+        - Call this when user says 'change', 'update', 'modify', or 'edit'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      parameters:
+        - description: Resource identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /discover-publisher-products:
+    post:
+      description: Discover available publisher media products based on campaign requirements. Returns raw
+        publisher inventory before applying any targeting strategies. Use this to explore available
+        inventory options from various publishers. Requires authentication.
+      operationId: discover_publisher_products
+      summary: Discover Publisher Products
+      tags:
+        - Inventory & Optimization
+      x-llm-hints:
+        - Use this tool when user wants to discover available publisher media products based on
+          campaign requirements
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /campaigns/export:
+    post:
+      description: Export raw campaign data for BI/analytics systems in structured format. Supports
+        flexible grouping by campaigns, tactics, signals, stories, and other dimensions. Returns
+        structured data suitable for external analysis tools.
+      operationId: export_campaign_data
+      summary: Export Campaign Data
+      tags:
+        - Reporting & Analytics
+      x-llm-hints:
+        - Use this tool when user wants to export raw campaign data for bi/analytics systems in
+          structured format
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /amp-agentss/{id}:
+    get:
+      description: Get all agents and their models from Scope3 API. Optionally filter by customer ID or
+        agent name. Requires authentication.
+      operationId: get_amp_agents
+      summary: Get Scope3 AMP Agents
+      tags:
+        - System
+      x-llm-hints:
+        - Use this tool when user wants to get all agents and their models from scope3 api
+      parameters:
+        - description: Resource identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /brand-standardss/{id}:
+    get:
+      description: Retrieve the current brand safety standards and media controls for a brand agent. Shows
+        all configured domain lists, keyword filters, and content categories that apply to campaigns
+        within this brand agent. Requires authentication.
+      operationId: get_brand_standards
+      summary: Get Brand Standards
+      tags:
+        - Brand Safety & Targeting
+      x-llm-hints:
+        - Use this tool when user wants to retrieve the current brand safety standards and media
+          controls for a brand agent
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      parameters:
+        - description: Resource identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /campaign-summarys/{id}:
+    get:
+      description: Get a natural language summary of campaign performance with insights and
+        visualizations. Perfect for casual users asking 'how's my campaign doing?'. Includes pacing,
+        performance metrics, tactic breakdown, and actionable recommendations.
+      operationId: get_campaign_summary
+      summary: Get Campaign Summary
+      tags:
+        - Reporting & Analytics
+      x-llm-hints:
+        - Use this tool when user wants to get a natural language summary of campaign performance
+          with insights and visualizations
+      parameters:
+        - description: Resource identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /campaignss:
+    get:
+      description: List all campaigns for a specific brand agent (advertiser account). Optionally filter
+        by campaign status. Shows campaign details including budget, creative assignments, and
+        current status. Requires authentication.
+      operationId: list_campaigns
+      summary: List Brand Agent Campaigns
+      tags:
+        - Campaigns
+      x-llm-hints:
+        - Use this tool when user wants to list all campaigns for a specific brand agent (advertiser
+          account)
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /creativess:
+    get:
+      description: List all creative assets for a specific brand agent (advertiser account). Shows
+        creative details including type, URLs, and metadata. These creatives can be assigned to any
+        campaign within the same brand agent. Requires authentication.
+      operationId: list_creatives
+      summary: List Brand Agent Creatives
+      tags:
+        - Creatives
+      x-llm-hints:
+        - Use this tool when user wants to list all creative assets for a specific brand agent
+          (advertiser account)
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /brand-agentss:
+    get:
+      description: List all brand agents (advertiser accounts) for the authenticated user. Optionally
+        filter by name or customer ID. Requires authentication.
+      operationId: list_brand_agents
+      summary: List Brand Agents
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - Use this tool when user wants to list all brand agents (advertiser accounts) for the
+          authenticated user
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /creative-formatss:
+    get:
+      description: List all available creative formats from AdCP standards, publishers, and creative
+        agents. Use this to discover format options before creating creatives. Shows requirements,
+        capabilities, and assembly methods for each format.
+      operationId: list_creative_formats
+      summary: List Creative Formats
+      tags:
+        - Creatives
+      x-llm-hints:
+        - Use this tool when user wants to list all available creative formats from adcp standards,
+          publishers, and creative agents
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /inventory-optionss:
+    get:
+      description: List all inventory options for a specific campaign. Shows the complete breakdown of
+        publisher products, targeting strategies, budget allocations, and performance metrics. Use
+        this to get an overview of how campaign budget is distributed across different inventory
+        tactics. Requires authentication.
+      operationId: list_inventory_options
+      summary: List Inventory Options
+      tags:
+        - Inventory & Optimization
+      x-llm-hints:
+        - Use this tool when user wants to list all inventory options for a specific campaign
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /measurement-sourcess:
+    get:
+      description: List all measurement sources configured for a specific brand agent. Shows all tracking
+        and analytics integrations including conversion APIs, analytics platforms, brand studies,
+        and MMM sources. Requires authentication.
+      operationId: list_measurement_sources
+      summary: List Measurement Sources
+      tags:
+        - Webhooks & Integration
+      x-llm-hints:
+        - Use this tool when user wants to list all measurement sources configured for a specific
+          brand agent
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /audiencess:
+    get:
+      description: List all synthetic audiences for a specific brand agent. Shows audience profiles that
+        can be assigned to campaigns for targeting. These audiences represent customer or prospect
+        profiles for better campaign targeting. Requires authentication.
+      operationId: list_audiences
+      summary: List Synthetic Audiences
+      tags:
+        - Brand Safety & Targeting
+      x-llm-hints:
+        - Use this tool when user wants to list all synthetic audiences for a specific brand agent
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /webhooks:
+    post:
+      description: Register a webhook endpoint to receive real-time campaign event notifications. Supports
+        delivery updates, performance events, and threshold alerts. Follows enterprise security
+        patterns with authentication and retry policies.
+      operationId: register_webhook
+      summary: Register Webhook
+      tags:
+        - Webhooks & Integration
+      x-llm-hints:
+        - Use this tool when user wants to register a webhook endpoint to receive real-time campaign
+          event notifications
+        - Call this when user says 'change', 'update', 'modify', or 'edit'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /set-brand-standards:
+    post:
+      description: Set or update brand safety standards and media controls for a brand agent. These
+        standards apply to all campaigns within the brand agent and help ensure brand-safe media
+        placements. Currently supports domain blocklists/allowlists, keyword filters, and content
+        categories (stub implementation). Requires authentication.
+      operationId: set_brand_standards
+      summary: Set Brand Standards
+      tags:
+        - Brand Safety & Targeting
+      x-llm-hints:
+        - Use this tool when user wants to set or update brand safety standards and media controls
+          for a brand agent
+        - Call this when user asks 'show me', 'list', or 'what are my'
+        - Call this when user says 'change', 'update', 'modify', or 'edit'
+      x-migration-notes:
+        amazon: Configures Brand Safety and content filtering
+        dv360: Configures Brand Safety rules (same concept, applied at brand agent level)
+        ttd: Configures Brand Safety rules (same concept, applied at brand agent level)
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /campaigns/{id}:
+    put:
+      description: Update an existing campaign strategy with a new prompt. This tool parses the new
+        prompt, updates the strategy with new targeting, agents, channels, and countries, and
+        provides a summary of changes made. Requires strategy ID and authentication.
+      operationId: update_campaign
+      summary: Update Campaign
+      tags:
+        - Campaigns
+      x-llm-hints:
+        - Use this tool when user wants to update an existing campaign strategy with a new prompt
+        - Call this when user asks 'show me', 'list', or 'what are my'
+        - Call this when user says 'change', 'update', 'modify', or 'edit'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      parameters:
+        - description: Resource identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /creatives/{id}:
     put:
       description: Update an existing creative asset's details including name, type, URL, headline, body
@@ -997,6 +2776,8 @@ paths:
         want to change. Changes affect all campaigns using this creative. Requires authentication.
       operationId: update_creative
       summary: Update Brand Agent Creative
+      tags:
+        - Creatives
       x-llm-hints:
         - Use this tool when user wants to update an existing creative asset's details including
           name, type, url, headline, body text, or call-to-action
@@ -1060,420 +2841,30 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /creativess:
-    get:
-      description: List all creative assets for a specific brand agent (advertiser account). Shows
-        creative details including type, URLs, and metadata. These creatives can be assigned to any
-        campaign within the same brand agent. Requires authentication.
-      operationId: list_creatives
-      summary: List Brand Agent Creatives
-      x-llm-hints:
-        - Use this tool when user wants to list all creative assets for a specific brand agent
-          (advertiser account)
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-  /set-brand-standards:
-    post:
-      description: Set or update brand safety standards and media controls for a brand agent. These
-        standards apply to all campaigns within the brand agent and help ensure brand-safe media
-        placements. Currently supports domain blocklists/allowlists, keyword filters, and content
-        categories (stub implementation). Requires authentication.
-      operationId: set_brand_standards
-      summary: Set Brand Standards
-      x-llm-hints:
-        - Use this tool when user wants to set or update brand safety standards and media controls
-          for a brand agent
-        - Call this when user asks 'show me', 'list', or 'what are my'
-        - Call this when user says 'change', 'update', 'modify', or 'edit'
-      x-migration-notes:
-        amazon: Configures Brand Safety and content filtering
-        dv360: Configures Brand Safety rules (same concept, applied at brand agent level)
-        ttd: Configures Brand Safety rules (same concept, applied at brand agent level)
-      requestBody:
-        content:
-          application/json:
-            examples:
-              basic:
-                summary: Basic example
-                value: {}
-            schema:
-              properties: {}
-              type: object
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-  /brand-standardss/{id}:
-    get:
-      description: Retrieve the current brand safety standards and media controls for a brand agent. Shows
-        all configured domain lists, keyword filters, and content categories that apply to campaigns
-        within this brand agent. Requires authentication.
-      operationId: get_brand_standards
-      summary: Get Brand Standards
-      x-llm-hints:
-        - Use this tool when user wants to retrieve the current brand safety standards and media
-          controls for a brand agent
-        - Call this when user asks 'show me', 'list', or 'what are my'
-      parameters:
-        - description: Resource identifier
-          in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-  /audiences:
-    post:
-      description: Create a new synthetic audience for a brand agent. Synthetic audiences represent target
-        customer or prospect profiles that can be used across multiple campaigns within the same
-        brand agent. Currently supports basic name and description (stub implementation). Requires
-        authentication.
-      operationId: create_audience
-      summary: Create Synthetic Audience
-      x-llm-hints:
-        - Use this tool when user wants to create a new synthetic audience for a brand agent
-        - Call this when user asks 'show me', 'list', or 'what are my'
-      x-migration-notes:
-        amazon: Creates an enhanced Audience with AI modeling
-        dv360: Creates an enhanced Audience List with AI modeling
-        ttd: Creates an enhanced Audience Segment with AI modeling
-      requestBody:
-        content:
-          application/json:
-            examples:
-              basic:
-                summary: Basic example
-                value: {}
-            schema:
-              properties: {}
-              type: object
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-  /audiencess:
-    get:
-      description: List all synthetic audiences for a specific brand agent. Shows audience profiles that
-        can be assigned to campaigns for targeting. These audiences represent customer or prospect
-        profiles for better campaign targeting. Requires authentication.
-      operationId: list_audiences
-      summary: List Synthetic Audiences
-      x-llm-hints:
-        - Use this tool when user wants to list all synthetic audiences for a specific brand agent
-        - Call this when user asks 'show me', 'list', or 'what are my'
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-  /add-measurement-source:
-    post:
-      description: Add a measurement source to a brand agent for tracking campaign performance. Supports
-        conversion APIs, analytics platforms, brand studies, and MMM (Media Mix Modeling)
-        integrations. Currently supports basic configuration (stub implementation). Requires
-        authentication.
-      operationId: add_measurement_source
-      summary: Add Measurement Source
-      x-llm-hints:
-        - Use this tool when user wants to add a measurement source to a brand agent for tracking
-          campaign performance
-      requestBody:
-        content:
-          application/json:
-            examples:
-              basic:
-                summary: Basic example
-                value: {}
-            schema:
-              properties: {}
-              type: object
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-  /measurement-sourcess:
-    get:
-      description: List all measurement sources configured for a specific brand agent. Shows all tracking
-        and analytics integrations including conversion APIs, analytics platforms, brand studies,
-        and MMM sources. Requires authentication.
-      operationId: list_measurement_sources
-      summary: List Measurement Sources
-      x-llm-hints:
-        - Use this tool when user wants to list all measurement sources configured for a specific
-          brand agent
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
 security:
   - bearerAuth: []
   - apiKeyAuth: []
 servers:
   - description: Scope3 Agentic API Server
     url: https://api.agentic.scope3.com
+tags:
+  - description: Authentication and account verification
+    name: Authentication
+  - description: Advertiser account management - your top-level container for campaigns and assets
+    name: Brand Agents
+  - description: Campaign creation and management with natural language prompts
+    name: Campaigns
+  - description: Creative asset management and campaign assignments
+    name: Creatives
+  - description: Performance analytics, data exports, and ML-powered insights
+    name: Reporting & Analytics
+  - description: Brand standards, content filtering, and audience management
+    name: Brand Safety & Targeting
+  - description: Publisher inventory discovery and performance optimization
+    name: Inventory & Optimization
+  - description: Creative asset uploads and bulk operations
+    name: Asset Management
+  - description: Real-time notifications and external integrations
+    name: Webhooks & Integration
+  - description: System utilities and legacy agent support
+    name: System

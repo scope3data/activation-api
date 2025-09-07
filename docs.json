@@ -9,35 +9,37 @@
   },
   "favicon": "/favicon.svg",
   "navigation": {
-    "groups": [
+    "tabs": [
       {
-        "group": "Get Started",
-        "pages": ["quickstart", "concepts"]
-      },
-      {
-        "group": "🎨 Creatives",
-        "pages": [
-          "mintlify/creative/quickstart",
-          "mintlify/creative/overview",
-          "mintlify/creative/agents",
-          "mintlify/creative/best-practices"
+        "tab": "Guides",
+        "icon": "book",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": ["quickstart", "concepts"]
+          },
+          {
+            "group": "🎨 Creatives",
+            "pages": [
+              "mintlify/creative/quickstart",
+              "mintlify/creative/overview",
+              "mintlify/creative/agents",
+              "mintlify/creative/best-practices"
+            ]
+          },
+          {
+            "group": "Reporting & Analytics",
+            "pages": ["reporting-overview"]
+          },
+          {
+            "group": "Advanced",
+            "pages": ["webhooks/overview"]
+          }
         ]
       },
       {
-        "group": "Reporting & Analytics",
-        "pages": [
-          "reporting-overview",
-          "api-reference/reporting/get-campaign-summary",
-          "api-reference/reporting/export-campaign-data",
-          "api-reference/reporting/analyze-tactics"
-        ]
-      },
-      {
-        "group": "Advanced",
-        "pages": ["webhooks/overview"]
-      },
-      {
-        "group": "API reference",
+        "tab": "API Reference",
+        "icon": "code",
         "openapi": "openapi.yaml"
       }
     ]
@@ -60,16 +62,10 @@
     }
   },
   "navbar": {
-    "links": [
-      {
-        "label": "API Console",
-        "href": "https://api.agentic.scope3.com"
-      }
-    ],
     "primary": {
       "type": "button",
       "label": "Get API Key",
-      "href": "https://app.scope3.com/api-keys"
+      "href": "https://scope3.com/integrate/api-keys"
     }
   },
   "footer": {
@@ -83,7 +79,7 @@
     "indexing": "all",
     "metatags": {
       "og:type": "website",
-      "og:site_name": "Your docs"
+      "og:site_name": "Scope3 Agentic Advertising API"
     }
   }
 }
