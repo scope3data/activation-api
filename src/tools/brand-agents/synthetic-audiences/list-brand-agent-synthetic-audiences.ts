@@ -9,17 +9,19 @@ import {
   createMCPResponse,
 } from "../../../utils/error-handling.js";
 
-export const listBrandAgentStoriesTool = (client: Scope3ApiClient) => ({
+export const listBrandAgentSyntheticAudiencesTool = (
+  client: Scope3ApiClient,
+) => ({
   annotations: {
     category: "audience-management",
     dangerLevel: "low",
     openWorldHint: true,
     readOnlyHint: true,
-    title: "List Brand Agent Stories",
+    title: "List Brand Agent Synthetic Audiences",
   },
 
   description:
-    "List all brand story agents for a brand agent. Brand story agents define brand narrative, messaging, and audience engagement strategies using AI-powered prompts. Each agent has a primary model that contains the current brand story and can be applied to audience targeting and content creation. Requires authentication.",
+    "List all synthetic audience agents for a brand agent. Synthetic audience agents define target audience profiles using AI-powered prompts. Each agent has a primary model that contains the current audience definition and can be applied to campaign targeting and content creation. Requires authentication.",
 
   execute: async (
     args: { brandAgentId: string },
@@ -52,28 +54,28 @@ export const listBrandAgentStoriesTool = (client: Scope3ApiClient) => ({
         );
       }
 
-      const storyAgents = await client.listBrandAgentStories(
+      const syntheticAudiences = await client.listBrandAgentSyntheticAudiences(
         apiKey,
         args.brandAgentId,
       );
 
-      let summary = `**Brand Stories for ${brandAgentName}**\n\n`;
+      let summary = `**Synthetic Audiences for ${brandAgentName}**\n\n`;
       summary += `**Brand Agent ID:** ${args.brandAgentId}\n`;
-      summary += `**Found:** ${storyAgents.length} story agent${storyAgents.length === 1 ? "" : "s"}\n\n`;
+      summary += `**Found:** ${syntheticAudiences.length} synthetic audience${syntheticAudiences.length === 1 ? "" : "s"}\n\n`;
 
-      if (storyAgents.length === 0) {
-        summary += `⚠️  **No Brand Stories Configured**\n\n`;
-        summary += `This brand agent currently has no brand story agents.\n\n`;
+      if (syntheticAudiences.length === 0) {
+        summary += `⚠️  **No Synthetic Audiences Configured**\n\n`;
+        summary += `This brand agent currently has no synthetic audience agents.\n\n`;
         summary += `**Next Steps:**\n`;
-        summary += `• Use \`create_brand_agent_story\` to create a new story agent\n`;
-        summary += `• Define brand narrative through natural language prompts\n`;
+        summary += `• Use \`create_brand_agent_synthetic_audience\` to create a new synthetic audience\n`;
+        summary += `• Define target audience through natural language prompts\n`;
         summary += `• Configure targeting (countries, channels, languages)\n\n`;
         summary += `**Benefits:**\n`;
-        summary += `• AI-powered audience insights and messaging\n`;
-        summary += `• Consistent brand voice across all campaigns\n`;
+        summary += `• AI-powered audience insights and targeting\n`;
+        summary += `• Consistent audience profiles across all campaigns\n`;
         summary += `• Automatic application to campaign strategies`;
       } else {
-        storyAgents.forEach((agent, index) => {
+        syntheticAudiences.forEach((agent, index) => {
           const primaryModel = agent.models.find(
             (model) => model.status === "PRIMARY",
           );
@@ -85,7 +87,7 @@ export const listBrandAgentStoriesTool = (client: Scope3ApiClient) => ({
           summary += `   • **Languages:** ${agent.languages.length > 0 ? agent.languages.join(", ") : "All"}\n`;
 
           if (primaryModel) {
-            summary += `   • **Current Story:** "${primaryModel.prompt.substring(0, 100)}${primaryModel.prompt.length > 100 ? "..." : ""}"\n`;
+            summary += `   • **Current Definition:** "${primaryModel.prompt.substring(0, 100)}${primaryModel.prompt.length > 100 ? "..." : ""}"\n`;
             summary += `   • **Last Updated:** ${new Date(primaryModel.updatedAt).toLocaleString()}\n`;
           } else {
             summary += `   • **Status:** ⚠️  No primary model configured\n`;
@@ -95,15 +97,15 @@ export const listBrandAgentStoriesTool = (client: Scope3ApiClient) => ({
         });
 
         summary += `📋 **Management Options:**\n`;
-        summary += `• \`create_brand_agent_story\` - Create a new story agent\n`;
-        summary += `• \`update_brand_agent_story\` - Update existing story prompt\n`;
-        summary += `• \`delete_brand_agent_story\` - Archive a story agent\n\n`;
+        summary += `• \`create_brand_agent_synthetic_audience\` - Create a new synthetic audience\n`;
+        summary += `• \`update_brand_agent_synthetic_audience\` - Update existing audience prompt\n`;
+        summary += `• \`delete_brand_agent_synthetic_audience\` - Archive a synthetic audience\n\n`;
 
-        summary += `🎯 **How Stories Work:**\n`;
-        summary += `• Each agent uses AI to define brand narrative and messaging\n`;
-        summary += `• Primary model contains the current active brand story\n`;
-        summary += `• Stories inform audience targeting and content creation\n`;
-        summary += `• Multiple story agents can target different markets/channels`;
+        summary += `🎯 **How Synthetic Audiences Work:**\n`;
+        summary += `• Each agent uses AI to define target audience profiles\n`;
+        summary += `• Primary model contains the current active audience definition\n`;
+        summary += `• Audiences inform campaign targeting and content creation\n`;
+        summary += `• Multiple synthetic audiences can target different markets/channels`;
       }
 
       return createMCPResponse({
@@ -111,14 +113,17 @@ export const listBrandAgentStoriesTool = (client: Scope3ApiClient) => ({
         success: true,
       });
     } catch (error) {
-      return createErrorResponse("Failed to list brand story agents", error);
+      return createErrorResponse(
+        "Failed to list brand synthetic audiences",
+        error,
+      );
     }
   },
 
-  name: "list_brand_agent_stories",
+  name: "list_brand_agent_synthetic_audiences",
   parameters: z.object({
     brandAgentId: z
       .string()
-      .describe("ID of the brand agent to list stories for"),
+      .describe("ID of the brand agent to list synthetic audiences for"),
   }),
 });

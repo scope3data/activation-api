@@ -277,9 +277,9 @@ export const DELETE_BRAND_AGENT_STANDARDS_MUTATION = `
   }
 `;
 
-// Brand Story Agent queries
-export const LIST_BRAND_AGENT_STORIES_QUERY = `
-  query ListBrandAgentStories($brandAgentId: BigInt!) {
+// Synthetic Audience queries
+export const LIST_BRAND_AGENT_SYNTHETIC_AUDIENCES_QUERY = `
+  query ListBrandAgentSyntheticAudiences($brandAgentId: BigInt!) {
     brandStoryAgents(where: { brandAgentId: { equals: $brandAgentId }, archivedAt: { equals: null }}) {
       id
       name
@@ -300,8 +300,8 @@ export const LIST_BRAND_AGENT_STORIES_QUERY = `
   }
 `;
 
-export const CREATE_BRAND_AGENT_STORY_MUTATION = `
-  mutation CreateBrandStoryAgent(
+export const CREATE_BRAND_AGENT_SYNTHETIC_AUDIENCE_MUTATION = `
+  mutation CreateBrandSyntheticAudience(
     $brandAgentId: BigInt!
     $name: String!
     $prompt: String!
@@ -349,8 +349,8 @@ export const CREATE_BRAND_AGENT_STORY_MUTATION = `
   }
 `;
 
-export const UPDATE_BRAND_AGENT_STORY_MUTATION = `
-  mutation UpdateBrandStory(
+export const UPDATE_BRAND_AGENT_SYNTHETIC_AUDIENCE_MUTATION = `
+  mutation UpdateBrandSyntheticAudience(
     $previousModelId: BigInt!
     $name: String!
     $prompt: String!
@@ -369,8 +369,8 @@ export const UPDATE_BRAND_AGENT_STORY_MUTATION = `
   }
 `;
 
-export const DELETE_BRAND_AGENT_STORY_MUTATION = `
-  mutation DeleteBrandStoryAgent($id: BigInt!) {
+export const DELETE_BRAND_AGENT_SYNTHETIC_AUDIENCE_MUTATION = `
+  mutation DeleteBrandSyntheticAudience($id: BigInt!) {
     updateAgent(
       where: { id: $id }
       data: { archivedAt: { set: $now } }
@@ -381,32 +381,12 @@ export const DELETE_BRAND_AGENT_STORY_MUTATION = `
   }
 `;
 
-// Synthetic Audience queries (stub)
-export const CREATE_SYNTHETIC_AUDIENCE_MUTATION = `
-  mutation CreateSyntheticAudience($input: SyntheticAudienceInput!) {
-    createSyntheticAudience(input: $input) {
-      id
-      brandAgentId
-      name
-      description
-      createdAt
-      updatedAt
-    }
-  }
-`;
-
-export const LIST_SYNTHETIC_AUDIENCES_QUERY = `
-  query ListSyntheticAudiences($brandAgentId: ID!) {
-    syntheticAudiences(brandAgentId: $brandAgentId) {
-      id
-      brandAgentId
-      name
-      description
-      createdAt
-      updatedAt
-    }
-  }
-`;
+// Legacy stub queries - these are replaced by the real synthetic audience queries above
+// Keeping these for backward compatibility temporarily
+export const CREATE_SYNTHETIC_AUDIENCE_MUTATION =
+  CREATE_BRAND_AGENT_SYNTHETIC_AUDIENCE_MUTATION;
+export const LIST_SYNTHETIC_AUDIENCES_QUERY =
+  LIST_BRAND_AGENT_SYNTHETIC_AUDIENCES_QUERY;
 
 // Measurement Source queries (stub)
 export const ADD_MEASUREMENT_SOURCE_MUTATION = `

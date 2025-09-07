@@ -37,11 +37,11 @@ import { createBrandAgentStandardsTool } from "./brand-agents/standards/create-b
 import { deleteBrandAgentStandardsTool } from "./brand-agents/standards/delete-brand-agent-standards.js";
 import { listBrandAgentStandardsTool } from "./brand-agents/standards/list-brand-agent-standards.js";
 import { updateBrandAgentStandardsTool } from "./brand-agents/standards/update-brand-agent-standards.js";
-// Brand Agent stories tools
-import { createBrandAgentStoryTool } from "./brand-agents/stories/create-brand-agent-story.js";
-import { deleteBrandAgentStoryTool } from "./brand-agents/stories/delete-brand-agent-story.js";
-import { listBrandAgentStoriesTool } from "./brand-agents/stories/list-brand-agent-stories.js";
-import { updateBrandAgentStoryTool } from "./brand-agents/stories/update-brand-agent-story.js";
+// Brand Agent synthetic audience tools
+import { createBrandAgentSyntheticAudienceTool } from "./brand-agents/synthetic-audiences/create-brand-agent-synthetic-audience.js";
+import { deleteBrandAgentSyntheticAudienceTool } from "./brand-agents/synthetic-audiences/delete-brand-agent-synthetic-audience.js";
+import { listBrandAgentSyntheticAudiencesTool } from "./brand-agents/synthetic-audiences/list-brand-agent-synthetic-audiences.js";
+import { updateBrandAgentSyntheticAudienceTool } from "./brand-agents/synthetic-audiences/update-brand-agent-synthetic-audience.js";
 // Campaign creative tools
 import { campaignAttachCreativeTool } from "./campaigns/attach-creative.js";
 import { createCampaignTool } from "./campaigns/create-campaign.js";
@@ -103,11 +103,11 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(updateBrandAgentStandardsTool(client));
   server.addTool(deleteBrandAgentStandardsTool(client));
 
-  // Brand Agent stories tools
-  server.addTool(listBrandAgentStoriesTool(client));
-  server.addTool(createBrandAgentStoryTool(client));
-  server.addTool(updateBrandAgentStoryTool(client));
-  server.addTool(deleteBrandAgentStoryTool(client));
+  // Brand Agent synthetic audience tools
+  server.addTool(listBrandAgentSyntheticAudiencesTool(client));
+  server.addTool(createBrandAgentSyntheticAudienceTool(client));
+  server.addTool(updateBrandAgentSyntheticAudienceTool(client));
+  server.addTool(deleteBrandAgentSyntheticAudienceTool(client));
 
   // Brand Agent audience tools
   server.addTool(createSyntheticAudienceTool(client));
@@ -168,7 +168,7 @@ export {
   // Brand Agent creative tools
   createBrandAgentCreativeTool,
   createBrandAgentStandardsTool,
-  createBrandAgentStoryTool,
+  createBrandAgentSyntheticAudienceTool,
   // Brand Agent core tools
   createBrandAgentTool,
   createCampaignTool,
@@ -186,7 +186,7 @@ export {
   creativeUnassignTool,
   creativeUpdateTool,
   deleteBrandAgentStandardsTool,
-  deleteBrandAgentStoryTool,
+  deleteBrandAgentSyntheticAudienceTool,
   deleteBrandAgentTool,
   discoverPublisherProductsTool,
   exportCampaignDataTool,
@@ -198,8 +198,8 @@ export {
   // Brand Agent standards tools
   listBrandAgentStandardsTool,
   listBrandAgentsTool,
-  // Brand Agent stories tools
-  listBrandAgentStoriesTool,
+  // Brand Agent synthetic audience tools
+  listBrandAgentSyntheticAudiencesTool,
   // Format Discovery
   listCreativeFormatsTool,
   listInventoryOptionsTool,
@@ -209,7 +209,7 @@ export {
   updateBrandAgentCampaignTool,
   updateBrandAgentCreativeTool,
   updateBrandAgentStandardsTool,
-  updateBrandAgentStoryTool,
+  updateBrandAgentSyntheticAudienceTool,
   updateBrandAgentTool,
   updateCampaignTool,
 };

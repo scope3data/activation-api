@@ -1088,19 +1088,19 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /brand-agent-storys:
+  /brand-agent-synthetic-audiences:
     post:
-      description: Create a new brand story agent for a brand agent. The story agent uses AI to define
-        brand narrative, messaging strategy, and audience engagement approaches based on a natural
-        language prompt. You can describe your brand story, target audience insights, and messaging
-        preferences through conversational prompts. The agent will automatically inform campaign
-        strategies within the brand agent. Requires authentication.
-      operationId: create_brand_agent_story
-      summary: Create Brand Agent Story
+      description: Create a new synthetic audience agent for a brand agent. The synthetic audience agent
+        uses AI to define target audience profiles, demographics, and behavioral characteristics
+        based on a natural language prompt. You can describe your target audience, their interests,
+        preferences, and behaviors through conversational prompts. The agent will automatically
+        inform campaign targeting within the brand agent. Requires authentication.
+      operationId: create_brand_agent_synthetic_audience
+      summary: Create Brand Agent Synthetic Audience
       tags:
         - Brand Agents
       x-llm-hints:
-        - Use this tool when user wants to create a new brand story agent for a brand agent
+        - Use this tool when user wants to create a new synthetic audience agent for a brand agent
         - Call this when user asks 'show me', 'list', or 'what are my'
       requestBody:
         content:
@@ -2008,18 +2008,19 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /brand-agent-storys/{id}:
+  /brand-agent-synthetic-audiences/{id}:
     delete:
-      description: Archive (soft delete) a brand story agent. This disables the story agent and removes
-        its narrative guidance from active campaigns. The agent and its model history are preserved
-        for audit purposes but will no longer inform campaign strategies or audience targeting. This
-        action affects all campaigns within the brand agent. Requires authentication.
-      operationId: delete_brand_agent_story
-      summary: Delete Brand Agent Story
+      description: Archive (soft delete) a synthetic audience agent. This disables the audience agent and
+        removes its targeting guidance from active campaigns. The agent and its model history are
+        preserved for audit purposes but will no longer inform campaign targeting or audience
+        segmentation. This action affects all campaigns within the brand agent. Requires
+        authentication.
+      operationId: delete_brand_agent_synthetic_audience
+      summary: Delete Brand Agent Synthetic Audience
       tags:
         - Brand Agents
       x-llm-hints:
-        - Use this tool when user wants to archive (soft delete) a brand story agent
+        - Use this tool when user wants to archive (soft delete) a synthetic audience agent
         - Call this when user asks 'show me', 'list', or 'what are my'
         - Call this when user says 'delete', 'remove', or 'destroy'
       parameters:
@@ -2071,17 +2072,17 @@ paths:
                 type: object
           description: Unauthorized
     put:
-      description: Update the brand narrative and messaging strategy for an existing brand story agent.
-        This creates a new model version with the updated story prompt and makes it the
-        primary/active version. The updated story will automatically inform campaign strategies and
-        audience targeting within the brand agent. Requires authentication.
-      operationId: update_brand_agent_story
-      summary: Update Brand Agent Story
+      description: Update the target audience profile and characteristics for an existing synthetic
+        audience agent. This creates a new model version with the updated audience prompt and makes
+        it the primary/active version. The updated audience definition will automatically inform
+        campaign targeting within the brand agent. Requires authentication.
+      operationId: update_brand_agent_synthetic_audience
+      summary: Update Brand Agent Synthetic Audience
       tags:
         - Brand Agents
       x-llm-hints:
-        - Use this tool when user wants to update the brand narrative and messaging strategy for an
-          existing brand story agent
+        - Use this tool when user wants to update the target audience profile and characteristics
+          for an existing synthetic audience agent
         - Call this when user says 'create', 'make', 'set up', or 'add'
         - Call this when user asks 'show me', 'list', or 'what are my'
         - Call this when user says 'change', 'update', 'modify', or 'edit'
@@ -2689,18 +2690,18 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /brand-agent-storiess:
+  /brand-agent-synthetic-audiencess:
     get:
-      description: List all brand story agents for a brand agent. Brand story agents define brand
-        narrative, messaging, and audience engagement strategies using AI-powered prompts. Each
-        agent has a primary model that contains the current brand story and can be applied to
-        audience targeting and content creation. Requires authentication.
-      operationId: list_brand_agent_stories
-      summary: List Brand Agent Stories
+      description: List all synthetic audience agents for a brand agent. Synthetic audience agents define
+        target audience profiles using AI-powered prompts. Each agent has a primary model that
+        contains the current audience definition and can be applied to campaign targeting and
+        content creation. Requires authentication.
+      operationId: list_brand_agent_synthetic_audiences
+      summary: List Brand Agent Synthetic Audiences
       tags:
         - Brand Agents
       x-llm-hints:
-        - Use this tool when user wants to list all brand story agents for a brand agent
+        - Use this tool when user wants to list all synthetic audience agents for a brand agent
         - Call this when user asks 'show me', 'list', or 'what are my'
       responses:
         "200":

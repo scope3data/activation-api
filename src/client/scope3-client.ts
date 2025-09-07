@@ -84,16 +84,16 @@ import {
   CREATE_BRAND_AGENT_CREATIVE_MUTATION,
   CREATE_BRAND_AGENT_MUTATION,
   CREATE_BRAND_AGENT_STANDARDS_MUTATION,
-  CREATE_BRAND_AGENT_STORY_MUTATION,
+  CREATE_BRAND_AGENT_SYNTHETIC_AUDIENCE_MUTATION,
   CREATE_SYNTHETIC_AUDIENCE_MUTATION,
   DELETE_BRAND_AGENT_MUTATION,
   DELETE_BRAND_AGENT_STANDARDS_MUTATION,
-  DELETE_BRAND_AGENT_STORY_MUTATION,
+  DELETE_BRAND_AGENT_SYNTHETIC_AUDIENCE_MUTATION,
   GET_BRAND_AGENT_QUERY,
   LIST_BRAND_AGENT_CAMPAIGNS_QUERY,
   LIST_BRAND_AGENT_CREATIVES_QUERY,
   LIST_BRAND_AGENT_STANDARDS_QUERY,
-  LIST_BRAND_AGENT_STORIES_QUERY,
+  LIST_BRAND_AGENT_SYNTHETIC_AUDIENCES_QUERY,
   LIST_BRAND_AGENTS_QUERY,
   LIST_MEASUREMENT_SOURCES_QUERY,
   LIST_SYNTHETIC_AUDIENCES_QUERY,
@@ -101,7 +101,7 @@ import {
   UPDATE_BRAND_AGENT_CREATIVE_MUTATION,
   UPDATE_BRAND_AGENT_MUTATION,
   UPDATE_BRAND_AGENT_STANDARDS_MUTATION,
-  UPDATE_BRAND_AGENT_STORY_MUTATION,
+  UPDATE_BRAND_AGENT_SYNTHETIC_AUDIENCE_MUTATION,
 } from "./queries/brand-agents.js";
 import {
   CREATE_STRATEGY_MUTATION,
@@ -466,13 +466,13 @@ export class Scope3ApiClient {
     return result.data.createBrandStandardsAgent;
   }
 
-  async createBrandAgentStory(
+  async createBrandAgentSyntheticAudience(
     apiKey: string,
     input: BrandStoryAgentInput,
   ): Promise<BrandStoryAgent> {
     const response = await fetch(this.graphqlUrl, {
       body: JSON.stringify({
-        query: CREATE_BRAND_AGENT_STORY_MUTATION,
+        query: CREATE_BRAND_AGENT_SYNTHETIC_AUDIENCE_MUTATION,
         variables: { ...input },
       }),
       headers: {
@@ -859,14 +859,14 @@ export class Scope3ApiClient {
     return result.data.updateAgent;
   }
 
-  async deleteBrandAgentStory(
+  async deleteBrandAgentSyntheticAudience(
     apiKey: string,
-    storyId: string,
+    syntheticAudienceId: string,
   ): Promise<{ archivedAt: string; id: string }> {
     const response = await fetch(this.graphqlUrl, {
       body: JSON.stringify({
-        query: DELETE_BRAND_AGENT_STORY_MUTATION,
-        variables: { id: storyId, now: new Date().toISOString() },
+        query: DELETE_BRAND_AGENT_SYNTHETIC_AUDIENCE_MUTATION,
+        variables: { id: syntheticAudienceId, now: new Date().toISOString() },
       }),
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -1753,14 +1753,14 @@ export class Scope3ApiClient {
     return result.data?.brandStandardsAgents || [];
   }
 
-  // Brand Story Agent methods
-  async listBrandAgentStories(
+  // Synthetic Audience Agent methods
+  async listBrandAgentSyntheticAudiences(
     apiKey: string,
     brandAgentId: string,
   ): Promise<BrandStoryAgent[]> {
     const response = await fetch(this.graphqlUrl, {
       body: JSON.stringify({
-        query: LIST_BRAND_AGENT_STORIES_QUERY,
+        query: LIST_BRAND_AGENT_SYNTHETIC_AUDIENCES_QUERY,
         variables: { brandAgentId },
       }),
       headers: {
@@ -2502,7 +2502,7 @@ export class Scope3ApiClient {
     return result.data.createAgentModel;
   }
 
-  async updateBrandAgentStory(
+  async updateBrandAgentSyntheticAudience(
     apiKey: string,
     previousModelId: string,
     name: string,
@@ -2516,7 +2516,7 @@ export class Scope3ApiClient {
   }> {
     const response = await fetch(this.graphqlUrl, {
       body: JSON.stringify({
-        query: UPDATE_BRAND_AGENT_STORY_MUTATION,
+        query: UPDATE_BRAND_AGENT_SYNTHETIC_AUDIENCE_MUTATION,
         variables: { name, previousModelId, prompt },
       }),
       headers: {
