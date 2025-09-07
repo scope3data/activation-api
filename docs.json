@@ -16,10 +16,7 @@
         "groups": [
           {
             "group": "Get Started",
-            "pages": [
-              "quickstart",
-              "concepts"
-            ]
+            "pages": ["quickstart", "concepts"]
           },
           {
             "group": "🎨 Creatives",
@@ -32,15 +29,11 @@
           },
           {
             "group": "Reporting & Analytics",
-            "pages": [
-              "reporting-overview"
-            ]
+            "pages": ["reporting-overview"]
           },
           {
             "group": "Advanced",
-            "pages": [
-              "webhooks/overview"
-            ]
+            "pages": ["webhooks/overview"]
           }
         ]
       },
