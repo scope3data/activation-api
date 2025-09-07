@@ -2848,23 +2848,23 @@ servers:
   - description: Scope3 Agentic API Server
     url: https://api.agentic.scope3.com
 tags:
-  - name: Authentication
-    description: Authentication and account verification
-  - name: Brand Agents
-    description: Advertiser account management - your top-level container for campaigns and assets
-  - name: Campaigns
-    description: Campaign creation and management with natural language prompts
-  - name: Creatives
-    description: Creative asset management and campaign assignments
-  - name: Reporting & Analytics
-    description: Performance analytics, data exports, and ML-powered insights
-  - name: Brand Safety & Targeting
-    description: Brand standards, content filtering, and audience management
-  - name: Inventory & Optimization
-    description: Publisher inventory discovery and performance optimization
-  - name: Asset Management
-    description: Creative asset uploads and bulk operations
-  - name: Webhooks & Integration
-    description: Real-time notifications and external integrations
-  - name: System
-    description: System utilities and legacy agent support
+  - description: Authentication and account verification
+    name: Authentication
+  - description: Advertiser account management - your top-level container for campaigns and assets
+    name: Brand Agents
+  - description: Campaign creation and management with natural language prompts
+    name: Campaigns
+  - description: Creative asset management and campaign assignments
+    name: Creatives
+  - description: Performance analytics, data exports, and ML-powered insights
+    name: Reporting & Analytics
+  - description: Brand standards, content filtering, and audience management
+    name: Brand Safety & Targeting
+  - description: Publisher inventory discovery and performance optimization
+    name: Inventory & Optimization
+  - description: Creative asset uploads and bulk operations
+    name: Asset Management
+  - description: Real-time notifications and external integrations
+    name: Webhooks & Integration
+  - description: System utilities and legacy agent support
+    name: System
