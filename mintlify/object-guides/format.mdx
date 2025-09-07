@@ -1,0 +1,187 @@
+---
+title: "Creative Format"
+description: "Understanding how publisher specifications shape creative delivery"
+icon: "shapes"
+---
+
+## Overview
+
+**Creative Formats** are technical specifications that dictate how creative assets must be structured for delivery. These specifications are defined by:
+
+1. **Publishers** - Yahoo, Reddit, Meta, Google, Amazon, etc.
+2. **Industry Standards Bodies** - IAB Tech Lab and other organizations
+
+Think of creative formats as the "contract" between your creative content and where it will be displayed.
+
+<Warning>
+**Important**: Scope3 uses **AdCP (Ad Context Protocol)** for all creative format definitions. AdCP provides standardized format specifications that work across publishers and platforms.
+</Warning>
+
+## AdCP Creative Formats
+
+### How We Use AdCP
+
+Scope3 leverages the Ad Context Protocol (AdCP) for all creative format management:
+
+<CardGroup cols={2}>
+  <Card title="📖 AdCP Format Documentation" href="https://adcontextprotocol.org/docs/media-buy/creative-formats" icon="book">
+    Complete guide to AdCP creative format specifications
+  </Card>
+  
+  <Card title="📋 AdCP Format Schemas" href="https://adcontextprotocol.org/schemas/creative-formats-v1.json" icon="code">
+    JSON schemas defining all supported creative formats
+  </Card>
+</CardGroup>
+
+<Note>
+**Why AdCP?** AdCP provides a unified standard for creative formats across all major publishers and platforms, eliminating the need to manage platform-specific variations manually.
+</Note>
+
+## How Creative Formats Work in Scope3
+
+### Creating Creatives for Specific Formats
+
+When creating a creative, you specify which AdCP format it should target:
+
+```javascript
+// Create a creative for a specific format
+const creative = await createCreative({
+  brandAgentId: "ba_123",
+  name: "Product Video - CTV",
+  formatId: "adcp_ctv_standard_30s",  // Target specific AdCP format
+  url: "https://cdn.brand.com/video-30s.mp4",
+  headline: "Discover Our Product",
+  cta: "Learn More"
+});
+
+console.log(creative.format);
+// Output: "adcp_ctv_standard_30s"
+```
+
+### Format Validation
+
+Scope3 validates that your creative assets meet the requirements of the specified format:
+
+1. **Format Selection**: You choose the target AdCP format
+2. **Asset Validation**: We verify your assets meet format specifications
+3. **Compliance Check**: Ensure all required elements are present
+4. **Delivery Ready**: Creative is certified for the specified format
+
+### Key Benefits
+
+- **Format Precision**: Create exactly what publishers need
+- **Validation**: Know immediately if assets meet requirements
+- **Standards-Based**: AdCP ensures industry-wide compatibility
+- **Clear Intent**: Explicit format targeting prevents delivery issues
+
+## Learn More About Creative Formats
+
+For detailed information about specific creative formats, publisher requirements, and technical specifications:
+
+<CardGroup cols={2}>
+  <Card title="📚 AdCP Documentation" href="https://adcontextprotocol.org/docs/media-buy/creative-formats" icon="book">
+    Complete creative format reference
+  </Card>
+  
+  <Card title="🔧 Format Schemas" href="https://adcontextprotocol.org/schemas/creative-formats-v1.json" icon="code">
+    Technical schema definitions
+  </Card>
+  
+  <Card title="📐 IAB Standards" href="https://iabtechlab.com/standards/" icon="ruler">
+    Industry standard specifications
+  </Card>
+  
+  <Card title="🚀 AdCP Overview" href="https://adcontextprotocol.org" icon="rocket">
+    Learn about Ad Context Protocol
+  </Card>
+</CardGroup>
+
+## Using Creative Formats in the API
+
+### List Available Formats
+
+```javascript
+// Discover which creative formats are available
+const formats = await listCreativeFormats();
+
+// Returns AdCP-compliant format definitions
+console.log(formats);
+// Output: Array of format objects per AdCP schema
+```
+
+### Create Creatives for Different Formats
+
+```javascript
+// Create a video creative for CTV
+const ctvCreative = await createCreative({
+  brandAgentId: "ba_123",
+  name: "Product Video - CTV",
+  formatId: "adcp_ctv_standard_30s",
+  url: "https://cdn.brand.com/video-ctv-30s.mp4"
+});
+
+// Create a display creative for web
+const displayCreative = await createCreative({
+  brandAgentId: "ba_123", 
+  name: "Product Banner - Display",
+  formatId: "adcp_display_300x250",
+  url: "https://cdn.brand.com/banner-300x250.jpg"
+});
+
+// Each creative is specifically built for its target format
+```
+
+## Common Questions
+
+<AccordionGroup>
+  <Accordion title="What if my creative doesn't match any format?">
+    The system will suggest the closest matching formats and what changes would make your creative compatible. Often this involves adjusting dimensions, duration, or file format.
+  </Accordion>
+  
+  <Accordion title="How often do formats change?">
+    AdCP continuously updates format definitions as publishers update their requirements. Your existing creatives remain valid - we handle backward compatibility automatically.
+  </Accordion>
+  
+  <Accordion title="Do I need to create multiple versions for different publishers?">
+    No - that's the beauty of AdCP. One creative can automatically work across multiple publishers if it meets the format specifications.
+  </Accordion>
+</AccordionGroup>
+
+## API Endpoints
+
+<CardGroup cols={2}>
+  <Card title="List Creative Formats" href="/api-reference/list_creative_formats" icon="list">
+    `GET /creative-formats` - Get available AdCP format definitions
+  </Card>
+  
+  <Card title="Create Creative" href="/api-reference/create_creative" icon="plus">
+    `POST /creatives` - Upload creative with automatic format matching
+  </Card>
+</CardGroup>
+
+## Best Practices
+
+1. **Follow AdCP Standards**: Design creatives that comply with AdCP format specifications
+2. **High Quality First**: Start with highest quality assets - we handle optimization
+3. **Check Compatibility Early**: Use the API to verify format compatibility before campaigns
+4. **Stay Informed**: Monitor AdCP updates for new format capabilities
+
+<Tip>
+**Pro Tip**: AdCP handles the complexity of format variations across publishers. Focus on creating great creative content - we'll ensure it works everywhere.
+</Tip>
+
+## Next Steps
+
+<CardGroup cols={3}>
+  <Card title="🎨 Creative Guide" href="/mintlify/object-guides/creative" icon="palette">
+    Learn about creative management
+  </Card>
+  
+  <Card title="📊 Reporting" href="/mintlify/reporting-overview" icon="chart-line">
+    Track creative format performance
+  </Card>
+  
+  <Card title="🚀 Quick Start" href="/mintlify/quickstart" icon="rocket">
+    Launch your first campaign
+  </Card>
+</CardGroup>

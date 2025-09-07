@@ -273,9 +273,6 @@ info:
   title: Scope3 Agentic Campaign Management API
   version: 1.0.0
 openapi: 3.1.0
-x-mint:
-  mcp:
-    enabled: true
 paths:
   /add-measurement-source:
     post:
@@ -809,11 +806,6 @@ paths:
       summary: Create Campaign
       tags:
         - Campaigns
-      x-mint:
-        mcp:
-          enabled: true
-          name: "create_campaign"
-          description: "Create a new advertising campaign with targeting and optimization"
       x-llm-hints:
         - Use this tool when user wants to create a complete campaign in scope3 by parsing a natural
           language prompt and automatically creating the strategy and targeting profiles
@@ -987,11 +979,6 @@ paths:
       summary: Create Brand Agent
       tags:
         - Brand Agents
-      x-mint:
-        mcp:
-          enabled: true
-          name: "create_brand_agent"
-          description: "Create a new brand agent (advertiser account)"
       x-llm-hints:
         - Use this tool when user wants to create a new brand agent (advertiser account)
         - Call this when user says 'create', 'make', 'set up', or 'add'
@@ -2151,11 +2138,6 @@ paths:
       summary: Get Campaign Summary
       tags:
         - Reporting & Analytics
-      x-mint:
-        mcp:
-          enabled: true
-          name: "get_campaign_summary"
-          description: "Get natural language campaign performance summary with insights"
       x-llm-hints:
         - Use this tool when user wants to get a natural language summary of campaign performance
           with insights and visualizations
