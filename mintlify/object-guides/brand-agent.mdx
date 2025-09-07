@@ -1,0 +1,115 @@
+---
+title: "Brand Agent"
+description: "The advertiser's account that owns all campaigns, creatives, and targeting assets"
+icon: "building"
+---
+
+## What is a Brand Agent?
+
+A **Brand Agent** is the advertiser's account within the Scope3 Campaign API - the central hub that owns all the advertiser's marketing assets and campaigns. Think of it as the brand's advertising headquarters that coordinates all programmatic marketing activities.
+
+<Note>
+**Industry Standard**: Brand agents mirror the advertiser account pattern used by major platforms like Google Ads, The Trade Desk, and Facebook Business Manager.
+</Note>
+
+## Why Brand Agents Matter
+
+### The Foundation of Everything
+Brand agents are the **foundational layer** of the Scope3 API. Every resource - campaigns, creatives, audiences, and settings - belongs to a brand agent. This provides:
+
+- **Centralized Management**: All the advertiser's marketing assets in one place
+- **Resource Sharing**: Creatives and audiences reused across campaigns
+- **Brand Consistency**: Unified safety rules and standards for the brand
+- **Access Control**: Team permissions and API key scoping
+- **Performance Analytics**: Cross-campaign insights and optimization
+
+### Real-World Example
+
+```
+Nike Brand Agent (ba_nike_123)
+├── Campaigns
+│   ├── "Air Max Holiday Sale" - $50K CTV campaign
+│   ├── "Running Community" - $25K display retargeting
+│   └── "Basketball Season" - $75K connected TV + social
+├── Creative Library
+│   ├── "Holiday Sale 30s Video" (shared across campaigns)
+│   ├── "Running Lifestyle Banner Set" 
+│   └── "Basketball Action Videos"
+├── Brand Standards
+│   ├── Blocked: competitor domains, political content
+│   └── Safety: family-friendly content only
+├── Audiences
+│   ├── "Sports Enthusiasts 25-34"
+│   ├── "Premium Athletic Buyers"
+│   └── "Running Community Members"
+└── Settings
+    ├── DSP Integrations: TTD, DV360, Amazon DSP
+    └── Measurement: GA4, Adobe Analytics
+```
+
+## Core Components Inside Brand Agents
+
+<CardGroup cols={2}>
+  <Card title="🎯 Campaigns" icon="bullseye">
+    Marketing initiatives with budgets, targeting, and optimization goals. Multiple campaigns can run simultaneously, each with specific objectives.
+  </Card>
+  
+  <Card title="🎨 Creatives" icon="image">
+    Your ad content library - videos, images, native ads, and interactive media. Creatives are shared across campaigns for efficiency and consistency.
+  </Card>
+  
+  <Card title="👥 Synthetic Audiences" icon="users">
+    Targeting profiles that define who to reach. Combine demographic, behavioral, and contextual signals for precise audience definition.
+  </Card>
+  
+  <Card title="🛡️ Brand Standards" icon="shield">
+    Safety and quality controls including domain blocklists, keyword filters, and content category restrictions to protect your brand.
+  </Card>
+  
+  <Card title="📊 PMPs (Private Marketplaces)" icon="handshake">
+    Direct inventory relationships with premium publishers. Configure your DSP connections and preferred deal access.
+  </Card>
+  
+  <Card title="📈 Measurement Sources" icon="chart-line">
+    Analytics integrations for tracking conversions, brand lift studies, and attribution across your marketing stack.
+  </Card>
+</CardGroup>
+
+
+## Key API Endpoints
+
+<CardGroup cols={2}>
+  <Card title="Create Brand Agent" href="/api-reference/brand-agents/create-brand-agent" icon="plus">
+    Set up a new advertiser account with basic configuration
+  </Card>
+  
+  <Card title="List Brand Agents" href="/api-reference/brand-agents/list-brand-agents" icon="list">
+    View all brand agents with filtering and search options
+  </Card>
+  
+  <Card title="Get Brand Agent" href="/api-reference/brand-agents/get-brand-agent" icon="eye">
+    Retrieve detailed information about a specific brand agent
+  </Card>
+  
+  <Card title="Update Brand Agent" href="/api-reference/brand-agents/update-brand-agent" icon="edit">
+    Modify brand agent settings, domains, and configuration
+  </Card>
+</CardGroup>
+
+## What's Next?
+
+Now that you understand brand agents, explore the core components:
+
+<CardGroup cols={3}>
+  <Card title="🎨 Creatives" href="/mintlify/creative/overview" icon="image">
+    Build your creative asset library with AI-powered tools
+  </Card>
+  
+  <Card title="🎯 Campaigns" href="/quickstart" icon="rocket">
+    Launch your first campaign with targeting and optimization
+  </Card>
+  
+  <Card title="📊 Analytics" href="/reporting-overview" icon="chart-line">
+    Monitor performance with dual-mode reporting system
+  </Card>
+</CardGroup>

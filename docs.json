@@ -7,7 +7,7 @@
     "light": "#07C983",
     "dark": "#0D9373"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "mintlify/logo/favicon.svg",
   "navigation": {
     "tabs": [
       {
@@ -16,24 +16,27 @@
         "groups": [
           {
             "group": "Get Started",
-            "pages": ["quickstart", "concepts"]
+            "pages": ["mintlify/quickstart", "mintlify/concepts"]
           },
           {
-            "group": "🎨 Creatives",
+            "group": "📦 Core Objects",
             "pages": [
-              "mintlify/creative/quickstart",
-              "mintlify/creative/overview",
-              "mintlify/creative/agents",
-              "mintlify/creative/best-practices"
+              "mintlify/object-guides/brand-agent",
+              "mintlify/object-guides/campaign",
+              "mintlify/object-guides/creative",
+              "mintlify/object-guides/format"
             ]
           },
           {
-            "group": "Reporting & Analytics",
-            "pages": ["reporting-overview"]
+            "group": "🔌 Integrations",
+            "pages": [
+              "mintlify/integrations/webhooks",
+              "mintlify/integrations/creative-agents"
+            ]
           },
           {
-            "group": "Advanced",
-            "pages": ["webhooks/overview"]
+            "group": "📊 Reporting & Analytics",
+            "pages": ["mintlify/reporting-overview"]
           }
         ]
       },
@@ -45,8 +48,8 @@
     ]
   },
   "logo": {
-    "light": "/logo/logo.svg",
-    "dark": "/logo/logo.svg"
+    "light": "mintlify/logo/logo.svg",
+    "dark": "mintlify/logo/logo.svg"
   },
   "api": {
     "openapi": "openapi.yaml",
