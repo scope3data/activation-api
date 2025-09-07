@@ -228,6 +228,8 @@ BrandAgent (Advertiser/Account)
 - **Signal/Story Analytics**: First-class support for tactic component analysis
 - **RL-Ready Events**: Generic event model with reinforcement learning rewards
 - **Natural Language**: All tools work conversationally with Claude
+- **Currency Consistency**: All monetary values (spend, CPM, budgets) must include currency field for international support
+- **External Campaign ID**: Support client campaign IDs for addressability and integration
 
 ## 🏗️ MCP Orchestration + REST Upload Architecture
 

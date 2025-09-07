@@ -27,7 +27,12 @@ Unlike basic campaign platforms, Scope3 provides enterprise-grade analytics with
 
 ### 📊 Campaign Summary & Insights
 
-Get comprehensive campaign analysis with natural language explanations:
+Get comprehensive campaign analysis as structured JSON data. The summary includes:
+
+- **Structured Data**: Campaign metrics, pacing analysis, and currency-aware monetary values
+- **AI Insights**: Performance analysis with actionable recommendations, priority levels, and top tactics
+- **External ID Support**: Client campaign IDs for addressability and integration
+- **Text Summary**: Rich markdown text optimized for conversational interfaces like Claude and ChatGPT
 
 <CodeGroup>
 
@@ -38,23 +43,45 @@ const summary = await getCampaignSummary({
   verbosity: "detailed"
 });
 
-// Returns rich summary with health score, pacing, recommendations
-console.log(summary.healthScore); // "82/100 (Healthy)"
-console.log(summary.recommendations); // AI-powered optimization tips
+// Returns structured JSON for flexible client rendering
+console.log(`Campaign Status: ${summary.pacing.status}`);
+console.log(`Spend: ${summary.summary.spend} ${summary.currency}`);
+
+// Access different insight types
+const topTactics = summary.insights.find(i => i.type === 'top_tactics')?.tactics;
+console.log(`Best Tactic: ${topTactics?.[0]?.description}`);
+
+const optimizations = summary.insights.filter(i => i.type === 'optimization');
+console.log(`Optimization Tips: ${optimizations.length}`);
+
+// Rich text summary available for conversational interfaces
+console.log(summary.textSummary);
 ```
 
 ```text Conversational
 User: "How's my Nike campaign performing this week?"
 
-Claude: 🎯 Nike Air Max Campaign Status:
-        
-Health Score: 82/100 (Healthy)
-Spend: $18,247 of $75,000 budget  
-Pacing: On track (52% budget, 48% through flight)
-CTR: 1.24% (34% above benchmark)
+Claude: [Uses summary.textSummary field]
 
-💡 Key insight: age_25_34 + tech_interest performing 40% better
-🔧 Recommendation: Increase budget allocation to top signals
+🎯 **Nike Air Max Campaign Summary**
+
+📊 **Performance Summary**
+• Spend: 2,340 USD
+• Impressions: 687,432
+• CPM: 3.40 USD
+• Campaign Progress: 40% complete
+
+📈 **Pacing Analysis**
+• Status: 🎯 on track  
+• Budget Used: 52%
+• Daily Spend: 2,340 USD vs 2,083 USD target
+
+💡 **Key Insights**
+• 🔧 Mobile targeting shows 32% better conversion rates  
+• ⚠️ Campaign is over-pacing - will complete 3 days early
+• 📊 Mobile video targeting sports enthusiasts aged 25-34 performing best
+• 🎯 Performance narrative drives 45% higher engagement
+• 📈 Premium publisher inventory delivering 15% lower CPM
 ```
 
 </CodeGroup>

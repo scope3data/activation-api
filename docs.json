@@ -1,0 +1,89 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Scope3 Campaign API",
+  "colors": {
+    "primary": "#0D9373",
+    "light": "#07C983",
+    "dark": "#0D9373"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "groups": [
+      {
+        "group": "Get Started",
+        "pages": ["quickstart", "concepts"]
+      },
+      {
+        "group": "🎨 Creatives",
+        "pages": [
+          "mintlify/creative/quickstart",
+          "mintlify/creative/overview",
+          "mintlify/creative/agents",
+          "mintlify/creative/best-practices"
+        ]
+      },
+      {
+        "group": "Reporting & Analytics",
+        "pages": [
+          "reporting-overview",
+          "api-reference/reporting/get-campaign-summary",
+          "api-reference/reporting/export-campaign-data",
+          "api-reference/reporting/analyze-tactics"
+        ]
+      },
+      {
+        "group": "Advanced",
+        "pages": ["webhooks/overview"]
+      },
+      {
+        "group": "API reference",
+        "openapi": "openapi.yaml"
+      }
+    ]
+  },
+  "logo": {
+    "light": "/logo/logo.svg",
+    "dark": "/logo/logo.svg"
+  },
+  "api": {
+    "openapi": "openapi.yaml",
+    "playground": {
+      "display": "interactive"
+    },
+    "mdx": {
+      "server": "https://api.agentic.scope3.com/v1",
+      "auth": {
+        "method": "key",
+        "name": "x-scope3-api-key"
+      }
+    }
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "API Console",
+        "href": "https://api.agentic.scope3.com"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Get API Key",
+      "href": "https://app.scope3.com/api-keys"
+    }
+  },
+  "footer": {
+    "socials": {
+      "twitter": "https://twitter.com/scope3data",
+      "github": "https://github.com/conductor/activation-api",
+      "linkedin": "https://linkedin.com/company/scope3"
+    }
+  },
+  "seo": {
+    "indexing": "all",
+    "metatags": {
+      "og:type": "website",
+      "og:site_name": "Your docs"
+    }
+  }
+}

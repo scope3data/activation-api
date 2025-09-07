@@ -64,22 +64,45 @@ export interface CampaignData {
   status?: string;
 }
 
-// Campaign summary for casual users
+export interface CampaignInsight {
+  action?: string;
+  message: string;
+  priority: "high" | "low" | "medium";
+  // Additional data for top tactics insights
+  tactics?: TopTactic[];
+  type: "alert" | "observation" | "optimization" | "top_tactics";
+}
+
+export interface CampaignPacing {
+  actualDailySpend: number; // Amount in campaign currency
+  budgetUtilized: number; // 0-100 percentage
+  dailySpendTarget: number; // Amount in campaign currency
+  projectedFinalSpend: number; // Amount in campaign currency
+  status: "on_track" | "over" | "under";
+}
+
+// Campaign summary response (structured JSON)
 export interface CampaignSummary {
-  alerts: CampaignAlert[]; // Active threshold violations
+  alerts: CampaignAlert[];
   campaignId: string;
   campaignName: string;
-  charts?: {
-    performanceTrend?: string;
-    signalPerformance?: string;
-    spendTrend?: string; // ASCII/markdown chart
-    storyPerformance?: string;
-    tacticAllocation?: string;
+  currency: string; // Campaign currency (USD, EUR, etc.)
+  externalCampaignId?: string; // Client's external campaign ID for addressability
+  insights: CampaignInsight[];
+  pacing: CampaignPacing;
+  summary: CampaignSummaryData;
+  textSummary: string; // Rich text for conversational interfaces
+}
+
+export interface CampaignSummaryData {
+  averageCpm: number; // Price in campaign currency
+  flightProgress: {
+    daysElapsed: number;
+    daysRemaining: number;
+    percentComplete: number;
   };
-  generatedAt: Date;
-  insights: string[]; // Key insights and recommendations
-  nextSteps?: string[]; // Recommended actions
-  summary: string; // Natural language summary
+  impressions: number;
+  spend: number; // Amount in campaign currency
 }
 
 // Parameters for campaign summary
@@ -351,6 +374,13 @@ export interface TacticData {
 export interface TacticPerformanceData {
   performance: PerformanceData;
   tactic: TacticData;
+}
+
+export interface TopTactic {
+  cpm: number; // Price in campaign currency
+  description: string; // Human-readable description of the tactic
+  spend: number; // Amount in campaign currency
+  tacticId: string;
 }
 
 // Trend data for time series analysis

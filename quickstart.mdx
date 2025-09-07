@@ -25,6 +25,10 @@ This guide shows you the complete workflow. Choose your integration method:
 - Scope3 API key ([Get one here](https://app.scope3.com/api-keys))
 - $1,000+ budget (recommended: $10,000+ for meaningful optimization)
 
+<Info>
+**Build with AI**: Want to use this with Claude Desktop or Cursor? Add the MCP endpoint `http://localhost:3001/mcp` to your configuration and you're off! Perfect for conversational campaign management.
+</Info>
+
 ## Step 1: Authentication
 
 <Tabs>
@@ -134,12 +138,12 @@ Your brand agent acts as an advertiser account that owns all campaigns and asset
   <Tab title="Natural Language Summary">
     ```
     User: "How's my Nike campaign doing?"
-    Claude: 🎯 Nike Holiday Campaign Health Score: 87/100 (Healthy)
+    Claude: 🎯 Nike Holiday Campaign Summary
             
             📊 **Performance Summary**
-            • Spend: $12,450 of $50,000 (25%)
+            • Spend: $12,450 USD of $50,000 (25%)
             • Impressions: 2.1M delivered
-            • CPM: $5.93 (efficient)
+            • CPM: $5.93 USD (efficient)
             • Flight Progress: Day 7 of 30
             
             📈 **Pacing Status: On Track**
@@ -147,12 +151,13 @@ Your brand agent acts as an advertiser account that owns all campaigns and asset
             • Projected final spend: $49,200 (98% of budget)
             
             ⚡ **Top Performing Tactics**
-            • Sports interest + Mobile video: $4.89 CPM
-            • Holiday shopping + CTV: $6.12 CPM
+            • Mobile video targeting sports enthusiasts aged 25-34: $4.89 USD CPM
+            • CTV targeting weekend sports viewers: $6.12 USD CPM
             
-            💡 **Recommendations**
-            • Consider increasing budget 15% for high-performing mobile tactics
-            • Weekend performance is 23% stronger - optimize dayparting
+            💡 **Key Insights**
+            • Mobile targeting shows 32% better conversion rates
+            • Performance narrative drives 45% higher engagement
+            • Premium publisher inventory delivering 15% lower CPM
     ```
   </Tab>
   <Tab title="Data Export">
@@ -163,19 +168,24 @@ Your brand agent acts as an advertiser account that owns all campaigns and asset
         "start": "2024-12-01",
         "end": "2024-12-07"
       },
+      "currency": "USD",
       "summary": {
         "spend": 12450.00,
         "impressions": 2100000,
-        "averageCpm": 5.93,
-        "healthScore": 87
+        "averageCpm": 5.93
       },
-      "tactics": [
+      "insights": [
         {
-          "id": "tactic_123",
-          "signals": ["interest_sports", "device_mobile"],
-          "spend": 8200.00,
-          "cpm": 4.89,
-          "efficiency": "high"
+          "type": "top_tactics",
+          "message": "Top 2 performing tactics available",
+          "tactics": [
+            {
+              "tacticId": "tactic_123",
+              "description": "Mobile video targeting sports enthusiasts aged 25-34",
+              "spend": 8200.00,
+              "cpm": 4.89
+            }
+          ]
         }
       ]
     }
@@ -250,14 +260,8 @@ You've successfully:
   <Card title="Reporting Overview" href="/reporting-overview" icon="chart-line">
     Comprehensive guide to all reporting capabilities and use cases
   </Card>
-  <Card title="Power User Guide" href="/guides/power-users" icon="sparkles">
-    Advanced analytics, attribution modeling, and custom integrations
-  </Card>
   <Card title="Webhooks & Alerts" href="/webhooks/overview" icon="bell">
     Set up real-time notifications via Slack, email, or custom endpoints
-  </Card>
-  <Card title="Enterprise Integration" href="/guides/enterprise-developers" icon="building">
-    BI dashboards, data pipelines, and API integration patterns
   </Card>
 </CardGroup>
 
