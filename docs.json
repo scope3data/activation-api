@@ -32,9 +32,7 @@
           },
           {
             "group": "🔌 Integrations",
-            "pages": [
-              "webhooks/overview"
-            ]
+            "pages": ["webhooks/overview"]
           },
           {
             "group": "📊 Reporting & Analytics",
