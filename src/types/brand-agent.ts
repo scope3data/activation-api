@@ -9,6 +9,7 @@ export interface BrandAgent {
   createdAt: Date;
   customerId: number;
   description?: string;
+  dspSeats?: string[]; // DSP seat IDs for PMP creation
   id: string;
   name: string;
 
@@ -191,6 +192,7 @@ export interface BrandAgentsData {
 export interface BrandAgentUpdateInput {
   advertiserDomains?: string[];
   description?: string;
+  dspSeats?: string[]; // For adding/updating DSP seats
   name?: string;
 }
 
