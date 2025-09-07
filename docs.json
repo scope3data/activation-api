@@ -29,9 +29,10 @@
           },
           {
             "group": "🔌 Integrations",
-            "pages": ["mintlify/integrations/webhooks",
-            "mintlify/integrations/creative-agents"
-          ]
+            "pages": [
+              "mintlify/integrations/webhooks",
+              "mintlify/integrations/creative-agents"
+            ]
           },
           {
             "group": "📊 Reporting & Analytics",
