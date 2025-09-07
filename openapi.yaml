@@ -970,6 +970,190 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /brand-agent-standardss:
+    post:
+      description: Create a new brand safety standards agent for a brand agent. The standards agent uses
+        AI to classify content and enforce brand safety rules based on a natural language prompt.
+        You can define safety guidelines, content restrictions, and approval criteria through
+        conversational prompts. The agent will automatically apply to all campaigns within the brand
+        agent. Requires authentication.
+      operationId: create_brand_agent_standards
+      summary: Create Brand Agent Standards
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - Use this tool when user wants to create a new brand safety standards agent for a brand
+          agent
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+    get:
+      description: List all brand safety standards agents for a brand agent. Brand standards agents define
+        safety rules and filtering criteria using AI-powered prompts. Each agent has a primary model
+        that contains the current safety guidelines and can be applied across campaigns. Requires
+        authentication.
+      operationId: list_brand_agent_standards
+      summary: List Brand Agent Standards
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - Use this tool when user wants to list all brand safety standards agents for a brand agent
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /brand-agent-storys:
+    post:
+      description: Create a new brand story agent for a brand agent. The story agent uses AI to define
+        brand narrative, messaging strategy, and audience engagement approaches based on a natural
+        language prompt. You can describe your brand story, target audience insights, and messaging
+        preferences through conversational prompts. The agent will automatically inform campaign
+        strategies within the brand agent. Requires authentication.
+      operationId: create_brand_agent_story
+      summary: Create Brand Agent Story
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - Use this tool when user wants to create a new brand story agent for a brand agent
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /brand-agents:
     post:
       description: Create a new brand agent (advertiser account). This creates the top-level container
@@ -1690,6 +1874,276 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /brand-agent-standardss/{id}:
+    delete:
+      description: Archive (soft delete) a brand standards agent. This disables the standards agent and
+        removes its safety rules from active campaigns. The agent and its model history are
+        preserved for audit purposes but will no longer be applied to content classification. This
+        action affects all campaigns within the brand agent. Requires authentication.
+      operationId: delete_brand_agent_standards
+      summary: Delete Brand Agent Standards
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - Use this tool when user wants to archive (soft delete) a brand standards agent
+        - Call this when user says 'delete', 'remove', or 'destroy'
+      parameters:
+        - description: Resource identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+    put:
+      description: Update the safety prompt and configuration for an existing brand standards agent. This
+        creates a new model version with the updated prompt and sets it as the primary/active
+        version. The updated standards will automatically apply to all campaigns within the brand
+        agent. Requires authentication.
+      operationId: update_brand_agent_standards
+      summary: Update Brand Agent Standards
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - Use this tool when user wants to update the safety prompt and configuration for an
+          existing brand standards agent
+        - Call this when user says 'create', 'make', 'set up', or 'add'
+        - Call this when user says 'change', 'update', 'modify', or 'edit'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      parameters:
+        - description: Resource identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /brand-agent-storys/{id}:
+    delete:
+      description: Archive (soft delete) a brand story agent. This disables the story agent and removes
+        its narrative guidance from active campaigns. The agent and its model history are preserved
+        for audit purposes but will no longer inform campaign strategies or audience targeting. This
+        action affects all campaigns within the brand agent. Requires authentication.
+      operationId: delete_brand_agent_story
+      summary: Delete Brand Agent Story
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - Use this tool when user wants to archive (soft delete) a brand story agent
+        - Call this when user asks 'show me', 'list', or 'what are my'
+        - Call this when user says 'delete', 'remove', or 'destroy'
+      parameters:
+        - description: Resource identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+    put:
+      description: Update the brand narrative and messaging strategy for an existing brand story agent.
+        This creates a new model version with the updated story prompt and makes it the
+        primary/active version. The updated story will automatically inform campaign strategies and
+        audience targeting within the brand agent. Requires authentication.
+      operationId: update_brand_agent_story
+      summary: Update Brand Agent Story
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - Use this tool when user wants to update the brand narrative and messaging strategy for an
+          existing brand story agent
+        - Call this when user says 'create', 'make', 'set up', or 'add'
+        - Call this when user asks 'show me', 'list', or 'what are my'
+        - Call this when user says 'change', 'update', 'modify', or 'edit'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      parameters:
+        - description: Resource identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /brand-agents/{id}:
     delete:
       description: "⚠️ DANGER: Permanently delete a brand agent (advertiser account) and ALL associated
@@ -2068,67 +2522,6 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /brand-standardss/{id}:
-    get:
-      description: Retrieve the current brand safety standards and media controls for a brand agent. Shows
-        all configured domain lists, keyword filters, and content categories that apply to campaigns
-        within this brand agent. Requires authentication.
-      operationId: get_brand_standards
-      summary: Get Brand Standards
-      tags:
-        - Brand Safety & Targeting
-      x-llm-hints:
-        - Use this tool when user wants to retrieve the current brand safety standards and media
-          controls for a brand agent
-        - Call this when user asks 'show me', 'list', or 'what are my'
-      parameters:
-        - description: Resource identifier
-          in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
   /campaign-summarys/{id}:
     get:
       description: Get a natural language summary of campaign performance with insights and
@@ -2255,6 +2648,60 @@ paths:
       x-llm-hints:
         - Use this tool when user wants to list all creative assets for a specific brand agent
           (advertiser account)
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /brand-agent-storiess:
+    get:
+      description: List all brand story agents for a brand agent. Brand story agents define brand
+        narrative, messaging, and audience engagement strategies using AI-powered prompts. Each
+        agent has a primary model that contains the current brand story and can be applied to
+        audience targeting and content creation. Requires authentication.
+      operationId: list_brand_agent_stories
+      summary: List Brand Agent Stories
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - Use this tool when user wants to list all brand story agents for a brand agent
+        - Call this when user asks 'show me', 'list', or 'what are my'
       responses:
         "200":
           content:
@@ -2574,77 +3021,6 @@ paths:
         - Use this tool when user wants to register a webhook endpoint to receive real-time campaign
           event notifications
         - Call this when user says 'change', 'update', 'modify', or 'edit'
-      requestBody:
-        content:
-          application/json:
-            examples:
-              basic:
-                summary: Basic example
-                value: {}
-            schema:
-              properties: {}
-              type: object
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-  /set-brand-standards:
-    post:
-      description: Set or update brand safety standards and media controls for a brand agent. These
-        standards apply to all campaigns within the brand agent and help ensure brand-safe media
-        placements. Currently supports domain blocklists/allowlists, keyword filters, and content
-        categories (stub implementation). Requires authentication.
-      operationId: set_brand_standards
-      summary: Set Brand Standards
-      tags:
-        - Brand Safety & Targeting
-      x-llm-hints:
-        - Use this tool when user wants to set or update brand safety standards and media controls
-          for a brand agent
-        - Call this when user asks 'show me', 'list', or 'what are my'
-        - Call this when user says 'change', 'update', 'modify', or 'edit'
-      x-migration-notes:
-        amazon: Configures Brand Safety and content filtering
-        dv360: Configures Brand Safety rules (same concept, applied at brand agent level)
-        ttd: Configures Brand Safety rules (same concept, applied at brand agent level)
       requestBody:
         content:
           application/json:

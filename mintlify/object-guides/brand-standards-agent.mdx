@@ -1,0 +1,152 @@
+---
+title: "Brand Standards"
+description: "AI-powered brand safety and content filtering for advertising campaigns"
+---
+
+**Brand Standards** define brand safety rules and content filtering policies that automatically apply across all campaigns within a brand agent. These standards use AI to classify content and enforce safety guidelines based on natural language prompts.
+
+## Overview
+
+Brand Standards provide:
+- **AI-powered content filtering** based on your brand safety requirements
+- **Automatic application** to all campaigns within a brand agent  
+- **Multi-market targeting** with country, channel, and language specificity
+- **Natural language configuration** through conversational prompts
+
+## Core Properties
+
+<ResponseField name="id" type="string" required>
+  Unique identifier for the brand standards
+</ResponseField>
+
+<ResponseField name="name" type="string" required>
+  Human-readable name for the standards (e.g., "Family-Safe Standards", "Premium Brand Guidelines")
+</ResponseField>
+
+<ResponseField name="brands" type="string[]" required>
+  Array of brand names these standards apply to. Empty array means all brands within the brand agent
+</ResponseField>
+
+<ResponseField name="channels" type="string[]" required>
+  Array of channel codes these standards target (e.g., ["web", "social", "mobile"]). Empty array means all channels
+</ResponseField>
+
+<ResponseField name="countries" type="string[]" required>
+  Array of ISO country codes these standards target (e.g., ["US", "CA", "GB"]). Empty array means all countries
+</ResponseField>
+
+<ResponseField name="languages" type="string[]" required>
+  Array of language codes these standards target (e.g., ["en", "es", "fr"]). Required for storage - cannot be empty
+</ResponseField>
+
+<ResponseField name="prompt" type="string" required>
+  Natural language prompt defining your brand safety rules and guidelines
+</ResponseField>
+
+<ResponseField name="createdAt" type="datetime" required>
+  ISO 8601 timestamp when the standards were created
+</ResponseField>
+
+<ResponseField name="updatedAt" type="datetime" required>
+  ISO 8601 timestamp when the standards were last modified
+</ResponseField>
+
+## Common Use Cases
+
+### Family-Safe Content Filtering
+Ensure all content is appropriate for family audiences by rejecting anything containing violence, adult themes, or profanity while approving educational and lifestyle content.
+
+```
+"Ensure all content is appropriate for family audiences. Reject anything containing violence, adult themes, profanity, or inappropriate imagery. Approve educational, entertainment, and lifestyle content that aligns with family values."
+```
+
+### Premium Brand Safety
+Maintain premium brand positioning by only accepting high-quality, professionally produced content while avoiding anything that could diminish brand prestige.
+
+```
+"Maintain premium brand positioning by only accepting high-quality, professionally produced content. Avoid user-generated content, controversial topics, or anything that could diminish brand prestige. Focus on luxury, quality, and exclusivity messaging."
+```
+
+### Regional Compliance
+Ensure content complies with local regulations like GDPR while prioritizing transparency and user privacy.
+
+```
+"Ensure all content complies with GDPR and EU privacy regulations. Reject any content that doesn't clearly indicate data collection practices or lacks proper consent mechanisms. Prioritize transparency and user privacy."
+```
+
+## How Standards Work
+
+### Automatic Application
+- All campaigns within a brand agent inherit these standards
+- New campaigns automatically use current safety rules
+- Standards apply to creative approval and content classification
+
+### Content Classification
+- Incoming content is evaluated against your safety rules
+- AI uses your natural language prompts to make approval decisions
+- Classifications help ensure brand-safe media placements
+
+### Targeting Flexibility
+- Standards can target specific markets, channels, or languages
+- Multiple standards can operate simultaneously with different targeting
+- Market-appropriate safety rules for different regions
+
+## Configuration Examples
+
+### Multi-Channel Standards
+```json
+{
+  "name": "Social Media Safety",
+  "prompt": "Review social media content for brand appropriateness. Avoid controversial political content, ensure family-friendly messaging, and maintain professional tone.",
+  "channels": ["social", "mobile"],
+  "countries": ["US", "CA", "GB"],
+  "languages": ["en"]
+}
+```
+
+### Region-Specific Standards
+```json
+{
+  "name": "EU Compliance Standards",
+  "prompt": "Ensure compliance with EU regulations including GDPR, transparency requirements, and local advertising standards.",
+  "countries": ["DE", "FR", "NL", "IT", "ES"],
+  "languages": ["de", "fr", "nl", "it", "es"]
+}
+```
+
+## Best Practices
+
+### Writing Effective Prompts
+- **Be specific**: Clear, detailed safety requirements work better than vague guidelines
+- **Use examples**: Include specific scenarios to guide AI decision-making  
+- **Consider edge cases**: Address boundary situations in your prompts
+- **Test and refine**: Create, test, and adjust prompts based on results
+
+### Targeting Strategy
+- **Start broad**: Begin with general standards, then add market-specific ones
+- **Layer specificity**: Use multiple standards for different requirements (e.g., family safety, compliance)
+- **Monitor performance**: Review classification accuracy and adjust prompts as needed
+
+### Management
+- **Meaningful names**: Use descriptive names that indicate the purpose
+- **Regular updates**: Keep standards current with changing brand requirements
+- **Market relevance**: Ensure standards are appropriate for targeted regions
+
+## Integration with Campaigns
+
+Brand Standards automatically integrate with your campaign workflows:
+
+### Campaign Creation
+- New campaigns inherit all applicable brand standards
+- Safety rules are automatically applied during campaign setup
+- Content classification begins immediately
+
+### Content Review
+- All creative content is evaluated against your safety standards
+- AI makes approval/rejection decisions based on your prompts
+- Consistent brand safety across all campaign content
+
+### Ongoing Management
+- Standards can be updated without affecting existing campaigns
+- Changes apply to new content and classifications
+- Previous versions are preserved for reference if needed

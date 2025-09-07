@@ -12,13 +12,16 @@ import type {
   BrandAgentsData,
   BrandAgentUpdateInput,
   BrandAgentWhereInput,
-  BrandStandards,
-  BrandStandardsInput,
+  BrandStandardsAgent,
+  BrandStandardsAgentInput,
+  BrandStandardsAgentsData,
+  BrandStoryAgent,
+  BrandStoryAgentInput,
+  BrandStoryAgentsData,
   MeasurementSource,
   MeasurementSourceInput,
   MeasurementSourcesData,
   SyntheticAudience,
-  SyntheticAudienceInput,
   SyntheticAudiencesData,
 } from "../types/brand-agent.js";
 import type {
@@ -79,19 +82,23 @@ import {
   CREATE_BRAND_AGENT_CAMPAIGN_MUTATION,
   CREATE_BRAND_AGENT_CREATIVE_MUTATION,
   CREATE_BRAND_AGENT_MUTATION,
-  CREATE_SYNTHETIC_AUDIENCE_MUTATION,
+  CREATE_BRAND_AGENT_STANDARDS_MUTATION,
+  CREATE_BRAND_AGENT_STORY_MUTATION,
   DELETE_BRAND_AGENT_MUTATION,
+  DELETE_BRAND_AGENT_STANDARDS_MUTATION,
+  DELETE_BRAND_AGENT_STORY_MUTATION,
   GET_BRAND_AGENT_QUERY,
-  GET_BRAND_STANDARDS_QUERY,
   LIST_BRAND_AGENT_CAMPAIGNS_QUERY,
   LIST_BRAND_AGENT_CREATIVES_QUERY,
+  LIST_BRAND_AGENT_STANDARDS_QUERY,
+  LIST_BRAND_AGENT_STORIES_QUERY,
   LIST_BRAND_AGENTS_QUERY,
   LIST_MEASUREMENT_SOURCES_QUERY,
-  LIST_SYNTHETIC_AUDIENCES_QUERY,
-  SET_BRAND_STANDARDS_MUTATION,
   UPDATE_BRAND_AGENT_CAMPAIGN_MUTATION,
   UPDATE_BRAND_AGENT_CREATIVE_MUTATION,
   UPDATE_BRAND_AGENT_MUTATION,
+  UPDATE_BRAND_AGENT_STANDARDS_MUTATION,
+  UPDATE_BRAND_AGENT_STORY_MUTATION,
 } from "./queries/brand-agents.js";
 import {
   CREATE_STRATEGY_MUTATION,
@@ -414,6 +421,90 @@ export class Scope3ApiClient {
     return result.data.createBrandAgentCreative;
   }
 
+  async createBrandAgentStandards(
+    apiKey: string,
+    input: BrandStandardsAgentInput,
+  ): Promise<BrandStandardsAgent> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: CREATE_BRAND_AGENT_STANDARDS_MUTATION,
+        variables: { ...input },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication failed");
+      }
+      if (response.status >= 500) {
+        throw new Error("External service temporarily unavailable");
+      }
+      throw new Error("Request failed");
+    }
+
+    const result = (await response.json()) as GraphQLResponse<{
+      createBrandStandardsAgent: BrandStandardsAgent;
+    }>;
+
+    if (result.errors && result.errors.length > 0) {
+      throw new Error("Invalid request parameters or query");
+    }
+
+    if (!result.data?.createBrandStandardsAgent) {
+      throw new Error("No data received");
+    }
+
+    return result.data.createBrandStandardsAgent;
+  }
+
+  async createBrandAgentStory(
+    apiKey: string,
+    input: BrandStoryAgentInput,
+  ): Promise<BrandStoryAgent> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: CREATE_BRAND_AGENT_STORY_MUTATION,
+        variables: { ...input },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication failed");
+      }
+      if (response.status >= 500) {
+        throw new Error("External service temporarily unavailable");
+      }
+      throw new Error("Request failed");
+    }
+
+    const result = (await response.json()) as GraphQLResponse<{
+      createBrandStoryAgent: BrandStoryAgent;
+    }>;
+
+    if (result.errors && result.errors.length > 0) {
+      throw new Error("Invalid request parameters or query");
+    }
+
+    if (!result.data?.createBrandStoryAgent) {
+      throw new Error("No data received");
+    }
+
+    return result.data.createBrandStoryAgent;
+  }
+
   async createCampaignEvent(
     apiKey: string,
     input: CampaignEventInput,
@@ -609,49 +700,6 @@ export class Scope3ApiClient {
     return strategy as Strategy;
   }
 
-  // Synthetic Audience methods (stub)
-  async createSyntheticAudience(
-    apiKey: string,
-    input: SyntheticAudienceInput,
-  ): Promise<SyntheticAudience> {
-    const response = await fetch(this.graphqlUrl, {
-      body: JSON.stringify({
-        query: CREATE_SYNTHETIC_AUDIENCE_MUTATION,
-        variables: { input },
-      }),
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "User-Agent": "MCP-Server/1.0",
-      },
-      method: "POST",
-    });
-
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        throw new Error("Authentication failed");
-      }
-      if (response.status >= 500) {
-        throw new Error("External service temporarily unavailable");
-      }
-      throw new Error("Request failed");
-    }
-
-    const result = (await response.json()) as GraphQLResponse<{
-      createSyntheticAudience: SyntheticAudience;
-    }>;
-
-    if (result.errors && result.errors.length > 0) {
-      throw new Error("Invalid request parameters or query");
-    }
-
-    if (!result.data?.createSyntheticAudience) {
-      throw new Error("No data received");
-    }
-
-    return result.data.createSyntheticAudience;
-  }
-
   async createWebhookSubscription(
     apiKey: string,
     input: WebhookSubscriptionInput,
@@ -721,6 +769,90 @@ export class Scope3ApiClient {
     }
 
     return result.data.deleteBrandAgent.success;
+  }
+
+  async deleteBrandAgentStandards(
+    apiKey: string,
+    standardsId: string,
+  ): Promise<{ archivedAt: string; id: string; }> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: DELETE_BRAND_AGENT_STANDARDS_MUTATION,
+        variables: { id: standardsId, now: new Date().toISOString() },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication failed");
+      }
+      if (response.status >= 500) {
+        throw new Error("External service temporarily unavailable");
+      }
+      throw new Error("Request failed");
+    }
+
+    const result = (await response.json()) as GraphQLResponse<{
+      updateAgent: { archivedAt: string; id: string; };
+    }>;
+
+    if (result.errors && result.errors.length > 0) {
+      throw new Error("Invalid request parameters or query");
+    }
+
+    if (!result.data?.updateAgent) {
+      throw new Error("No data received");
+    }
+
+    return result.data.updateAgent;
+  }
+
+  async deleteBrandAgentStory(
+    apiKey: string,
+    storyId: string,
+  ): Promise<{ archivedAt: string; id: string; }> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: DELETE_BRAND_AGENT_STORY_MUTATION,
+        variables: { id: storyId, now: new Date().toISOString() },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication failed");
+      }
+      if (response.status >= 500) {
+        throw new Error("External service temporarily unavailable");
+      }
+      throw new Error("Request failed");
+    }
+
+    const result = (await response.json()) as GraphQLResponse<{
+      updateAgent: { archivedAt: string; id: string; };
+    }>;
+
+    if (result.errors && result.errors.length > 0) {
+      throw new Error("Invalid request parameters or query");
+    }
+
+    if (!result.data?.updateAgent) {
+      throw new Error("No data received");
+    }
+
+    return result.data.updateAgent;
   }
 
   // Delete inventory option
@@ -923,48 +1055,6 @@ export class Scope3ApiClient {
     }
 
     return result.data.brandAgentCampaign;
-  }
-
-  async getBrandStandards(
-    apiKey: string,
-    brandAgentId: string,
-  ): Promise<BrandStandards> {
-    const response = await fetch(this.graphqlUrl, {
-      body: JSON.stringify({
-        query: GET_BRAND_STANDARDS_QUERY,
-        variables: { brandAgentId },
-      }),
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "User-Agent": "MCP-Server/1.0",
-      },
-      method: "POST",
-    });
-
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        throw new Error("Authentication failed");
-      }
-      if (response.status >= 500) {
-        throw new Error("External service temporarily unavailable");
-      }
-      throw new Error("Request failed");
-    }
-
-    const result = (await response.json()) as GraphQLResponse<{
-      brandStandards: BrandStandards;
-    }>;
-
-    if (result.errors && result.errors.length > 0) {
-      throw new Error("Invalid request parameters or query");
-    }
-
-    if (!result.data?.brandStandards) {
-      throw new Error("No data received");
-    }
-
-    return result.data.brandStandards;
   }
 
   async getBudgetAllocations(
@@ -1579,6 +1669,82 @@ export class Scope3ApiClient {
     return result.data.brandAgents;
   }
 
+  // Brand Standards Agent methods
+  async listBrandAgentStandards(
+    apiKey: string,
+    brandAgentId: string,
+  ): Promise<BrandStandardsAgent[]> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: LIST_BRAND_AGENT_STANDARDS_QUERY,
+        variables: { brandAgentId },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication failed");
+      }
+      if (response.status >= 500) {
+        throw new Error("External service temporarily unavailable");
+      }
+      throw new Error("Request failed");
+    }
+
+    const result =
+      (await response.json()) as GraphQLResponse<BrandStandardsAgentsData>;
+
+    if (result.errors && result.errors.length > 0) {
+      throw new Error("Invalid request parameters or query");
+    }
+
+    return result.data?.brandStandardsAgents || [];
+  }
+
+  // Brand Story Agent methods
+  async listBrandAgentStories(
+    apiKey: string,
+    brandAgentId: string,
+  ): Promise<BrandStoryAgent[]> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: LIST_BRAND_AGENT_STORIES_QUERY,
+        variables: { brandAgentId },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication failed");
+      }
+      if (response.status >= 500) {
+        throw new Error("External service temporarily unavailable");
+      }
+      throw new Error("Request failed");
+    }
+
+    const result =
+      (await response.json()) as GraphQLResponse<BrandStoryAgentsData>;
+
+    if (result.errors && result.errors.length > 0) {
+      throw new Error("Invalid request parameters or query");
+    }
+
+    return result.data?.brandStoryAgents || [];
+  }
+
   /**
    * List available creative formats from all providers
    */
@@ -1897,6 +2063,10 @@ export class Scope3ApiClient {
     return result.data.measurementSources;
   }
 
+  // ========================================
+  // CREATIVE MANAGEMENT METHODS (MCP Orchestration + REST)
+  // ========================================
+
   async listSyntheticAudiences(
     apiKey: string,
     brandAgentId: string,
@@ -1965,10 +2135,6 @@ export class Scope3ApiClient {
 
     return result.data?.webhookSubscriptions || [];
   }
-
-  // ========================================
-  // CREATIVE MANAGEMENT METHODS (MCP Orchestration + REST)
-  // ========================================
 
   // Campaign methods
   async parseStrategyPrompt(
@@ -2047,50 +2213,6 @@ export class Scope3ApiClient {
       targetAudience: params.revisions.targetAudience,
       version: "1.1",
     };
-  }
-
-  // Brand Standards methods
-  async setBrandStandards(
-    apiKey: string,
-    brandAgentId: string,
-    input: BrandStandardsInput,
-  ): Promise<BrandStandards> {
-    const response = await fetch(this.graphqlUrl, {
-      body: JSON.stringify({
-        query: SET_BRAND_STANDARDS_MUTATION,
-        variables: { brandAgentId, input },
-      }),
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "User-Agent": "MCP-Server/1.0",
-      },
-      method: "POST",
-    });
-
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        throw new Error("Authentication failed");
-      }
-      if (response.status >= 500) {
-        throw new Error("External service temporarily unavailable");
-      }
-      throw new Error("Request failed");
-    }
-
-    const result = (await response.json()) as GraphQLResponse<{
-      setBrandStandards: BrandStandards;
-    }>;
-
-    if (result.errors && result.errors.length > 0) {
-      throw new Error("Invalid request parameters or query");
-    }
-
-    if (!result.data?.setBrandStandards) {
-      throw new Error("No data received");
-    }
-
-    return result.data.setBrandStandards;
   }
 
   /**
@@ -2276,6 +2398,94 @@ export class Scope3ApiClient {
     }
 
     return result.data.updateBrandAgentCreative;
+  }
+
+  async updateBrandAgentStandards(
+    apiKey: string,
+    agentId: string,
+    name: string,
+    prompt: string,
+  ): Promise<{ id: string; name: string; prompt: string }> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: UPDATE_BRAND_AGENT_STANDARDS_MUTATION,
+        variables: { agentId, name, prompt },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication failed");
+      }
+      if (response.status >= 500) {
+        throw new Error("External service temporarily unavailable");
+      }
+      throw new Error("Request failed");
+    }
+
+    const result = (await response.json()) as GraphQLResponse<{
+      createAgentModel: { id: string; name: string; prompt: string };
+    }>;
+
+    if (result.errors && result.errors.length > 0) {
+      throw new Error("Invalid request parameters or query");
+    }
+
+    if (!result.data?.createAgentModel) {
+      throw new Error("No data received");
+    }
+
+    return result.data.createAgentModel;
+  }
+
+  async updateBrandAgentStory(
+    apiKey: string,
+    previousModelId: string,
+    name: string,
+    prompt: string,
+  ): Promise<{ id: string; name: string; prompt: string }> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: UPDATE_BRAND_AGENT_STORY_MUTATION,
+        variables: { name, previousModelId, prompt },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication failed");
+      }
+      if (response.status >= 500) {
+        throw new Error("External service temporarily unavailable");
+      }
+      throw new Error("Request failed");
+    }
+
+    const result = (await response.json()) as GraphQLResponse<{
+      updateBrandStory: { id: string; name: string; prompt: string };
+    }>;
+
+    if (result.errors && result.errors.length > 0) {
+      throw new Error("Invalid request parameters or query");
+    }
+
+    if (!result.data?.updateBrandStory) {
+      throw new Error("No data received");
+    }
+
+    return result.data.updateBrandStory;
   }
 
   /**

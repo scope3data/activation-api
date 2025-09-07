@@ -33,8 +33,15 @@ import { listInventoryOptionsTool } from "./brand-agents/inventory/list-inventor
 import { addMeasurementSourceTool } from "./brand-agents/measurement/add-measurement-source.js";
 import { listMeasurementSourcesTool } from "./brand-agents/measurement/list-measurement-sources.js";
 // Brand Agent standards tools
-import { getBrandStandardsTool } from "./brand-agents/standards/get-brand-standards.js";
-import { setBrandStandardsTool } from "./brand-agents/standards/set-brand-standards.js";
+import { createBrandAgentStandardsTool } from "./brand-agents/standards/create-brand-agent-standards.js";
+import { deleteBrandAgentStandardsTool } from "./brand-agents/standards/delete-brand-agent-standards.js";
+import { listBrandAgentStandardsTool } from "./brand-agents/standards/list-brand-agent-standards.js";
+import { updateBrandAgentStandardsTool } from "./brand-agents/standards/update-brand-agent-standards.js";
+// Brand Agent stories tools
+import { createBrandAgentStoryTool } from "./brand-agents/stories/create-brand-agent-story.js";
+import { deleteBrandAgentStoryTool } from "./brand-agents/stories/delete-brand-agent-story.js";
+import { listBrandAgentStoriesTool } from "./brand-agents/stories/list-brand-agent-stories.js";
+import { updateBrandAgentStoryTool } from "./brand-agents/stories/update-brand-agent-story.js";
 // Campaign creative tools
 import { campaignAttachCreativeTool } from "./campaigns/attach-creative.js";
 import { createCampaignTool } from "./campaigns/create-campaign.js";
@@ -91,8 +98,16 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(analyzeInventoryPerformanceTool(client));
 
   // Brand Agent standards tools
-  server.addTool(setBrandStandardsTool(client));
-  server.addTool(getBrandStandardsTool(client));
+  server.addTool(listBrandAgentStandardsTool(client));
+  server.addTool(createBrandAgentStandardsTool(client));
+  server.addTool(updateBrandAgentStandardsTool(client));
+  server.addTool(deleteBrandAgentStandardsTool(client));
+
+  // Brand Agent stories tools
+  server.addTool(listBrandAgentStoriesTool(client));
+  server.addTool(createBrandAgentStoryTool(client));
+  server.addTool(updateBrandAgentStoryTool(client));
+  server.addTool(deleteBrandAgentStoryTool(client));
 
   // Brand Agent audience tools
   server.addTool(createSyntheticAudienceTool(client));
@@ -152,6 +167,8 @@ export {
 
   // Brand Agent creative tools
   createBrandAgentCreativeTool,
+  createBrandAgentStandardsTool,
+  createBrandAgentStoryTool,
   // Brand Agent core tools
   createBrandAgentTool,
   createCampaignTool,
@@ -168,26 +185,31 @@ export {
   creativeSyncPublishersTool,
   creativeUnassignTool,
   creativeUpdateTool,
+  deleteBrandAgentStandardsTool,
+  deleteBrandAgentStoryTool,
   deleteBrandAgentTool,
   discoverPublisherProductsTool,
   exportCampaignDataTool,
   getAmpAgentsTool,
   getBrandAgentTool,
-  getBrandStandardsTool,
   getCampaignSummaryTool,
   listBrandAgentCampaignsTool,
   listBrandAgentCreativesTool,
+  // Brand Agent standards tools
+  listBrandAgentStandardsTool,
   listBrandAgentsTool,
+  // Brand Agent stories tools
+  listBrandAgentStoriesTool,
   // Format Discovery
   listCreativeFormatsTool,
   listInventoryOptionsTool,
   listMeasurementSourcesTool,
   listSyntheticAudiencesTool,
   registerWebhookTool,
-  // Brand Agent standards tools
-  setBrandStandardsTool,
   updateBrandAgentCampaignTool,
   updateBrandAgentCreativeTool,
+  updateBrandAgentStandardsTool,
+  updateBrandAgentStoryTool,
   updateBrandAgentTool,
   updateCampaignTool,
 };
