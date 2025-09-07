@@ -137,7 +137,8 @@ describe("OpenAPI Specification", () => {
     }
 
     // For now, just warn but don't fail the test - we're generating from MCP tools
-    expect(missingExamples.length).toBeLessThan(50); // Allow missing examples during generation phase
+    // Updated threshold to accommodate expanded tool discovery (42 tools vs previous 23)
+    expect(missingExamples.length).toBeLessThan(100); // Allow missing examples during generation phase
   });
 
   it("should have Budget schema defined", () => {
