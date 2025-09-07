@@ -1,0 +1,487 @@
+---
+title: "Brand Agent Setup Guide"
+description: "Complete guide to configuring your advertiser account, domains, DSPs, and integrations"
+icon: "gear"
+---
+
+## Prerequisites
+
+Before setting up your brand agent, ensure you have:
+
+- **Scope3 API Key**: [Get your API key](https://app.scope3.com/api-keys)
+- **Advertiser Domain List**: All domains your company owns
+- **DSP Account Information**: If using private marketplaces
+- **Team Access Requirements**: Who needs API access
+
+## Quick Setup (5 Minutes)
+
+For immediate testing and basic campaigns:
+
+<Steps>
+  <Step title="Create Basic Brand Agent">
+    ```bash
+    curl -X POST https://api.agentic.scope3.com/v1/brand-agents \
+      -H "x-scope3-api-key: YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "Your Company Name",
+        "description": "Primary brand agent for advertising campaigns"
+      }'
+    ```
+  </Step>
+  
+  <Step title="Note Your Brand Agent ID">
+    Save the returned `brandAgentId` (e.g., `ba_abc123`) - you'll need it for all subsequent operations.
+  </Step>
+  
+  <Step title="Test with a Campaign">
+    You can now create campaigns, add creatives, and start advertising immediately.
+  </Step>
+</Steps>
+
+<Note>
+**Quick Start Complete**: You now have a functional brand agent. Continue reading for production-ready configuration including domain verification, brand safety, and DSP integrations.
+</Note>
+
+## Production Setup
+
+### 1. Advertiser Domain Configuration
+
+**Why domains matter**: Domain verification establishes brand ownership and enables advanced features like brand safety monitoring and competitive exclusions.
+
+<Tabs>
+  <Tab title="Primary Domains">
+    Add all domains your company owns and operates:
+    
+    ```json
+    {
+      "advertiserDomains": [
+        "yourcompany.com",
+        "app.yourcompany.com", 
+        "shop.yourcompany.com",
+        "support.yourcompany.com"
+      ]
+    }
+    ```
+    
+    **Include**:
+    - Main company website
+    - Product/service subdomains
+    - E-commerce platforms
+    - Support and documentation sites
+  </Tab>
+  
+  <Tab title="Brand Family">
+    For companies with multiple brands:
+    
+    ```json
+    {
+      "advertiserDomains": [
+        "parentcompany.com",
+        "brand1.com",
+        "brand2.com",
+        "brand1-shop.com",
+        "brand2-mobile.com"
+      ]
+    }
+    ```
+    
+    **Strategy**: Include all brands under the same brand agent if they share marketing budgets and creative assets.
+  </Tab>
+  
+  <Tab title="International">
+    For global companies with country-specific domains:
+    
+    ```json
+    {
+      "advertiserDomains": [
+        "company.com",
+        "company.co.uk",
+        "company.de",
+        "company.fr",
+        "company.com.au"
+      ]
+    }
+    ```
+    
+    **Benefit**: Enables region-specific brand safety and competitive analysis.
+  </Tab>
+</Tabs>
+
+### 2. Brand Standards Configuration
+
+Protect your brand with comprehensive safety rules:
+
+```javascript
+const brandStandards = {
+  domainBlocklist: [
+    // Direct competitors
+    "competitor1.com",
+    "competitor2.com",
+    
+    // Industry competitors  
+    "competing-product.com",
+    "rival-service.com",
+    
+    // Sensitive categories
+    "political-site.com",
+    "adult-content.com"
+  ],
+  
+  contentCategories: {
+    blocked: [
+      "politics",
+      "adult", 
+      "violence",
+      "gambling",
+      "tobacco"
+    ],
+    preferred: [
+      "technology",
+      "sports", 
+      "lifestyle",
+      "business",
+      "education"
+    ]
+  },
+  
+  keywordFilters: [
+    // Competitor brand names
+    "CompetitorBrand",
+    "RivalProduct",
+    
+    // Sensitive topics
+    "political candidate",
+    "controversial topic",
+    
+    // Quality exclusions
+    "free download",
+    "click here now"
+  ]
+};
+```
+
+<Warning>
+**Important**: Brand standards apply to ALL campaigns within the brand agent. Set these carefully as they cannot be overridden at the campaign level.
+</Warning>
+
+### 3. DSP Integration (For PMPs)
+
+Private Marketplace (PMP) deals require DSP account integration:
+
+<Tabs>
+  <Tab title="The Trade Desk">
+    ```json
+    {
+      "dspIntegrations": [
+        {
+          "platform": "ttd",
+          "advertiserId": "your-ttd-advertiser-id",
+          "partnerId": "your-ttd-partner-id",
+          "configuration": {
+            "preferredDealTiers": ["premium", "guaranteed"],
+            "inventoryTypes": ["ctv", "display", "video"],
+            "budgetAllocation": {
+              "programmatic": 0.7,
+              "pmp": 0.3
+            }
+          }
+        }
+      ]
+    }
+    ```
+    
+    **Required Information**:
+    - TTD Advertiser ID (from your TTD dashboard)
+    - Partner ID (your agency or direct relationship)
+    - Preferred deal access levels
+  </Tab>
+  
+  <Tab title="Google DV360">
+    ```json
+    {
+      "dspIntegrations": [
+        {
+          "platform": "dv360",
+          "advertiserId": "your-dv360-advertiser-id",
+          "partnerId": "your-dv360-partner-id", 
+          "configuration": {
+            "campaignManagerAccess": true,
+            "attributionModel": "last_click",
+            "measurementSources": ["ga4", "cm360"]
+          }
+        }
+      ]
+    }
+    ```
+    
+    **Setup Requirements**:
+    - DV360 advertiser and partner IDs
+    - Campaign Manager permissions
+    - Attribution methodology alignment
+  </Tab>
+  
+  <Tab title="Amazon DSP">
+    ```json
+    {
+      "dspIntegrations": [
+        {
+          "platform": "amazon_dsp",
+          "entityId": "your-amazon-entity-id",
+          "configuration": {
+            "productCatalogAccess": true,
+            "amazonAttributionEnabled": true,
+            "inventoryPreferences": {
+              "amazonOwned": 0.4,
+              "thirdParty": 0.6
+            }
+          }
+        }
+      ]
+    }
+    ```
+    
+    **Amazon-Specific Features**:
+    - Product catalog integration
+    - Amazon Attribution setup
+    - Inventory source preferences
+  </Tab>
+</Tabs>
+
+### 4. Team Access & API Keys
+
+Configure team access with appropriate permissions:
+
+<Steps>
+  <Step title="Generate Team API Keys">
+    Create separate API keys for different teams and systems:
+    
+    - **Campaign Managers**: Full campaign and creative access
+    - **Analysts**: Read-only access to reporting data
+    - **Systems Integration**: Programmatic access for automation
+    - **Developers**: Sandbox/testing environment access
+  </Step>
+  
+  <Step title="Set Permission Levels">
+    ```json
+    {
+      "teamAccess": [
+        {
+          "role": "campaign_manager",
+          "permissions": ["create_campaigns", "manage_creatives", "view_reports"],
+          "brandAgentAccess": ["ba_your_brand_123"]
+        },
+        {
+          "role": "analyst", 
+          "permissions": ["view_reports", "export_data"],
+          "brandAgentAccess": ["ba_your_brand_123"]
+        }
+      ]
+    }
+    ```
+  </Step>
+  
+  <Step title="Security Best Practices">
+    - **Rotate Keys Quarterly**: Set calendar reminders for key rotation
+    - **Environment Separation**: Different keys for prod/staging/dev
+    - **Audit Access**: Regular review of who has access to what
+    - **Secure Storage**: Use environment variables, never commit to code
+  </Step>
+</Steps>
+
+## Advanced Configuration
+
+### Measurement & Attribution
+
+Connect your analytics stack for comprehensive measurement:
+
+<Tabs>
+  <Tab title="Google Analytics 4">
+    ```javascript
+    const measurementConfig = {
+      type: "ga4",
+      propertyId: "G-XXXXXXXXXX",
+      conversionEvents: [
+        "purchase",
+        "sign_up", 
+        "contact_form",
+        "download"
+      ],
+      attributionModel: "data_driven",
+      lookbackWindow: {
+        clicks: 30,
+        impressions: 1
+      }
+    };
+    ```
+  </Tab>
+  
+  <Tab title="Adobe Analytics">
+    ```javascript
+    const measurementConfig = {
+      type: "adobe_analytics",
+      reportSuiteId: "your-rsid",
+      conversionEvents: [
+        "event1", // purchase
+        "event2", // signup  
+        "event3"  // engagement
+      ],
+      eVarMapping: {
+        "campaign_id": "eVar1",
+        "tactic_id": "eVar2", 
+        "creative_id": "eVar3"
+      }
+    };
+    ```
+  </Tab>
+  
+  <Tab title="Custom Attribution">
+    ```javascript
+    const measurementConfig = {
+      type: "custom",
+      webhookEndpoint: "https://your-domain.com/attribution",
+      events: [
+        {
+          name: "conversion",
+          valueMapping: "revenue",
+          attributionLogic: "fractional"
+        }
+      ],
+      postbackDelay: 3600 // 1 hour delay for better attribution
+    };
+    ```
+  </Tab>
+</Tabs>
+
+### Webhook Notifications
+
+Set up real-time alerts for critical events:
+
+```javascript
+const webhookConfig = {
+  endpoint: {
+    url: "https://your-domain.com/webhooks/scope3",
+    method: "POST",
+    authentication: {
+      type: "hmac",
+      secret: "your-webhook-secret"
+    }
+  },
+  
+  eventTypes: [
+    // Budget & Pacing Alerts
+    "budget_75_percent_spent",
+    "budget_90_percent_spent", 
+    "pacing_behind_schedule",
+    "pacing_ahead_schedule",
+    
+    // Performance Alerts
+    "campaign_health_degraded",
+    "creative_performance_low",
+    "tactic_optimization_opportunity",
+    
+    // Technical Alerts
+    "delivery_issues",
+    "creative_approval_needed",
+    "measurement_discrepancy"
+  ],
+  
+  retryPolicy: {
+    maxRetries: 25,
+    backoffMultiplier: 2.0,
+    maxBackoffSeconds: 300
+  }
+};
+```
+
+## Validation Checklist
+
+Before launching campaigns, verify your setup:
+
+<AccordionGroup>
+  <Accordion title="✅ Basic Configuration">
+    - [ ] Brand agent created with clear name
+    - [ ] API key tested and working  
+    - [ ] Team access configured appropriately
+    - [ ] Basic brand standards in place
+  </Accordion>
+  
+  <Accordion title="✅ Domain & Safety">
+    - [ ] All advertiser domains listed
+    - [ ] Competitor domains blocked
+    - [ ] Content category preferences set
+    - [ ] Keyword filters configured
+  </Accordion>
+  
+  <Accordion title="✅ DSP Integration (If Using PMPs)">
+    - [ ] DSP account IDs verified
+    - [ ] Deal access levels confirmed
+    - [ ] Inventory preferences configured
+    - [ ] Budget allocation strategy set
+  </Accordion>
+  
+  <Accordion title="✅ Measurement & Monitoring">
+    - [ ] Analytics integration tested
+    - [ ] Conversion events mapped
+    - [ ] Webhook endpoints configured
+    - [ ] Alert thresholds set appropriately
+  </Accordion>
+</AccordionGroup>
+
+## Common Setup Issues
+
+<AccordionGroup>
+  <Accordion title="🚨 Authentication Problems">
+    **Symptoms**: 401/403 errors, access denied messages
+    
+    **Solutions**:
+    - Verify API key is correct and active
+    - Check key permissions for brand agent access
+    - Ensure `x-scope3-api-key` header format
+    - Contact support if key appears corrupted
+  </Accordion>
+  
+  <Accordion title="🚨 Domain Verification Issues">
+    **Symptoms**: Brand safety not working, competitive exclusions failing
+    
+    **Solutions**:
+    - Verify domain ownership through DNS or file verification
+    - Check for typos in domain list (www vs non-www)
+    - Include all relevant subdomains
+    - Allow 24-48 hours for DNS propagation
+  </Accordion>
+  
+  <Accordion title="🚨 DSP Connection Problems">
+    **Symptoms**: PMP deals not available, inventory access limited
+    
+    **Solutions**:
+    - Verify DSP account IDs are correct and active
+    - Check partner relationship and permissions
+    - Confirm deal access levels with DSP account manager
+    - Test with small budget allocation first
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="🎨 Add Creative Assets" href="/mintlify/creative/quickstart" icon="image">
+    Upload and organize your creative library for campaign use
+  </Card>
+  
+  <Card title="👥 Build Audiences" href="/api-reference/audiences/create-audience" icon="users">
+    Create targeting profiles for different customer segments
+  </Card>
+  
+  <Card title="🚀 Launch First Campaign" href="/quickstart" icon="rocket">
+    Create and launch your first campaign with proper setup
+  </Card>
+  
+  <Card title="📊 Set Up Analytics" href="/reporting-overview" icon="chart-line">
+    Configure performance monitoring and reporting dashboards
+  </Card>
+</CardGroup>
+
+<Tip>
+**Pro Tip**: Start with basic setup and add complexity gradually. You can always enhance your brand agent configuration as your advertising program matures.
+</Tip>

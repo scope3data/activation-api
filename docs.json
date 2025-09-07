@@ -19,6 +19,13 @@
             "pages": ["quickstart", "concepts"]
           },
           {
+            "group": "🏢 Brand Agents",
+            "pages": [
+              "brand-agents/overview",
+              "brand-agents/setup"
+            ]
+          },
+          {
             "group": "🎨 Creatives",
             "pages": [
               "mintlify/creative/quickstart",
