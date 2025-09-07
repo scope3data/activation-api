@@ -970,6 +970,70 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /brand-agent-pmps:
+    post:
+      description: Create a Private Marketplace deal with natural language prompt. The backend will
+        intelligently parse the prompt to extract inventory requirements, targeting, and pricing.
+      operationId: create_brand_agent_pmp
+      summary: create brand agent pmp
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - Use this tool when user wants to create a private marketplace deal with natural language
+          prompt
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /brand-agents:
     post:
       description: Create a new brand agent (advertiser account). This creates the top-level container
@@ -2189,6 +2253,64 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /dsp-seatss/{id}:
+    get:
+      description: Search for available DSP seats to add to brand agent for PMP creation
+      operationId: get_dsp_seats
+      summary: get dsp seats
+      tags:
+        - System
+      x-llm-hints:
+        - Use this tool when user wants to search for available dsp seats to add to brand agent for
+          pmp creation
+      parameters:
+        - description: Resource identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /campaignss:
     get:
       description: List all campaigns for a specific brand agent (advertiser account). Optionally filter
@@ -2255,6 +2377,57 @@ paths:
       x-llm-hints:
         - Use this tool when user wants to list all creative assets for a specific brand agent
           (advertiser account)
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /brand-agent-pmpss:
+    get:
+      description: List all PMPs for a brand agent with their deal IDs and status
+      operationId: list_brand_agent_pmps
+      summary: list brand agent pmps
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - Use this tool when user wants to list all pmps for a brand agent with their deal ids and
+          status
       responses:
         "200":
           content:
@@ -2782,6 +2955,75 @@ paths:
         - Use this tool when user wants to update an existing creative asset's details including
           name, type, url, headline, body text, or call-to-action
         - Call this when user says 'change', 'update', 'modify', or 'edit'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      parameters:
+        - description: Resource identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /brand-agent-pmps/{id}:
+    put:
+      description: Update an existing PMP with new requirements. The backend will parse the new prompt and
+        adjust deal IDs accordingly.
+      operationId: update_brand_agent_pmp
+      summary: update brand agent pmp
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - Use this tool when user wants to update an existing pmp with new requirements
       requestBody:
         content:
           application/json:
