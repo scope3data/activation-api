@@ -22,6 +22,7 @@ import type {
   MeasurementSourceInput,
   MeasurementSourcesData,
   SyntheticAudience,
+  SyntheticAudienceInput,
   SyntheticAudiencesData,
 } from "../types/brand-agent.js";
 import type {
@@ -84,6 +85,7 @@ import {
   CREATE_BRAND_AGENT_MUTATION,
   CREATE_BRAND_AGENT_STANDARDS_MUTATION,
   CREATE_BRAND_AGENT_STORY_MUTATION,
+  CREATE_SYNTHETIC_AUDIENCE_MUTATION,
   DELETE_BRAND_AGENT_MUTATION,
   DELETE_BRAND_AGENT_STANDARDS_MUTATION,
   DELETE_BRAND_AGENT_STORY_MUTATION,
@@ -94,6 +96,7 @@ import {
   LIST_BRAND_AGENT_STORIES_QUERY,
   LIST_BRAND_AGENTS_QUERY,
   LIST_MEASUREMENT_SOURCES_QUERY,
+  LIST_SYNTHETIC_AUDIENCES_QUERY,
   UPDATE_BRAND_AGENT_CAMPAIGN_MUTATION,
   UPDATE_BRAND_AGENT_CREATIVE_MUTATION,
   UPDATE_BRAND_AGENT_MUTATION,
@@ -700,6 +703,49 @@ export class Scope3ApiClient {
     return strategy as Strategy;
   }
 
+  // Synthetic Audience methods (stub)
+  async createSyntheticAudience(
+    apiKey: string,
+    input: SyntheticAudienceInput,
+  ): Promise<SyntheticAudience> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: CREATE_SYNTHETIC_AUDIENCE_MUTATION,
+        variables: { input },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication failed");
+      }
+      if (response.status >= 500) {
+        throw new Error("External service temporarily unavailable");
+      }
+      throw new Error("Request failed");
+    }
+
+    const result = (await response.json()) as GraphQLResponse<{
+      createSyntheticAudience: SyntheticAudience;
+    }>;
+
+    if (result.errors && result.errors.length > 0) {
+      throw new Error("Invalid request parameters or query");
+    }
+
+    if (!result.data?.createSyntheticAudience) {
+      throw new Error("No data received");
+    }
+
+    return result.data.createSyntheticAudience;
+  }
+
   async createWebhookSubscription(
     apiKey: string,
     input: WebhookSubscriptionInput,
@@ -774,7 +820,7 @@ export class Scope3ApiClient {
   async deleteBrandAgentStandards(
     apiKey: string,
     standardsId: string,
-  ): Promise<{ archivedAt: string; id: string; }> {
+  ): Promise<{ archivedAt: string; id: string }> {
     const response = await fetch(this.graphqlUrl, {
       body: JSON.stringify({
         query: DELETE_BRAND_AGENT_STANDARDS_MUTATION,
@@ -799,7 +845,7 @@ export class Scope3ApiClient {
     }
 
     const result = (await response.json()) as GraphQLResponse<{
-      updateAgent: { archivedAt: string; id: string; };
+      updateAgent: { archivedAt: string; id: string };
     }>;
 
     if (result.errors && result.errors.length > 0) {
@@ -816,7 +862,7 @@ export class Scope3ApiClient {
   async deleteBrandAgentStory(
     apiKey: string,
     storyId: string,
-  ): Promise<{ archivedAt: string; id: string; }> {
+  ): Promise<{ archivedAt: string; id: string }> {
     const response = await fetch(this.graphqlUrl, {
       body: JSON.stringify({
         query: DELETE_BRAND_AGENT_STORY_MUTATION,
@@ -841,7 +887,7 @@ export class Scope3ApiClient {
     }
 
     const result = (await response.json()) as GraphQLResponse<{
-      updateAgent: { archivedAt: string; id: string; };
+      updateAgent: { archivedAt: string; id: string };
     }>;
 
     if (result.errors && result.errors.length > 0) {
@@ -1372,6 +1418,8 @@ export class Scope3ApiClient {
     return result.data.inventoryPerformance;
   }
 
+  // Inventory Option Management Methods
+
   // Get optimization recommendations
   async getOptimizationRecommendations(
     apiKey: string,
@@ -1415,8 +1463,6 @@ export class Scope3ApiClient {
 
     return result.data.optimizationRecommendations;
   }
-
-  // Inventory Option Management Methods
 
   // Get product recommendations
   async getProductRecommendations(
@@ -1505,6 +1551,8 @@ export class Scope3ApiClient {
     return result.data?.tacticPerformance || {};
   }
 
+  // Inventory Option Management Methods
+
   // Targeting methods
   async getTargetingDimensions(apiKey: string): Promise<TargetingDimension[]> {
     const response = await fetch(this.graphqlUrl, {
@@ -1543,8 +1591,6 @@ export class Scope3ApiClient {
 
     return result.data.targetingDimensions;
   }
-
-  // Inventory Option Management Methods
 
   async listBrandAgentCampaigns(
     apiKey: string,
@@ -2022,6 +2068,10 @@ export class Scope3ApiClient {
     return result.data.inventoryOptions.inventoryOptions;
   }
 
+  // ========================================
+  // CREATIVE MANAGEMENT METHODS (MCP Orchestration + REST)
+  // ========================================
+
   async listMeasurementSources(
     apiKey: string,
     brandAgentId: string,
@@ -2062,10 +2112,6 @@ export class Scope3ApiClient {
 
     return result.data.measurementSources;
   }
-
-  // ========================================
-  // CREATIVE MANAGEMENT METHODS (MCP Orchestration + REST)
-  // ========================================
 
   async listSyntheticAudiences(
     apiKey: string,
@@ -2405,7 +2451,13 @@ export class Scope3ApiClient {
     agentId: string,
     name: string,
     prompt: string,
-  ): Promise<{ id: string; name: string; prompt: string }> {
+  ): Promise<{
+    createdAt: string;
+    id: string;
+    name: string;
+    prompt: string;
+    status: string;
+  }> {
     const response = await fetch(this.graphqlUrl, {
       body: JSON.stringify({
         query: UPDATE_BRAND_AGENT_STANDARDS_MUTATION,
@@ -2430,7 +2482,13 @@ export class Scope3ApiClient {
     }
 
     const result = (await response.json()) as GraphQLResponse<{
-      createAgentModel: { id: string; name: string; prompt: string };
+      createAgentModel: {
+        createdAt: string;
+        id: string;
+        name: string;
+        prompt: string;
+        status: string;
+      };
     }>;
 
     if (result.errors && result.errors.length > 0) {
@@ -2449,7 +2507,13 @@ export class Scope3ApiClient {
     previousModelId: string,
     name: string,
     prompt: string,
-  ): Promise<{ id: string; name: string; prompt: string }> {
+  ): Promise<{
+    createdAt: string;
+    id: string;
+    name: string;
+    prompt: string;
+    status: string;
+  }> {
     const response = await fetch(this.graphqlUrl, {
       body: JSON.stringify({
         query: UPDATE_BRAND_AGENT_STORY_MUTATION,
@@ -2474,7 +2538,13 @@ export class Scope3ApiClient {
     }
 
     const result = (await response.json()) as GraphQLResponse<{
-      updateBrandStory: { id: string; name: string; prompt: string };
+      updateBrandStory: {
+        createdAt: string;
+        id: string;
+        name: string;
+        prompt: string;
+        status: string;
+      };
     }>;
 
     if (result.errors && result.errors.length > 0) {

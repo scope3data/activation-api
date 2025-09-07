@@ -381,6 +381,33 @@ export const DELETE_BRAND_AGENT_STORY_MUTATION = `
   }
 `;
 
+// Synthetic Audience queries (stub)
+export const CREATE_SYNTHETIC_AUDIENCE_MUTATION = `
+  mutation CreateSyntheticAudience($input: SyntheticAudienceInput!) {
+    createSyntheticAudience(input: $input) {
+      id
+      brandAgentId
+      name
+      description
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+export const LIST_SYNTHETIC_AUDIENCES_QUERY = `
+  query ListSyntheticAudiences($brandAgentId: ID!) {
+    syntheticAudiences(brandAgentId: $brandAgentId) {
+      id
+      brandAgentId
+      name
+      description
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
 // Measurement Source queries (stub)
 export const ADD_MEASUREMENT_SOURCE_MUTATION = `
   mutation AddMeasurementSource($input: MeasurementSourceInput!) {
