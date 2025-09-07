@@ -4,11 +4,14 @@ import type { InventoryManagement } from "./inventory-options.js";
 import type { CampaignAlert } from "./reporting.js";
 
 export interface BrandAgent {
+  // Shared marketing configuration
+  advertiserDomains: string[]; // Domains where users will be sent from all campaigns/creatives
   createdAt: Date;
   customerId: number;
   description?: string;
   id: string;
   name: string;
+
   updatedAt: Date;
 }
 
@@ -175,6 +178,7 @@ export interface BrandAgentCreativeUpdateInput {
 }
 
 export interface BrandAgentInput {
+  advertiserDomains: string[]; // Required on creation
   description?: string;
   name: string;
 }
@@ -185,6 +189,7 @@ export interface BrandAgentsData {
 }
 
 export interface BrandAgentUpdateInput {
+  advertiserDomains?: string[];
   description?: string;
   name?: string;
 }

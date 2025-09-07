@@ -78,6 +78,111 @@ User: "How's my holiday campaign doing?"
 
 ---
 
+## 🏗️ The Three-Pillar Architecture
+
+**Scope3 Campaign API** is built on **three interdependent pillars** that form the foundation of enterprise advertising automation. **You cannot build successful campaigns without all three working together.**
+
+<Warning>
+**Developer Notice**: Creatives are an important part of the platform. **Creative quality is the largest factor in campaign performance.** Without proper creative integration, your campaigns will significantly underperform.
+</Warning>
+
+### 🏢 **Pillar 1: Brand Agent Management** - The Foundation
+
+- **Purpose**: Enterprise advertiser account architecture
+- **Developer Impact**: All resources (campaigns, creatives, audiences) must be scoped to a brand agent
+- **Setup Priority**: #1 - Create brand agents first
+- **Integration Complexity**: ⭐⭐ (2/5) - Straightforward CRUD operations
+
+### 🎨 **Pillar 2: Creatives** - The Performance Engine
+
+- **Purpose**: Complete creative asset lifecycle and optimization system
+- **Developer Impact**: Important for campaign success - campaigns benefit from proper creative setup
+- **Setup Priority**: #2 - Recommended before launching campaigns
+- **Integration Complexity**: ⭐⭐⭐⭐ (4/5) - Advanced features available
+- **Business ROI**: Significant cost reduction and performance improvement
+- **Technical Architecture**: AdCP pass-through with AI-powered optimization
+
+### 🎯 **Pillar 3: Campaign Optimization** - The Execution Layer
+
+- **Purpose**: INTELLIGENT_PMPS strategy execution and real-time optimization
+- **Developer Impact**: Campaigns depend on both brand agents and creative assets to function
+- **Setup Priority**: #3 - Final layer after brand agents and creatives are configured
+- **Integration Complexity**: ⭐⭐⭐ (3/5) - Standard campaign management patterns
+
+---
+
+## 🎨 Creatives - Core Module
+
+<Tip>
+**For Developers**: Creatives are an important integration after brand agent setup. This module provides powerful features for campaign management workflows.
+</Tip>
+
+### 📋 Why This Module Matters for Your Integration
+
+**📈 Developer Business Case**
+
+- **Campaign Performance**: Without proper creatives, campaigns perform significantly worse
+- **Performance Guarantee**: Proper creative integration substantially improves campaign performance
+- **Cost Savings**: Dramatically reduces ongoing creative production costs
+- **Development Efficiency**: Reusable assets and AI generation substantially reduce implementation time
+- **Future-Proof**: AdCP alignment ensures long-term compatibility
+
+**🏗️ Technical Architecture Benefits**
+
+- **Zero-Config AI**: Creative agents work out-of-the-box with natural language prompts
+- **Enterprise Scale**: Handle millions of creative assets across thousands of campaigns
+- **Pass-Through Design**: Automatically delegates to optimal AdCP publishers
+- **Multi-Format Native**: Images, video, text, audio, HTML5, native components supported
+- **Performance Monitoring**: Built-in analytics and A/B testing automation
+
+<Warning>
+**Integration Warning**: Attempting to run campaigns without proper creative integration will result in:
+- Significantly lower campaign performance
+- Much higher creative production costs  
+- Manual asset management overhead
+- Brand inconsistency issues
+- Failed campaign optimization
+</Warning>
+
+### 📚 **Developer Integration Guide** - Start Here!
+
+<CardGroup cols={2}>
+<Card title="🚀 REQUIRED: Integration Guide" icon="rocket" href="mintlify/creative/overview">
+**Complete developer walkthrough** - Everything you need to integrate creatives into your brand agent setup
+</Card>
+
+<Card title="⚡ Quick Start (5 mins)" icon="bolt" href="mintlify/creative/quickstart">
+**Fastest path to success** - Create your first creative and see immediate results
+</Card>
+
+<Card title="🤖 AI Creative Agents" icon="robot" href="mintlify/creative/agents">
+**Next-generation features** - Implement AI-powered creative generation for 10x efficiency gains
+</Card>
+
+<Card title="📋 Enterprise Patterns" icon="building" href="mintlify/creative/best-practices">
+**Production deployment** - Scale creatives across multiple brands and campaigns
+</Card>
+</CardGroup>
+
+### Creatives at a Glance
+
+```
+📦 Creatives Module
+  ├── 🎨 7 Creative Tools (AdCP-aligned)
+  │   ├── creative/create - Build creatives with multiple assets
+  │   ├── creative/list - Manage creative libraries
+  │   ├── creative/upload_asset - Reusable asset management
+  │   ├── creative/assign - Campaign assignments
+  │   └── campaign/* - Campaign-centric creative workflows
+  ├── 🤖 AI Integration (Creative Agents)
+  │   ├── Manifest Mode - Static asset generation
+  │   └── Code Mode - Dynamic creative personalization
+  └── 📊 Performance Analytics
+      ├── Cross-campaign creative performance
+      ├── Asset reuse optimization
+      └── A/B testing automation
+```
+
 ## Architecture Overview
 
 ### Why Brand Agents?
@@ -98,7 +203,9 @@ BrandAgent (Advertiser/Account)
   │   ├── Delivery Summary (real-time pacing, health scores)
   │   ├── Notification Thresholds (automated alerts)
   │   └── Tactics (signal/story components)
-  ├── Creatives (multiple, shared across campaigns)
+  ├── Creative Library (AdCP-aligned creative workflows)
+  │   ├── Creatives (contain multiple assets)
+  │   └── Assets (images, videos, text, audio, etc.)
   ├── Standards (brand safety configuration)
   ├── SyntheticAudiences (multiple, shared across campaigns)
   ├── MeasurementSources (tracking integrations)
@@ -110,11 +217,57 @@ BrandAgent (Advertiser/Account)
 - **Advertiser-Centric**: Brand agents act as advertiser accounts that own all resources
 - **Resource Sharing**: Creatives and audiences can be reused across campaigns within the same brand agent
 - **Create/Update Pattern**: Creative assignment follows consistent patterns (no separate assignment tools)
+- **MCP + REST Architecture**: MCP handles orchestration, REST handles file uploads and bulk data
+- **Format-Driven**: Creative formats from AdCP, publishers, and creative agents determine assembly methods
+- **Content Source Flexibility**: Supports ad server tags, asset references, product URLs, and creative agents
+- **Human-Readable APIs**: All field names are verbose and descriptive for optimal LLM usage
+- **Real-World Workflows**: Third-party ad tags, trafficking sheets, asset libraries, creative agents
+- **Enterprise Scale**: Reference-based asset management for millions of assets
 - **Dual-Mode Reporting**: Casual user summaries with natural language + enterprise data exports
 - **Real-time Integration**: Webhook notifications and integrated delivery summaries
 - **Signal/Story Analytics**: First-class support for tactic component analysis
 - **RL-Ready Events**: Generic event model with reinforcement learning rewards
 - **Natural Language**: All tools work conversationally with Claude
+
+## 🏗️ MCP Orchestration + REST Upload Architecture
+
+**For Developers**: This platform uses a **two-layer architecture** that separates concerns for optimal performance and developer experience:
+
+### **MCP Layer (Orchestration & Control)**
+
+- **Purpose**: Workflow orchestration via natural language tool calls
+- **Handles**: Creative format specification, content references, campaign assignments
+- **Examples**: `creative/create`, `assets/add`, `list_creative_formats`
+- **Data Types**: Metadata, references, configuration, orchestration commands
+- **Performance**: Optimized for fast API calls and natural language processing
+
+### **REST Layer (Data & File Operations)**
+
+- **Purpose**: File uploads, bulk operations, and data storage
+- **Handles**: Actual file uploads, presigned URLs, bulk asset imports
+- **Examples**: `POST /api/assets/upload`, `GET /api/assets/upload-url`
+- **Data Types**: Binary files, large datasets, bulk operations
+- **Performance**: Optimized for file transfer and data processing
+
+### **Why This Separation Matters**
+
+```typescript
+// ❌ Wrong: Uploading files via MCP
+"Upload this 50MB video file via creative/upload_asset"
+// Problems: Timeouts, base64 bloat, poor performance
+
+// ✅ Right: MCP orchestration + REST uploads
+1. REST: POST /api/assets/upload → returns uploadId
+2. MCP: "Add asset with uploadId upload_789"
+3. MCP: "Create creative using asset asset_123"
+```
+
+**Benefits:**
+
+- ⚡ **Performance**: No file transfer bottlenecks in MCP layer
+- 🎯 **Separation**: MCP focuses on orchestration, REST on data
+- 🏗️ **Scalability**: Handle enterprise file volumes efficiently
+- 🔧 **Flexibility**: Support presigned URLs, CDN integration, bulk operations
 
 ---
 

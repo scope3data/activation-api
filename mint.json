@@ -60,8 +60,17 @@
       ]
     },
     {
+      "group": "🎨 Creatives",
+      "pages": [
+        "mintlify/creative/quickstart",
+        "mintlify/creative/overview",
+        "mintlify/creative/agents",
+        "mintlify/creative/best-practices"
+      ]
+    },
+    {
       "group": "MCP & Claude Integration",
-      "pages": ["mcp/claude-desktop", "mcp/conversational-examples"]
+      "pages": ["mcp/claude-desktop", "mcp/conversational-examples", "mintlify/mcp/overview", "mintlify/mcp/setup"]
     },
     {
       "group": "Webhooks",

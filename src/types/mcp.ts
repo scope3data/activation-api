@@ -71,6 +71,7 @@ export interface CreateBrandAgentCreativeParams {
 
 // Brand Agent MCP parameter types
 export interface CreateBrandAgentParams {
+  advertiserDomains: string[];
   description?: string;
   name: string;
 }
@@ -254,6 +255,7 @@ export interface UpdateBrandAgentCreativeParams {
 }
 
 export interface UpdateBrandAgentParams {
+  advertiserDomains?: string[];
   brandAgentId: string;
   description?: string;
   name?: string;
