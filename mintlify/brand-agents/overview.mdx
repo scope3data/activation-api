@@ -1,12 +1,12 @@
 ---
-title: "Brand Agents Overview"
-description: "Your advertiser account that owns all campaigns, creatives, and targeting assets"
+title: "Overview"
+description: "The advertiser's account that owns all campaigns, creatives, and targeting assets"
 icon: "building"
 ---
 
 ## What is a Brand Agent?
 
-A **Brand Agent** is your advertiser account within the Scope3 Campaign API - the central hub that owns all your marketing assets and campaigns. Think of it as your company's advertising headquarters that coordinates all programmatic marketing activities.
+A **Brand Agent** is the advertiser's account within the Scope3 Campaign API - the central hub that owns all the advertiser's marketing assets and campaigns. Think of it as the brand's advertising headquarters that coordinates all programmatic marketing activities.
 
 <Note>
 **Industry Standard**: Brand agents mirror the advertiser account pattern used by major platforms like Google Ads, The Trade Desk, and Facebook Business Manager.
@@ -17,9 +17,9 @@ A **Brand Agent** is your advertiser account within the Scope3 Campaign API - th
 ### The Foundation of Everything
 Brand agents are the **foundational layer** of the Scope3 API. Every resource - campaigns, creatives, audiences, and settings - belongs to a brand agent. This provides:
 
-- **Centralized Management**: All marketing assets in one place
+- **Centralized Management**: All the advertiser's marketing assets in one place
 - **Resource Sharing**: Creatives and audiences reused across campaigns
-- **Brand Consistency**: Unified safety rules and standards
+- **Brand Consistency**: Unified safety rules and standards for the brand
 - **Access Control**: Team permissions and API key scoping
 - **Performance Analytics**: Cross-campaign insights and optimization
 
@@ -74,60 +74,6 @@ Nike Brand Agent (ba_nike_123)
     Analytics integrations for tracking conversions, brand lift studies, and attribution across your marketing stack.
   </Card>
 </CardGroup>
-
-## Setting Up Your Brand Agent
-
-### 1. Basic Configuration
-
-Every brand agent needs:
-
-- **Name**: Clear identifier (e.g., "Nike", "Acme Corp B2B")
-- **Advertiser Domains**: Your company's owned domains for brand safety
-- **Contact Information**: Team lead and billing contacts
-
-### 2. DSP Integration (For PMPs)
-
-To access private marketplace deals, configure your DSP connections:
-
-<Tabs>
-  <Tab title="The Trade Desk">
-    - Advertiser ID from TTD platform
-    - Preferred deal tiers and inventory types
-    - Budget allocation preferences
-  </Tab>
-  <Tab title="Google DV360">
-    - Partner and Advertiser IDs
-    - Campaign manager permissions
-    - Attribution and measurement setup
-  </Tab>
-  <Tab title="Amazon DSP">
-    - Entity ID and account hierarchy
-    - Product catalog integration
-    - Amazon attribution preferences
-  </Tab>
-</Tabs>
-
-### 3. Brand Safety Setup
-
-Configure protection rules that apply to all campaigns:
-
-```json
-{
-  "domainBlocklist": [
-    "competitor1.com",
-    "competitor2.com"
-  ],
-  "contentCategories": {
-    "blocked": ["politics", "adult", "violence"],
-    "preferred": ["sports", "technology", "lifestyle"]
-  },
-  "keywordFilters": [
-    "competitor brand names",
-    "political terms",
-    "controversial topics"
-  ]
-}
-```
 
 ## Brand Agent Lifecycle
 
@@ -189,37 +135,6 @@ Configure protection rules that apply to all campaigns:
   </Accordion>
 </AccordionGroup>
 
-## Common Integration Patterns
-
-### Startup/SMB Pattern
-```mermaid
-graph TD
-    A[Create Single Brand Agent] --> B[Add Core Creatives]
-    B --> C[Launch Test Campaign]
-    C --> D[Monitor Performance]
-    D --> E[Scale Successful Tactics]
-```
-
-### Enterprise Pattern
-```mermaid
-graph TD
-    A[Create Brand Agent] --> B[Configure Brand Standards]
-    B --> C[Set Up DSP Integrations]
-    C --> D[Build Creative Library]
-    D --> E[Create Audience Segments]
-    E --> F[Launch Campaign Portfolio]
-    F --> G[Set Up Analytics Pipeline]
-```
-
-### Agency Pattern
-```mermaid
-graph TD
-    A[Client Brand Agent Setup] --> B[Team Access Configuration]
-    B --> C[Campaign Portfolio Planning]
-    C --> D[Creative Production Workflow]
-    D --> E[Performance Reporting Dashboard]
-    E --> F[Client Review & Optimization]
-```
 
 ## Key API Endpoints
 
@@ -260,5 +175,5 @@ Now that you understand brand agents, explore the core components:
 </CardGroup>
 
 <Tip>
-**Pro Tip**: Start with a single brand agent and basic setup. You can always add more sophisticated features like PMP integrations and advanced measurement as your needs grow.
+**Pro Tip**: Start with a single brand agent and basic setup. You can always add more sophisticated features like PMP integrations and advanced measurement as the advertiser's needs grow.
 </Tip>

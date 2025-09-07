@@ -1,15 +1,15 @@
 ---
-title: "Brand Agent Setup Guide"
-description: "Complete guide to configuring your advertiser account, domains, DSPs, and integrations"
+title: "Setup"
+description: "Complete guide to configuring the advertiser's account, domains, DSPs, and integrations"
 icon: "gear"
 ---
 
 ## Prerequisites
 
-Before setting up your brand agent, ensure you have:
+Before setting up a brand agent, ensure you have:
 
 - **Scope3 API Key**: [Get your API key](https://app.scope3.com/api-keys)
-- **Advertiser Domain List**: All domains your company owns
+- **Advertiser Domain List**: All domains the advertiser owns
 - **DSP Account Information**: If using private marketplaces
 - **Team Access Requirements**: Who needs API access
 
@@ -24,7 +24,7 @@ For immediate testing and basic campaigns:
       -H "x-scope3-api-key: YOUR_API_KEY" \
       -H "Content-Type: application/json" \
       -d '{
-        "name": "Your Company Name",
+        "name": "Advertiser Company Name",
         "description": "Primary brand agent for advertising campaigns"
       }'
     ```
@@ -51,15 +51,15 @@ For immediate testing and basic campaigns:
 
 <Tabs>
   <Tab title="Primary Domains">
-    Add all domains your company owns and operates:
+    Add all domains the advertiser owns and operates:
     
     ```json
     {
       "advertiserDomains": [
-        "yourcompany.com",
-        "app.yourcompany.com", 
-        "shop.yourcompany.com",
-        "support.yourcompany.com"
+        "advertiser-company.com",
+        "app.advertiser-company.com", 
+        "shop.advertiser-company.com",
+        "support.advertiser-company.com"
       ]
     }
     ```
@@ -110,7 +110,7 @@ For immediate testing and basic campaigns:
 
 ### 2. Brand Standards Configuration
 
-Protect your brand with comprehensive safety rules:
+Protect the advertiser's brand with comprehensive safety rules:
 
 ```javascript
 const brandStandards = {
@@ -483,5 +483,5 @@ Before launching campaigns, verify your setup:
 </CardGroup>
 
 <Tip>
-**Pro Tip**: Start with basic setup and add complexity gradually. You can always enhance your brand agent configuration as your advertising program matures.
+**Pro Tip**: Start with basic setup and add complexity gradually. You can always enhance the brand agent configuration as the advertiser's program matures.
 </Tip>

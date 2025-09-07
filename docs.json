@@ -19,15 +19,11 @@
             "pages": ["quickstart", "concepts"]
           },
           {
-            "group": "🏢 Brand Agents",
+            "group": "📦 Core Objects",
             "pages": [
-              "brand-agents/overview",
-              "brand-agents/setup"
-            ]
-          },
-          {
-            "group": "🎨 Creatives",
-            "pages": [
+              "mintlify/brand-agents/overview",
+              "mintlify/brand-agents/setup",
+              "mintlify/campaign_overview",
               "mintlify/creative/quickstart",
               "mintlify/creative/overview",
               "mintlify/creative/agents",
@@ -35,12 +31,14 @@
             ]
           },
           {
-            "group": "Reporting & Analytics",
-            "pages": ["reporting-overview"]
+            "group": "🔌 Integrations",
+            "pages": [
+              "webhooks/overview"
+            ]
           },
           {
-            "group": "Advanced",
-            "pages": ["webhooks/overview"]
+            "group": "📊 Reporting & Analytics",
+            "pages": ["reporting-overview"]
           }
         ]
       },
