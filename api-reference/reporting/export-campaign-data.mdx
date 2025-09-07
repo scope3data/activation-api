@@ -1,0 +1,518 @@
+---
+title: "Export Campaign Data"
+description: "Export structured campaign data for BI/analytics systems with flexible grouping and formats"
+---
+
+## Overview
+
+The `export_campaign_data` tool provides enterprise-grade data exports for business intelligence and analytics systems. Export delivery data, events, tactics, and allocations with flexible grouping and multiple output formats.
+
+## Parameters
+
+<ParamField path="campaignIds" type="string[]" optional>
+  Specific campaign IDs to export. If not provided, uses `brandAgentId` to export all campaigns.
+</ParamField>
+
+<ParamField path="brandAgentId" type="string" optional>
+  Export all campaigns for this brand agent. Required if `campaignIds` not specified.
+</ParamField>
+
+<ParamField path="dateRange" type="object" required>
+  Date range for the export.
+  
+  <Expandable title="dateRange properties">
+    <ParamField path="start" type="string" required>
+      Start date in YYYY-MM-DD format
+    </ParamField>
+    <ParamField path="end" type="string" required>
+      End date in YYYY-MM-DD format  
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField path="datasets" type="string[]" required>
+  Which datasets to include in the export.
+  
+  **Options:**
+  - `delivery` - Spend, impressions, CPM data
+  - `events` - Click, conversion, and custom events with rewards
+  - `tactics` - Tactic performance breakdown by signals/stories
+  - `allocations` - Budget allocation across tactics
+</ParamField>
+
+<ParamField path="groupBy" type="string[]" required>
+  How to group and aggregate the exported data.
+  
+  **Options:**
+  - `date` - Daily aggregation
+  - `hour` - Hourly granularity
+  - `campaign` - By campaign
+  - `tactic` - By optimization tactic
+  - `signal` - By audience signal (age, interest, behavior)
+  - `story` - By narrative context
+  - `publisher_product` - By publisher/placement
+  - `creative` - By creative asset
+</ParamField>
+
+<ParamField path="format" type="string" optional default="json">
+  Export file format.
+  
+  **Options:**
+  - `json` - Standard JSON format
+  - `csv` - Excel-compatible CSV
+  - `parquet` - Optimized for analytics platforms
+</ParamField>
+
+<ParamField path="compression" type="string" optional default="none">
+  Compression method for large exports.
+  
+  **Options:**
+  - `none` - No compression
+  - `gzip` - Gzip compression
+</ParamField>
+
+## Response
+
+<ResponseField name="exportId" type="string">
+  Unique identifier for this export
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Export status: `completed`, `processing`, or `failed`
+</ResponseField>
+
+<ResponseField name="format" type="string">
+  Confirmed export format
+</ResponseField>
+
+<ResponseField name="compression" type="string">
+  Applied compression method
+</ResponseField>
+
+<ResponseField name="totalRecords" type="number">
+  Number of data records in the export
+</ResponseField>
+
+<ResponseField name="schema" type="object">
+  Data schema with column definitions and types
+</ResponseField>
+
+<ResponseField name="data" type="array" optional>
+  Inline data for small exports (&lt;10MB). For larger exports, see `downloadUrl`.
+</ResponseField>
+
+<ResponseField name="downloadUrl" type="string" optional>
+  Secure download URL for large exports. Link expires in 7 days.
+</ResponseField>
+
+<ResponseField name="metadata" type="object">
+  Export metadata including generation time, filters applied, and data freshness
+</ResponseField>
+
+## Examples
+
+### Basic CSV Export
+
+Export campaign delivery data for Excel analysis:
+
+<CodeGroup>
+
+```javascript JavaScript
+const exportResult = await exportCampaignData({
+  campaignIds: ["camp_123", "camp_456"],
+  dateRange: {
+    start: "2024-01-01", 
+    end: "2024-01-31"
+  },
+  datasets: ["delivery"],
+  groupBy: ["date", "campaign"],
+  format: "csv"
+});
+
+console.log(`Export ready: ${exportResult.totalRecords} records`);
+if (exportResult.downloadUrl) {
+  console.log(`Download: ${exportResult.downloadUrl}`);
+}
+```
+
+```python Python
+export_result = client.export_campaign_data(
+    campaign_ids=["camp_123", "camp_456"],
+    date_range={
+        "start": "2024-01-01",
+        "end": "2024-01-31"
+    },
+    datasets=["delivery"],
+    group_by=["date", "campaign"],
+    format="csv"
+)
+
+print(f"Export ready: {export_result['totalRecords']} records")
+```
+
+</CodeGroup>
+
+### Advanced Analytics Export
+
+Export comprehensive data with signal/story breakdown for BI systems:
+
+<CodeGroup>
+
+```javascript Advanced Export
+const analyticsExport = await exportCampaignData({
+  brandAgentId: "ba_nike_123",
+  dateRange: {
+    start: "2024-01-01",
+    end: "2024-03-31" 
+  },
+  datasets: ["delivery", "events", "tactics"],
+  groupBy: ["date", "tactic", "signal", "story"],
+  format: "parquet",
+  compression: "gzip"
+});
+
+// Parquet format optimized for analytics platforms
+console.log("Analytics export completed:");
+console.log(`Records: ${analyticsExport.totalRecords}`);
+console.log(`Size: ${analyticsExport.metadata.sizeBytes} bytes`);
+console.log(`Schema: ${Object.keys(analyticsExport.schema).length} columns`);
+```
+
+```sql BigQuery Import
+-- Example BigQuery schema for imported data
+CREATE TABLE campaign_data (
+  date DATE,
+  campaign_id STRING,
+  tactic_id STRING,
+  signal STRING,
+  story STRING,
+  spend FLOAT64,
+  impressions INT64,
+  clicks INT64,
+  conversions INT64,
+  cpm FLOAT64,
+  ctr FLOAT64,
+  conversion_rate FLOAT64
+)
+PARTITION BY date;
+
+-- Load from exported Parquet file
+LOAD DATA INTO campaign_data
+FROM FILES (
+  "gs://your-bucket/scope3_export_*.parquet"
+)
+WITH PARTITION COLUMNS;
+```
+
+</CodeGroup>
+
+### Event Data with ML Rewards
+
+Export events with reinforcement learning rewards for custom model training:
+
+```javascript
+const mlExport = await exportCampaignData({
+  campaignIds: ["camp_airmax_123"],
+  dateRange: {
+    start: "2024-02-01",
+    end: "2024-02-29"
+  },
+  datasets: ["events"],
+  groupBy: ["hour", "tactic", "signal", "story"],
+  format: "json"
+});
+
+// Event data includes reward signals for ML training
+mlExport.data.forEach(event => {
+  if (event.reward) {
+    console.log({
+      state: { signals: event.signals, stories: event.stories },
+      action: event.tacticId,
+      reward: event.reward.immediate,
+      delayed_reward: event.reward.delayed
+    });
+  }
+});
+```
+
+## Response Examples
+
+### Small Export (Inline Data)
+
+```json
+{
+  "exportId": "exp_abc123",
+  "status": "completed",
+  "format": "json",
+  "compression": "none",
+  "totalRecords": 847,
+  "schema": {
+    "date": "string",
+    "campaign": "string", 
+    "spend": "number",
+    "impressions": "number",
+    "cpm": "number"
+  },
+  "data": [
+    {
+      "date": "2024-01-01",
+      "campaign": "camp_123",
+      "spend": 1247.50,
+      "impressions": 89432,
+      "cpm": 13.95
+    }
+  ],
+  "metadata": {
+    "generatedAt": "2024-01-15T10:30:00Z",
+    "dataFreshness": "2024-01-15T10:15:00Z",
+    "filtersApplied": [],
+    "recordCount": 847
+  }
+}
+```
+
+### Large Export (Download URL)
+
+```json
+{
+  "exportId": "exp_def456", 
+  "status": "completed",
+  "format": "parquet",
+  "compression": "gzip",
+  "totalRecords": 2847392,
+  "schema": {
+    "date": "string",
+    "hour": "number",
+    "campaign_id": "string",
+    "tactic_id": "string", 
+    "signal": "string",
+    "story": "string",
+    "spend": "number",
+    "impressions": "number",
+    "clicks": "number",
+    "conversions": "number",
+    "reward_immediate": "number",
+    "reward_delayed": "number"
+  },
+  "downloadUrl": "https://exports.scope3.com/data/nike_q1_2024.parquet.gz",
+  "metadata": {
+    "generatedAt": "2024-04-01T14:20:00Z",
+    "dataFreshness": "2024-04-01T14:00:00Z", 
+    "fileSizeBytes": 134217728,
+    "expiresAt": "2024-04-08T14:20:00Z"
+  }
+}
+```
+
+## Use Cases
+
+### Business Intelligence
+
+Perfect for populating data warehouses and BI dashboards:
+
+- **Daily ETL Jobs**: Automated data pipeline integration
+- **Executive Dashboards**: Real-time campaign performance views
+- **Attribution Analysis**: Multi-touch conversion path analysis
+- **Budget Planning**: Historical performance for forecasting
+
+### Machine Learning
+
+Export data optimized for ML model training:
+
+- **Signal Effectiveness**: Feature importance for targeting models
+- **Reward Signals**: Immediate and delayed rewards for RL training
+- **Event Sequences**: Time-series data for sequence modeling
+- **A/B Testing**: Statistical analysis of tactic performance
+
+### Reporting & Analytics
+
+Structured data for custom analysis:
+
+- **Campaign Comparisons**: Cross-campaign performance analysis
+- **Creative Performance**: Asset-level effectiveness measurement
+- **Audience Insights**: Signal and story performance breakdowns
+- **Trend Analysis**: Time-series performance patterns
+
+## Schema Reference
+
+### Delivery Dataset
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `date` | string | Date in YYYY-MM-DD format |
+| `hour` | number | Hour of day (0-23) if hourly grouping |
+| `campaign_id` | string | Campaign identifier |
+| `tactic_id` | string | Optimization tactic identifier |
+| `signal` | string | Audience targeting signal |
+| `story` | string | Narrative context |
+| `spend` | number | Spend in campaign currency |
+| `impressions` | number | Total impressions delivered |
+| `average_price` | number | Average CPM price |
+
+### Events Dataset
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `event_id` | string | Unique event identifier |
+| `event_type` | string | Event type (click, conversion, etc.) |
+| `timestamp` | string | ISO 8601 timestamp |
+| `campaign_id` | string | Associated campaign |
+| `tactic_id` | string | Associated tactic |
+| `signals` | array | Applicable audience signals |
+| `stories` | array | Applicable narrative contexts |
+| `amount` | number | Event value (purchase amount, etc.) |
+| `reward_immediate` | number | Immediate reward score (0.0-1.0) |
+| `reward_delayed` | number | Delayed reward score (optional) |
+
+### Tactics Dataset
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `tactic_id` | string | Tactic identifier |
+| `campaign_id` | string | Parent campaign |
+| `start_date` | string | Tactic start date |
+| `end_date` | string | Tactic end date |
+| `signals` | array | Targeting signals |
+| `stories` | array | Narrative contexts |
+| `status` | string | Tactic status |
+| `performance_score` | number | Overall performance score |
+
+## Error Handling
+
+### Common Errors
+
+<ResponseField name="400 Bad Request">
+  **Missing Parameters**: Required parameters not provided
+  
+  ```json
+  {
+    "error": "Missing required parameter: dateRange",
+    "code": "MISSING_PARAMETER"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="400 Bad Request">
+  **Invalid Date Range**: Start date after end date or invalid format
+  
+  ```json
+  {
+    "error": "Invalid date range: start date must be before end date", 
+    "code": "INVALID_DATE_RANGE"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="403 Forbidden">
+  **Export Too Large**: Request exceeds export limits
+  
+  ```json
+  {
+    "error": "Export request too large: 50M+ records. Please reduce date range or use filters",
+    "code": "EXPORT_TOO_LARGE",
+    "suggestions": ["Reduce date range", "Add campaign filters", "Use fewer groupBy dimensions"]
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="404 Not Found">
+  **Campaign Not Found**: Invalid campaign or brand agent ID
+  
+  ```json
+  {
+    "error": "Campaign not found: camp_invalid_123",
+    "code": "CAMPAIGN_NOT_FOUND"
+  }
+  ```
+</ResponseField>
+
+### Best Practices
+
+- **Limit Date Ranges**: Use shorter date ranges for high-cardinality grouping
+- **Filter Early**: Apply campaign/signal filters to reduce export size
+- **Choose Appropriate Format**: Use Parquet for large analytics exports, CSV for Excel
+- **Monitor Export Size**: Large exports (>10MB) return download URLs
+- **Handle Expiration**: Download URLs expire in 7 days, re-export if needed
+
+## Integration Examples
+
+### Data Pipeline Integration
+
+<CodeGroup>
+
+```python Airflow DAG
+from airflow import DAG
+from airflow.operators.python_operator import PythonOperator
+import requests
+import pandas as pd
+
+def export_scope3_data(**context):
+    # Export yesterday's data
+    yesterday = context['yesterday_ds']
+    
+    export_request = {
+        "brandAgentId": "ba_nike_123",
+        "dateRange": {
+            "start": yesterday,
+            "end": yesterday
+        },
+        "datasets": ["delivery", "events"],
+        "groupBy": ["date", "campaign", "tactic", "signal"],
+        "format": "parquet",
+        "compression": "gzip"
+    }
+    
+    response = requests.post('/mcp/export_campaign_data', 
+                           json=export_request)
+    export_result = response.json()
+    
+    # Upload to data warehouse
+    if export_result['downloadUrl']:
+        upload_to_warehouse(export_result['downloadUrl'])
+    
+    return export_result['exportId']
+
+dag = DAG('scope3_daily_export', 
+          schedule_interval='@daily')
+
+export_task = PythonOperator(
+    task_id='export_campaign_data',
+    python_callable=export_scope3_data,
+    dag=dag
+)
+```
+
+```javascript Node.js Stream
+const fs = require('fs');
+const { pipeline } = require('stream');
+
+async function streamCampaignData(campaignId, startDate, endDate) {
+  const exportResult = await exportCampaignData({
+    campaignIds: [campaignId],
+    dateRange: { start: startDate, end: endDate },
+    datasets: ["delivery", "events"], 
+    groupBy: ["date", "hour", "tactic"],
+    format: "json"
+  });
+  
+  if (exportResult.downloadUrl) {
+    // Stream large file to local storage
+    const response = await fetch(exportResult.downloadUrl);
+    const writeStream = fs.createWriteStream(`export_${campaignId}.json.gz`);
+    
+    pipeline(response.body, writeStream, (err) => {
+      if (err) console.error('Export download failed:', err);
+      else console.log('Export saved locally');
+    });
+  } else {
+    // Process inline data
+    exportResult.data.forEach(record => {
+      processRecord(record);
+    });
+  }
+}
+```
+
+</CodeGroup>
+
+This export tool provides enterprise-grade data access for comprehensive campaign analysis and machine learning applications.

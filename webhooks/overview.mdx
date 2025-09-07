@@ -1,0 +1,125 @@
+---
+title: "Webhooks"
+description: "Get real-time alerts when your campaigns need attention"
+---
+
+## What are Webhooks?
+
+Webhooks send instant notifications to your team when important things happen with your campaigns - like budget alerts, performance drops, or campaign completion.
+
+Think of them like text message alerts for your advertising campaigns.
+
+## Setting Up Webhooks
+
+The easiest way to set up webhooks is through your Scope3 dashboard:
+
+1. **Log into [Scope3](https://app.scope3.com)**
+2. **Go to Campaign Settings** → **Notifications**
+3. **Choose where to send alerts:**
+   - Slack channel
+   - Email address  
+   - Custom webhook URL
+
+## Common Alert Types
+
+### Budget Alerts
+- Daily spend exceeds your limit
+- Campaign is spending too fast or too slow
+- Budget is nearly depleted
+
+### Performance Alerts  
+- Click-through rate drops significantly
+- Cost per impression increases beyond threshold
+- Video completion rate declines
+
+### Status Changes
+- Campaign automatically paused
+- Campaign completed successfully
+- New creatives approved and live
+
+## Popular Integrations
+
+### Slack
+Get campaign alerts directly in your team's Slack channel:
+
+```
+🚨 Budget Alert: Nike Air Max Campaign
+💰 Daily spend: $3,247 (exceeded $2,500 limit by 30%)
+🔧 Action needed: Review budget or pause campaign
+📊 View campaign: https://app.scope3.com/campaigns/123
+```
+
+### Email
+Receive formatted email alerts with campaign details and quick action links.
+
+### Custom Webhooks
+For developers: receive JSON payloads at your own API endpoints for custom integrations.
+
+## Simple Custom Integration
+
+If you want to receive webhooks at your own URL, here's a basic example:
+
+<CodeGroup>
+
+```javascript Simple Webhook Handler
+// Basic webhook receiver
+app.post('/webhooks/scope3', (req, res) => {
+  const alert = req.body;
+  
+  console.log(`Campaign Alert: ${alert.campaignId}`);
+  console.log(`Issue: ${alert.message}`);
+  console.log(`Severity: ${alert.severity}`);
+  
+  // Send to your team's notification system
+  notifyTeam(alert);
+  
+  res.status(200).send('OK');
+});
+```
+
+```python Python Handler
+from flask import Flask, request
+
+@app.route('/webhooks/scope3', methods=['POST'])
+def handle_alert():
+    alert = request.json
+    
+    print(f"Campaign Alert: {alert['campaignId']}")
+    print(f"Issue: {alert['message']}")
+    
+    # Send to your notification system
+    send_team_notification(alert)
+    
+    return 'OK', 200
+```
+
+</CodeGroup>
+
+## Example Webhook Payload
+
+When something happens with your campaign, you'll receive a simple JSON payload:
+
+```json
+{
+  "campaignId": "camp_airmax_123",
+  "campaignName": "Nike Air Max Q1 Launch", 
+  "alertType": "budget_exceeded",
+  "severity": "warning",
+  "message": "Daily spend exceeded $2,500 limit by 30%",
+  "currentValue": "$3,247",
+  "timestamp": "2024-01-15T14:30:00Z",
+  "actionUrl": "https://app.scope3.com/campaigns/camp_airmax_123"
+}
+```
+
+## Getting Started
+
+1. **Start simple**: Set up Slack or email notifications in your Scope3 dashboard
+2. **Test with a campaign**: Create a test campaign with low budget thresholds to see how alerts work
+3. **Customize later**: If needed, set up custom webhook endpoints for advanced integrations
+
+## Need Help?
+
+- **Dashboard setup**: Contact support@scope3.com
+- **Custom integrations**: Check our [developer documentation](mailto:developers@scope3.com)
+- **Slack app**: Install the [Scope3 Slack app](https://slack.scope3.com) for easier setup

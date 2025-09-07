@@ -1,0 +1,322 @@
+---
+title: "Key Concepts"
+description: "Understanding the Scope3 Campaign API architecture and terminology"
+icon: "lightbulb"
+---
+
+## Architecture Overview
+
+The Scope3 Campaign API is built around a **Brand Agent** architecture that mirrors how programmatic advertising actually works in the industry.
+
+<img src="/images/architecture-diagram.svg" alt="API Architecture" />
+
+### Why Brand Agents?
+
+Every major programmatic platform uses an account-based hierarchy:
+- **Google Ads**: Advertiser Account → Campaigns  
+- **The Trade Desk**: Advertiser → Campaigns
+- **Facebook Business**: Ad Account → Campaigns
+
+Brand agents serve as your advertiser account, owning all marketing assets and campaigns.
+
+## Core Concepts
+
+### Brand Agent
+Your advertiser account that owns all resources. Think of it as your marketing organization within Scope3.
+
+```
+Brand Agent: "Nike"
+├── Campaigns: Holiday Sale, Summer Launch, Back to School
+├── Creatives: Video ads, display banners, native content
+├── Audiences: Sports enthusiasts, runners, basketball fans  
+├── Brand Standards: Safety rules, blocked domains
+└── Measurement: Analytics integrations, conversion tracking
+```
+
+**When to create:** One per advertiser/brand. Most organizations have 1-3 brand agents.
+
+### Campaigns  
+Marketing initiatives with specific budgets, targeting, and optimization goals.
+
+<Tabs>
+  <Tab title="Campaign Properties">
+    - **Budget**: Total spend and pacing rules
+    - **Targeting**: Who to reach (via audiences and signals)
+    - **Creative**: What content to show (via creative assets)
+    - **Optimization**: How to improve performance (via tactics)
+    - **Delivery**: Real-time spend and performance tracking
+  </Tab>
+  <Tab title="Campaign States">
+    - **Scheduled**: Created but not yet started
+    - **Delivering**: Live and spending budget
+    - **Paused**: Temporarily stopped
+    - **Completed**: Ended (by budget or schedule)
+  </Tab>
+</Tabs>
+
+### Creatives
+Your actual ad content - videos, images, text, or interactive media.
+
+| Type | Use Case | Example |
+|------|----------|---------|
+| **Video** | CTV, YouTube, social | 30-second brand spot |
+| **Image** | Display, social, native | Product photography |
+| **Native** | In-feed, content marketing | Article-style ads |
+| **HTML5** | Interactive, rich media | Playable game ads |
+
+**Reusability**: Creatives can be shared across multiple campaigns within the same brand agent.
+
+### Tactics
+Algorithm-driven optimization approaches that determine **how** your campaign buys inventory.
+
+Each tactic combines:
+- **Signals**: Data inputs for targeting (age, interests, behaviors)
+- **Stories**: Narrative contexts that guide messaging
+- **Optimization**: ML algorithms that improve performance
+
+```
+Example Tactic:
+Signals: ["age_25_34", "interest_sports", "device_mobile"]
+Stories: ["performance", "lifestyle"]  
+→ Targets mobile sports fans 25-34 with performance/lifestyle messaging
+```
+
+### Signals & Stories
+
+<Tabs>
+  <Tab title="Signals">
+    **What they are**: Data points used for targeting and optimization
+    
+    **Examples**:
+    - Demographics: `age_25_34`, `income_high`
+    - Interests: `interest_sports`, `interest_travel`
+    - Behaviors: `purchase_intent`, `brand_affinity`
+    - Context: `device_mobile`, `weekend_viewing`
+    
+    **Usage**: Group by signals in reports to understand which audiences perform best
+  </Tab>
+  <Tab title="Stories">
+    **What they are**: Narrative frameworks that guide creative messaging
+    
+    **Examples**:
+    - `performance`: Focus on product benefits and features
+    - `lifestyle`: Emphasize emotional connection and identity
+    - `urgency`: Create time-sensitive purchase motivation  
+    - `social_proof`: Highlight popularity and testimonials
+    
+    **Usage**: Group by stories to see which messaging themes resonate
+  </Tab>
+</Tabs>
+
+## Data Model
+
+### Resource Hierarchy
+
+```
+Brand Agent (ba_*)
+├── Campaigns (camp_*)
+│   ├── Delivery Summary (real-time performance)
+│   ├── Notification Thresholds (automated alerts)
+│   └── Tactics (optimization components)
+├── Creatives (cr_*) - Shared across campaigns  
+├── Audiences (aud_*) - Shared across campaigns
+├── Brand Standards (domain blocks, safety rules)
+├── Measurement Sources (analytics integrations)
+└── Webhook Subscriptions (real-time notifications)
+```
+
+### ID Patterns
+
+All resources follow consistent ID patterns:
+- Brand Agents: `ba_abc123`
+- Campaigns: `camp_xyz789` 
+- Creatives: `cr_def456`
+- Audiences: `aud_ghi789`
+- Tactics: `tactic_jkl012`
+
+## Reporting Architecture
+
+### Dual-Mode Design
+
+The API supports two distinct reporting approaches:
+
+<Tabs>
+  <Tab title="Casual Users">
+    **Natural Language Summaries**
+    - Rich text responses with insights
+    - Health scores and recommendations  
+    - ASCII charts and visualizations
+    - Conversational interface via AI assistants
+    
+    ```
+    User: "How's my campaign doing?"
+    Response: "🎯 Health Score: 87/100 (Healthy)
+              📊 Spending on track, strong mobile performance..."
+    ```
+  </Tab>
+  <Tab title="Enterprise Systems">
+    **Structured Data Exports**
+    - JSON/CSV/Parquet formats
+    - Flexible grouping and aggregation
+    - BI system integration
+    - Custom date ranges and filters
+    
+    ```json
+    {
+      "campaigns": [...],
+      "groupBy": ["date", "tactic", "signal"],
+      "metrics": {
+        "spend": 12450.00,
+        "impressions": 2100000,
+        "efficiency": 0.87
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Event Model
+
+All campaign interactions are captured as events with reinforcement learning rewards:
+
+```typescript
+interface CampaignEvent {
+  eventType: string;      // "impression", "click", "purchase", "survey"
+  reward: {
+    immediate: number;    // 0.0 to 1.0 reward score
+    delayed?: number;     // Future reward (LTV, brand lift)
+    confidence?: number;  // ML confidence level
+  };
+}
+```
+
+This enables sophisticated attribution and optimization algorithms.
+
+## Integration Patterns
+
+### MCP (Model Context Protocol)
+Conversational tool framework for AI assistants like Claude and ChatGPT.
+
+**Benefits**:
+- Natural language interface
+- No API knowledge required
+- Rich text responses with insights
+- Perfect for campaign managers and marketers
+
+### Direct API
+RESTful API with full programmatic access.
+
+**Benefits**:
+- Complete control and customization
+- Integration with existing systems
+- Batch operations and automation
+- Real-time webhook notifications
+
+### Webhooks
+Real-time push notifications for campaign events.
+
+**Use cases**:
+- Performance alerts and anomaly detection
+- Budget pacing notifications  
+- Optimization opportunity alerts
+- Integration with Slack, PagerDuty, etc.
+
+## Security & Authentication
+
+<Tabs>
+  <Tab title="API Keys">
+    - Authenticate via `x-scope3-api-key` header
+    - Keys are scoped to specific organizations
+    - Rate limited to 1000 requests/hour per key
+    - No server-side storage - provide in each request
+  </Tab>
+  <Tab title="Webhook Security">
+    - HTTPS endpoints required
+    - HMAC signature verification
+    - Bearer token authentication supported
+    - Automatic retry with exponential backoff
+  </Tab>
+</Tabs>
+
+## Performance & Limits
+
+| Resource | Limit | Notes |
+|----------|--------|-------|
+| **API Requests** | 1,000/hour per key | Burst allowance available |
+| **Webhook Retries** | 25 attempts | 2x exponential backoff |
+| **Data Export Size** | 100MB inline | Larger exports via download URL |
+| **Campaign Budget** | $1,000 minimum | $10,000+ recommended |
+| **Creative File Size** | 50MB maximum | CDN delivery recommended |
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Brand Agent Organization">
+    - **One per brand/advertiser**: Don't create multiple brand agents for the same brand
+    - **Clear naming**: Use descriptive names that team members will understand
+    - **Resource sharing**: Take advantage of shared creatives and audiences across campaigns
+  </Accordion>
+  
+  <Accordion title="Campaign Structure">
+    - **Focused targeting**: Each campaign should have a clear audience and goal
+    - **Sufficient budget**: $10,000+ enables meaningful ML optimization
+    - **Creative variety**: Test multiple creative assets to find top performers
+  </Accordion>
+  
+  <Accordion title="Performance Monitoring">
+    - **Set up webhooks**: Get real-time alerts for important events
+    - **Regular analysis**: Use tactic analysis tools to optimize signal/story performance  
+    - **Data export**: Integrate with your BI systems for deeper analysis
+  </Accordion>
+</AccordionGroup>
+
+## Common Patterns
+
+### Setting Up a New Brand
+
+```mermaid
+graph TD
+    A[Create Brand Agent] --> B[Configure Brand Standards]
+    B --> C[Add Creative Assets]
+    C --> D[Create Audience Profiles]
+    D --> E[Launch First Campaign]
+    E --> F[Set Up Monitoring]
+```
+
+### Optimizing Performance
+
+```mermaid
+graph TD
+    A[Get Campaign Summary] --> B{Performance Good?}
+    B -->|Yes| C[Export Data for Analysis]
+    B -->|No| D[Analyze Tactics] 
+    D --> E[Identify Top Signals/Stories]
+    E --> F[Update Campaign Targeting]
+    F --> G[Monitor for 48-72h]
+    G --> A
+```
+
+### Enterprise Integration
+
+```mermaid
+graph TD
+    A[API Authentication] --> B[Webhook Registration]
+    B --> C[Daily Data Export]
+    C --> D[BI System Integration]
+    D --> E[Dashboard Creation]
+    E --> F[Automated Alerting]
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" href="/quickstart" icon="rocket">
+    Launch your first campaign in 5 minutes
+  </Card>
+  <Card title="Reporting & Analytics" href="/reporting-overview" icon="chart-line">
+    Campaign insights, data export, and ML-powered optimization
+  </Card>
+  <Card title="API Reference" href="/api-reference/brand-agents/create-brand-agent" icon="book">
+    Complete documentation for all 25+ tools
+  </Card>
+</CardGroup>
