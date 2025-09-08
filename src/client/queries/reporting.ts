@@ -49,32 +49,30 @@ export const GET_TACTIC_BREAKDOWN_QUERY = `
   }
 `;
 
-// Campaign events
-export const GET_CAMPAIGN_EVENTS_QUERY = `
-  query GetCampaignEvents($campaignId: ID!, $startDate: String!, $endDate: String!) {
-    campaignEvents(campaignId: $campaignId, startDate: $startDate, endDate: $endDate) {
+// Scoring outcomes
+export const GET_SCORING_OUTCOMES_QUERY = `
+  query GetScoringOutcomes($campaignId: ID!, $startDate: String!, $endDate: String!) {
+    scoringOutcomes(campaignId: $campaignId, startDate: $startDate, endDate: $endDate) {
       id
       externalId
-      eventType
-      timestamp
       campaignId
       tacticId
       creativeId
       signals
       stories
-      publisherProductId
-      parameters
-      amount {
-        value
-        unit
+      exposureRange {
+        start
+        end
       }
-      reward {
+      performanceIndex
+      scoring {
         immediate
         delayed
         components
         confidence
       }
       source
+      timestamp
       receivedAt
     }
   }
@@ -212,24 +210,19 @@ export const DELETE_WEBHOOK_SUBSCRIPTION_MUTATION = `
   }
 `;
 
-// Create campaign event
-export const CREATE_CAMPAIGN_EVENT_MUTATION = `
-  mutation CreateCampaignEvent($input: CampaignEventInput!) {
-    createCampaignEvent(input: $input) {
+// Create scoring outcome
+export const CREATE_SCORING_OUTCOME_MUTATION = `
+  mutation CreateScoringOutcome($input: ScoringOutcomeInput!) {
+    createScoringOutcome(input: $input) {
       id
-      eventType
-      timestamp
       campaignId
       tacticId
-      amount {
-        value
-        unit
+      exposureRange {
+        start
+        end
       }
-      reward {
-        immediate
-        delayed
-        confidence
-      }
+      performanceIndex
+      timestamp
       receivedAt
     }
   }

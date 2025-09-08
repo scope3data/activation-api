@@ -109,8 +109,10 @@ export const exportCampaignDataTool = (client: Scope3ApiClient) => ({
       .optional()
       .describe("Compression method (defaults to none)"),
     datasets: z
-      .array(z.enum(["delivery", "events", "tactics", "allocations"]))
-      .describe("Which datasets to include in export"),
+      .array(z.enum(["delivery", "outcomes", "tactics", "allocations"]))
+      .describe(
+        "Which datasets to include in export (outcomes replaces events)",
+      ),
     dateRange: z
       .object({
         end: z.string().describe("End date (YYYY-MM-DD)"),
@@ -295,7 +297,7 @@ async function exportDeliveryData(
   return { rows, schema };
 }
 
-async function exportEventData(
+async function exportOutcomeData(
   client: Scope3ApiClient,
   apiKey: string,
   campaignIds: string[],
@@ -306,15 +308,12 @@ async function exportEventData(
 }> {
   const rows: Array<Record<string, unknown>> = [];
   const schema: Record<string, string> = {
-    amount_unit: "string",
-    amount_value: "number",
     campaign_id: "string",
     creative_id: "string",
-    event_id: "string",
-    event_type: "string",
-    reward_confidence: "number",
-    reward_delayed: "number",
-    reward_immediate: "number",
+    exposure_end: "string",
+    exposure_start: "string",
+    outcome_id: "string",
+    performance_index: "number",
     source: "string",
     tactic_id: "string",
     timestamp: "string",
@@ -325,33 +324,30 @@ async function exportEventData(
   if (params.groupBy.includes("story")) schema.stories = "string";
 
   for (const campaignId of campaignIds) {
-    const events = await client.getCampaignEvents(apiKey, campaignId, {
+    const outcomes = await client.getScoringOutcomes(apiKey, campaignId, {
       end: new Date(params.dateRange.end),
       start: new Date(params.dateRange.start),
     });
 
-    for (const event of events || []) {
+    for (const outcome of outcomes || []) {
       const row: Record<string, unknown> = {
-        amount_unit: event.amount?.unit || null,
-        amount_value: event.amount?.value || null,
-        campaign_id: event.campaignId,
-        creative_id: event.creativeId || null,
-        event_id: event.id,
-        event_type: event.eventType,
-        reward_confidence: event.reward?.confidence || null,
-        reward_delayed: event.reward?.delayed || null,
-        reward_immediate: event.reward?.immediate || null,
-        source: event.source,
-        tactic_id: event.tacticId,
-        timestamp: event.timestamp.toISOString(),
+        campaign_id: outcome.campaignId,
+        creative_id: outcome.creativeId || null,
+        exposure_end: outcome.exposureRange.end.toISOString(),
+        exposure_start: outcome.exposureRange.start.toISOString(),
+        outcome_id: outcome.id,
+        performance_index: outcome.performanceIndex,
+        source: outcome.source,
+        tactic_id: outcome.tacticId || null,
+        timestamp: outcome.timestamp.toISOString(),
       };
 
       // Add optional fields based on groupBy parameters
       if (params.groupBy.includes("signal")) {
-        row.signals = event.signals?.join(",") || null;
+        row.signals = outcome.signals?.join(",") || null;
       }
       if (params.groupBy.includes("story")) {
-        row.stories = event.stories?.join(",") || null;
+        row.stories = outcome.stories?.join(",") || null;
       }
 
       rows.push(row);
@@ -518,15 +514,15 @@ async function generateExport(
         break;
       }
 
-      case "events": {
-        const eventData = await exportEventData(
+      case "outcomes": {
+        const outcomeData = await exportOutcomeData(
           client,
           apiKey,
           campaignIds,
           params,
         );
-        rows.push(...eventData.rows);
-        Object.assign(schema, eventData.schema);
+        rows.push(...outcomeData.rows);
+        Object.assign(schema, outcomeData.schema);
         break;
       }
 

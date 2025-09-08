@@ -3002,6 +3002,69 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /provide-scoring-outcomes:
+    post:
+      description: Provide scoring outcomes for campaign optimization. This replaces the old campaign
+        events system with a focus on performance measurement. Takes campaign and optional
+        tactic/creative, exposure range, and performance index (100 = expected performance).
+      operationId: provide_scoring_outcomes
+      summary: Provide Scoring Outcomes
+      tags:
+        - System
+      x-llm-hints:
+        - Use this tool when user wants to provide scoring outcomes for campaign optimization
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /webhooks:
     post:
       description: Register a webhook endpoint to receive real-time campaign event notifications. Supports

@@ -125,10 +125,15 @@ const campaign = await createCampaign({
 
 ```javascript
 // You send normalized scores via your measurement integration
-await updateTacticOutcomeScore({
-  tacticId: "tactic_456",
-  outcomeScore: 150,  // 1.5x your target performance
-  timestamp: "2024-01-15T10:30:00Z"
+await provideScoringOutcomes({
+  campaignId: "campaign_123",
+  tacticId: "tactic_456",        // Optional - can measure campaign-level
+  creativeId: "creative_789",    // Optional - can measure creative-level
+  exposureRange: {
+    start: "2024-01-08",
+    end: "2024-01-15"
+  },
+  performanceIndex: 150  // 1.5x your target performance
 });
 ```
 

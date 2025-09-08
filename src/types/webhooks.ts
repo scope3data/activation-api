@@ -1,18 +1,5 @@
 // Webhook types for push notifications (following A2A pattern)
 
-// Campaign event data (for generic events)
-export interface CampaignEventData {
-  amount?: {
-    unit: string;
-    value: number;
-  };
-  campaignId: string;
-  eventType: string;
-  parameters: Record<string, unknown>;
-  tacticId: string;
-  timestamp: Date;
-}
-
 // Delivery update webhook event
 export interface DeliveryUpdateEvent {
   campaignId: string;
@@ -46,6 +33,19 @@ export interface PerformanceEvent {
   timestamp: Date;
 }
 
+// Scoring outcome data
+export interface ScoringOutcomeData {
+  campaignId: string;
+  creativeId?: string;
+  exposureRange: {
+    end: Date;
+    start: Date;
+  };
+  performanceIndex: number;
+  tacticId?: string;
+  timestamp: Date;
+}
+
 // Threshold alert event
 export interface ThresholdAlertEvent {
   alertType: "budget" | "delivery" | "pacing" | "performance";
@@ -75,9 +75,9 @@ export interface WebhookDeliveryResult {
 
 // Union type for different webhook event data
 export type WebhookEventData =
-  | CampaignEventData
   | DeliveryUpdateEvent
   | PerformanceEvent
+  | ScoringOutcomeData
   | ThresholdAlertEvent;
 
 // Webhook status and health
@@ -96,9 +96,9 @@ export interface WebhookPayload {
   event: {
     data: WebhookEventData;
     type:
-      | "campaign_event"
       | "delivery_update"
       | "performance_event"
+      | "scoring_outcome"
       | "threshold_alert";
   };
   eventId: string;
