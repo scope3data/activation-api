@@ -59,6 +59,8 @@ import { createBrandAgentPMPTool } from "./pmps/create-pmp.js";
 import { getDSPSeatsTool } from "./pmps/get-dsp-seats.js";
 import { listBrandAgentPMPsTool } from "./pmps/list-pmps.js";
 import { updateBrandAgentPMPTool } from "./pmps/update-pmp.js";
+// Product discovery tools
+import { getProductsTool } from "./products/get-products.js";
 // Reporting tools
 import { analyzeTacticsTool } from "./reporting/analyze-tactics.js";
 import { exportCampaignDataTool } from "./reporting/export-campaign-data.js";
@@ -148,6 +150,9 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(createBrandAgentPMPTool(client)); // create_brand_agent_pmp
   server.addTool(updateBrandAgentPMPTool(client)); // update_brand_agent_pmp
   server.addTool(listBrandAgentPMPsTool(client)); // list_brand_agent_pmps
+
+  // Product discovery tools
+  server.addTool(getProductsTool()); // get_products - calls multiple sales agents via MCP
 };
 
 // Export individual tools for testing
@@ -197,6 +202,8 @@ export {
   getBrandAgentTool,
   getCampaignSummaryTool,
   getDSPSeatsTool,
+  // Product discovery tools
+  getProductsTool,
   // Brand Agent synthetic audience tools
   listBrandAgentBrandStoriesTool,
   listBrandAgentCampaignsTool,
