@@ -1,30 +1,16 @@
 ---
 title: "Signal"
-description: "Understanding the three types of signals that power campaign optimization"
+description: "Understanding the two types of signals that power campaign optimization"
 icon: "radar"
 ---
 
 ## Overview
 
-**Signals** are data points that inform campaign targeting and optimization decisions. The Scope3 platform uses three distinct types of signals to create effective advertising tactics and improve campaign performance.
+**Signals** are data points that inform campaign targeting and optimization decisions. The Scope3 platform uses two distinct types of signals to create effective advertising tactics and improve campaign performance.
 
-## Three Types of Signals
+## Two Types of Signals
 
-### 1. Scope3 Signals
-
-**Platform-provided media quality and performance data** - included at no additional cost:
-
-- **Media Quality**: Brand safety scores, content classification, publisher reputation
-- **Viewability Metrics**: Average and projected viewability rates for placements
-- **Completion Rates**: Predicted video completion rates based on placement context
-- **Ad-to-Content Ratio**: Content density analysis for web placements
-- **Inventory Quality**: Premium vs. standard inventory classifications
-
-<Note>
-For detailed information about Scope3's media quality signals, see the [Media Quality Guide](/features/media-quality) (coming soon).
-</Note>
-
-### 2. Third-Party Signals
+### 1. Third-Party Signals
 
 **External data providers** - additional cost applies:
 
@@ -38,7 +24,7 @@ For detailed information about Scope3's media quality signals, see the [Media Qu
 Third-party signals are **coming soon**. Contact support@scope3.com for early access and pricing information.
 </Info>
 
-### 3. Custom Signals (First-Party Data)
+### 2. Custom Signals (First-Party Data)
 
 **Your own data** - no additional cost:
 
@@ -56,9 +42,9 @@ Upload and manage your first-party data through the [Custom Signals Platform](/i
 ### The Process
 
 1. **Signal Collection**: The platform gathers all available signals for each impression opportunity
-   - Scope3 signals (media quality, viewability predictions)
    - Custom signals (your first-party data)
    - Third-party signals (when available)
+   - Built-in targeting (media quality, viewability predictions)
 
 2. **Context Retrieval**: Relevant signals are retrieved based on campaign objectives and targeting criteria
 
@@ -92,7 +78,7 @@ const campaign = await createCampaign({
 
 // The platform automatically selects relevant signals:
 // - Custom: high_value_customers (your first-party data)
-// - Scope3: premium_inventory, high_completion_rate
+// - Built-in: premium_inventory, high_completion_rate targeting
 // - Creates optimized tactics combining these signals
 ```
 

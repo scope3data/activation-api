@@ -11,10 +11,10 @@ export interface AddMeasurementSourceParams {
 export interface AnalyzeTacticsParams {
   analysisType:
     | "attribution"
+    | "brand_stories"
     | "efficiency"
     | "optimization"
-    | "signals"
-    | "stories";
+    | "signals";
   campaignId: string;
   compareSignals?: boolean;
   compareStories?: boolean;

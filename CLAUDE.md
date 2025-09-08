@@ -161,6 +161,47 @@ npm run docs:validate     # Run full validation (requires Mintlify CLI)
 5. **Don't bypass git hooks** - They exist for good reasons
 6. **Don't make assumptions** - Ask for clarification when uncertain
 
+## Refactoring Best Practices
+
+### Code-Documentation Alignment
+
+When refactoring code to match updated documentation terminology:
+
+1. **Plan Systematic Changes**: Break large refactoring into logical phases
+   - Directory/file renames first
+   - Update file contents systematically
+   - Update tool registrations and exports
+   - Fix type definitions across all files
+   - Test compilation at each major step
+
+2. **Update All References**: Terminology changes require updates across:
+   - **File names and paths**: Directory names, file names
+   - **Function/tool names**: Export names, tool registrations
+   - **Content strings**: User-facing text, error messages, descriptions
+   - **Type definitions**: Interface names, enum values, parameter types
+   - **Documentation**: All references in docs and code comments
+
+3. **Maintain Consistency**:
+   - Use consistent naming patterns (e.g., `brand_stories` not `brandStories` for API endpoints)
+   - Update both human-readable text AND programmatic references
+   - Test that OpenAPI generation works with renamed tools
+   - Verify all imports/exports resolve correctly
+
+4. **Common Gotchas**:
+   - **Enum values**: Update both definition and usage in switch statements
+   - **Duplicate type definitions**: Check multiple files for same interface
+   - **Tool registration**: Update both import and addTool() calls
+   - **Export lists**: Long export lists at end of index files
+   - **API client calls**: Backend API method names may still use old terminology
+
+### Lessons Learned from "Synthetic Audience" → "Brand Story" Refactoring
+
+- **MultiEdit is powerful** but fails if old_string and new_string are identical
+- **Type definitions** may exist in multiple files (mcp.ts, reporting.ts)
+- **Tool names** appear in 4+ places: file name, export name, tool registration, export list
+- **Prettier formatting** should be run after bulk changes
+- **Testing early and often** prevents cascade failures
+
 ## Resources
 
 - [Mintlify Documentation](https://mintlify.com/docs)

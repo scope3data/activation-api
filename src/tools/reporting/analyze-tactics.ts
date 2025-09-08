@@ -87,7 +87,13 @@ export const analyzeTacticsTool = (client: Scope3ApiClient) => ({
   name: "analyze_tactics",
   parameters: z.object({
     analysisType: z
-      .enum(["efficiency", "attribution", "optimization", "signals", "stories"])
+      .enum([
+        "efficiency",
+        "attribution",
+        "optimization",
+        "signals",
+        "brand_stories",
+      ])
       .describe("Type of analysis to perform"),
     campaignId: z.string().describe("Campaign ID to analyze"),
     compareSignals: z
@@ -182,6 +188,85 @@ async function analyzeAttribution(
     summary:
       "Attribution analysis shows conversion path effectiveness across tactics.",
     tacticPerformance,
+  };
+}
+
+async function analyzeBrandStories(
+  tacticData: TacticPerformanceData[],
+  _params: AnalyzeTacticsParams,
+): Promise<TacticAnalysisResult> {
+  const storyPerformance: Record<string, StoryPerformanceMetrics> = {};
+
+  // Aggregate performance by story
+  tacticData.forEach((data) => {
+    const tactic = data.tactic;
+    const perf = data.performance;
+
+    tactic.stories?.forEach((story: string) => {
+      if (!storyPerformance[story]) {
+        storyPerformance[story] = {
+          tacticCount: 0,
+          totalClicks: 0,
+          totalConversions: 0,
+          totalImpressions: 0,
+          totalSpend: 0,
+        };
+      }
+
+      storyPerformance[story].totalSpend += perf.totalSpend || 0;
+      storyPerformance[story].totalImpressions += perf.totalImpressions || 0;
+      storyPerformance[story].totalClicks += perf.totalClicks || 0;
+      storyPerformance[story].totalConversions += perf.totalConversions || 0;
+      storyPerformance[story].tacticCount += 1;
+    });
+  });
+
+  // Calculate story effectiveness
+  const storyAnalysis = Object.entries(storyPerformance).map(
+    ([story, data]) => {
+      const ctr =
+        data.totalImpressions > 0
+          ? data.totalClicks / data.totalImpressions
+          : 0;
+      const cvr =
+        data.totalClicks > 0 ? data.totalConversions / data.totalClicks : 0;
+      const effectiveness = ctr * cvr * 10000; // Engagement × conversion effectiveness
+
+      return {
+        effectiveness,
+        performance: {
+          ctr,
+          cvr,
+          totalClicks: data.totalClicks,
+          totalConversions: data.totalConversions,
+          totalImpressions: data.totalImpressions,
+          totalSpend: data.totalSpend,
+        },
+        recommendation:
+          effectiveness > 10
+            ? "Winning story - scale creative production"
+            : effectiveness > 5
+              ? "Solid performer - continue using"
+              : "Consider refreshing or retiring this narrative",
+        story,
+      };
+    },
+  );
+
+  // Sort by effectiveness
+  storyAnalysis.sort((a, b) => b.effectiveness - a.effectiveness);
+
+  return {
+    analysisType: "brand_stories",
+    campaignId: "",
+    generatedAt: new Date(),
+    recommendations: [
+      "Double down on high-performing story themes",
+      "Refresh underperforming narratives with new creative approaches",
+    ],
+    storyAnalysis,
+    summary: `Analyzed ${Object.keys(storyPerformance).length} brand stories across ${tacticData.length} tactics.`,
+    tacticPerformance: [], // Not applicable for story analysis
   };
 }
 
@@ -404,85 +489,6 @@ async function analyzeSignals(
     signalAnalysis,
     summary: `Analyzed ${Object.keys(signalPerformance).length} signals across ${tacticData.length} tactics.`,
     tacticPerformance: [], // Not applicable for signal analysis
-  };
-}
-
-async function analyzeStories(
-  tacticData: TacticPerformanceData[],
-  _params: AnalyzeTacticsParams,
-): Promise<TacticAnalysisResult> {
-  const storyPerformance: Record<string, StoryPerformanceMetrics> = {};
-
-  // Aggregate performance by story
-  tacticData.forEach((data) => {
-    const tactic = data.tactic;
-    const perf = data.performance;
-
-    tactic.stories?.forEach((story: string) => {
-      if (!storyPerformance[story]) {
-        storyPerformance[story] = {
-          tacticCount: 0,
-          totalClicks: 0,
-          totalConversions: 0,
-          totalImpressions: 0,
-          totalSpend: 0,
-        };
-      }
-
-      storyPerformance[story].totalSpend += perf.totalSpend || 0;
-      storyPerformance[story].totalImpressions += perf.totalImpressions || 0;
-      storyPerformance[story].totalClicks += perf.totalClicks || 0;
-      storyPerformance[story].totalConversions += perf.totalConversions || 0;
-      storyPerformance[story].tacticCount += 1;
-    });
-  });
-
-  // Calculate story effectiveness
-  const storyAnalysis = Object.entries(storyPerformance).map(
-    ([story, data]) => {
-      const ctr =
-        data.totalImpressions > 0
-          ? data.totalClicks / data.totalImpressions
-          : 0;
-      const cvr =
-        data.totalClicks > 0 ? data.totalConversions / data.totalClicks : 0;
-      const effectiveness = ctr * cvr * 10000; // Engagement × conversion effectiveness
-
-      return {
-        effectiveness,
-        performance: {
-          ctr,
-          cvr,
-          totalClicks: data.totalClicks,
-          totalConversions: data.totalConversions,
-          totalImpressions: data.totalImpressions,
-          totalSpend: data.totalSpend,
-        },
-        recommendation:
-          effectiveness > 10
-            ? "Winning story - scale creative production"
-            : effectiveness > 5
-              ? "Solid performer - continue using"
-              : "Consider refreshing or retiring this narrative",
-        story,
-      };
-    },
-  );
-
-  // Sort by effectiveness
-  storyAnalysis.sort((a, b) => b.effectiveness - a.effectiveness);
-
-  return {
-    analysisType: "stories",
-    campaignId: "",
-    generatedAt: new Date(),
-    recommendations: [
-      "Double down on high-performing story themes",
-      "Refresh underperforming narratives with new creative approaches",
-    ],
-    storyAnalysis,
-    summary: `Analyzed ${Object.keys(storyPerformance).length} brand stories across ${tacticData.length} tactics.`,
-    tacticPerformance: [], // Not applicable for story analysis
   };
 }
 
@@ -728,6 +734,12 @@ async function performTacticAnalysis(
         params,
       );
       break;
+    case "brand_stories":
+      analysisResult = await analyzeBrandStories(
+        tacticPerformance as unknown as TacticPerformanceData[],
+        params,
+      );
+      break;
     case "efficiency":
       analysisResult = await analyzeEfficiency(
         tacticPerformance as unknown as TacticPerformanceData[],
@@ -742,12 +754,6 @@ async function performTacticAnalysis(
       break;
     case "signals":
       analysisResult = await analyzeSignals(
-        tacticPerformance as unknown as TacticPerformanceData[],
-        params,
-      );
-      break;
-    case "stories":
-      analysisResult = await analyzeStories(
         tacticPerformance as unknown as TacticPerformanceData[],
         params,
       );

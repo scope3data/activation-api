@@ -6,6 +6,11 @@ import { getAmpAgentsTool } from "./agents/get-amp-agents.js";
 // New Creative Management Tools (MCP Orchestration)
 import { assetsAddTool } from "./assets/add.js";
 import { checkAuthTool } from "./auth/check-auth.js";
+// Brand Agent brand story tools
+import { createBrandAgentBrandStoryTool } from "./brand-agents/brand-stories/create-brand-agent-brand-story.js";
+import { deleteBrandAgentBrandStoryTool } from "./brand-agents/brand-stories/delete-brand-agent-brand-story.js";
+import { listBrandAgentBrandStoriesTool } from "./brand-agents/brand-stories/list-brand-agent-brand-stories.js";
+import { updateBrandAgentBrandStoryTool } from "./brand-agents/brand-stories/update-brand-agent-brand-story.js";
 // Brand Agent campaign tools
 import { createBrandAgentCampaignTool } from "./brand-agents/campaigns/create-campaign.js";
 import { listBrandAgentCampaignsTool } from "./brand-agents/campaigns/list-campaigns.js";
@@ -34,11 +39,6 @@ import { createBrandAgentStandardsTool } from "./brand-agents/standards/create-b
 import { deleteBrandAgentStandardsTool } from "./brand-agents/standards/delete-brand-agent-standards.js";
 import { listBrandAgentStandardsTool } from "./brand-agents/standards/list-brand-agent-standards.js";
 import { updateBrandAgentStandardsTool } from "./brand-agents/standards/update-brand-agent-standards.js";
-// Brand Agent synthetic audience tools
-import { createBrandAgentSyntheticAudienceTool } from "./brand-agents/synthetic-audiences/create-brand-agent-synthetic-audience.js";
-import { deleteBrandAgentSyntheticAudienceTool } from "./brand-agents/synthetic-audiences/delete-brand-agent-synthetic-audience.js";
-import { listBrandAgentSyntheticAudiencesTool } from "./brand-agents/synthetic-audiences/list-brand-agent-synthetic-audiences.js";
-import { updateBrandAgentSyntheticAudienceTool } from "./brand-agents/synthetic-audiences/update-brand-agent-synthetic-audience.js";
 // Campaign creative tools
 import { campaignAttachCreativeTool } from "./campaigns/attach-creative.js";
 import { createCampaignTool } from "./campaigns/create-campaign.js";
@@ -105,11 +105,11 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(updateBrandAgentStandardsTool(client));
   server.addTool(deleteBrandAgentStandardsTool(client));
 
-  // Brand Agent synthetic audience tools
-  server.addTool(listBrandAgentSyntheticAudiencesTool(client));
-  server.addTool(createBrandAgentSyntheticAudienceTool(client));
-  server.addTool(updateBrandAgentSyntheticAudienceTool(client));
-  server.addTool(deleteBrandAgentSyntheticAudienceTool(client));
+  // Brand Agent brand story tools
+  server.addTool(listBrandAgentBrandStoriesTool(client));
+  server.addTool(createBrandAgentBrandStoryTool(client));
+  server.addTool(updateBrandAgentBrandStoryTool(client));
+  server.addTool(deleteBrandAgentBrandStoryTool(client));
 
   // Brand Agent measurement tools
   server.addTool(addMeasurementSourceTool(client));
@@ -166,15 +166,15 @@ export {
   campaignListCreativesTool,
   // Original tools
   checkAuthTool,
+  createBrandAgentBrandStoryTool,
+
   // Brand Agent campaign tools
   createBrandAgentCampaignTool,
-
   // Brand Agent creative tools
   createBrandAgentCreativeTool,
   // PMP tools
   createBrandAgentPMPTool,
   createBrandAgentStandardsTool,
-  createBrandAgentSyntheticAudienceTool,
   // Brand Agent core tools
   createBrandAgentTool,
   createCampaignTool,
@@ -189,8 +189,8 @@ export {
   creativeSyncPublishersTool,
   creativeUnassignTool,
   creativeUpdateTool,
+  deleteBrandAgentBrandStoryTool,
   deleteBrandAgentStandardsTool,
-  deleteBrandAgentSyntheticAudienceTool,
   deleteBrandAgentTool,
   discoverPublisherProductsTool,
   exportCampaignDataTool,
@@ -198,24 +198,24 @@ export {
   getBrandAgentTool,
   getCampaignSummaryTool,
   getDSPSeatsTool,
+  // Brand Agent synthetic audience tools
+  listBrandAgentBrandStoriesTool,
   listBrandAgentCampaignsTool,
   listBrandAgentCreativesTool,
   listBrandAgentPMPsTool,
   // Brand Agent standards tools
   listBrandAgentStandardsTool,
   listBrandAgentsTool,
-  // Brand Agent synthetic audience tools
-  listBrandAgentSyntheticAudiencesTool,
   // Format Discovery
   listCreativeFormatsTool,
   listInventoryOptionsTool,
   listMeasurementSourcesTool,
   registerWebhookTool,
+  updateBrandAgentBrandStoryTool,
   updateBrandAgentCampaignTool,
   updateBrandAgentCreativeTool,
   updateBrandAgentPMPTool,
   updateBrandAgentStandardsTool,
-  updateBrandAgentSyntheticAudienceTool,
   updateBrandAgentTool,
   updateCampaignTool,
 };

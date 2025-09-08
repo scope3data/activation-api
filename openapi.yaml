@@ -796,6 +796,72 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /brand-agent-brand-storys:
+    post:
+      description: Create a new brand story for a brand agent. Brand stories are AI-powered target
+        audience definitions that use natural language prompts to define audience profiles,
+        demographics, and behavioral characteristics. You can describe your target audience, their
+        interests, preferences, and behaviors through conversational prompts. The brand story will
+        automatically inform campaign targeting within the brand agent. Requires authentication.
+      operationId: create_brand_agent_brand_story
+      summary: Create Brand Agent Brand Story
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - Use this tool when user wants to create a new brand story for a brand agent
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /campaigns:
     post:
       description: Create a complete campaign in Scope3 by parsing a natural language prompt and
@@ -1111,72 +1177,6 @@ paths:
         - Brand Agents
       x-llm-hints:
         - Use this tool when user wants to list all brand safety standards agents for a brand agent
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-  /brand-agent-synthetic-audiences:
-    post:
-      description: Create a new synthetic audience agent for a brand agent. The synthetic audience agent
-        uses AI to define target audience profiles, demographics, and behavioral characteristics
-        based on a natural language prompt. You can describe your target audience, their interests,
-        preferences, and behaviors through conversational prompts. The agent will automatically
-        inform campaign targeting within the brand agent. Requires authentication.
-      operationId: create_brand_agent_synthetic_audience
-      summary: Create Brand Agent Synthetic Audience
-      tags:
-        - Brand Agents
-      x-llm-hints:
-        - Use this tool when user wants to create a new synthetic audience agent for a brand agent
-        - Call this when user asks 'show me', 'list', or 'what are my'
-      requestBody:
-        content:
-          application/json:
-            examples:
-              basic:
-                summary: Basic example
-                value: {}
-            schema:
-              properties: {}
-              type: object
-        required: true
       responses:
         "200":
           content:
@@ -1869,6 +1869,143 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /brand-agent-brand-storys/{id}:
+    delete:
+      description: Archive (soft delete) a brand story. This disables the brand story and removes its
+        targeting guidance from active campaigns. The brand story and its model history are
+        preserved for audit purposes but will no longer inform campaign targeting or audience
+        segmentation. This action affects all campaigns within the brand agent. Requires
+        authentication.
+      operationId: delete_brand_agent_brand_story
+      summary: Delete Brand Agent Brand Story
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - Use this tool when user wants to archive (soft delete) a brand story
+        - Call this when user asks 'show me', 'list', or 'what are my'
+        - Call this when user says 'delete', 'remove', or 'destroy'
+      parameters:
+        - description: Resource identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+    put:
+      description: Update the target audience profile and characteristics for an existing brand story.
+        This creates a new model version with the updated audience prompt and makes it the
+        primary/active version. The updated brand story definition will automatically inform
+        campaign targeting within the brand agent. Requires authentication.
+      operationId: update_brand_agent_brand_story
+      summary: Update Brand Agent Brand Story
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - Use this tool when user wants to update the target audience profile and characteristics
+          for an existing brand story
+        - Call this when user says 'create', 'make', 'set up', or 'add'
+        - Call this when user asks 'show me', 'list', or 'what are my'
+        - Call this when user says 'change', 'update', 'modify', or 'edit'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      parameters:
+        - description: Resource identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /brand-agent-standardss/{id}:
     delete:
       description: Archive (soft delete) a brand standards agent. This disables the standards agent and
@@ -1943,143 +2080,6 @@ paths:
         - Use this tool when user wants to update the safety prompt and configuration for an
           existing brand standards agent
         - Call this when user says 'create', 'make', 'set up', or 'add'
-        - Call this when user says 'change', 'update', 'modify', or 'edit'
-      requestBody:
-        content:
-          application/json:
-            examples:
-              basic:
-                summary: Basic example
-                value: {}
-            schema:
-              properties: {}
-              type: object
-        required: true
-      parameters:
-        - description: Resource identifier
-          in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-  /brand-agent-synthetic-audiences/{id}:
-    delete:
-      description: Archive (soft delete) a synthetic audience agent. This disables the audience agent and
-        removes its targeting guidance from active campaigns. The agent and its model history are
-        preserved for audit purposes but will no longer inform campaign targeting or audience
-        segmentation. This action affects all campaigns within the brand agent. Requires
-        authentication.
-      operationId: delete_brand_agent_synthetic_audience
-      summary: Delete Brand Agent Synthetic Audience
-      tags:
-        - Brand Agents
-      x-llm-hints:
-        - Use this tool when user wants to archive (soft delete) a synthetic audience agent
-        - Call this when user asks 'show me', 'list', or 'what are my'
-        - Call this when user says 'delete', 'remove', or 'destroy'
-      parameters:
-        - description: Resource identifier
-          in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-    put:
-      description: Update the target audience profile and characteristics for an existing synthetic
-        audience agent. This creates a new model version with the updated audience prompt and makes
-        it the primary/active version. The updated audience definition will automatically inform
-        campaign targeting within the brand agent. Requires authentication.
-      operationId: update_brand_agent_synthetic_audience
-      summary: Update Brand Agent Synthetic Audience
-      tags:
-        - Brand Agents
-      x-llm-hints:
-        - Use this tool when user wants to update the target audience profile and characteristics
-          for an existing synthetic audience agent
-        - Call this when user says 'create', 'make', 'set up', or 'add'
-        - Call this when user asks 'show me', 'list', or 'what are my'
         - Call this when user says 'change', 'update', 'modify', or 'edit'
       requestBody:
         content:
@@ -2636,6 +2636,60 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /brand-agent-brand-storiess:
+    get:
+      description: List all brand stories for a brand agent. Brand stories are AI-powered target audience
+        definitions using natural language prompts. Each story has a primary model that contains the
+        current audience definition and can be applied to campaign targeting and content creation.
+        Requires authentication.
+      operationId: list_brand_agent_brand_stories
+      summary: List Brand Agent Brand Stories
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - Use this tool when user wants to list all brand stories for a brand agent
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /campaignss:
     get:
       description: List all campaigns for a specific brand agent (advertiser account). Optionally filter
@@ -2753,60 +2807,6 @@ paths:
       x-llm-hints:
         - Use this tool when user wants to list all pmps for a brand agent with their deal ids and
           status
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-  /brand-agent-synthetic-audiencess:
-    get:
-      description: List all synthetic audience agents for a brand agent. Synthetic audience agents define
-        target audience profiles using AI-powered prompts. Each agent has a primary model that
-        contains the current audience definition and can be applied to campaign targeting and
-        content creation. Requires authentication.
-      operationId: list_brand_agent_synthetic_audiences
-      summary: List Brand Agent Synthetic Audiences
-      tags:
-        - Brand Agents
-      x-llm-hints:
-        - Use this tool when user wants to list all synthetic audience agents for a brand agent
-        - Call this when user asks 'show me', 'list', or 'what are my'
       responses:
         "200":
           content:
