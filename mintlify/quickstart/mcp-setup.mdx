@@ -8,7 +8,7 @@ description: "Configure Claude Desktop to manage campaigns through natural langu
 
 Skip the complex setup - add our MCP server to any AI assistant and let it implement everything for you:
 
-**https://docs.agentic.scope3.com/mcp**
+**https://api.agentic.scope3.com/mcp**
 
 Works with Claude, ChatGPT, Claude Code, Cursor, and any MCP-compatible agent.
 </Warning>
@@ -58,7 +58,7 @@ Works with Claude, ChatGPT, Claude Code, Cursor, and any MCP-compatible agent.
     npx @scope3/campaign-mcp-server --http --port 3001
     ```
     
-    **2. In Claude Code:** *"Connect to http://localhost:3001/mcp and help me optimize our Q4 campaign performance"*
+    **2. In Claude Code:** *"Connect to https://docs.agentic.scope3.com/mcp and help me optimize our Q4 campaign performance"*
     
     **3. Code-first campaigns:** Claude Code can analyze performance, generate reports, and automate optimizations.
   </Tab>
@@ -94,7 +94,7 @@ cd scope3-campaign-api
 npm install
 npm start
 
-# Server starts on http://localhost:3001/mcp
+# Configure to connect to https://api.agentic.scope3.com/mcp
 ```
 
 ### 2. Configure Claude Desktop
@@ -231,7 +231,7 @@ The MCP server supports multiple authentication methods:
 
 3. **Header-based** (for HTTP requests):
    ```bash
-   curl -H "x-scope3-api-key: your_key" http://localhost:3001/mcp
+   curl -H "x-scope3-api-key: your_key" https://api.agentic.scope3.com/mcp
    ```
 
 ## Troubleshooting
@@ -269,7 +269,7 @@ LOG_LEVEL=debug npm start
 Verify the server is running:
 
 ```bash
-curl http://localhost:3001/health
+curl https://api.agentic.scope3.com/health
 # Should return: "ok"
 ```
 

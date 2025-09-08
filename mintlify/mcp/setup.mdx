@@ -6,7 +6,7 @@ description: "Configure the Scope3 MCP server with Claude Desktop and other AI p
 <Card title="🤖 One-Line Setup" icon="zap">
 **Add this MCP server to your AI agent and start managing campaigns through natural language:**
 
-**https://docs.agentic.scope3.com/mcp**
+**https://api.agentic.scope3.com/mcp**
 
 Skip the complex setup - works with Claude, ChatGPT, Claude Code, Cursor, and more!
 </Card>
@@ -56,7 +56,7 @@ This guide walks you through setting up the Scope3 MCP server for natural langua
     ```
     
     **2. In Claude Code:**
-    > "Connect to localhost:3001/mcp and optimize our campaign performance"
+    > "Connect to https://docs.agentic.scope3.com/mcp and optimize our campaign performance"
   </Tab>
   
   <Tab title="Cursor">
@@ -204,7 +204,7 @@ Update your Claude Desktop config to use the HTTP endpoint:
     "scope3-campaigns": {
       "transport": {
         "type": "http",
-        "uri": "http://localhost:3001/mcp"
+        "uri": "https://api.agentic.scope3.com/mcp"
       }
     }
   }
@@ -256,7 +256,7 @@ export SCOPE3_API_KEY=your-api-key-here
     {
       "transport": {
         "type": "http", 
-        "uri": "http://localhost:3001/mcp"
+        "uri": "https://api.agentic.scope3.com/mcp"
       }
     }
     ```
@@ -273,7 +273,7 @@ Connect any MCP-compatible client:
 import mcp
 
 # Connect to Scope3 MCP server
-client = mcp.Client("http://localhost:3001/mcp")
+client = mcp.Client("https://api.agentic.scope3.com/mcp")
 
 # Set authentication headers
 client.set_header("x-scope3-api-key", "your-api-key")
@@ -371,7 +371,7 @@ Verify server health:
 
 ```bash
 # For HTTP mode
-curl http://localhost:3001/health
+curl https://api.agentic.scope3.com/health
 
 # Should return: {"status": "ok"}
 ```

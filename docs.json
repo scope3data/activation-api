@@ -7,7 +7,7 @@
     "light": "#07C983",
     "dark": "#0D9373"
   },
-  "favicon": "mintlify/logo/favicon.svg",
+  "favicon": "/logo/favicon.svg",
   "navigation": {
     "tabs": [
       {
@@ -17,7 +17,11 @@
           {
             "group": "Get Started",
             "icon": "rocket",
-            "pages": ["mintlify/quickstart", "mintlify/concepts"]
+            "pages": [
+              "mintlify/quickstart",
+              "mintlify/concepts",
+              "mintlify/roadmap"
+            ]
           },
           {
             "group": "🌟 Features",
@@ -71,8 +75,8 @@
     ]
   },
   "logo": {
-    "light": "mintlify/logo/logo.svg",
-    "dark": "mintlify/logo/logo.svg"
+    "light": "/logo/logo.svg",
+    "dark": "/logo/logo.svg"
   },
   "api": {
     "openapi": "openapi.yaml",
