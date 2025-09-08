@@ -1,466 +1,151 @@
 ---
 title: "Tactic"
-description: "Understanding campaign tactics - targeting and optimization combinations that execute your campaign strategy"
+description: "Targeting plus inventory combinations that drive campaign performance"
 icon: "crosshairs"
 ---
 
-## Overview
+## The Core Equation
 
-**Tactics** are the execution layer within campaigns - specific targeting and optimization combinations that deliver your campaign objectives. Each tactic represents a unique combination of audience signals, brand story targeting, publisher inventory, and budget allocation.
+**Tactics = Targeting + Inventory**
 
-Tactics can be managed in two ways:
+Every tactic is a bet on a specific combination performing well. The platform continuously discovers, tests, and optimizes these bets using a multi-armed bandit approach.
 
-<Note>
-**Scope3 Algorithms (Default)**: Tactics are automatically generated and optimized by the platform's AI based on campaign objectives and performance data.
-</Note>
+## Campaign Modes
 
-<Note>
-**Custom Algorithms**: You can manually create and manage tactics for direct control over targeting, budget allocation, and optimization strategies.
-</Note>
+Two fundamentally different approaches:
 
-## Tactic Components
+### BYOT (Bring Your Own Targeting)
+**You define the audience, we find the inventory**
 
-### Core Elements
+- Start with your brand story or custom signals
+- Platform discovers run-of-site inventory that reaches them
+- Optimization finds the most cost-effective paths to your audience
+- Example: "Find my enterprise IT buyers wherever they browse"
 
-Every tactic combines several key components:
+### Collab (Collaborative)
+**Publishers package inventory + their data**
 
-- **Publisher Product**: Specific inventory placement or ad format from a publisher
-- **Targeting Strategy**: Audience parameters, demographics, and behavioral targeting
-- **Signals**: Custom signals and audience segments for precise targeting
-- **Brand Stories**: AI-generated audience profiles for audience definition
-- **Budget Allocation**: Daily spend limits, total budget, and pacing controls
-- **Pricing Strategy**: Target CPM, bid floors, and optimization goals
-- **Performance Tracking**: Real-time metrics and attribution data
+- Publishers combine their inventory with first-party data
+- Pre-packaged products with built-in audience insights
+- You leverage publisher expertise and relationships
+- Example: "ESPN's fantasy football enthusiasts package"
 
-## Tactic Management Modes
+## The Optimization Engine
 
-### Scope3 Algorithms (AI-Generated)
+### Multi-Armed Bandit in Action
 
-By default, tactics are automatically generated and optimized:
+Think of each tactic as a slot machine with unknown payouts. The platform must decide which machines to play (and how much to bet) while learning their returns.
 
-```mermaid
-graph LR
-    A[Campaign Created] --> B[AI Generates Tactics]
-    B --> C[Tactics Launch]
-    C --> D[Performance Monitoring]
-    D --> E[AI Optimization]
-    E --> F[Budget Reallocation]
-    F --> D
-```
+**Phase 1: Discovery**  
+Campaign starts. Platform creates 20-50 initial tactics, each getting small test budgets. Like a gambler trying every machine once.
 
-**AI-Generated Lifecycle:**
-1. **Generation** - AI creates initial tactic combinations based on campaign objectives
-2. **Launch** - Tactics begin serving ads and collecting performance data
-3. **Learning** - Algorithm analyzes performance across different signals and audiences
-4. **Optimization** - Budget shifts to high-performing tactics, underperformers are paused
-5. **Evolution** - New tactics are generated based on learnings
+**Phase 2: Exploitation vs Exploration**  
+The eternal tension:
+- **Exploit**: Pour money into the tactics showing 8+ effectiveness scores
+- **Explore**: Keep testing new combinations that might beat current winners
 
-### Custom Algorithms (Manual Management)
+The algorithm dynamically adjusts this balance based on:
+- Campaign maturity (explore more early, exploit more late)
+- Performance variance (stable = exploit, volatile = explore)
+- Market changes (new inventory appearing, seasonality)
 
-For direct control, you can manually create and manage tactics:
+**Phase 3: Pacing Control**  
+Even winning tactics need throttling:
+- Prevent budget exhaustion in first hours
+- Maintain presence throughout flight dates
+- Adjust for audience behavior patterns
+- React to real-time performance shifts
 
-```mermaid
-graph LR
-    A[Select Publisher Product] --> B[Configure Targeting]
-    B --> C[Set Budget & Pacing]
-    C --> D[Apply Signals]
-    D --> E[Launch Tactic]
-    E --> F[Monitor Performance]
-    F --> G[Adjust Settings]
-    G --> F
-```
+## How It Works
 
-**Manual Configuration Process:**
-1. **Selection** - Choose publisher products and inventory placements
-2. **Configuration** - Set targeting parameters and audience segments
-3. **Allocation** - Configure budget, pacing, and pricing strategy
-4. **Launch** - Activate tactic and begin serving ads
-5. **Optimization** - Monitor performance and adjust settings as needed
+### Inventory Sourcing
 
-## Creating Manual Tactics
+Tactics pull inventory from the **Ad Context Protocol (AdCP)**:
 
-### Basic Setup
+- Publishers define media products with targeting capabilities
+- Platform matches these to campaign requirements
+- Creative formats are matched to available placements
+- Quality signals ensure brand safety
+
+### Targeting Power-Ups
+
+Three ways to sharpen your aim:
+
+1. **Brand Stories**: "Find people like my best customers"
+2. **Custom Signals**: Your CRM segments, pixel data, lookalikes
+3. **Third-Party Signals**: LiveRamp, Oracle, TransUnion (coming soon)
+
+The platform tests how each targeting method performs across different inventory sources.
+
+### The Effectiveness Score
+
+**0-10 rating determines budget flow:**
+- **8-10**: Winners eating most of the budget
+- **5-7**: Steady performers maintaining baseline
+- **2-4**: Underperformers getting minimal spend
+- **0-1**: Dead tactics (auto-paused)
+
+Score factors: conversions, CPM efficiency, viewability, audience match rate
+
+## Control Modes
+
+### Let the Platform Drive
 
 ```javascript
-const tactic = await createInventoryOption({
+// BYOT example - your targeting, our inventory discovery
+const campaign = await createCampaign({
   brandAgentId: "ba_123",
-  campaignId: "camp_456", 
-  publisherProductId: "pub_789",
-  budgetAllocation: {
-    amount: 5000,
-    currency: "USD",
-    dailyCap: 200,
-    pacing: "even"
-  },
-  targeting: {
-    ageGroups: ["25-34", "35-44"],
-    interests: ["technology", "business"],
-    geoTargeting: {
-      countries: ["US", "CA"],
-      cities: ["New York", "Los Angeles", "Toronto"]
-    }
-  },
-  signalConfiguration: {
-    customSignals: ["high_value_customers", "recent_visitors"],
-    brandStories: ["tech_professionals"]
-  }
+  name: "Q4 Prospecting",
+  prompt: "Find SMB decision makers interested in cloud migration",
+  budget: { total: 50000, currency: "USD" }
 });
+// Platform creates tactics, runs multi-armed bandit optimization
 ```
 
-### Advanced Configuration
+### Take the Wheel
 
 ```javascript
-// Complex tactic with detailed targeting and optimization
-const advancedTactic = await createInventoryOption({
+// Direct control - you know exactly what you want
+const campaign = await createCampaign({
   brandAgentId: "ba_123",
-  campaignId: "camp_456",
-  publisherProductId: "pub_premium_video",
-  budgetAllocation: {
-    amount: 10000,
-    currency: "USD", 
-    dailyCap: 500,
-    pacing: "front_loaded",
-    bidStrategy: {
-      targetCPM: 8.50,
-      bidFloor: 6.00,
-      maxBid: 15.00
-    }
-  },
-  targeting: {
-    demographics: {
-      ageGroups: ["25-34", "35-44"],
-      income: ["75k-100k", "100k+"],
-      education: ["college", "graduate"]  
+  name: "Premium Sports Deal",
+  manualTactics: [
+    {
+      inventoryId: "espn_nfl_package",
+      budget: 25000,
+      targeting: { segments: ["existing_customers"] }
     },
-    behavioral: {
-      interests: ["luxury_goods", "technology", "travel"],
-      purchaseIntent: ["high"],
-      deviceTypes: ["mobile", "desktop"]
-    },
-    contextual: {
-      contentCategories: ["business", "technology", "lifestyle"],
-      brandSafety: "strict",
-      viewabilityThreshold: 0.7
+    {
+      inventoryId: "foxsports_streaming", 
+      budget: 15000
+      // No targeting = run of network
     }
-  },
-  signalConfiguration: {
-    customSignals: [
-      "vip_customers",
-      "high_ltv_segments", 
-      "recent_purchasers"
-    ],
-    brandStories: ["luxury_tech_buyers"],
-    thirdPartySignals: [] // Coming soon
-  },
-  optimizationGoals: {
-    primary: "conversions",
-    secondary: "brand_lift",
-    kpi: "roas"
-  }
-});
-```
-
-## Managing Tactics
-
-### List Campaign Tactics
-
-```javascript
-const tactics = await listInventoryOptions({
-  campaignId: "camp_123"
-});
-
-// View all configured tactics
-console.log(`Found ${tactics.length} tactics`);
-tactics.forEach(tactic => {
-  console.log(`• ${tactic.name}: $${tactic.budgetAllocation.amount}`);
-});
-```
-
-### Update Tactic Configuration
-
-```javascript
-// Adjust budget allocation based on performance
-const updatedTactic = await updateInventoryOption({
-  inventoryOptionId: "inv_789",
-  budgetAllocation: {
-    amount: 7500, // Increased budget
-    dailyCap: 300, // Higher daily cap
-    pacing: "even"
-  },
-  targeting: {
-    // Add new audience segments
-    ageGroups: ["25-34", "35-44", "45-54"],
-    interests: ["technology", "business", "finance"]
-  }
-});
-```
-
-### Budget Optimization
-
-```javascript
-// Adjust budget allocation between tactics
-await adjustInventoryAllocation({
-  campaignId: "camp_123",
-  adjustments: [
-    { inventoryOptionId: "inv_123", newAllocation: 6000 }, // Increase
-    { inventoryOptionId: "inv_456", newAllocation: 3000 }, // Decrease  
-    { inventoryOptionId: "inv_789", newAllocation: 4000 }  // Maintain
   ]
 });
 ```
 
-## Performance Analysis
+## Learn More
 
-### Signal Performance Analysis
-
-Track how different audience signals perform across tactics to understand what drives results:
-
-```javascript
-const analysis = await analyzeTactics({
-  campaignId: "camp_123",
-  analysisType: "signals",
-  compareSignals: true
-});
-
-// Returns signal effectiveness rankings:
-// - "age_25_34": 89% efficiency score
-// - "interest_sports": 76% efficiency score  
-// - "behavior_premium_shopper": 92% efficiency score
-```
-
-**Key Metrics for Signal Analysis:**
-- **Effectiveness Score**: Conversion rate relative to cost
-- **Reach**: Total impressions across tactics using this signal
-- **Efficiency**: Cost per conversion for signal-targeted tactics
-- **Recommendation**: Scale up, monitor, or reduce allocation
-
-### Brand Story Optimization
-
-Understand which audience approaches drive the best performance:
-
-```javascript
-const audienceAnalysis = await analyzeTactics({
-  campaignId: "camp_123", 
-  analysisType: "brand_stories",
-  compareStories: true
-});
-
-// Returns audience performance breakdown:
-// - "performance" audience: 15% higher CTR
-// - "lifestyle" audience: 32% better completion rates
-// - "value" audience: 8% lower CPM
-```
-
-**Audience Performance Indicators:**
-- **Engagement Score**: Click-through and completion rates
-- **Conversion Effectiveness**: How well the audience converts
-- **Cost Efficiency**: CPM and CPA performance
-- **Reach Potential**: Available inventory and scale
-
-### Tactic Efficiency Analysis
-
-Get comprehensive efficiency rankings across all tactics:
-
-```javascript
-const efficiency = await analyzeTactics({
-  campaignId: "camp_123",
-  analysisType: "efficiency"
-});
-
-// Returns ranked tactic performance with insights:
-// 🥇 Tactic #1: Sports Enthusiasts + Premium Video
-//    • Efficiency: 92%
-//    • CPM: $2.15 (below target)
-//    • Conversions: 847
-//    • Recommendation: Scale budget allocation
-```
-
-### Attribution Analysis
-
-Understand how tactics contribute to the conversion funnel:
-
-```javascript
-const attribution = await analyzeTactics({
-  campaignId: "camp_123",
-  analysisType: "attribution"
-});
-
-// Shows conversion path effectiveness:
-// 📊 Tactic Attribution Analysis
-//    • First-touch heavy: Upper funnel awareness tactics
-//    • Last-touch heavy: Lower funnel conversion tactics
-//    • Assist-heavy: Mid-funnel consideration tactics
-```
-
-## Data Export & Integration
-
-### Tactic-Level Data Export
-
-Export granular tactic performance data for external analysis:
-
-```javascript
-const exportData = await exportCampaignData({
-  brandAgentId: "ba_123",
-  dateRange: { 
-    start: "2024-01-01", 
-    end: "2024-01-31" 
-  },
-  datasets: ["delivery", "events", "tactics"],
-  groupBy: ["date", "campaign", "tactic", "signal"],
-  format: "parquet",
-  compression: "gzip"
-});
-```
-
-**Available Grouping Options:**
-- **By Tactic**: Individual tactic performance
-- **By Signal**: Performance across signal combinations
-- **By Brand Story**: Audience approach effectiveness
-- **By Publisher**: Inventory source performance
-- **By Date**: Time-series analysis
-
-### Real-time Monitoring
-
-Monitor tactic performance in real-time through campaign summaries:
-
-```javascript
-const summary = await getCampaignSummary({
-  campaignId: "camp_123"
-});
-
-// Returns tactic insights:
-// ⚡ Top Performing Tactics
-//    1. Sports + Premium Video: $1.85 CPM, 12.3% CTR
-//    2. Lifestyle + Display: $2.12 CPM, 8.7% CTR
-//    3. Value + Native: $1.94 CPM, 9.2% CTR
-```
-
-## Optimization Best Practices
-
-### 1. Monitor Signal Performance
-- Track which audience signals consistently perform well
-- Look for signals that work across multiple campaigns
-- Identify underperforming signals that may need campaign prompt adjustments
-
-### 2. Analyze Audience Effectiveness
-- Compare brand story performance within campaigns
-- Note which audience approaches resonate with your brand
-- Use insights to refine future campaign targeting prompts
-
-### 3. Budget Reallocation
-- Let AI handle automatic budget shifting to high performers
-- Use efficiency analysis to understand why tactics succeed or fail
-- Consider campaign prompt adjustments for consistently underperforming patterns
-
-### 4. Creative Alignment
-- Ensure creatives align with the brand stories being targeted
-- High-performing tactics may indicate creative messaging that resonates
-- Poor tactic performance could signal creative-audience misalignment
-
-## Integration with Campaign Management
-
-### Tactic Data in Campaign Decisions
-
-Tactic performance directly informs campaign optimization strategies:
-
-**High-Level Indicators:**
-- **Tactic Count**: More tactics indicate broader targeting experimentation
-- **Performance Distribution**: Concentration vs. spread of successful tactics  
-- **Signal Diversity**: Variety of successful targeting approaches
-- **Story Effectiveness**: Which brand stories drive results
-
-**Optimization Triggers:**
-- **Underperforming Tactics**: May indicate poor creative fit or oversaturation
-- **Signal Concentration**: High performance in specific demographics
-- **Audience Insights**: Successful narrative approaches to scale
-- **Inventory Performance**: Publisher and format preferences
-
-### Campaign-Level Actions Based on Tactic Performance
-
-```javascript
-// Example: Adjust campaign based on tactic insights
-const tacticsAnalysis = await analyzeTactics({
-  campaignId: "camp_123", 
-  analysisType: "optimization"
-});
-
-// If analysis shows consistent patterns, consider:
-// 1. Campaign prompt refinement
-// 2. Creative alignment adjustments  
-// 3. Budget increases for successful patterns
-// 4. New campaigns targeting discovered audiences
-```
-
-## Tactic API Reference
+For deeper understanding of how tactics work within campaigns:
 
 <CardGroup cols={2}>
-  <Card title="Create Tactic" href="/api-reference/create_inventory_option" icon="plus">
-    **Manual Tactic Creation**
+  <Card title="Campaign Optimization" href="/optimization/campaigns" icon="chart-line">
+    **Performance Tuning**
     
-    Create manually configured tactics with precise targeting, budget allocation, and signal configuration.
+    Learn how the multi-armed bandit algorithm optimizes tactic performance.
   </Card>
   
-  <Card title="List Tactics" href="/api-reference/list_inventory_options" icon="list">
-    **View Campaign Tactics**
+  <Card title="Signals Guide" href="/object-guides/signal" icon="radar">
+    **Targeting Data**
     
-    List all tactics for a campaign including both AI-generated and manually configured tactics.
-  </Card>
-  
-  <Card title="Adjust Budget" href="/api-reference/adjust_inventory_allocation" icon="scale-balanced">
-    **Budget Optimization**
-    
-    Reallocate budget between tactics based on performance data and strategic priorities.
-  </Card>
-  
-  <Card title="Analyze Performance" href="/api-reference/analyze_tactics" icon="microscope">
-    **Deep Performance Analysis**
-    
-    Statistical analysis of tactic performance with ML insights, signal effectiveness, and optimization recommendations.
+    Understand how signals enhance tactic targeting capabilities.
   </Card>
 </CardGroup>
 
-## Understanding Tactic Performance
+## The Bottom Line
 
-### Success Indicators
-
-**High-Performing Tactics Display:**
-- Consistent delivery at or below target CPM
-- Strong conversion rates relative to campaign objectives
-- Efficient use of budget allocation
-- Good creative completion rates (for video)
-
-**Optimization Signals:**
-- **Scale Opportunities**: Below-target CPM with good performance
-- **Creative Refresh Needs**: Poor completion or engagement rates
-- **Audience Refinement**: Inconsistent signal performance
-- **Budget Reallocation**: Clear performance tiers among tactics
-
-### Troubleshooting Poor Tactic Performance
-
-**Common Issues:**
-1. **Creative-Audience Mismatch**: High-quality creative not resonating with targeted audience
-2. **Oversaturated Signals**: Targeting approach reaching audience fatigue
-3. **Budget Constraints**: High-performing tactics limited by daily budget caps
-4. **Inventory Competition**: Premium placements driving up costs
-
-**Diagnostic Steps:**
-1. Run efficiency analysis to identify performance gaps
-2. Compare signal effectiveness across tactics
-3. Analyze creative performance in context of audiences
-4. Review campaign prompt alignment with successful tactics
-
-## Next Steps
-
-<CardGroup cols={2}>
-  <Card title="Signal Guide" href="/object-guides/signal" icon="radar">
-    **Understanding Audience Signals**
-    
-    Deep dive into how audience signals drive tactic targeting and performance optimization.
-  </Card>
-  
-  <Card title="Campaign Optimization" href="/object-guides/campaign" icon="bullseye-arrow">
-    **Campaign-Level Strategy**
-    
-    Learn how tactic insights inform broader campaign strategy and optimization decisions.
-  </Card>
-</CardGroup>
+- **Every tactic is a bet** on a targeting + inventory combination
+- **BYOT vs Collab** - Bring your data or use publisher packages
+- **Multi-armed bandit** continuously reallocates budget to winners
+- **Exploration never stops** - Always testing for better combinations
+- **You choose control level** - Full automation or manual override

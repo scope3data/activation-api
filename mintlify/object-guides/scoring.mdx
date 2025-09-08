@@ -1,0 +1,195 @@
+---
+title: "Scoring"
+description: "Performance indexing system that drives tactic optimization"
+icon: "gauge-high"
+---
+
+## The Performance Index
+
+**Scoring is how we decide which tactics get budget.**
+
+Unlike traditional measurement companies (Nielsen, IAS, DoubleVerify), we don't measure whether ads were seen or brand lift occurred. Instead, we create a performance index for each tactic to guide budget allocation.
+
+## Two-Phase Scoring
+
+### Phase 1: Predictive Scoring
+**Immediate estimates while impressions serve**
+
+When a tactic serves impressions, we instantly estimate their value:
+- Publisher quality signals
+- Audience match probability
+- Historical performance patterns
+- Context relevance scores
+
+This gives us an initial performance hypothesis to work with.
+
+### Phase 2: Outcome Scoring
+**Actual performance data with lag**
+
+Real conversion data arrives later:
+- **1-day lag**: View-through signals, immediate actions
+- **7-day lag**: Click conversions, consideration metrics
+- **30-day lag**: Full attribution, purchase completions
+
+As this data arrives, we update the tactic's performance index.
+
+## The Effectiveness Score
+
+**0-10 rating that determines budget flow:**
+
+```
+10: Exceptional performer - maximum budget allocation
+8-9: Strong performer - increased budget share
+6-7: Average performer - maintain current allocation
+4-5: Underperformer - reduced budget allocation
+2-3: Poor performer - minimal test budget only
+0-1: Failed tactic - paused automatically
+```
+
+### Score Components
+
+The effectiveness score combines multiple signals:
+
+**Conversion Performance** (40%)
+- Actual conversions vs. predicted
+- Cost per acquisition (CPA)
+- Return on ad spend (ROAS)
+
+**Efficiency Metrics** (30%)
+- CPM vs. market benchmarks
+- Click-through rate performance
+- Viewability and completion rates
+
+**Quality Indicators** (20%)
+- Brand safety scores
+- Invalid traffic rates
+- User engagement depth
+
+**Audience Match** (10%)
+- Targeting accuracy
+- Reach within intended segments
+- Frequency optimization
+
+## Scoring in Action
+
+### Discovery Phase
+New tactics start with neutral scores (5.0) and small test budgets. The platform gathers initial performance data to establish baselines.
+
+### Learning Phase
+As impressions deliver and outcomes arrive, scores rapidly adjust:
+- High-performing tactics quickly rise to 7+
+- Poor performers drop below 3
+- The system identifies patterns for future predictions
+
+### Optimization Phase
+Established scores drive the multi-armed bandit:
+- Budget flows to high-scoring tactics
+- Low scorers get minimal exploration budget
+- Scores continuously update with fresh data
+
+## Integration Points
+
+### Data Sources We Score From
+
+**First-Party Signals**
+- Your conversion pixels
+- CRM data uploads
+- Website analytics
+- App events
+
+**Campaign Delivery Data**
+- Impression delivery logs
+- Click tracking
+- Viewability metrics
+- Frequency data
+
+**Third-Party Enrichment** (Optional)
+- DMPs for audience verification
+- Brand safety providers
+- Fraud detection services
+- Attribution partners
+
+<Note>
+We don't provide traditional "measurement" like brand lift studies or media rating. We focus on scoring tactics for optimization, not proving advertising worked.
+</Note>
+
+## Scoring Transparency
+
+### View Tactic Scores
+
+```javascript
+const tactics = await analyzeTactics({
+  campaignId: "camp_123",
+  analysisType: "efficiency"
+});
+
+// Returns effectiveness scores for all tactics
+tactics.forEach(tactic => {
+  console.log(`${tactic.name}: ${tactic.effectivenessScore}/10`);
+  console.log(`  Budget allocation: $${tactic.budgetShare}`);
+  console.log(`  Performance trend: ${tactic.trend}`);
+});
+```
+
+### Understand Score Drivers
+
+```javascript
+const breakdown = await getScoreBreakdown({
+  tacticId: "tactic_456"
+});
+
+// See what's driving the score
+console.log("Score Components:");
+console.log(`• Conversion: ${breakdown.conversionScore}/10`);
+console.log(`• Efficiency: ${breakdown.efficiencyScore}/10`);
+console.log(`• Quality: ${breakdown.qualityScore}/10`);
+console.log(`• Audience: ${breakdown.audienceScore}/10`);
+```
+
+## Key Concepts
+
+### Scoring ≠ Measurement
+
+Traditional measurement asks: "Did the ad campaign work?"
+Our scoring asks: "Which tactics should get more budget?"
+
+We're not trying to prove ROI or brand impact. We're creating a performance index for real-time optimization.
+
+### The Feedback Loop
+
+1. **Serve impressions** → Generate predictive scores
+2. **Collect outcomes** → Update with actual performance
+3. **Adjust budgets** → Reallocate based on scores
+4. **Learn patterns** → Improve future predictions
+
+This loop runs continuously throughout the campaign.
+
+### Score Velocity
+
+How quickly scores change depends on:
+- **Data volume**: More impressions = faster learning
+- **Conversion lag**: B2B has slower feedback than e-commerce
+- **Market dynamics**: Volatile periods need rapid adjustment
+- **Campaign maturity**: Early scores change faster
+
+## Common Questions
+
+**Q: Can I override tactic scores?**
+A: No. Scores are computed by the platform. You can pause tactics or adjust budgets manually, but not change scores.
+
+**Q: How often do scores update?**
+A: Predictive scores update hourly. Outcome scores update as conversion data arrives (typically daily).
+
+**Q: What if I disagree with a score?**
+A: Scores optimize for your defined KPIs. If scores seem wrong, check your conversion tracking and campaign goals.
+
+**Q: Do scores consider competitive dynamics?**
+A: Yes. Scores factor in market conditions like CPM inflation and competitive intensity.
+
+## The Bottom Line
+
+- **Scoring drives optimization** - Not measurement or attribution
+- **Two-phase process** - Predictive (instant) + Outcome (lagged)
+- **0-10 effectiveness index** - Determines budget allocation
+- **Continuous learning** - Scores improve as data accumulates
+- **Transparent but not editable** - You see scores but can't change them
