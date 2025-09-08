@@ -51,6 +51,27 @@ export interface UpdateSignalDefinitionInput {
   name?: string;
 }
 
+/**
+ * Custom error types for better error handling
+ */
+export class SignalStorageError extends Error {
+  constructor(
+    message: string,
+    public readonly code: string,
+    public readonly cause?: Error,
+  ) {
+    super(message);
+    this.name = "SignalStorageError";
+  }
+}
+
+export class SignalNotFoundError extends SignalStorageError {
+  constructor(signalId: string, cause?: Error) {
+    super(`Signal definition ${signalId} not found`, "SIGNAL_NOT_FOUND", cause);
+    this.name = "SignalNotFoundError";
+  }
+}
+
 export class SignalStorageService {
   private bigquery: BigQuery;
   private clustersTableId: string;
@@ -59,12 +80,30 @@ export class SignalStorageService {
   private projectId: string;
 
   constructor(
-    projectId: string = "bok-playground",
+    projectId: string,
     datasetId: string = "custom_signals",
     definitionsTableId: string = "signal_definitions",
     clustersTableId: string = "signal_clusters",
   ) {
-    this.bigquery = new BigQuery({ projectId });
+    if (!projectId || projectId.trim() === "") {
+      throw new Error("Project ID is required for BigQuery operations");
+    }
+
+    // Validate identifiers to prevent injection
+    this.validateIdentifier(projectId, "Project ID");
+    this.validateIdentifier(datasetId, "Dataset ID");
+    this.validateIdentifier(definitionsTableId, "Definitions table ID");
+    this.validateIdentifier(clustersTableId, "Clusters table ID");
+
+    this.bigquery = new BigQuery({
+      projectId,
+      // Enable automatic retry with exponential backoff
+      retryOptions: {
+        autoRetry: true,
+        maxRetries: 3,
+        retryDelayMultiplier: 2,
+      },
+    });
     this.projectId = projectId;
     this.datasetId = datasetId;
     this.definitionsTableId = definitionsTableId;
@@ -77,6 +116,9 @@ export class SignalStorageService {
   async createSignalDefinition(
     input: CreateSignalDefinitionInput,
   ): Promise<SignalDefinitionWithClusters> {
+    // Validate input first
+    this.validateCreateInput(input);
+
     const signalId = uuidv4();
     const now = new Date().toISOString();
 
@@ -84,22 +126,22 @@ export class SignalStorageService {
     const definitionRow = {
       created_at: now,
       created_by: input.created_by || null,
-      description: input.description,
+      description: input.description.trim(),
       is_active: true,
-      key_type: input.key_type,
+      key_type: input.key_type.trim(),
       metadata: input.metadata ? JSON.stringify(input.metadata) : null,
-      name: input.name,
+      name: input.name.trim(),
       signal_id: signalId,
     };
 
     // Insert cluster configurations
     const clusterRows = input.clusters.map((cluster) => ({
-      channel: cluster.channel || null,
+      channel: cluster.channel?.trim() || null,
       cluster_id: uuidv4(),
       created_at: now,
       gdpr_compliant: cluster.gdpr_compliant || false,
       is_active: true,
-      region: cluster.region,
+      region: cluster.region.trim(),
       signal_id: signalId,
     }));
 
@@ -138,9 +180,7 @@ export class SignalStorageService {
         signal_id: signalId,
       };
     } catch (error) {
-      throw new Error(
-        `Failed to create signal definition: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      this.handleBigQueryError(error, "create signal definition");
     }
   }
 
@@ -153,14 +193,14 @@ export class SignalStorageService {
     try {
       // Soft delete the signal definition
       const deleteDefQuery = `
-        UPDATE \`${this.projectId}.${this.datasetId}.${this.definitionsTableId}\`
+        UPDATE ${this.getFullTableId(this.definitionsTableId)}
         SET is_active = false, updated_at = @updated_at
         WHERE signal_id = @signalId AND is_active = true
       `;
 
       // Soft delete associated clusters
       const deleteClustersQuery = `
-        UPDATE \`${this.projectId}.${this.datasetId}.${this.clustersTableId}\`
+        UPDATE ${this.getFullTableId(this.clustersTableId)}
         SET is_active = false
         WHERE signal_id = @signalId
       `;
@@ -177,9 +217,7 @@ export class SignalStorageService {
 
       return true;
     } catch (error) {
-      throw new Error(
-        `Failed to delete signal definition ${signalId}: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      this.handleBigQueryError(error, "delete signal definition", signalId);
     }
   }
 
@@ -190,16 +228,14 @@ export class SignalStorageService {
     try {
       const query = `
         SELECT COUNT(*) as total
-        FROM \`${this.projectId}.${this.datasetId}.${this.definitionsTableId}\`
+        FROM ${this.getFullTableId(this.definitionsTableId)}
         WHERE is_active = true
       `;
 
       const [rows] = await this.bigquery.query({ query });
       return rows[0]?.total || 0;
     } catch (error) {
-      throw new Error(
-        `Failed to get signal count: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      this.handleBigQueryError(error, "get signal count");
     }
   }
 
@@ -224,8 +260,8 @@ export class SignalStorageService {
         c.region,
         c.channel,
         c.gdpr_compliant
-      FROM \`${this.projectId}.${this.datasetId}.${this.definitionsTableId}\` d
-      LEFT JOIN \`${this.projectId}.${this.datasetId}.${this.clustersTableId}\` c
+      FROM ${this.getFullTableId(this.definitionsTableId)} d
+      LEFT JOIN ${this.getFullTableId(this.clustersTableId)} c
         ON d.signal_id = c.signal_id AND c.is_active = true
       WHERE d.signal_id = @signalId 
         AND d.is_active = true
@@ -269,9 +305,7 @@ export class SignalStorageService {
         updated_at: definition.updated_at,
       };
     } catch (error) {
-      throw new Error(
-        `Failed to get signal definition ${signalId}: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      this.handleBigQueryError(error, "get signal definition", signalId);
     }
   }
 
@@ -282,7 +316,7 @@ export class SignalStorageService {
     try {
       const query = `
         SELECT COUNT(*) as signal_count 
-        FROM \`${this.projectId}.${this.datasetId}.${this.definitionsTableId}\` 
+        FROM ${this.getFullTableId(this.definitionsTableId)} 
         LIMIT 1
       `;
       await this.bigquery.query({ query });
@@ -334,8 +368,8 @@ export class SignalStorageService {
         c.region,
         c.channel,
         c.gdpr_compliant
-      FROM \`${this.projectId}.${this.datasetId}.${this.definitionsTableId}\` d
-      LEFT JOIN \`${this.projectId}.${this.datasetId}.${this.clustersTableId}\` c
+      FROM ${this.getFullTableId(this.definitionsTableId)} d
+      LEFT JOIN ${this.getFullTableId(this.clustersTableId)} c
         ON d.signal_id = c.signal_id AND c.is_active = true
       ${whereClause}
       ORDER BY d.created_at DESC
@@ -381,9 +415,7 @@ export class SignalStorageService {
 
       return Array.from(signalMap.values());
     } catch (error) {
-      throw new Error(
-        `Failed to list signal definitions: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      this.handleBigQueryError(error, "list signal definitions");
     }
   }
 
@@ -421,7 +453,7 @@ export class SignalStorageService {
         params.updated_at = now;
 
         const updateQuery = `
-          UPDATE \`${this.projectId}.${this.datasetId}.${this.definitionsTableId}\`
+          UPDATE ${this.getFullTableId(this.definitionsTableId)}
           SET ${updateFields.join(", ")}
           WHERE signal_id = @signalId AND is_active = true
         `;
@@ -436,7 +468,7 @@ export class SignalStorageService {
       if (input.clusters) {
         // Deactivate existing clusters
         const deactivateQuery = `
-          UPDATE \`${this.projectId}.${this.datasetId}.${this.clustersTableId}\`
+          UPDATE ${this.getFullTableId(this.clustersTableId)}
           SET is_active = false
           WHERE signal_id = @signalId
         `;
@@ -473,9 +505,130 @@ export class SignalStorageService {
 
       return updated;
     } catch (error) {
-      throw new Error(
-        `Failed to update signal definition ${signalId}: ${error instanceof Error ? error.message : String(error)}`,
+      this.handleBigQueryError(error, "update signal definition", signalId);
+    }
+  }
+
+  /**
+   * Build a safe fully qualified table name
+   */
+  private getFullTableId(tableId: string): string {
+    return `\`${this.projectId}.${this.datasetId}.${tableId}\``;
+  }
+
+  /**
+   * Handle BigQuery errors with proper classification
+   */
+  private handleBigQueryError(
+    error: unknown,
+    operation: string,
+    signalId?: string,
+  ): never {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    // Check for specific BigQuery error types
+    if (errorMessage.includes("Not found:")) {
+      if (signalId) {
+        throw new SignalNotFoundError(
+          signalId,
+          error instanceof Error ? error : undefined,
+        );
+      }
+      throw new SignalStorageError(
+        `Resource not found during ${operation}`,
+        "RESOURCE_NOT_FOUND",
+        error instanceof Error ? error : undefined,
       );
     }
+
+    if (errorMessage.includes("Invalid")) {
+      throw new SignalValidationError(
+        `Invalid data during ${operation}: ${errorMessage}`,
+        error instanceof Error ? error : undefined,
+      );
+    }
+
+    if (
+      errorMessage.includes("Permission denied") ||
+      errorMessage.includes("Forbidden")
+    ) {
+      throw new SignalStorageError(
+        `Permission denied during ${operation}`,
+        "PERMISSION_DENIED",
+        error instanceof Error ? error : undefined,
+      );
+    }
+
+    // Generic BigQuery error
+    throw new SignalStorageError(
+      `BigQuery ${operation} failed: ${errorMessage}`,
+      "BIGQUERY_ERROR",
+      error instanceof Error ? error : undefined,
+    );
+  }
+
+  /**
+   * Validate input for signal definition creation
+   */
+  private validateCreateInput(input: CreateSignalDefinitionInput): void {
+    if (!input.name?.trim()) {
+      throw new SignalValidationError(
+        "Signal name is required and cannot be empty",
+      );
+    }
+    if (!input.description?.trim()) {
+      throw new SignalValidationError(
+        "Signal description is required and cannot be empty",
+      );
+    }
+    if (!input.key_type?.trim()) {
+      throw new SignalValidationError(
+        "Signal key type is required and cannot be empty",
+      );
+    }
+    if (!input.clusters || input.clusters.length === 0) {
+      throw new SignalValidationError(
+        "At least one cluster configuration is required",
+      );
+    }
+
+    // Validate each cluster
+    for (const cluster of input.clusters) {
+      if (!cluster.region?.trim()) {
+        throw new SignalValidationError(
+          "Cluster region is required and cannot be empty",
+        );
+      }
+      // Basic region format validation
+      if (!/^[a-zA-Z]{2}(-[a-zA-Z0-9-]+)?$/.test(cluster.region)) {
+        throw new SignalValidationError(
+          `Invalid region format: ${cluster.region}`,
+        );
+      }
+    }
+  }
+
+  /**
+   * Validate BigQuery identifier to prevent injection attacks
+   */
+  private validateIdentifier(identifier: string, name: string): void {
+    // BigQuery identifiers must be alphanumeric with underscores, dashes, and dots
+    const validPattern = /^[a-zA-Z0-9_.-]+$/;
+    if (!validPattern.test(identifier)) {
+      throw new Error(
+        `Invalid ${name}: must contain only letters, numbers, underscores, dashes, and dots`,
+      );
+    }
+    // Additional length check
+    if (identifier.length > 100) {
+      throw new Error(`Invalid ${name}: must be 100 characters or less`);
+    }
+  }
+}
+
+export class SignalValidationError extends SignalStorageError {
+  constructor(message: string, cause?: Error) {
+    super(message, "VALIDATION_ERROR", cause);
+    this.name = "SignalValidationError";
   }
 }

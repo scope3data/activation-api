@@ -16,15 +16,34 @@ export interface BigQueryConfig {
  * Get BigQuery configuration from environment variables
  */
 export function getBigQueryConfig(): BigQueryConfig {
-  return {
-    batchSize: parseInt(process.env.BIGQUERY_BATCH_SIZE || "500"),
+  const config = {
+    batchSize: process.env.BIGQUERY_BATCH_SIZE
+      ? parseInt(process.env.BIGQUERY_BATCH_SIZE)
+      : 500,
     credentialsPath: process.env.GOOGLE_APPLICATION_CREDENTIALS,
     datasetId: process.env.BIGQUERY_SIGNALS_DATASET || "custom_signals",
-    enabled: process.env.USE_BIGQUERY_STORAGE !== "false", // Default to enabled
+    enabled: process.env.USE_BIGQUERY_STORAGE === "true",
     location: process.env.BIGQUERY_LOCATION || "US",
-    projectId: process.env.BIGQUERY_PROJECT_ID || "bok-playground",
-    timeout: parseInt(process.env.BIGQUERY_TIMEOUT_MS || "30000"),
+    projectId: process.env.BIGQUERY_PROJECT_ID || "",
+    timeout: process.env.BIGQUERY_TIMEOUT_MS
+      ? parseInt(process.env.BIGQUERY_TIMEOUT_MS)
+      : 30000,
   };
+
+  // Warn about missing required configuration
+  if (!config.projectId) {
+    console.warn(
+      "⚠️  BIGQUERY_PROJECT_ID not set - BigQuery operations will fail",
+    );
+  }
+
+  if (!config.enabled) {
+    console.info(
+      "ℹ️  BigQuery storage disabled - set USE_BIGQUERY_STORAGE=true to enable",
+    );
+  }
+
+  return config;
 }
 
 /**
@@ -33,24 +52,47 @@ export function getBigQueryConfig(): BigQueryConfig {
 export function validateBigQueryConfig(config: BigQueryConfig): string[] {
   const errors: string[] = [];
 
-  if (!config.projectId) {
-    errors.push("BIGQUERY_PROJECT_ID is required");
+  if (!config.projectId || config.projectId.trim() === "") {
+    errors.push("BIGQUERY_PROJECT_ID is required and cannot be empty");
   }
 
-  if (!config.datasetId) {
-    errors.push("BIGQUERY_SIGNALS_DATASET is required");
+  if (!config.datasetId || config.datasetId.trim() === "") {
+    errors.push("BIGQUERY_SIGNALS_DATASET is required and cannot be empty");
   }
 
-  if (!config.location) {
-    errors.push("BIGQUERY_LOCATION is required");
+  if (!config.location || config.location.trim() === "") {
+    errors.push("BIGQUERY_LOCATION is required and cannot be empty");
   }
 
-  if (config.timeout && (config.timeout < 1000 || config.timeout > 300000)) {
-    errors.push("BIGQUERY_TIMEOUT_MS must be between 1000 and 300000");
+  // Validate timeout range
+  if (config.timeout !== undefined) {
+    if (
+      isNaN(config.timeout) ||
+      config.timeout < 1000 ||
+      config.timeout > 300000
+    ) {
+      errors.push(
+        "BIGQUERY_TIMEOUT_MS must be a number between 1000 and 300000",
+      );
+    }
   }
 
-  if (config.batchSize && (config.batchSize < 1 || config.batchSize > 10000)) {
-    errors.push("BIGQUERY_BATCH_SIZE must be between 1 and 10000");
+  // Validate batch size range
+  if (config.batchSize !== undefined) {
+    if (
+      isNaN(config.batchSize) ||
+      config.batchSize < 1 ||
+      config.batchSize > 10000
+    ) {
+      errors.push("BIGQUERY_BATCH_SIZE must be a number between 1 and 10000");
+    }
+  }
+
+  // Validate location format (basic check)
+  if (config.location && !config.location.match(/^[A-Z]{2}(-[A-Z0-9]+)?$/)) {
+    errors.push(
+      "BIGQUERY_LOCATION must be a valid location (e.g., US, EU, us-central1)",
+    );
   }
 
   return errors;
