@@ -28,29 +28,23 @@
             ]
           },
           {
-            "group": "📦 Core Objects",
+            "group": "📦 Object Guides",
             "pages": [
               "mintlify/object-guides/brand-agent",
               "mintlify/object-guides/campaign",
               "mintlify/object-guides/tactic",
               "mintlify/object-guides/signal",
+              "mintlify/object-guides/brand-story",
+              "mintlify/object-guides/brand-standards-agent",
               "mintlify/object-guides/pmp",
               "mintlify/object-guides/creative",
               "mintlify/object-guides/format"
             ]
           },
           {
-            "group": "🎯 Brand Agent Resources",
-            "pages": [
-              "mintlify/object-guides/brand-story",
-              "mintlify/object-guides/brand-standards-agent",
-              "mintlify/object-guides/scoring"
-            ]
-          },
-          {
             "group": "🔧 Optimization",
             "pages": [
-              "mintlify/optimization/measurement",
+              "mintlify/optimization/scoring",
               "mintlify/optimization/scope3-algorithms",
               "mintlify/optimization/custom-algorithms"
             ]

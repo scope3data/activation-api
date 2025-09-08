@@ -1,0 +1,161 @@
+---
+title: "Scoring"
+description: "Performance index normalization for tactic optimization"
+icon: "gauge-high"
+---
+
+## Our Role in the Measurement Ecosystem
+
+**We sit downstream from measurement processes.**
+
+We don't measure whether ads worked. Instead, we normalize measurement data from various sources into a unified performance index that drives budget allocation.
+
+## The Performance Index
+
+### What We Normalize
+
+We consume measurement outputs from:
+- **Attribution platforms** (Google Analytics, Adobe)
+- **Brand lift studies** (Nielsen, Kantar)
+- **Media Mix Models** (MMM)
+- **Conversion APIs** (Facebook, Google)
+- **Custom measurement systems**
+
+### The Unified Scale
+
+All measurement data gets normalized to our performance index:
+
+```
+0 = No measurable value
+100 = Meets defined objective
+1000 = 10x target performance
+```
+
+This scale is **client-agnostic and campaign-dependent**. What these numbers represent varies completely:
+- For one client, 100 might mean 2:1 ROAS
+- For another, 100 might mean 5% brand lift
+- For a third, 100 might mean $50 CPA
+
+We don't know or need to know what the scores represent. They're just normalized proxies for optimization.
+
+## How Normalization Works
+
+### Step 1: Measurement Collection
+Clients connect their measurement sources. Each source reports performance in its own units:
+- MMM reports incremental sales
+- Attribution reports conversion rates
+- Brand studies report lift percentages
+
+### Step 2: Client-Defined Objectives
+The client defines what "success" means:
+- Target ROAS of 3:1
+- Brand awareness lift of 10%
+- CPA under $75
+
+### Step 3: Index Calculation
+We normalize all measurements against objectives:
+- Performance at target = 100
+- Performance at 10x target = 1000
+- No measurable value = 0
+
+### Step 4: Tactic Scoring
+Each tactic receives a performance index based on its contribution to measured outcomes.
+
+## Source-Agnostic Optimization
+
+The beauty of normalization: **we optimize without understanding.**
+
+A tactic with index 200 gets more budget than one with index 50, regardless of whether those scores represent:
+- ROAS vs brand lift
+- Conversions vs video completions
+- Sales vs site visits
+
+The multi-armed bandit doesn't care what's being measured - it just allocates budget to higher-indexed tactics.
+
+## Integration with Tactics
+
+### Discovery Phase
+New tactics start with no score. We allocate test budgets to establish baseline performance.
+
+### Learning Phase
+As measurement data arrives:
+- Real-time signals update indices quickly
+- Attribution data updates daily
+- Brand studies update weekly/monthly
+
+### Optimization Phase
+The multi-armed bandit uses performance indices to:
+- **Exploit**: Allocate more budget to high-index tactics
+- **Explore**: Test new tactics that might beat current winners
+
+## Measurement Lag Reality
+
+Different measurement sources have different delays:
+
+**Near Real-Time** (minutes to hours)
+- Click tracking
+- Video completions
+- Landing page visits
+
+**Daily** (1-7 days)
+- Conversion tracking
+- Attribution modeling
+- CRM matching
+
+**Weekly/Monthly** (7-30+ days)
+- Brand lift studies
+- MMM updates
+- Offline sales matching
+
+We handle this by maintaining provisional scores that update as more accurate measurement data arrives.
+
+## What We Don't Do
+
+To be absolutely clear:
+
+- **We don't measure ad effectiveness** - measurement providers do
+- **We don't calculate ROAS** - attribution platforms do
+- **We don't determine brand lift** - research companies do
+- **We don't define success** - clients do
+
+We simply normalize whatever measurement data exists into a unified index for optimization.
+
+## API Integration
+
+### View Performance Indices
+
+```javascript
+const tactics = await analyzeTactics({
+  campaignId: "camp_123",
+  analysisType: "efficiency"
+});
+
+// Returns normalized performance indices
+tactics.forEach(tactic => {
+  console.log(`${tactic.name}: ${tactic.performanceIndex}`);
+  console.log(`  Budget allocation: $${tactic.budgetShare}`);
+  // Note: We don't know if index represents ROAS, lift, etc.
+});
+```
+
+### Measurement Source Configuration
+
+```javascript
+// Client connects their measurement
+const source = await addMeasurementSource({
+  brandAgentId: "ba_123",
+  type: "attribution",
+  platform: "google_analytics",
+  // Client defines what "100" means for them
+  targetMetric: "roas",
+  targetValue: 3.5
+});
+```
+
+## Key Takeaways
+
+- **We normalize, not measure** - Downstream from measurement providers
+- **Client-agnostic indexing** - 100 means different things to different clients
+- **Source-agnostic optimization** - Budget flows to higher indices regardless of what they represent
+- **Performance proxy** - Indices are just numbers for optimization, not interpretable metrics
+- **Unified scale** - 0 (no value) to 100 (target) to 1000 (10x target)
