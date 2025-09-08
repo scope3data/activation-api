@@ -5,8 +5,8 @@ import {
 import { SignalStorageService } from "./signal-storage-service.js";
 
 /**
- * Enhanced Custom Signals Client that uses BigQuery backend when available,
- * falls back to REST API for compatibility
+ * Custom Signals Client - BigQuery backend for custom signal definitions
+ * Provides CRUD operations for signal definitions stored in BigQuery
  */
 
 export interface CreateCustomSignalInput {
@@ -45,11 +45,12 @@ export interface UpdateCustomSignalInput {
 }
 
 export class CustomSignalsClient {
-  private bigQueryEnabled: boolean = false;
-  private fallbackToRest: boolean = true;
+  private initializationError: null | string = null;
+  private initialized: boolean = false;
   private storageService: null | SignalStorageService = null;
 
   constructor() {
+    // Initialize asynchronously - client will be ready when first method is called
     this.initializeBigQuery();
   }
 
@@ -57,155 +58,162 @@ export class CustomSignalsClient {
    * Create a new custom signal definition
    */
   async createCustomSignal(
-    apiKey: string,
+    _apiKey: string, // Not used for BigQuery operations, but kept for interface consistency
     input: CreateCustomSignalInput,
   ): Promise<CustomSignalDefinition> {
-    // Use BigQuery if available
-    if (this.bigQueryEnabled && this.storageService) {
-      try {
-        const result = await this.storageService.createSignalDefinition({
-          clusters: input.clusters.map((c) => ({
-            channel: c.channel,
-            gdpr_compliant: c.gdpr || false,
-            region: c.region,
-          })),
-          created_by: "mcp-api", // Could extract from API key context
-          description: input.description,
-          key_type: input.key,
-          name: input.name,
-        });
+    await this.ensureInitialized();
 
-        return {
-          clusters: result.clusters.map((c) => ({
-            channel: c.channel,
-            gdpr: c.gdpr_compliant,
-            region: c.region,
-          })),
-          createdAt: result.created_at,
-          description: result.description,
-          id: result.signal_id,
-          key: result.key_type,
-          name: result.name,
-          updatedAt: result.updated_at,
-        };
-      } catch (error) {
-        console.error("BigQuery createCustomSignal failed:", error);
-        if (!this.fallbackToRest) {
-          throw error;
-        }
-        console.info("Falling back to REST API");
-      }
+    if (!this.storageService) {
+      throw new Error("BigQuery storage service not available");
     }
 
-    // REST API fallback
-    return this.createCustomSignalRest(apiKey, input);
+    const result = await this.storageService.createSignalDefinition({
+      clusters: input.clusters.map((c) => ({
+        channel: c.channel,
+        gdpr_compliant: c.gdpr || false,
+        region: c.region,
+      })),
+      created_by: "mcp-api",
+      description: input.description,
+      key_type: input.key,
+      name: input.name,
+    });
+
+    return {
+      clusters: result.clusters.map((c) => ({
+        channel: c.channel,
+        gdpr: c.gdpr_compliant,
+        region: c.region,
+      })),
+      createdAt: result.created_at,
+      description: result.description,
+      id: result.signal_id,
+      key: result.key_type,
+      name: result.name,
+      updatedAt: result.updated_at,
+    };
   }
 
   /**
    * Delete a custom signal definition
    */
   async deleteCustomSignal(
-    apiKey: string,
+    _apiKey: string,
     signalId: string,
   ): Promise<{
     deleted: boolean;
     id: string;
   }> {
-    // Use BigQuery if available
-    if (this.bigQueryEnabled && this.storageService) {
-      try {
-        const deleted =
-          await this.storageService.deleteSignalDefinition(signalId);
-        return {
-          deleted,
-          id: signalId,
-        };
-      } catch (error) {
-        console.error("BigQuery deleteCustomSignal failed:", error);
-        if (!this.fallbackToRest) {
-          throw error;
-        }
-        console.info("Falling back to REST API");
-      }
+    await this.ensureInitialized();
+
+    if (!this.storageService) {
+      throw new Error("BigQuery storage service not available");
     }
 
-    // REST API fallback
-    return this.deleteCustomSignalRest(apiKey, signalId);
+    const deleted = await this.storageService.deleteSignalDefinition(signalId);
+    return {
+      deleted,
+      id: signalId,
+    };
   }
 
   /**
    * Get a custom signal definition by ID
    */
   async getCustomSignal(
-    apiKey: string,
+    _apiKey: string,
     signalId: string,
   ): Promise<CustomSignalDefinition | null> {
-    // Use BigQuery if available
-    if (this.bigQueryEnabled && this.storageService) {
-      try {
-        const result = await this.storageService.getSignalDefinition(signalId);
-        if (!result) {
-          return null;
-        }
+    await this.ensureInitialized();
 
-        return {
-          clusters: result.clusters.map((c) => ({
-            channel: c.channel,
-            gdpr: c.gdpr_compliant,
-            region: c.region,
-          })),
-          createdAt: result.created_at,
-          description: result.description,
-          id: result.signal_id,
-          key: result.key_type,
-          name: result.name,
-          updatedAt: result.updated_at,
-        };
-      } catch (error) {
-        console.error("BigQuery getCustomSignal failed:", error);
-        if (!this.fallbackToRest) {
-          throw error;
-        }
-        console.info("Falling back to REST API");
-      }
+    if (!this.storageService) {
+      throw new Error("BigQuery storage service not available");
     }
 
-    // REST API fallback
-    return this.getCustomSignalRest(apiKey, signalId);
+    const result = await this.storageService.getSignalDefinition(signalId);
+    if (!result) {
+      return null;
+    }
+
+    return {
+      clusters: result.clusters.map((c) => ({
+        channel: c.channel,
+        gdpr: c.gdpr_compliant,
+        region: c.region,
+      })),
+      createdAt: result.created_at,
+      description: result.description,
+      id: result.signal_id,
+      key: result.key_type,
+      name: result.name,
+      updatedAt: result.updated_at,
+    };
   }
 
   /**
-   * Get signal statistics
+   * Get signal statistics and health information
    */
   async getSignalStatistics(_apiKey: string): Promise<{
     bigQueryEnabled: boolean;
     healthStatus: boolean;
+    initializationError?: string;
     totalSignals: number;
   }> {
     let totalSignals = 0;
     let healthStatus = false;
 
-    if (this.bigQueryEnabled && this.storageService) {
-      try {
+    try {
+      await this.ensureInitialized();
+
+      if (this.storageService) {
         totalSignals = await this.storageService.getSignalCount();
         healthStatus = await this.storageService.healthCheck();
-      } catch (error) {
-        console.error("Failed to get BigQuery statistics:", error);
       }
+    } catch (error) {
+      console.error("Failed to get BigQuery statistics:", error);
     }
 
     return {
-      bigQueryEnabled: this.bigQueryEnabled,
+      bigQueryEnabled: this.initialized,
       healthStatus,
+      initializationError: this.initializationError || undefined,
       totalSignals,
     };
+  }
+
+  /**
+   * Get initialization status
+   */
+  getStatus(): {
+    error?: string;
+    initialized: boolean;
+  } {
+    return {
+      error: this.initializationError || undefined,
+      initialized: this.initialized,
+    };
+  }
+
+  /**
+   * Test BigQuery connectivity
+   */
+  async healthCheck(): Promise<boolean> {
+    try {
+      await this.ensureInitialized();
+      return this.storageService
+        ? await this.storageService.healthCheck()
+        : false;
+    } catch (error) {
+      console.error("CustomSignalsClient health check failed:", error);
+      return false;
+    }
   }
 
   /**
    * List custom signal definitions with optional filtering
    */
   async listCustomSignals(
-    apiKey: string,
+    _apiKey: string,
     filters?: {
       channel?: string;
       region?: string;
@@ -214,204 +222,115 @@ export class CustomSignalsClient {
     signals: CustomSignalDefinition[];
     total: number;
   }> {
-    // Use BigQuery if available
-    if (this.bigQueryEnabled && this.storageService) {
-      try {
-        const results =
-          await this.storageService.listSignalDefinitions(filters);
+    await this.ensureInitialized();
 
-        const signals = results.map((result) => ({
-          clusters: result.clusters.map((c) => ({
-            channel: c.channel,
-            gdpr: c.gdpr_compliant,
-            region: c.region,
-          })),
-          createdAt: result.created_at,
-          description: result.description,
-          id: result.signal_id,
-          key: result.key_type,
-          name: result.name,
-          updatedAt: result.updated_at,
-        }));
-
-        return {
-          signals,
-          total: signals.length,
-        };
-      } catch (error) {
-        console.error("BigQuery listCustomSignals failed:", error);
-        if (!this.fallbackToRest) {
-          throw error;
-        }
-        console.info("Falling back to REST API");
-      }
+    if (!this.storageService) {
+      throw new Error("BigQuery storage service not available");
     }
 
-    // REST API fallback
-    return this.listCustomSignalsRest(apiKey, filters);
+    const results = await this.storageService.listSignalDefinitions(filters);
+
+    const signals = results.map((result) => ({
+      clusters: result.clusters.map((c) => ({
+        channel: c.channel,
+        gdpr: c.gdpr_compliant,
+        region: c.region,
+      })),
+      createdAt: result.created_at,
+      description: result.description,
+      id: result.signal_id,
+      key: result.key_type,
+      name: result.name,
+      updatedAt: result.updated_at,
+    }));
+
+    return {
+      signals,
+      total: signals.length,
+    };
   }
 
   /**
    * Update a custom signal definition
    */
   async updateCustomSignal(
-    apiKey: string,
+    _apiKey: string,
     signalId: string,
     input: UpdateCustomSignalInput,
   ): Promise<CustomSignalDefinition> {
-    // Use BigQuery if available
-    if (this.bigQueryEnabled && this.storageService) {
-      try {
-        const updateInput: Record<string, unknown> = {};
+    await this.ensureInitialized();
 
-        if (input.name) updateInput.name = input.name;
-        if (input.description) updateInput.description = input.description;
-        if (input.clusters) {
-          updateInput.clusters = input.clusters.map((c) => ({
-            channel: c.channel,
-            gdpr_compliant: c.gdpr || false,
-            region: c.region,
-          }));
-        }
-
-        const result = await this.storageService.updateSignalDefinition(
-          signalId,
-          updateInput,
-        );
-
-        return {
-          clusters: result.clusters.map((c) => ({
-            channel: c.channel,
-            gdpr: c.gdpr_compliant,
-            region: c.region,
-          })),
-          createdAt: result.created_at,
-          description: result.description,
-          id: result.signal_id,
-          key: result.key_type,
-          name: result.name,
-          updatedAt: result.updated_at,
-        };
-      } catch (error) {
-        console.error("BigQuery updateCustomSignal failed:", error);
-        if (!this.fallbackToRest) {
-          throw error;
-        }
-        console.info("Falling back to REST API");
-      }
+    if (!this.storageService) {
+      throw new Error("BigQuery storage service not available");
     }
 
-    // REST API fallback
-    return this.updateCustomSignalRest(apiKey, signalId, input);
-  }
+    const updateInput: Record<string, unknown> = {};
 
-  // REST API fallback methods
-  private async createCustomSignalRest(
-    apiKey: string,
-    input: CreateCustomSignalInput,
-  ): Promise<CustomSignalDefinition> {
-    const response = await fetch("https://api.scope3.com/signal", {
-      body: JSON.stringify(input),
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "User-Agent": "MCP-Server/1.0",
-      },
-      method: "POST",
-    });
-
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        throw new Error("Authentication failed");
-      }
-      if (response.status >= 500) {
-        throw new Error("External service temporarily unavailable");
-      }
-      throw new Error("Request failed");
+    if (input.name) updateInput.name = input.name;
+    if (input.description) updateInput.description = input.description;
+    if (input.clusters) {
+      updateInput.clusters = input.clusters.map((c) => ({
+        channel: c.channel,
+        gdpr_compliant: c.gdpr || false,
+        region: c.region,
+      }));
     }
 
-    return (await response.json()) as CustomSignalDefinition;
-  }
+    const result = await this.storageService.updateSignalDefinition(
+      signalId,
+      updateInput,
+    );
 
-  private async deleteCustomSignalRest(
-    apiKey: string,
-    signalId: string,
-  ): Promise<{
-    deleted: boolean;
-    id: string;
-  }> {
-    const response = await fetch(`https://api.scope3.com/signal/${signalId}`, {
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "User-Agent": "MCP-Server/1.0",
-      },
-      method: "DELETE",
-    });
-
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        throw new Error("Authentication failed");
-      }
-      if (response.status === 404) {
-        throw new Error("Signal not found");
-      }
-      if (response.status >= 500) {
-        throw new Error("External service temporarily unavailable");
-      }
-      throw new Error("Request failed");
-    }
-
-    return (await response.json()) as {
-      deleted: boolean;
-      id: string;
+    return {
+      clusters: result.clusters.map((c) => ({
+        channel: c.channel,
+        gdpr: c.gdpr_compliant,
+        region: c.region,
+      })),
+      createdAt: result.created_at,
+      description: result.description,
+      id: result.signal_id,
+      key: result.key_type,
+      name: result.name,
+      updatedAt: result.updated_at,
     };
   }
 
-  private async getCustomSignalRest(
-    apiKey: string,
-    signalId: string,
-  ): Promise<CustomSignalDefinition | null> {
-    const response = await fetch(`https://api.scope3.com/signal/${signalId}`, {
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "User-Agent": "MCP-Server/1.0",
-      },
-      method: "GET",
-    });
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        return null;
-      }
-      if (response.status === 401 || response.status === 403) {
-        throw new Error("Authentication failed");
-      }
-      if (response.status >= 500) {
-        throw new Error("External service temporarily unavailable");
-      }
-      throw new Error("Request failed");
+  /**
+   * Ensure client is initialized before operations
+   */
+  private async ensureInitialized(): Promise<void> {
+    if (this.initialized && this.storageService) {
+      return;
     }
 
-    return (await response.json()) as CustomSignalDefinition;
+    if (this.initializationError) {
+      throw new Error(
+        `CustomSignalsClient initialization failed: ${this.initializationError}`,
+      );
+    }
+
+    await this.initializeBigQuery();
   }
 
   /**
-   * Initialize BigQuery backend if configured
+   * Initialize BigQuery backend
    */
   private async initializeBigQuery(): Promise<void> {
+    if (this.initialized) return;
+
     try {
       const config = getBigQueryConfig();
       const errors = validateBigQueryConfig(config);
 
       if (errors.length > 0) {
-        console.warn("BigQuery configuration errors:", errors);
-        console.warn("Custom Signals will use REST API fallback");
-        return;
+        throw new Error(`BigQuery configuration invalid: ${errors.join(", ")}`);
       }
 
       if (!config.enabled) {
-        console.info("BigQuery storage disabled, using REST API fallback");
-        return;
+        throw new Error(
+          "BigQuery storage is disabled (USE_BIGQUERY_STORAGE=false)",
+        );
       }
 
       this.storageService = new SignalStorageService(
@@ -421,88 +340,22 @@ export class CustomSignalsClient {
 
       // Test connectivity
       const isHealthy = await this.storageService.healthCheck();
-      if (isHealthy) {
-        this.bigQueryEnabled = true;
-        console.info("✅ BigQuery backend initialized for Custom Signals");
-      } else {
-        console.warn(
-          "⚠️ BigQuery health check failed, using REST API fallback",
-        );
+      if (!isHealthy) {
+        throw new Error("BigQuery health check failed - tables may not exist");
       }
+
+      this.initialized = true;
+      console.info(
+        "✅ BigQuery Custom Signals client initialized successfully",
+      );
     } catch (error) {
-      console.warn("Failed to initialize BigQuery backend:", error);
-      console.warn("Custom Signals will use REST API fallback");
+      this.initializationError =
+        error instanceof Error ? error.message : String(error);
+      console.error(
+        "❌ Failed to initialize BigQuery Custom Signals client:",
+        this.initializationError,
+      );
+      throw error;
     }
-  }
-
-  private async listCustomSignalsRest(
-    apiKey: string,
-    filters?: {
-      channel?: string;
-      region?: string;
-    },
-  ): Promise<{
-    signals: CustomSignalDefinition[];
-    total: number;
-  }> {
-    const params = new URLSearchParams();
-    if (filters?.region) params.append("region", filters.region);
-    if (filters?.channel) params.append("channel", filters.channel);
-
-    const url = `https://api.scope3.com/signal${params.toString() ? `?${params.toString()}` : ""}`;
-
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "User-Agent": "MCP-Server/1.0",
-      },
-      method: "GET",
-    });
-
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        throw new Error("Authentication failed");
-      }
-      if (response.status >= 500) {
-        throw new Error("External service temporarily unavailable");
-      }
-      throw new Error("Request failed");
-    }
-
-    return (await response.json()) as {
-      signals: CustomSignalDefinition[];
-      total: number;
-    };
-  }
-
-  private async updateCustomSignalRest(
-    apiKey: string,
-    signalId: string,
-    input: UpdateCustomSignalInput,
-  ): Promise<CustomSignalDefinition> {
-    const response = await fetch(`https://api.scope3.com/signal/${signalId}`, {
-      body: JSON.stringify(input),
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "User-Agent": "MCP-Server/1.0",
-      },
-      method: "PUT",
-    });
-
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        throw new Error("Authentication failed");
-      }
-      if (response.status === 404) {
-        throw new Error("Signal not found");
-      }
-      if (response.status >= 500) {
-        throw new Error("External service temporarily unavailable");
-      }
-      throw new Error("Request failed");
-    }
-
-    return (await response.json()) as CustomSignalDefinition;
   }
 }
