@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
-    "build": "npm run generate:openapi && tsc",
+    "build": "tsc",
     "start": "node dist/server.js",
     "dev": "fastmcp dev src/server.ts",
     "lint": "prettier --check . && eslint . && tsc --noEmit && npm run validate:openapi",
@@ -40,6 +40,8 @@
   },
   "description": "MCP server for Scope3 campaign creation and management",
   "dependencies": {
+    "@google-cloud/bigquery": "^8.1.1",
+    "@modelcontextprotocol/sdk": "^1.17.5",
     "@types/node": "^24.3.1",
     "fastmcp": "^3.15.2",
     "npm": "^11.6.0",
