@@ -179,59 +179,214 @@ export const LIST_BRAND_AGENT_CREATIVES_QUERY = `
   }
 `;
 
-// Brand Standards queries
-export const SET_BRAND_STANDARDS_MUTATION = `
-  mutation SetBrandStandards($brandAgentId: ID!, $input: BrandStandardsInput!) {
-    setBrandStandards(brandAgentId: $brandAgentId, input: $input) {
-      brandAgentId
-      domainBlocklist
-      domainAllowlist
-      keywordFilters
-      contentCategories
-      updatedAt
-    }
-  }
-`;
-
-export const GET_BRAND_STANDARDS_QUERY = `
-  query GetBrandStandards($brandAgentId: ID!) {
-    brandStandards(brandAgentId: $brandAgentId) {
-      brandAgentId
-      domainBlocklist
-      domainAllowlist
-      keywordFilters
-      contentCategories
-      updatedAt
-    }
-  }
-`;
-
-// Synthetic Audience queries (stub)
-export const CREATE_SYNTHETIC_AUDIENCE_MUTATION = `
-  mutation CreateSyntheticAudience($input: SyntheticAudienceInput!) {
-    createSyntheticAudience(input: $input) {
+// Brand Standards Agent queries
+export const LIST_BRAND_AGENT_STANDARDS_QUERY = `
+  query ListBrandAgentStandards($brandAgentId: BigInt!) {
+    brandStandardsAgents(where: { brandAgentId: { equals: $brandAgentId }, archivedAt: { equals: null }}) {
       id
-      brandAgentId
       name
-      description
+      brands
+      channels
+      countries
+      languages
+      models(where: { status: { equals: PRIMARY }}) {
+        id
+        name
+        prompt
+        createdAt
+        updatedAt
+      }
       createdAt
       updatedAt
     }
   }
 `;
 
-export const LIST_SYNTHETIC_AUDIENCES_QUERY = `
-  query ListSyntheticAudiences($brandAgentId: ID!) {
-    syntheticAudiences(brandAgentId: $brandAgentId) {
+export const CREATE_BRAND_AGENT_STANDARDS_MUTATION = `
+  mutation CreateBrandStandardsAgent(
+    $brandAgentId: BigInt!
+    $name: String!
+    $prompt: String!
+    $brands: [String!]
+    $channelCodes: [String!]
+    $countryCodes: [String!]
+    $languages: [String!]
+  ) {
+    createBrandStandardsAgent(
+      brandAgentId: $brandAgentId
+      name: $name
+      brands: $brands
+      channelCodes: $channelCodes
+      countryCodes: $countryCodes
+      languages: $languages
+    ) {
       id
-      brandAgentId
       name
-      description
+      brands
+      channels
+      countries
+      languages
+      createdAt
+      updatedAt
+    }
+    createAgentModel(
+      agentId: $id
+      name: $name
+      prompt: $prompt
+      isPrimary: true
+    ) {
+      id
+      name
+      prompt
+      status
+      createdAt
+    }
+  }
+`;
+
+export const UPDATE_BRAND_AGENT_STANDARDS_MUTATION = `
+  mutation UpdateBrandAgentStandards(
+    $agentId: BigInt!
+    $name: String!
+    $prompt: String!
+  ) {
+    createAgentModel(
+      agentId: $agentId
+      name: $name
+      prompt: $prompt
+      isPrimary: true
+    ) {
+      id
+      name
+      prompt
+      status
+      createdAt
+    }
+  }
+`;
+
+export const DELETE_BRAND_AGENT_STANDARDS_MUTATION = `
+  mutation DeleteBrandStandardsAgent($id: BigInt!) {
+    updateAgent(
+      where: { id: $id }
+      data: { archivedAt: { set: $now } }
+    ) {
+      id
+      archivedAt
+    }
+  }
+`;
+
+// Synthetic Audience queries
+export const LIST_BRAND_AGENT_SYNTHETIC_AUDIENCES_QUERY = `
+  query ListBrandAgentSyntheticAudiences($brandAgentId: BigInt!) {
+    brandStoryAgents(where: { brandAgentId: { equals: $brandAgentId }, archivedAt: { equals: null }}) {
+      id
+      name
+      brands
+      channels
+      countries
+      languages
+      models(where: { status: { equals: PRIMARY }}) {
+        id
+        name
+        prompt
+        createdAt
+        updatedAt
+      }
       createdAt
       updatedAt
     }
   }
 `;
+
+export const CREATE_BRAND_AGENT_SYNTHETIC_AUDIENCE_MUTATION = `
+  mutation CreateBrandSyntheticAudience(
+    $brandAgentId: BigInt!
+    $name: String!
+    $prompt: String!
+    $brands: [String!]
+    $channelCodes: [String!]
+    $countryCodes: [String!]
+    $languages: [String!]
+  ) {
+    createBrandStoryAgent(
+      brandAgentId: $brandAgentId
+      name: $name
+      brands: $brands
+      channelCodes: $channelCodes
+      countryCodes: $countryCodes
+      languages: $languages
+      publishStory: true
+    ) {
+      id
+      name
+      brands
+      channels
+      countries
+      languages
+      models(where: { status: { equals: PRIMARY }}) {
+        id
+        name
+        prompt
+        createdAt
+      }
+      createdAt
+      updatedAt
+    }
+    createAgentModel(
+      agentId: $id
+      name: $name
+      prompt: $prompt
+      isPrimary: true
+    ) {
+      id
+      name
+      prompt
+      status
+      createdAt
+    }
+  }
+`;
+
+export const UPDATE_BRAND_AGENT_SYNTHETIC_AUDIENCE_MUTATION = `
+  mutation UpdateBrandSyntheticAudience(
+    $previousModelId: BigInt!
+    $name: String!
+    $prompt: String!
+  ) {
+    updateBrandStory(
+      previousModelId: $previousModelId
+      name: $name
+      prompt: $prompt
+    ) {
+      id
+      name
+      prompt
+      status
+      createdAt
+    }
+  }
+`;
+
+export const DELETE_BRAND_AGENT_SYNTHETIC_AUDIENCE_MUTATION = `
+  mutation DeleteBrandSyntheticAudience($id: BigInt!) {
+    updateAgent(
+      where: { id: $id }
+      data: { archivedAt: { set: $now } }
+    ) {
+      id
+      archivedAt
+    }
+  }
+`;
+
+// Legacy stub queries - these are replaced by the real synthetic audience queries above
+// Keeping these for backward compatibility temporarily
+export const CREATE_SYNTHETIC_AUDIENCE_MUTATION =
+  CREATE_BRAND_AGENT_SYNTHETIC_AUDIENCE_MUTATION;
+export const LIST_SYNTHETIC_AUDIENCES_QUERY =
+  LIST_BRAND_AGENT_SYNTHETIC_AUDIENCES_QUERY;
 
 // Measurement Source queries (stub)
 export const ADD_MEASUREMENT_SOURCE_MUTATION = `
