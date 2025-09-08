@@ -1,0 +1,182 @@
+---
+title: "Synthetic Audiences"
+description: "AI-powered target audience definitions for precise campaign targeting"
+---
+
+**Synthetic Audiences** define your target audience profiles, demographics, and behavioral characteristics for advertising campaigns. These audiences use natural language prompts to articulate your ideal customer profiles, informing campaign targeting, creative development, and messaging strategies.
+
+## Overview
+
+Synthetic Audiences provide:
+- **Target audience definition** and behavioral profiling
+- **Campaign targeting guidance** for precise audience reach across all campaigns
+- **Audience insight generation** based on your customer profile definitions
+- **Multi-market adaptation** with country, channel, and language specificity
+
+## Core Properties
+
+<ResponseField name="id" type="string" required>
+  Unique identifier for the synthetic audience
+</ResponseField>
+
+<ResponseField name="name" type="string" required>
+  Human-readable name for the audience (e.g., "Tech Enthusiasts", "Luxury Shoppers")
+</ResponseField>
+
+<ResponseField name="brands" type="string[]" required>
+  Array of brand names this audience applies to. Empty array means all brands within the brand agent
+</ResponseField>
+
+<ResponseField name="channels" type="string[]" required>
+  Array of channel codes this audience targets (e.g., ["web", "social", "mobile"]). Empty array means all channels
+</ResponseField>
+
+<ResponseField name="countries" type="string[]" required>
+  Array of ISO country codes this audience targets (e.g., ["US", "CA", "GB"]). Empty array means all countries
+</ResponseField>
+
+<ResponseField name="languages" type="string[]" required>
+  Array of language codes this audience targets (e.g., ["en", "es", "fr"]). Required for storage - cannot be empty
+</ResponseField>
+
+<ResponseField name="prompt" type="string" required>
+  Natural language prompt defining your target audience profile, demographics, and behavioral characteristics
+</ResponseField>
+
+<ResponseField name="createdAt" type="datetime" required>
+  ISO 8601 timestamp when the audience was created
+</ResponseField>
+
+<ResponseField name="updatedAt" type="datetime" required>
+  ISO 8601 timestamp when the audience was last modified
+</ResponseField>
+
+## Common Use Cases
+
+### Premium Lifestyle Audience
+Define affluent professionals who value quality and authentic experiences.
+
+```
+"Target affluent professionals aged 25-45 with household incomes above $100K. They value craftsmanship, sustainability, and authentic experiences. They prioritize quality over quantity, prefer timeless design, and practice conscious consumption. They respond to confident but approachable messaging and appreciate expertise without pretension."
+```
+
+### Enterprise Technology Audience
+Define decision-makers in business technology adoption.
+
+```
+"Target CTOs, tech directors, and innovation leaders at mid-to-large enterprises (500+ employees). They're responsible for technology strategy and vendor selection. They value practical outcomes, measurable results, and proven ROI. They prefer authoritative yet accessible communication and are influenced by industry thought leadership and peer recommendations."
+```
+
+### Community-Focused Audience
+Define community-minded consumers who support local businesses.
+
+```
+"Target community-minded individuals aged 30-55 who prioritize supporting local economy and small businesses. They value authenticity, personal relationships, and community impact. They're more likely to make purchase decisions based on local recommendations and personal connections. They respond to warm, personal messaging and are influenced by real community stories and testimonials."
+```
+
+## How Synthetic Audiences Work
+
+### Campaign Targeting
+- New campaigns leverage audience profiles for precise targeting
+- AI uses audience characteristics to guide targeting recommendations
+- Consistent audience definitions are maintained across all campaigns
+
+### Audience Segmentation
+- Audience profiles define specific customer characteristics
+- Targeting parameters are derived from your audience definitions
+- Campaign reach is optimized based on audience insights
+
+### Creative Development
+- Audience profiles influence creative direction and messaging
+- Content strategies are tailored to audience preferences
+- Creative briefs incorporate audience insights automatically
+
+### Market Adaptation
+- Different audiences can target different market segments
+- Regional profiles adapt to local market characteristics
+- Channel-specific targeting maintains audience consistency
+
+## Configuration Examples
+
+### Multi-Channel Audience
+```json
+{
+  "name": "Premium Lifestyle Audience",
+  "prompt": "Affluent professionals aged 25-45 with household incomes above $100K who value quality and craftsmanship. They prioritize timeless design, sustainability, and authentic experiences. They prefer confident yet approachable communication.",
+  "channels": ["web", "social"],
+  "countries": ["US", "CA", "GB"],
+  "languages": ["en"]
+}
+```
+
+### Region-Specific Audience
+```json
+{
+  "name": "European Quality Enthusiasts",
+  "prompt": "Quality-conscious European consumers aged 30-50 who appreciate traditional craftsmanship, heritage brands, and attention to detail. They value sustainable practices and are willing to pay premium for authentic products.",
+  "countries": ["DE", "FR", "NL", "IT"],
+  "languages": ["de", "fr", "nl", "it"]
+}
+```
+
+## Audience Applications
+
+### Campaign Targeting
+Synthetic audiences directly influence campaign targeting:
+- **Targeting Parameters**: Demographics, interests, and behavioral signals
+- **Audience Definition**: Precise customer characteristics and motivations  
+- **Channel Strategy**: Appropriate channels based on audience preferences
+- **Content Relevance**: Topics and messaging that resonate with target audiences
+
+### Audience Segmentation
+Audiences define precise customer segments:
+- **Demographics**: Age, income, education levels and geographic location
+- **Psychographics**: Values, interests, lifestyle preferences and motivations
+- **Behavioral Patterns**: Purchase behavior, decision-making factors, and engagement preferences
+- **Channel Preferences**: Where target audiences consume content and make decisions
+
+### Creative Targeting
+Audience profiles guide creative development:
+- **Message Resonance**: Content that appeals to specific audience characteristics
+- **Visual Preferences**: Imagery and design choices that align with audience tastes
+- **Content Themes**: Topics and messages that engage the target demographic
+- **Call-to-Action Strategy**: Actions that align with audience behavior patterns and preferences
+
+## Best Practices
+
+### Audience Development
+- **Be specific**: Audiences should include detailed demographic and behavioral characteristics
+- **Know your customers**: Include specific customer insights and preferences
+- **Stay focused**: Ensure all audience elements work together to define a coherent segment
+- **Consider journey stages**: Address different stages of customer awareness and purchase behavior
+
+### Prompt Writing
+- **Include demographic details**: Specific age ranges, income levels, and geographic information
+- **Define behavioral patterns**: Clear guidance on how the audience makes decisions
+- **Specify preferences**: What this audience values, their interests, and motivations
+- **Provide context**: Industry knowledge, competitive preferences, purchase drivers
+
+### Targeting Strategy
+- **Market-specific audiences**: Create different profiles for different regions or segments
+- **Channel adaptation**: Adjust audience characteristics for different media channels
+- **Language localization**: Ensure cultural relevance and appropriate targeting in different markets
+- **Evolution capability**: Build audiences that can evolve with changing market conditions and customer behavior
+
+## Integration with Campaigns
+
+Synthetic Audiences automatically integrate with your campaign workflows:
+
+### Campaign Creation
+- New campaigns inherit applicable audience definitions
+- Audience profiles inform targeting strategy and media placement
+- Targeting consistency is maintained from the start
+
+### Content Strategy
+- All content is tailored to your target audience preferences
+- Creative direction aligns with audience characteristics
+- Consistent audience targeting across all touchpoints
+
+### Ongoing Management
+- Audiences can be updated to reflect changing customer behavior
+- Changes inform future campaign targeting strategies
+- Previous versions are preserved for reference if needed

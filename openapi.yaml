@@ -970,6 +970,70 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /brand-agent-pmps:
+    post:
+      description: Create a Private Marketplace deal with natural language prompt. The backend will
+        intelligently parse the prompt to extract inventory requirements, targeting, and pricing.
+      operationId: create_brand_agent_pmp
+      summary: create brand agent pmp
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - Use this tool when user wants to create a private marketplace deal with natural language
+          prompt
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /brand-agent-standardss:
     post:
       description: Create a new brand safety standards agent for a brand agent. The standards agent uses
@@ -1244,75 +1308,6 @@ paths:
           media product with a targeting strategy
         - Call this when user says 'create', 'make', 'set up', or 'add'
         - Call this when user asks 'show me', 'list', or 'what are my'
-      requestBody:
-        content:
-          application/json:
-            examples:
-              basic:
-                summary: Basic example
-                value: {}
-            schema:
-              properties: {}
-              type: object
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-  /audiences:
-    post:
-      description: Create a new synthetic audience for a brand agent. Synthetic audiences represent target
-        customer or prospect profiles that can be used across multiple campaigns within the same
-        brand agent. Currently supports basic name and description (stub implementation). Requires
-        authentication.
-      operationId: create_audience
-      summary: Create Synthetic Audience
-      tags:
-        - Brand Safety & Targeting
-      x-llm-hints:
-        - Use this tool when user wants to create a new synthetic audience for a brand agent
-        - Call this when user asks 'show me', 'list', or 'what are my'
-      x-migration-notes:
-        amazon: Creates an enhanced Audience with AI modeling
-        dv360: Creates an enhanced Audience List with AI modeling
-        ttd: Creates an enhanced Audience Segment with AI modeling
       requestBody:
         content:
           application/json:
@@ -2583,6 +2578,64 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /dsp-seatss/{id}:
+    get:
+      description: Search for available DSP seats to add to brand agent for PMP creation
+      operationId: get_dsp_seats
+      summary: get dsp seats
+      tags:
+        - System
+      x-llm-hints:
+        - Use this tool when user wants to search for available dsp seats to add to brand agent for
+          pmp creation
+      parameters:
+        - description: Resource identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /campaignss:
     get:
       description: List all campaigns for a specific brand agent (advertiser account). Optionally filter
@@ -2649,6 +2702,57 @@ paths:
       x-llm-hints:
         - Use this tool when user wants to list all creative assets for a specific brand agent
           (advertiser account)
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /brand-agent-pmpss:
+    get:
+      description: List all PMPs for a brand agent with their deal IDs and status
+      operationId: list_brand_agent_pmps
+      summary: list brand agent pmps
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - Use this tool when user wants to list all pmps for a brand agent with their deal ids and
+          status
       responses:
         "200":
           content:
@@ -2956,59 +3060,6 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /audiencess:
-    get:
-      description: List all synthetic audiences for a specific brand agent. Shows audience profiles that
-        can be assigned to campaigns for targeting. These audiences represent customer or prospect
-        profiles for better campaign targeting. Requires authentication.
-      operationId: list_audiences
-      summary: List Synthetic Audiences
-      tags:
-        - Brand Safety & Targeting
-      x-llm-hints:
-        - Use this tool when user wants to list all synthetic audiences for a specific brand agent
-        - Call this when user asks 'show me', 'list', or 'what are my'
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
   /webhooks:
     post:
       description: Register a webhook endpoint to receive real-time campaign event notifications. Supports
@@ -3159,6 +3210,75 @@ paths:
         - Use this tool when user wants to update an existing creative asset's details including
           name, type, url, headline, body text, or call-to-action
         - Call this when user says 'change', 'update', 'modify', or 'edit'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      parameters:
+        - description: Resource identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /brand-agent-pmps/{id}:
+    put:
+      description: Update an existing PMP with new requirements. The backend will parse the new prompt and
+        adjust deal IDs accordingly.
+      operationId: update_brand_agent_pmp
+      summary: update brand agent pmp
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - Use this tool when user wants to update an existing pmp with new requirements
       requestBody:
         content:
           application/json:
