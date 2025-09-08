@@ -1,161 +1,204 @@
 ---
 title: "Scoring"
-description: "Performance index normalization for tactic optimization"
+description: "Three-component scoring system that drives tactic optimization"
 icon: "gauge-high"
 ---
 
-## Our Role in the Measurement Ecosystem
+## The Three Scoring Components
 
-**We sit downstream from measurement processes.**
+**Tactic optimization uses three distinct scores combined with user-defined weights.**
 
-We don't measure whether ads worked. Instead, we normalize measurement data from various sources into a unified performance index that drives budget allocation.
+Instead, you provide normalized outcome scores while Scope3 calculates quality and story affinity scores. The platform uses a weighted formula to determine which tactics get more budget.
 
-## The Performance Index
+## Scoring Algorithm Breakdown
 
-### What We Normalize
+### 1. Quality Score (Scope3-Provided)
 
-We consume measurement outputs from:
-- **Attribution platforms** (Google Analytics, Adobe)
-- **Brand lift studies** (Nielsen, Kantar)
-- **Media Mix Models** (MMM)
-- **Conversion APIs** (Facebook, Google)
-- **Custom measurement systems**
+**Media quality metrics assessed by Scope3:**
+- **Impression quality**: Valid ad serving and visibility
+- **View metrics**: Actual human viewability rates
+- **Attention score**: User engagement and interaction depth
+- **Completion rates**: Video/audio content completion percentages
+- **IVT detection**: Invalid traffic and fraud prevention
 
-### The Unified Scale
+Scale: 0-100 where 100 represents premium media quality.
 
-All measurement data gets normalized to our performance index:
+### 2. Outcome Score (User-Provided)
 
+**Your normalized downstream measurement data:**
+
+You provide scores on the standard scale:
+- **0** = No measurable value
+- **100** = Meets defined objective
+- **1000** = 10x target performance
+
+**What you measure is up to you:**
+- ROAS from attribution platforms
+- Brand lift from research studies
+- Conversion rates from your CRM
+- Any KPI that matters to your business
+
+**Critical**: You define the normalization, not us. We just use your scores.
+
+### 3. Story Affinity Score (Scope3-Provided)
+
+**How well tactics align with your selected brand stories:**
+- Uses the brand stories you've created and selected for the campaign
+- Assesses tactic performance against audience profiles you defined
+- Measures how effectively tactics reach your intended brand narrative
+
+Scale: 0-100 where 100 represents perfect alignment with your brand stories.
+
+<Note>
+Story Affinity requires you to have created and assigned brand stories to your campaign. Without brand stories, this component will be 0.
+</Note>
+
+## The Weighted Formula
+
+**Campaign reward calculation:**
 ```
-0 = No measurable value
-100 = Meets defined objective
-1000 = 10x target performance
+Tactic Reward = (a × Quality Score) + (b × Outcome Score) + (c × Story Affinity Score)
 ```
 
-This scale is **client-agnostic and campaign-dependent**. What these numbers represent varies completely:
-- For one client, 100 might mean 2:1 ROAS
-- For another, 100 might mean 5% brand lift
-- For a third, 100 might mean $50 CPA
+Where `a`, `b`, and `c` are weights you configure (must sum to 1.0).
 
-We don't know or need to know what the scores represent. They're just normalized proxies for optimization.
+### Example Weight Configurations
 
-## How Normalization Works
+**Performance-Focused Campaign** (prioritize conversions)
+```
+Quality Weight: 0.2
+Outcome Weight: 0.7  ← Emphasize your measurement results
+Story Affinity Weight: 0.1
+```
 
-### Step 1: Measurement Collection
-Clients connect their measurement sources. Each source reports performance in its own units:
-- MMM reports incremental sales
-- Attribution reports conversion rates
-- Brand studies report lift percentages
+**Brand-Safe Premium Campaign** (prioritize quality inventory)
+```
+Quality Weight: 0.6  ← Emphasize media quality
+Outcome Weight: 0.2
+Story Affinity Weight: 0.2
+```
 
-### Step 2: Client-Defined Objectives
-The client defines what "success" means:
-- Target ROAS of 3:1
-- Brand awareness lift of 10%
-- CPA under $75
+**Brand Narrative Campaign** (align with brand stories)
+```
+Quality Weight: 0.3
+Outcome Weight: 0.2
+Story Affinity Weight: 0.5  ← Emphasize story alignment
+```
 
-### Step 3: Index Calculation
-We normalize all measurements against objectives:
-- Performance at target = 100
-- Performance at 10x target = 1000
-- No measurable value = 0
+## Outcome Score Window Days
 
-### Step 4: Tactic Scoring
-Each tactic receives a performance index based on its contribution to measured outcomes.
+**Critical for RL Algorithm Performance**
 
-## Source-Agnostic Optimization
+You must specify how many days before your outcome scores are available:
+- **Immediate data** (same day): 0-1 days
+- **Attribution data** (conversion tracking): 1-7 days  
+- **Brand studies** (lift measurement): 7-30 days
+- **MMM data** (incrementality): 30+ days
 
-The beauty of normalization: **we optimize without understanding.**
+**Why this matters:** The RL algorithm won't penalize tactics for "poor performance" before outcome data arrives. Without proper window configuration, tactics get incorrectly downgraded.
 
-A tactic with index 200 gets more budget than one with index 50, regardless of whether those scores represent:
-- ROAS vs brand lift
-- Conversions vs video completions
-- Sales vs site visits
+## Campaign Configuration
 
-The multi-armed bandit doesn't care what's being measured - it just allocates budget to higher-indexed tactics.
+### Setting Up Scoring
 
-## Integration with Tactics
+```javascript
+const campaign = await createCampaign({
+  brandAgentId: "ba_123",
+  name: "Q4 Performance Campaign",
+  prompt: "Target high-value customers with premium inventory",
+  
+  // Configure the three-component scoring
+  scoringWeights: {
+    quality: 0.2,      // 20% media quality
+    outcome: 0.7,      // 70% your measurement results  
+    affinity: 0.1      // 10% brand story alignment
+  },
+  
+  // Tell algorithm when your outcome data arrives
+  outcomeScoreWindowDays: 7,  // Conversion data available after 7 days
+  
+  budget: { total: 50000, currency: "USD" }
+});
+```
+
+### Providing Outcome Scores
+
+```javascript
+// You send normalized scores via your measurement integration
+await updateTacticOutcomeScore({
+  tacticId: "tactic_456",
+  outcomeScore: 150,  // 1.5x your target performance
+  timestamp: "2024-01-15T10:30:00Z"
+});
+```
+
+## How Scores Drive Optimization
 
 ### Discovery Phase
-New tactics start with no score. We allocate test budgets to establish baseline performance.
+- New tactics start with Quality and Affinity scores immediately
+- Outcome scores remain at 0 until your measurement data arrives
+- Budget allocation uses only Quality + Affinity during window period
 
 ### Learning Phase
-As measurement data arrives:
-- Real-time signals update indices quickly
-- Attribution data updates daily
-- Brand studies update weekly/monthly
+- As your outcome scores arrive, they're incorporated into the weighted formula
+- Multi-armed bandit adjusts based on complete scoring picture
+- Tactics with high combined scores get more budget
 
 ### Optimization Phase
-The multi-armed bandit uses performance indices to:
-- **Exploit**: Allocate more budget to high-index tactics
-- **Explore**: Test new tactics that might beat current winners
+- All three components inform budget allocation decisions
+- Your weighting determines which factors matter most
+- Platform optimizes for your specific definition of success
 
-## Measurement Lag Reality
+## Common Weight Strategies
 
-Different measurement sources have different delays:
-
-**Near Real-Time** (minutes to hours)
-- Click tracking
-- Video completions
-- Landing page visits
-
-**Daily** (1-7 days)
-- Conversion tracking
-- Attribution modeling
-- CRM matching
-
-**Weekly/Monthly** (7-30+ days)
-- Brand lift studies
-- MMM updates
-- Offline sales matching
-
-We handle this by maintaining provisional scores that update as more accurate measurement data arrives.
-
-## What We Don't Do
-
-To be absolutely clear:
-
-- **We don't measure ad effectiveness** - measurement providers do
-- **We don't calculate ROAS** - attribution platforms do
-- **We don't determine brand lift** - research companies do
-- **We don't define success** - clients do
-
-We simply normalize whatever measurement data exists into a unified index for optimization.
-
-## API Integration
-
-### View Performance Indices
-
-```javascript
-const tactics = await analyzeTactics({
-  campaignId: "camp_123",
-  analysisType: "efficiency"
-});
-
-// Returns normalized performance indices
-tactics.forEach(tactic => {
-  console.log(`${tactic.name}: ${tactic.performanceIndex}`);
-  console.log(`  Budget allocation: $${tactic.budgetShare}`);
-  // Note: We don't know if index represents ROAS, lift, etc.
-});
+### E-commerce/Performance
+Focus on conversion results:
+```
+Quality: 0.1, Outcome: 0.8, Affinity: 0.1
 ```
 
-### Measurement Source Configuration
-
-```javascript
-// Client connects their measurement
-const source = await addMeasurementSource({
-  brandAgentId: "ba_123",
-  type: "attribution",
-  platform: "google_analytics",
-  // Client defines what "100" means for them
-  targetMetric: "roas",
-  targetValue: 3.5
-});
+### Brand Building
+Balance quality and story alignment:
+```
+Quality: 0.4, Outcome: 0.2, Affinity: 0.4  
 ```
 
-## Key Takeaways
+### Premium/Luxury
+Prioritize quality inventory:
+```
+Quality: 0.6, Outcome: 0.3, Affinity: 0.1
+```
 
-- **We normalize, not measure** - Downstream from measurement providers
-- **Client-agnostic indexing** - 100 means different things to different clients
-- **Source-agnostic optimization** - Budget flows to higher indices regardless of what they represent
-- **Performance proxy** - Indices are just numbers for optimization, not interpretable metrics
-- **Unified scale** - 0 (no value) to 100 (target) to 1000 (10x target)
+### Audience Development
+Test story affinity effectiveness:
+```
+Quality: 0.2, Outcome: 0.3, Affinity: 0.5
+```
+
+## Key Concepts
+
+### You Control What "Success" Means
+
+- **Quality Score**: We assess media quality
+- **Outcome Score**: You define and provide success metrics
+- **Story Affinity**: We measure against your selected brand stories
+- **Weights**: You determine the importance of each component
+
+### Window Days Are Critical
+
+Set `outcomeScoreWindowDays` accurately:
+- Too short = penalize tactics before data arrives
+- Too long = delay optimization decisions
+- Match your actual measurement lag for best results
+
+### Weights Must Sum to 1.0
+
+The platform validates that quality + outcome + affinity weights = 1.0. This ensures consistent scoring across campaigns.
+
+## The Bottom Line
+
+- **Three distinct scoring components** with different data sources
+- **You provide normalized outcome scores** based on your measurement
+- **Weighted formula combines all three** according to your priorities  
+- **Outcome window prevents premature penalization** of tactics
+- **Your weights determine optimization behavior** - not our assumptions

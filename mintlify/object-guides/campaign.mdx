@@ -208,6 +208,118 @@ const summary = await getCampaignSummary({
 // 🔧 Recommendation: Increase budget for high performers
 ```
 
+### ⚖️ Scoring Configuration
+
+**Control how tactics are evaluated and optimized with three-component scoring.**
+
+Campaigns use a weighted formula combining Quality, Outcome, and Story Affinity scores to determine budget allocation. You configure the weights and outcome measurement timing.
+
+<Tabs>
+  <Tab title="Performance-Focused Setup">
+    **Optimize for conversions and outcomes**
+    
+    ```javascript
+    const campaign = await createCampaign({
+      brandAgentId: "ba_123",
+      name: "Q4 Performance Campaign",
+      prompt: "Target high-intent customers for holiday conversions",
+      
+      // Weight outcome scores heavily
+      scoringWeights: {
+        quality: 0.2,       // 20% media quality
+        outcome: 0.7,       // 70% your conversion data
+        affinity: 0.1       // 10% brand story alignment
+      },
+      
+      // Attribution data arrives in 7 days
+      outcomeScoreWindowDays: 7,
+      
+      budget: { total: 100000, currency: "USD" }
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Brand-Safe Premium Setup">
+    **Prioritize quality inventory and brand alignment**
+    
+    ```javascript
+    const campaign = await createCampaign({
+      brandAgentId: "ba_456",
+      name: "Luxury Brand Campaign",
+      prompt: "Associate with premium content and high-quality placements",
+      
+      // Emphasize quality and brand story alignment
+      scoringWeights: {
+        quality: 0.5,       // 50% media quality (premium inventory)
+        outcome: 0.2,       // 20% outcome measurement
+        affinity: 0.3       // 30% brand story alignment
+      },
+      
+      // Brand lift studies take longer
+      outcomeScoreWindowDays: 30,
+      
+      budget: { total: 75000, currency: "USD" }
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Audience Testing Setup">
+    **Test brand story effectiveness**
+    
+    ```javascript
+    const campaign = await createCampaign({
+      brandAgentId: "ba_789",
+      name: "Audience Discovery Campaign",
+      prompt: "Test different audience segments against brand stories",
+      
+      // Emphasize story affinity for learning
+      scoringWeights: {
+        quality: 0.2,       // 20% media quality
+        outcome: 0.3,       // 30% outcome measurement
+        affinity: 0.5       // 50% brand story alignment
+      },
+      
+      // Real-time engagement data
+      outcomeScoreWindowDays: 1,
+      
+      budget: { total: 50000, currency: "USD" }
+    });
+    ```
+  </Tab>
+</Tabs>
+
+#### The Three Scoring Components
+
+**Quality Score** (Scope3-provided)
+- Impression quality, viewability, completion rates
+- IVT detection and brand safety metrics
+- Scale: 0-100 (100 = premium media quality)
+
+**Outcome Score** (You provide)
+- Your normalized measurement data (ROAS, conversions, brand lift)  
+- Scale: 0-1000 (100 = meets target, 1000 = 10x target)
+- You define what the numbers mean
+
+**Story Affinity Score** (Scope3-provided)
+- How well tactics align with your selected brand stories
+- Uses the brand stories you created and assigned
+- Scale: 0-100 (100 = perfect story alignment)
+
+<Note>
+**Weights must sum to 1.0** and determine how much each component influences budget allocation. See the [Scoring Guide](/optimization/scoring) for detailed explanation and weight strategy examples.
+</Note>
+
+#### Outcome Score Window Days
+
+**Critical for RL algorithm performance.** Specify how many days before your outcome measurement data arrives:
+
+- **Immediate data**: 0-1 days (engagement, clicks)
+- **Attribution data**: 1-7 days (conversions, CRM matching) 
+- **Brand studies**: 7-30 days (lift measurement)
+- **MMM data**: 30+ days (incrementality studies)
+
+Without proper window configuration, tactics get incorrectly penalized before your measurement data arrives.
+
 ## Campaign Workflow Examples
 
 ### Complete Campaign Setup

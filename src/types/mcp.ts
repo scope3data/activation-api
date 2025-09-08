@@ -55,7 +55,18 @@ export interface CreateBrandAgentCampaignParams {
   };
 
   name: string;
+
+  // Outcome score measurement timing
+  outcomeScoreWindowDays?: number;
+
   prompt: string;
+
+  // Scoring weights configuration
+  scoringWeights?: {
+    affinity: number; // Weight for brand story affinity score (0-1)
+    outcome: number; // Weight for user-provided outcome score (0-1)
+    quality: number; // Weight for Scope3 media quality score (0-1)
+  };
 }
 
 // Brand Agent Creative MCP parameter types
