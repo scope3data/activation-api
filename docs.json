@@ -32,7 +32,8 @@
             "pages": [
               "mintlify/object-guides/brand-agent",
               "mintlify/object-guides/campaign",
-              "mintlify/object-guides/inventory-option",
+              "mintlify/object-guides/tactic",
+              "mintlify/object-guides/signal",
               "mintlify/object-guides/pmp",
               "mintlify/object-guides/creative",
               "mintlify/object-guides/format"
@@ -44,13 +45,6 @@
               "mintlify/object-guides/brand-story",
               "mintlify/object-guides/brand-standards-agent",
               "mintlify/object-guides/measurement-source"
-            ]
-          },
-          {
-            "group": "🤖 AI-Generated Objects",
-            "pages": [
-              "mintlify/object-guides/tactic",
-              "mintlify/object-guides/signal"
             ]
           },
           {
