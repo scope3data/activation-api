@@ -118,17 +118,17 @@ Algorithm-driven optimization approaches that determine **how** your campaign bu
 
 Each tactic combines:
 - **Signals**: Data inputs for targeting (age, interests, behaviors)
-- **Synthetic Audiences**: AI-generated audience profiles that guide targeting
+- **Brand Stories**: AI-generated audience profiles that guide targeting
 - **Optimization**: ML algorithms that improve performance
 
 ```
 Example Tactic:
 Signals: ["age_25_34", "interest_sports", "device_mobile"]
-Synthetic Audiences: ["performance", "lifestyle"]  
+Brand Stories: ["performance", "lifestyle"]  
 → Targets mobile sports fans 25-34 with performance/lifestyle messaging
 ```
 
-### Signals & Synthetic Audiences
+### Signals & Brand Stories
 
 <Tabs>
   <Tab title="Signals">
@@ -142,7 +142,7 @@ Synthetic Audiences: ["performance", "lifestyle"]
     
     **Usage**: Group by signals in reports to understand which audiences perform best
   </Tab>
-  <Tab title="Synthetic Audiences">
+  <Tab title="Brand Stories">
     **What they are**: AI-generated audience profiles that guide targeting optimization
     
     **Examples**:
@@ -151,7 +151,7 @@ Synthetic Audiences: ["performance", "lifestyle"]
     - `value`: Cost-conscious users motivated by savings
     - `social`: Community-oriented users influenced by social proof
     
-    **Usage**: Group by synthetic audiences to see which AI-generated profiles perform best
+    **Usage**: Group by brand stories to see which AI-generated profiles perform best
   </Tab>
 </Tabs>
 
@@ -312,7 +312,7 @@ Real-time push notifications for campaign events.
   
   <Accordion title="Performance Monitoring">
     - **Set up webhooks**: Get real-time alerts for important events
-    - **Regular analysis**: Use tactic analysis tools to optimize signal/synthetic audience performance  
+    - **Regular analysis**: Use tactic analysis tools to optimize signal/brand story performance  
     - **Data export**: Integrate with your BI systems for deeper analysis
   </Accordion>
 </AccordionGroup>
@@ -337,7 +337,7 @@ graph TD
     A[Get Campaign Summary] --> B{Performance Good?}
     B -->|Yes| C[Export Data for Analysis]
     B -->|No| D[Analyze Tactics] 
-    D --> E[Identify Top Signals/Synthetic Audiences]
+    D --> E[Identify Top Signals/Brand Stories]
     E --> F[Update Campaign Targeting]
     F --> G[Monitor for 48-72h]
     G --> A
