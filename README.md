@@ -1,193 +1,85 @@
-# Scope3 Ad Platform
+# Scope3 Campaign API MCP Server
 
-**The Ad Buying Platform for People & Agents**
+**Model Context Protocol (MCP) server for programmatic advertising campaign management**
 
-🚀 Start Simple, Scale Sophisticated
+This is an MCP server that provides AI agents with tools for creating and managing programmatic advertising campaigns through the Scope3 platform.
 
-Welcome to Scope3 - where campaigns are conversations and complexity is optional.
+## Quick Start
 
-## Quick Start: Your First Campaign
+### Prerequisites
 
-```javascript
-// Step 1: Create your advertiser (brand agent)
-const advertiser = await create_brand_agent({
-  name: "Acme Corp",
-  description: "Sustainable fashion brand",
-});
+- Node.js 22+
+- Scope3 API key ([Get one here](https://app.scope3.com/api-keys))
 
-// Step 2: Add a creative
-const creative = await create_creative({
-  brandAgentId: advertiser.id,
-  name: "Summer Sale Video",
-  type: "video",
-  url: "https://cdn.example.com/summer-sale.mp4",
-});
+### Installation
 
-// Step 3: Launch your campaign
-await create_campaign({
-  brandAgentId: advertiser.id,
-  name: "Summer Sale 2024",
-  prompt: "Reach eco-conscious millennials interested in sustainable fashion",
-  budget: {
-    total: 50000,
-    currency: "USD",
-  },
-  startDate: "2024-06-01",
-  endDate: "2024-08-31",
-  creativeIds: [creative.id],
-});
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
 ```
 
-**That's it. Our built-in optimization handles the rest.**
+The MCP server runs on `http://localhost:3001/mcp` by default.
 
-## Our Philosophy
+### Authentication
 
-### 1. People & Agents, Together
+Include your Scope3 API key in requests:
 
-Your team and AI agents work side-by-side. Humans set strategy, agents execute tactics. Full transparency and control when you want it.
-
-### 2. Allocation, Not Bidding
-
-Unlike traditional DSPs with complex bidding algorithms, we focus on intelligent allocation - distributing your budget across the right inventory mix. Think portfolio management, not auction mechanics.
-
-### 3. Works Alongside Your Stack
-
-Run Scope3 in parallel with your existing platforms. Test new inventory sources, explore emerging channels, or optimize specific campaign types.
-
-## Choose Your Optimization Approach
-
-### 🎯 Built-in Optimization
-
-**Perfect for: Teams seeking efficiency and simplicity**
-
-```javascript
-// We optimize inventory allocation automatically
-await create_campaign({
-  brandAgentId: "ba_123",
-  name: "Brand Awareness Q4",
-  prompt: "Maximize reach for our new product launch",
-  budget: {
-    total: 100000,
-    currency: "USD",
-  },
-  startDate: "2024-10-01",
-  endDate: "2024-12-31",
-  // inventoryManagement defaults to scope3_managed
-});
+```bash
+curl -H "x-scope3-api-key: your_api_key" http://localhost:3001/mcp
 ```
 
-**What we handle:**
+## Development
 
-- Inventory mix optimization
-- Signal selection
-- Budget allocation across publishers
-- Performance-based rebalancing
+### Available Scripts
 
-### 🎛️ Granular Control
+```bash
+# Development with hot reload
+npm run dev
 
-**Perfect for: Teams with specific strategies**
+# Production build
+npm run build
 
-```javascript
-// You control the inventory allocation
-await create_campaign({
-  brandAgentId: "ba_123",
-  name: "Performance Campaign Q4",
-  budget: {
-    total: 100000,
-    currency: "USD",
-  },
-  inventoryManagement: {
-    mode: "user_managed",
-    optimizationGoal: "conversions",
-  },
-});
+# Start production server
+npm start
 
-// Configure your inventory mix
-await create_inventory_option({
-  campaignId: "camp_123",
-  name: "Premium CTV + 1P Data",
-  mediaProductId: "hulu_premium_ctv",
-  targeting: {
-    signalType: "buyer",
-  },
-  budgetAllocation: {
-    amount: 40000,
-    currency: "USD",
-  },
-});
+# Run tests
+npm test
+
+# Run local CI validation (build + lint + test)
+npm run ci:local
+
+# Documentation development
+npm run docs:dev
+
+# Validate documentation links
+npm run docs:validate:links
 ```
 
-## How We're Different
-
-### Allocation vs. Bidding
-
-Traditional DSPs focus on bid optimization - how much to pay for each impression. We focus on allocation optimization - where to spend your budget for maximum impact.
-
-### Inventory as Building Blocks
-
-Think of inventory options as building blocks for your campaign portfolio:
-
-```javascript
-// Build your campaign like a diversified portfolio
-const portfolioApproach = [
-  { name: "Premium CTV + Scope3 signals", allocation: "30%" },
-  { name: "Programmatic display + 1P data", allocation: "40%" },
-  { name: "Contextual targeting premium sites", allocation: "30%" },
-];
-```
-
-## MCP: Built for AI Collaboration
-
-### Natural Language, Real Actions
-
-As an MCP (Model Context Protocol) server, Scope3 is designed for AI agents to work directly with humans:
+### Project Structure
 
 ```
-Human: "Find me premium video inventory under $40 CPM"
-AI Agent: → discover_publisher_products({ formats: ["video"], maxCpm: 40 })
+├── src/                 # MCP server implementation
+├── mintlify/            # User documentation (Mintlify)
+├── docs/                # Developer documentation
+├── scripts/             # Build and validation scripts
+└── openapi.yaml         # Auto-generated API specification
 ```
 
-**Human readable results:** AI agents get structured data, humans get clear insights.
+## MCP Integration
 
-## Available Tools
+This server implements the Model Context Protocol for AI agent integration:
 
-### Brand Agent Management
+### With Claude Desktop
 
-- `create_brand_agent` - Set up advertiser accounts
-- `update_brand_agent` - Modify account settings
-- `list_brand_agents` - View all accounts
-
-### Campaign Management
-
-- `create_campaign` - Launch campaigns with smart defaults
-- `update_campaign` - Modify campaigns and inventory
-- `list_campaigns` - Track campaign performance
-
-### Inventory Control
-
-- `discover_publisher_products` - Find available inventory
-- `create_inventory_option` - Configure custom allocation
-- `adjust_inventory_allocation` - Optimize budget distribution
-- `analyze_inventory_performance` - Get performance insights
-
-### Creative Management
-
-- `create_creative` - Upload creative assets
-- `update_creative` - Modify creative details
-- `list_creatives` - View creative library
-
-[View complete tool documentation →](docs/tools/)
-
-## Getting Started
-
-### For Claude Users
-
-Add this server to your Claude Desktop configuration:
+Add to your `claude_desktop_config.json`:
 
 ```json
 {
   "mcpServers": {
-    "scope3-campaigns": {
+    "scope3-campaign-api": {
       "command": "npm",
       "args": ["start"],
       "cwd": "/path/to/scope3-campaign-api",
@@ -199,97 +91,30 @@ Add this server to your Claude Desktop configuration:
 }
 ```
 
-### For Developers
+### With Other MCP Clients
 
-This is an MCP server implementation that can be integrated with any MCP-compatible client.
-
-#### Development Setup
-
-**Prerequisites**: Node.js 22+
-
-```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Run tests
-npm test
-
-# Run local CI validation
-npm run ci:local
-```
-
-#### Documentation Development
-
-```bash
-# Start documentation development server
-npm run docs:dev
-
-# Check for broken links in documentation
-npm run docs:validate:links
-
-# Full documentation validation (links + OpenAPI)
-npm run docs:validate
-```
-
-**Prerequisites for documentation validation**: Install Mintlify CLI globally:
-
-```bash
-npm install -g mintlify
-```
-
-#### Production Setup
-
-```bash
-# Start the server
-npm start
-```
-
-The server runs on `http://localhost:3001/mcp` by default.
-
-**Authentication**: Include your Scope3 API key in requests:
-
-```bash
-curl -H "x-scope3-api-key: your_api_key" http://localhost:3001/mcp
-```
-
-## Architecture
-
-### Brand Agent Model
-
-```
-BrandAgent (Advertiser/Account)
-  ├── Campaigns (multiple, owned by brand agent)
-  ├── Creatives (multiple, shared across campaigns)
-  ├── Standards (brand safety configuration)
-  ├── SyntheticAudiences (multiple, shared across campaigns)
-  └── MeasurementSources (tracking integrations)
-```
-
-### Inventory Options
-
-Each **Inventory Option** combines:
-
-- **Publisher Media Product** (raw inventory from AdCP)
-- **Targeting Strategy** (signal type + configuration)
-- **Budget Allocation** (amount + pacing)
+Connect to the server endpoint with proper authentication headers.
 
 ## Documentation
 
-- [Complete Tool Reference](docs/tools/)
-- [Architecture Guide](docs/architecture/)
-- [MCP Integration](docs/mcp-integration/)
-- [API Reference](docs/api/)
+**For Users**: Visit the [complete documentation](https://docs.agentic.scope3.com) for API usage, examples, and guides.
+
+**For Developers**: See the `/docs` directory for implementation details.
+
+## Core Capabilities
+
+- **Brand Agent Management** - Create advertiser accounts
+- **Campaign Management** - Launch and optimize campaigns
+- **Creative Management** - Upload and manage ad creatives
+- **Inventory Control** - Configure targeting and budget allocation
+- **Reporting & Analytics** - Campaign performance insights
 
 ## Support
 
-For questions or support:
-
-- [GitHub Issues](https://github.com/anthropics/claude-code/issues)
-- [Documentation](docs/)
+- **API Issues**: Check your API key and server logs
+- **Documentation**: Visit [docs.agentic.scope3.com](https://docs.agentic.scope3.com)
+- **Feature Requests**: Submit GitHub issues
 
 ---
 
-**Built with ❤️ for the future of advertising**
+**Built for AI-powered advertising workflows**

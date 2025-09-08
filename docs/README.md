@@ -42,10 +42,10 @@ Complete documentation for creative management in the Scope3 Campaign API MCP Se
 → [Creative Management Guide - Understanding the Hierarchy](creative-management-guide.md#understanding-the-creative-hierarchy)
 
 **See all creative tools**
-→ [Main Documentation - Creative Management](../CLAUDE.md#creative-management-7-tools---adcp-aligned)
+→ [Main Documentation](../CLAUDE.md)
 
 **Use AI to generate creatives**
-→ [Creative Agents Integration](creative-agents-integration.md#integration-workflow-examples)
+→ [Creative Agents Integration](creative-agents-integration.md#creative-agents-integration)
 
 **Manage creative performance**
 → [Creative Management Guide - Advanced Features](creative-management-guide.md#advanced-features)
@@ -57,15 +57,15 @@ Complete documentation for creative management in the Scope3 Campaign API MCP Se
 
 ### Implementation Guides
 
-- [Technical integration plan](creative-agents-integration.md#technical-implementation-plan)
-- [API changes required](creative-agents-integration.md#api-changes-required)
-- [Type definitions](creative-agents-integration.md#new-type-definitions)
+- [Integration architecture](creative-agents-integration.md#integration-architecture)
+- [Integration points](creative-agents-integration.md#integration-points)
+- [Creative agent overview](creative-agents-integration.md#overview)
 
 ### Architecture
 
 - [Creative agents integration architecture](creative-agents-integration.md#integration-architecture)
 - [AdCP pass-through design](creative-management-guide.md#understanding-the-creative-hierarchy)
-- [Creative/Asset hierarchy](../CLAUDE.md#key-design-principles)
+- [Creative/Asset hierarchy](../CLAUDE.md)
 
 ## 🎨 Creative Management Features
 
@@ -93,7 +93,7 @@ Complete documentation for creative management in the Scope3 Campaign API MCP Se
 - **General Questions**: Use the creative management tools conversationally with Claude
 - **Technical Issues**: Check the [troubleshooting section](creative-management-guide.md#common-questions)
 - **Feature Requests**: Submit via GitHub issues
-- **Integration Support**: Reference the [integration guides](creative-agents-integration.md)
+- **Integration Support**: Reference the [integration guides](creative-agents-integration.md#integration-architecture)
 
 ### Community Resources
 

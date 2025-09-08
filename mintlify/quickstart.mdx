@@ -23,26 +23,55 @@ This guide shows you the complete workflow. Choose your integration method:
 ## Prerequisites
 
 - Scope3 API key ([Get one here](https://app.scope3.com/api-keys))
-- $1,000+ budget (recommended: $10,000+ for meaningful optimization)
 
 <Info>
-**Build with AI**: Want to use this with Claude Desktop or Cursor? Add the MCP endpoint `https://api.agentic.scope3.com/mcp` to your configuration and you're off! Perfect for conversational campaign management.
+**Building Agent-to-Agent Workflows**: This API uses MCP (Model Context Protocol) for agent communication. Integrate it into your Python/Node.js applications to build automated campaign management systems. Consumer agents like Claude Desktop are useful for exploring the API while building your app.
 </Info>
 
 ## Step 1: Authentication
 
+Authentication depends on how you're integrating the API:
+
 <Tabs>
-  <Tab title="API Headers">
+  <Tab title="Agent-to-Agent (Python/Node.js)">
+    **Python MCP Client:**
+    ```python
+    from mcp_client import MCPClient
+    
+    # TODO: Add authentication token here
+    # The exact method for passing auth headers needs to be verified
+    client = MCPClient(
+        'https://api.agentic.scope3.com/mcp',
+        headers={'x-scope3-api-key': 'your-api-key-here'}
+    )
+    
+    # Test authentication
+    result = await client.call_tool('check_auth_status')
+    print(result)  # ✅ Authenticated as user@company.com
+    ```
+    
+    **Node.js MCP Client:**
+    ```javascript
+    const { MCPClient } = require('@modelcontextprotocol/client');
+    
+    // TODO: Add authentication token here
+    // The exact method for passing auth headers needs to be verified
+    const client = new MCPClient('https://api.agentic.scope3.com/mcp', {
+      headers: {
+        'x-scope3-api-key': 'your-api-key-here'
+      }
+    });
+    
+    // Test authentication
+    const result = await client.callTool('check_auth_status');
+    console.log(result); // ✅ Authenticated as user@company.com
+    ```
+  </Tab>
+  <Tab title="Direct HTTP">
     ```bash
     curl -H "x-scope3-api-key: YOUR_API_KEY" \
          -H "Content-Type: application/json" \
          https://api.agentic.scope3.com/mcp
-    ```
-  </Tab>
-  <Tab title="Conversational">
-    ```
-    User: "Check my authentication status"
-    Claude: ✅ Authenticated as user@company.com
     ```
   </Tab>
 </Tabs>
@@ -257,10 +286,10 @@ You've successfully:
 ### 🚀 Advanced Features
 
 <CardGroup cols={2}>
-  <Card title="Reporting Overview" href="/reporting-overview" icon="chart-line">
+  <Card title="Reporting Overview" href="reporting-overview" icon="chart-line">
     Comprehensive guide to all reporting capabilities and use cases
   </Card>
-  <Card title="Webhooks & Alerts" href="/webhooks/overview" icon="bell">
+  <Card title="Webhooks & Alerts" href="integrations/webhooks" icon="bell">
     Set up real-time notifications via Slack, email, or custom endpoints
   </Card>
 </CardGroup>
