@@ -327,12 +327,6 @@ export class CustomSignalsClient {
         throw new Error(`BigQuery configuration invalid: ${errors.join(", ")}`);
       }
 
-      if (!config.enabled) {
-        throw new Error(
-          "BigQuery storage is disabled (USE_BIGQUERY_STORAGE=false)",
-        );
-      }
-
       this.storageService = new SignalStorageService(
         config.projectId,
         config.datasetId,

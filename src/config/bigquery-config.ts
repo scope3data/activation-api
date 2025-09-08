@@ -6,7 +6,6 @@ export interface BigQueryConfig {
   batchSize?: number;
   credentialsPath?: string;
   datasetId: string;
-  enabled?: boolean;
   location: string;
   projectId: string;
   timeout?: number;
@@ -22,7 +21,6 @@ export function getBigQueryConfig(): BigQueryConfig {
       : 500,
     credentialsPath: process.env.GOOGLE_APPLICATION_CREDENTIALS,
     datasetId: process.env.BIGQUERY_SIGNALS_DATASET || "custom_signals",
-    enabled: process.env.USE_BIGQUERY_STORAGE === "true",
     location: process.env.BIGQUERY_LOCATION || "US",
     projectId: process.env.BIGQUERY_PROJECT_ID || "",
     timeout: process.env.BIGQUERY_TIMEOUT_MS
@@ -34,12 +32,6 @@ export function getBigQueryConfig(): BigQueryConfig {
   if (!config.projectId) {
     console.warn(
       "⚠️  BIGQUERY_PROJECT_ID not set - BigQuery operations will fail",
-    );
-  }
-
-  if (!config.enabled) {
-    console.info(
-      "ℹ️  BigQuery storage disabled - set USE_BIGQUERY_STORAGE=true to enable",
     );
   }
 
