@@ -67,6 +67,12 @@ import { exportCampaignDataTool } from "./reporting/export-campaign-data.js";
 import { getCampaignSummaryTool } from "./reporting/get-campaign-summary.js";
 import { provideScoringOutcomesTool } from "./reporting/provide-scoring-outcomes.js";
 import { registerWebhookTool } from "./reporting/register-webhook.js";
+// Custom Signal tools
+import { createCustomSignalTool } from "./signals/create-custom-signal.js";
+import { deleteCustomSignalTool } from "./signals/delete-custom-signal.js";
+import { getCustomSignalTool } from "./signals/get-custom-signal.js";
+import { listCustomSignalsTool } from "./signals/list-custom-signals.js";
+import { updateCustomSignalTool } from "./signals/update-custom-signal.js";
 
 export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   // Authentication and existing agent tools
@@ -151,6 +157,13 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(updateBrandAgentPMPTool(client)); // update_brand_agent_pmp
   server.addTool(listBrandAgentPMPsTool(client)); // list_brand_agent_pmps
 
+  // Custom Signal tools
+  server.addTool(createCustomSignalTool(client)); // create_custom_signal
+  server.addTool(listCustomSignalsTool(client)); // list_custom_signals
+  server.addTool(getCustomSignalTool(client)); // get_custom_signal
+  server.addTool(updateCustomSignalTool(client)); // update_custom_signal
+  server.addTool(deleteCustomSignalTool(client)); // delete_custom_signal
+
   // Product discovery tools
   server.addTool(getProductsTool()); // get_products - calls multiple sales agents via MCP
 };
@@ -183,6 +196,8 @@ export {
   // Brand Agent core tools
   createBrandAgentTool,
   createCampaignTool,
+  // Custom Signal tools
+  createCustomSignalTool,
   createInventoryOptionTool,
   creativeApprovalStatusTool,
   creativeAssignTool,
@@ -197,10 +212,12 @@ export {
   deleteBrandAgentBrandStoryTool,
   deleteBrandAgentStandardsTool,
   deleteBrandAgentTool,
+  deleteCustomSignalTool,
   discoverPublisherProductsTool,
   exportCampaignDataTool,
   getBrandAgentTool,
   getCampaignSummaryTool,
+  getCustomSignalTool,
   getDSPSeatsTool,
   // Product discovery tools
   getProductsTool,
@@ -214,6 +231,7 @@ export {
   listBrandAgentsTool,
   // Format Discovery
   listCreativeFormatsTool,
+  listCustomSignalsTool,
   listInventoryOptionsTool,
   listMeasurementSourcesTool,
   provideScoringOutcomesTool,
@@ -225,4 +243,5 @@ export {
   updateBrandAgentStandardsTool,
   updateBrandAgentTool,
   updateCampaignTool,
+  updateCustomSignalTool,
 };

@@ -65,6 +65,27 @@ Authorization: Bearer YOUR_API_KEY
 
 ### Quick Start Example
 
+**Option 1: Using MCP Tools (Recommended)**
+
+First, define your signal structure with the MCP tools:
+
+```javascript
+// Define the signal structure
+await createCustomSignal({
+  name: "Mobile Sports Fans",
+  key: "maid",
+  description: "Sports fans identified via mobile advertising IDs",
+  clusters: [
+    {"region": "us-east-1"},
+    {"region": "eu-west-1", "gdpr": true}
+  ]
+});
+```
+
+Then upload signal data via the data API (see Data Ingestion Methods below).
+
+**Option 2: Direct API Upload**
+
 Store audience segments for a mobile advertising ID (MAID):
 
 ```bash
@@ -322,7 +343,89 @@ Combine multiple key types for more specific targeting:
 
 ### Signal Definition Management
 
-Create and manage signal metadata with targeting rules:
+Create and manage signal metadata with targeting rules using MCP tools or direct API calls.
+
+#### MCP Tools for Signal Definitions
+
+The Campaign API MCP server provides dedicated tools for managing custom signal definitions:
+
+<Tabs>
+  <Tab title="Create Signal Definition">
+    **Tool**: `create_custom_signal`
+    
+    Define a new custom signal with metadata, key types, and regional clusters:
+    
+    ```javascript
+    await createCustomSignal({
+      name: "UK Premium News Readers",
+      key: "postal_code,domain",
+      description: "Users in affluent UK postal codes visiting premium news sites",
+      clusters: [
+        {"region": "emea-ex-eu", "channel": "ctv"},
+        {"region": "emea-ex-eu", "channel": "web"}
+      ]
+    });
+    ```
+  </Tab>
+  
+  <Tab title="List Signal Definitions">
+    **Tool**: `list_custom_signals`
+    
+    View all defined signals with optional filtering:
+    
+    ```javascript
+    // List all signals
+    await listCustomSignals();
+    
+    // Filter by region
+    await listCustomSignals({ region: "emea-ex-eu" });
+    
+    // Filter by channel
+    await listCustomSignals({ channel: "ctv" });
+    ```
+  </Tab>
+  
+  <Tab title="Get Signal Details">
+    **Tool**: `get_custom_signal`
+    
+    Retrieve complete signal configuration:
+    
+    ```javascript
+    await getCustomSignal({ signalId: "signal_123" });
+    ```
+  </Tab>
+  
+  <Tab title="Update Signal Definition">
+    **Tool**: `update_custom_signal`
+    
+    Modify existing signal metadata or clusters:
+    
+    ```javascript
+    await updateCustomSignal({
+      signalId: "signal_123",
+      name: "Updated Signal Name",
+      description: "Updated description",
+      clusters: [
+        {"region": "eu-west-1", "gdpr": true}
+      ]
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Delete Signal Definition">
+    **Tool**: `delete_custom_signal`
+    
+    Remove signal definition (use with caution):
+    
+    ```javascript
+    await deleteCustomSignal({ signalId: "signal_123" });
+    ```
+  </Tab>
+</Tabs>
+
+#### Direct API Access
+
+You can also create signal definitions directly via REST API:
 
 **POST** `/signal/{signalId}`
 
@@ -337,6 +440,15 @@ Create and manage signal metadata with targeting rules:
   "description": "Users in affluent UK postal codes visiting premium news sites"
 }
 ```
+
+#### Key Types and Validation
+
+The MCP tools automatically validate key types against supported identifiers:
+
+**Single Key Types**: `maid`, `rampid`, `postal_code`, `domain`, `app_bundle`, etc.
+**Composite Key Types**: `postal_code,domain`, `maid,domain`, `lat_long,app_bundle`, etc.
+
+Invalid key types will be rejected with helpful error messages listing valid options.
 
 ### GDPR Compliance
 
@@ -401,7 +513,7 @@ Create and manage signal metadata with targeting rules:
 
 ### Using Custom Signals in Campaigns
 
-Reference your custom signals in campaign prompts:
+After creating signal definitions with the MCP tools, reference your custom signals in campaign prompts:
 
 ```javascript
 const campaign = await createCampaign({

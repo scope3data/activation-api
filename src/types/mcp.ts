@@ -113,6 +113,18 @@ export interface CreateCampaignParams {
   prompt: string;
 }
 
+// Custom Signal Definition MCP parameter types
+export interface CreateCustomSignalParams {
+  clusters: Array<{
+    channel?: string;
+    gdpr?: boolean;
+    region: string;
+  }>;
+  description: string;
+  key: string;
+  name: string;
+}
+
 // Synthetic Audience MCP parameter types (stub)
 export interface CreateSyntheticAudienceParams {
   brandAgentId: string;
@@ -130,6 +142,10 @@ export interface DeleteBrandAgentStandardsParams {
 
 export interface DeleteBrandAgentStoryParams {
   storyId: string;
+}
+
+export interface DeleteCustomSignalParams {
+  signalId: string;
 }
 
 export interface ExportCampaignDataParams {
@@ -176,6 +192,10 @@ export interface GetCampaignSummaryParams {
   verbosity?: "brief" | "detailed" | "executive";
 }
 
+export interface GetCustomSignalParams {
+  signalId: string;
+}
+
 export interface ListBrandAgentCampaignsParams {
   brandAgentId: string;
   status?: string;
@@ -200,6 +220,11 @@ export interface ListBrandAgentStandardsParams {
 // Brand Story Agent MCP parameter types
 export interface ListBrandAgentStoriesParams {
   brandAgentId: string;
+}
+
+export interface ListCustomSignalsParams {
+  channel?: string;
+  region?: string;
 }
 
 export interface ListMeasurementSourcesParams {
@@ -318,6 +343,17 @@ export interface UpdateCampaignParams {
   campaignId: string;
   name?: string;
   prompt: string;
+}
+
+export interface UpdateCustomSignalParams {
+  clusters?: Array<{
+    channel?: string;
+    gdpr?: boolean;
+    region: string;
+  }>;
+  description?: string;
+  name?: string;
+  signalId: string;
 }
 
 export interface UpdateMeasurementSourceParams {
