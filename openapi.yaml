@@ -2460,64 +2460,6 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /amp-agentss/{id}:
-    get:
-      description: Get all agents and their models from Scope3 API. Optionally filter by customer ID or
-        agent name. Requires authentication.
-      operationId: get_amp_agents
-      summary: Get Scope3 AMP Agents
-      tags:
-        - System
-      x-llm-hints:
-        - Use this tool when user wants to get all agents and their models from scope3 api
-      parameters:
-        - description: Resource identifier
-          in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
   /campaign-summarys/{id}:
     get:
       description: Get a natural language summary of campaign performance with insights and

@@ -150,13 +150,6 @@ export interface FastMCPSessionAuth extends Record<string, unknown> {
   userId?: string;
 }
 
-export interface GetAmpAgentsParams {
-  where?: {
-    customerId?: number;
-    name?: string;
-  };
-}
-
 export interface GetBrandAgentParams {
   brandAgentId: string;
 }

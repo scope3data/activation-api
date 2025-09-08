@@ -1,0 +1,262 @@
+---
+title: "Inventory Option"
+description: "Understanding inventory options - manually configured combinations of publisher products and targeting strategies"
+icon: "layer-group"
+---
+
+## Overview
+
+**Inventory Options** are manually configured combinations of publisher media products and targeting strategies. They represent specific ways to buy and target inventory within your campaigns, allowing you to control exactly how your budget is allocated across different placements and audiences.
+
+<Note>
+**User-Managed**: Unlike AI-generated [tactics](/object-guides/tactic), inventory options are created and configured manually. You have direct control over budget allocation, signal configuration, and targeting parameters.
+</Note>
+
+## Inventory Option Components
+
+### Core Elements
+
+Every inventory option combines several key components:
+
+- **Publisher Product**: Specific inventory placement or ad format from a publisher
+- **Targeting Strategy**: Audience parameters, demographics, and behavioral targeting  
+- **Budget Allocation**: Daily spend limits, total budget, and pacing controls
+- **Signal Configuration**: Custom signals and audience segments to apply
+- **Pricing Strategy**: Target CPM, bid floors, and optimization goals
+
+### Configuration Process
+
+```mermaid
+graph LR
+    A[Select Publisher Product] --> B[Configure Targeting]
+    B --> C[Set Budget & Pacing]
+    C --> D[Apply Signals]
+    D --> E[Launch Inventory Option]
+    E --> F[Monitor Performance]
+    F --> G[Adjust Settings]
+    G --> F
+```
+
+## Creating Inventory Options
+
+### Basic Setup
+
+```javascript
+const inventoryOption = await createInventoryOption({
+  brandAgentId: "ba_123",
+  campaignId: "camp_456", 
+  publisherProductId: "pub_789",
+  budgetAllocation: {
+    amount: 5000,
+    currency: "USD",
+    dailyCap: 200,
+    pacing: "even"
+  },
+  targeting: {
+    ageGroups: ["25-34", "35-44"],
+    interests: ["technology", "business"],
+    geoTargeting: {
+      countries: ["US", "CA"],
+      cities: ["New York", "Los Angeles", "Toronto"]
+    }
+  },
+  signalConfiguration: {
+    customSignals: ["high_value_customers", "recent_visitors"],
+    brandStories: ["tech_professionals"]
+  }
+});
+```
+
+### Advanced Configuration
+
+```javascript
+// More complex inventory option with detailed targeting
+const advancedOption = await createInventoryOption({
+  brandAgentId: "ba_123",
+  campaignId: "camp_456",
+  publisherProductId: "pub_premium_video",
+  budgetAllocation: {
+    amount: 10000,
+    currency: "USD", 
+    dailyCap: 500,
+    pacing: "front_loaded",
+    bidStrategy: {
+      targetCPM: 8.50,
+      bidFloor: 6.00,
+      maxBid: 15.00
+    }
+  },
+  targeting: {
+    demographics: {
+      ageGroups: ["25-34", "35-44"],
+      income: ["75k-100k", "100k+"],
+      education: ["college", "graduate"]  
+    },
+    behavioral: {
+      interests: ["luxury_goods", "technology", "travel"],
+      purchaseIntent: ["high"],
+      deviceTypes: ["mobile", "desktop"]
+    },
+    contextual: {
+      contentCategories: ["business", "technology", "lifestyle"],
+      brandSafety: "strict",
+      viewabilityThreshold: 0.7
+    }
+  },
+  signalConfiguration: {
+    customSignals: [
+      "vip_customers",
+      "high_ltv_segments", 
+      "recent_purchasers"
+    ],
+    brandStories: ["luxury_tech_buyers"],
+    thirdPartySignals: [] // Coming soon
+  },
+  optimizationGoals: {
+    primary: "conversions",
+    secondary: "brand_lift",
+    kpi: "roas"
+  }
+});
+```
+
+## Managing Inventory Options
+
+### List Campaign Inventory Options
+
+```javascript
+const options = await listInventoryOptions({
+  campaignId: "camp_123"
+});
+
+// View all configured options
+console.log(`Found ${options.length} inventory options`);
+options.forEach(option => {
+  console.log(`• ${option.name}: $${option.budgetAllocation.amount}`);
+});
+```
+
+### Update Configuration
+
+```javascript
+// Adjust budget allocation based on performance
+const updatedOption = await updateInventoryOption({
+  inventoryOptionId: "inv_789",
+  budgetAllocation: {
+    amount: 7500, // Increased budget
+    dailyCap: 300, // Higher daily cap
+    pacing: "even"
+  },
+  targeting: {
+    // Add new audience segments
+    ageGroups: ["25-34", "35-44", "45-54"],
+    interests: ["technology", "business", "finance"]
+  }
+});
+```
+
+## Performance Monitoring
+
+### Key Metrics
+
+Monitor these essential metrics for each inventory option:
+
+- **Spend Rate**: Daily spend vs. allocated budget
+- **Delivery**: Impression volume and reach metrics  
+- **Efficiency**: CPM performance relative to target
+- **Quality**: Viewability, completion rates, brand safety scores
+- **Outcomes**: Conversions, brand lift, campaign KPI performance
+
+### Performance Analysis
+
+```javascript
+// Analyze inventory option performance
+const performance = await analyzeInventoryPerformance({
+  inventoryOptionId: "inv_123",
+  timeframe: "7d",
+  metrics: ["spend", "impressions", "cpm", "viewability", "conversions"]
+});
+```
+
+### Budget Optimization
+
+```javascript
+// Adjust budget allocation between options
+await adjustInventoryAllocation({
+  campaignId: "camp_123",
+  adjustments: [
+    { inventoryOptionId: "inv_123", newAllocation: 6000 }, // Increase
+    { inventoryOptionId: "inv_456", newAllocation: 3000 }, // Decrease  
+    { inventoryOptionId: "inv_789", newAllocation: 4000 }  // Maintain
+  ]
+});
+```
+
+## Best Practices
+
+### Targeting Strategy
+
+- **Start Broad**: Begin with wider targeting parameters and narrow based on performance
+- **Layer Signals**: Combine multiple custom signals for precise audience targeting
+- **Test Variables**: Create multiple options to test different targeting approaches
+- **Monitor Quality**: Track viewability and brand safety metrics closely
+
+### Budget Management
+
+- **Diversify Allocation**: Spread budget across multiple high-performing options
+- **Set Realistic Caps**: Use daily caps to control spend and prevent over-delivery
+- **Monitor Pacing**: Adjust pacing strategy based on campaign timeline and goals
+- **Reserve Budget**: Keep 10-15% budget for optimization adjustments
+
+### Optimization Workflow
+
+1. **Launch**: Start with conservative budgets and broad targeting
+2. **Monitor**: Track performance metrics daily for first week
+3. **Optimize**: Shift budget to high-performing options
+4. **Refine**: Narrow targeting on successful options
+5. **Scale**: Increase budgets on validated configurations
+
+## Integration with Campaign Strategy
+
+### Relationship to Other Objects
+
+- **Campaigns**: Inventory options execute campaign strategy
+- **Creative**: Options determine where creatives are served  
+- **Brand Stories**: Applied as targeting parameters within options
+- **Signals**: Custom signals refine audience targeting
+- **Tactics**: AI-generated alternatives to manual inventory options
+
+### Strategic Considerations
+
+- **Portfolio Approach**: Create diverse inventory options for risk mitigation  
+- **Performance Comparison**: Compare manual options vs. AI-generated tactics
+- **Learning Application**: Use inventory option learnings to inform overall strategy
+- **Scale Planning**: Design options that can scale with budget increases
+
+## API Reference
+
+<CardGroup cols={2}>
+  <Card title="Create Inventory Option" href="/api-reference/create_inventory_option" icon="plus">
+    **Create New Option**
+    
+    Configure publisher product, targeting, budget, and signals for a new inventory option.
+  </Card>
+  
+  <Card title="List Inventory Options" href="/api-reference/list_inventory_options" icon="list">
+    **View Campaign Options**
+    
+    List all inventory options for a campaign with configuration details and performance.
+  </Card>
+  
+  <Card title="Adjust Allocation" href="/api-reference/adjust_inventory_allocation" icon="scale-balanced">
+    **Optimize Budget**
+    
+    Reallocate budget between inventory options based on performance data.
+  </Card>
+  
+  <Card title="Analyze Performance" href="/api-reference/analyze_inventory_performance" icon="chart-line">
+    **Performance Analysis**
+    
+    Deep dive into inventory option metrics, efficiency, and optimization opportunities.
+  </Card>
+</CardGroup>

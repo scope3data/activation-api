@@ -2,7 +2,6 @@ import type { FastMCP } from "fastmcp";
 
 import type { Scope3ApiClient } from "../client/scope3-client.js";
 
-import { getAmpAgentsTool } from "./agents/get-amp-agents.js";
 // New Creative Management Tools (MCP Orchestration)
 import { assetsAddTool } from "./assets/add.js";
 import { checkAuthTool } from "./auth/check-auth.js";
@@ -69,7 +68,6 @@ import { registerWebhookTool } from "./reporting/register-webhook.js";
 export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   // Authentication and existing agent tools
   server.addTool(checkAuthTool(client));
-  server.addTool(getAmpAgentsTool(client));
 
   // Original campaign tools (kept for backward compatibility)
   server.addTool(createCampaignTool(client));
@@ -194,7 +192,6 @@ export {
   deleteBrandAgentTool,
   discoverPublisherProductsTool,
   exportCampaignDataTool,
-  getAmpAgentsTool,
   getBrandAgentTool,
   getCampaignSummaryTool,
   getDSPSeatsTool,

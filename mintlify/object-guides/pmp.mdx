@@ -1,0 +1,284 @@
+---
+title: "PMP"
+description: "Understanding Private Marketplace deals - direct inventory relationships with premium publishers"
+icon: "handshake"
+---
+
+## Overview
+
+**PMPs (Private Marketplaces)** are direct inventory relationships and deals with premium publishers. They provide access to high-quality inventory at preferred pricing, often with exclusive access to premium placements and first-party audience data.
+
+<Note>
+**Premium Inventory**: PMPs typically offer higher-quality inventory with better viewability, brand safety, and performance compared to open marketplace inventory.
+</Note>
+
+## PMP Benefits
+
+### Quality Advantages
+
+- **Premium Inventory**: Access to high-quality, brand-safe placements
+- **Better Performance**: Higher viewability rates and engagement metrics  
+- **Brand Safety**: Enhanced content controls and publisher vetting
+- **Exclusive Access**: Priority access to limited premium inventory
+
+### Commercial Benefits
+
+- **Preferred Pricing**: Negotiated rates often below open market prices
+- **Volume Discounts**: Better rates for committed spend levels
+- **Payment Terms**: Extended payment terms and flexible arrangements
+- **Performance Guarantees**: SLAs for delivery, viewability, and brand safety
+
+## Managing PMPs
+
+### Creating PMP Relationships
+
+```javascript
+const pmp = await createPMP({
+  brandAgentId: "ba_123",
+  publisherName: "Premium Publisher Network",
+  dealId: "pmp_premium_2024_q1", 
+  dealDetails: {
+    inventoryType: "premium_video",
+    floorPrice: 8.50,
+    currency: "USD",
+    minimumSpend: 10000,
+    dealType: "preferred",
+    startDate: "2024-01-01",
+    endDate: "2024-03-31"
+  },
+  targeting: {
+    geoTargeting: ["US", "CA", "GB"],
+    deviceTypes: ["desktop", "mobile"],
+    contentCategories: ["business", "technology", "lifestyle"]
+  },
+  terms: {
+    paymentTerms: "net_45",
+    viewabilityGuarantee: 0.85,
+    brandSafetyLevel: "strict",
+    frequencyCapSupport: true
+  }
+});
+```
+
+### Listing Available PMPs
+
+```javascript
+const pmps = await listPMPs({
+  brandAgentId: "ba_123",
+  status: "active" // or "pending", "expired", "all"
+});
+
+console.log(`Found ${pmps.length} active PMPs:`);
+pmps.forEach(pmp => {
+  console.log(`• ${pmp.publisherName}: $${pmp.dealDetails.floorPrice} CPM`);
+  console.log(`  Deal: ${pmp.dealId} (expires: ${pmp.dealDetails.endDate})`);
+});
+```
+
+### Updating PMP Terms
+
+```javascript
+// Update PMP deal terms
+const updatedPMP = await updatePMP({
+  pmpId: "pmp_123",
+  dealDetails: {
+    floorPrice: 9.00, // Increased floor
+    minimumSpend: 15000, // Higher commitment
+    endDate: "2024-06-30" // Extended term
+  },
+  targeting: {
+    // Expanded targeting
+    geoTargeting: ["US", "CA", "GB", "AU"],
+    ageGroups: ["25-34", "35-44", "45-54"]
+  }
+});
+```
+
+## DSP Integration
+
+### DSP Seat Management
+
+PMPs often require DSP seat IDs for proper integration:
+
+```javascript
+// Get available DSP seats for PMP setup
+const dspSeats = await getDSPSeats({
+  brandAgentId: "ba_123",
+  dspName: "trade_desk" // or "dv360", "amazon_dsp", etc.
+});
+
+console.log("Available DSP seats:");
+dspSeats.forEach(seat => {
+  console.log(`• ${seat.name}: ${seat.seatId}`);
+});
+```
+
+### PMP Activation
+
+```javascript
+// Activate PMP with DSP seat configuration
+const activatedPMP = await updatePMP({
+  pmpId: "pmp_456",
+  dspIntegration: {
+    dspName: "trade_desk",
+    seatId: "seat_789",
+    dealActivation: {
+      bidStrategy: "fixed_price",
+      budgetAllocation: 25000,
+      startDate: "2024-01-15"
+    }
+  },
+  status: "active"
+});
+```
+
+## PMP Types
+
+### Deal Categories
+
+**Preferred Deals**
+- First look at inventory before open auction
+- Fixed pricing at negotiated rates  
+- No guaranteed volume, but priority access
+
+**Private Auctions**
+- Invitation-only auctions with selected buyers
+- Competitive bidding among invited participants
+- Higher quality than open market
+
+**Guaranteed Deals**
+- Fixed volume and pricing commitments
+- Reserved inventory allocation
+- Performance guarantees and SLAs
+
+### Inventory Types
+
+**Premium Video**
+- High-viewability video placements
+- Brand-safe content environments
+- Connected TV and premium streaming inventory
+
+**Premium Display** 
+- Above-the-fold display placements
+- High-engagement publisher sites
+- Mobile and desktop premium positions
+
+**Audio/Podcast**
+- Premium podcast advertising inventory
+- Music streaming platform placements
+- High-attention audio environments
+
+## Performance Monitoring
+
+### Key PMP Metrics
+
+- **Delivery Rate**: Actual spend vs. committed minimums
+- **CPM Performance**: Actual CPM vs. floor pricing
+- **Viewability**: Measured viewability vs. guaranteed thresholds
+- **Brand Safety**: Content categorization and safety scores
+- **Audience Quality**: Engagement and conversion metrics
+
+### PMP Optimization
+
+```javascript
+// Monitor PMP performance and adjust strategy
+const pmpPerformance = await analyzePMPPerformance({
+  pmpId: "pmp_123",
+  timeframe: "30d",
+  metrics: [
+    "delivery_rate",
+    "average_cpm", 
+    "viewability_rate",
+    "brand_safety_score",
+    "conversion_rate"
+  ]
+});
+
+// Optimize based on performance
+if (pmpPerformance.viewability_rate > 0.90) {
+  // High-performing PMP - increase allocation
+  await adjustPMPBudget({
+    pmpId: "pmp_123",
+    newBudgetAllocation: 35000
+  });
+}
+```
+
+## Integration with Campaign Strategy
+
+### PMP in Campaign Planning
+
+```javascript
+// Create campaign with PMP inventory preference
+const campaign = await createCampaign({
+  brandAgentId: "ba_123",
+  name: "Premium Brand Campaign",
+  inventoryStrategy: {
+    preferredPMPs: ["pmp_123", "pmp_456"],
+    fallbackToOpenMarket: true,
+    pmpBudgetAllocation: 0.70 // 70% of budget to PMPs
+  },
+  qualityThresholds: {
+    minimumViewability: 0.80,
+    brandSafetyLevel: "strict",
+    premiumInventoryPreference: true
+  }
+});
+```
+
+### PMP vs Open Market Strategy
+
+- **Use PMPs for**: Brand awareness, premium positioning, high-value audiences
+- **Use Open Market for**: Scale, cost efficiency, broad reach campaigns
+- **Hybrid Approach**: Combine PMPs for quality with open market for volume
+
+## Best Practices
+
+### Deal Negotiation
+
+- **Volume Commitments**: Negotiate based on realistic spend forecasts
+- **Performance Guarantees**: Include viewability and brand safety SLAs
+- **Flexible Terms**: Build in adjustment mechanisms for performance issues
+- **Renewal Options**: Secure favorable renewal terms for successful deals
+
+### Portfolio Management
+
+- **Diversify Publishers**: Don't over-rely on single publisher relationships
+- **Monitor Performance**: Regular review of PMP vs. open market performance
+- **Budget Allocation**: Balance PMP commitments with campaign flexibility
+- **Seasonal Planning**: Account for seasonal inventory pricing and availability
+
+### Technical Integration
+
+- **DSP Setup**: Ensure proper DSP seat configuration and deal activation
+- **Targeting Alignment**: Match PMP capabilities with campaign targeting needs
+- **Creative Specs**: Verify creative specifications match PMP requirements
+- **Measurement Integration**: Connect PMP performance to overall campaign metrics
+
+## API Reference
+
+<CardGroup cols={2}>
+  <Card title="Create PMP" href="/api-reference/create_brand_agent_pmp" icon="handshake">
+    **Establish PMP Deal**
+    
+    Create new private marketplace relationship with publisher terms and conditions.
+  </Card>
+  
+  <Card title="List PMPs" href="/api-reference/list_brand_agent_pmps" icon="list">
+    **View Active Deals**
+    
+    List all PMP deals for a brand agent with status and performance metrics.
+  </Card>
+  
+  <Card title="Update PMP" href="/api-reference/update_brand_agent_pmp" icon="pencil">
+    **Modify Deal Terms**
+    
+    Update PMP pricing, targeting, budget allocation, and performance requirements.
+  </Card>
+  
+  <Card title="DSP Seats" href="/api-reference/get_dsp_seats" icon="gear">
+    **DSP Integration**
+    
+    Manage DSP seat IDs and integration requirements for PMP activation.
+  </Card>
+</CardGroup>
