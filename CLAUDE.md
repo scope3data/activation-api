@@ -89,6 +89,27 @@ All MCP tools should follow these patterns:
 - Alt text on all images
 - Relative paths for internal links
 
+### MCP Endpoint Guidelines
+
+**CRITICAL: There are TWO different MCP endpoints with different purposes:**
+
+1. **Documentation MCP Server**: `https://docs.agentic.scope3.com/mcp`
+   - For interactive documentation and learning experiences
+   - Use in tutorials, examples, and "try this out" scenarios
+   - Provides demo tools and educational content
+   - Safe for public examples and screenshots
+
+2. **Production API MCP Server**: `https://api.agentic.scope3.com/mcp`
+   - For actual campaign management and production use
+   - Use in setup instructions, configuration examples
+   - Requires proper authentication and API keys
+   - Used for real campaign operations
+
+**When to use which:**
+
+- **Documentation endpoint**: Tutorial examples, demo scenarios, learning content
+- **API endpoint**: Production setup guides, real configuration instructions, actual usage
+
 ### Documentation Don'ts
 
 - Skip frontmatter on any MDX file
@@ -97,6 +118,7 @@ All MCP tools should follow these patterns:
 - Make assumptions - always ask for clarification
 - Duplicate API reference content (use OpenAPI auto-generation)
 - Create excessive navigation depth
+- **Confuse the two MCP endpoints** - always use the right one for the context
 
 ## Git Workflow
 
