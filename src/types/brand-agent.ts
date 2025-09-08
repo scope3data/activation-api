@@ -3,6 +3,16 @@
 import type { InventoryManagement } from "./inventory-options.js";
 import type { CampaignAlert } from "./reporting.js";
 
+// Shared Agent Model type
+export interface AgentModel {
+  createdAt: Date;
+  id: string;
+  name: string;
+  prompt: string;
+  status: "CLASSIFYING" | "FALLBACK" | "PRIMARY" | "STAGING";
+  updatedAt: Date;
+}
+
 export interface BrandAgent {
   // Shared marketing configuration
   advertiserDomains: string[]; // Domains where users will be sent from all campaigns/creatives
@@ -212,11 +222,65 @@ export interface BrandStandards {
   updatedAt: Date;
 }
 
+// Brand Standards Agent types (agent-based standards using models)
+export interface BrandStandardsAgent {
+  brands: string[];
+  channels: string[];
+  countries: string[];
+  createdAt: Date;
+  id: string;
+  languages: string[];
+  models: AgentModel[];
+  name: string;
+  updatedAt: Date;
+}
+
+export interface BrandStandardsAgentInput {
+  brandAgentId: string;
+  brands?: string[];
+  channelCodes?: string[];
+  countryCodes?: string[];
+  languages?: string[];
+  name: string;
+  prompt: string;
+}
+
+export interface BrandStandardsAgentsData {
+  brandStandardsAgents: BrandStandardsAgent[];
+}
+
 export interface BrandStandardsInput {
   contentCategories?: string[];
   domainAllowlist?: string[];
   domainBlocklist?: string[];
   keywordFilters?: string[];
+}
+
+// Brand Story Agent types (agent-based stories using models)
+export interface BrandStoryAgent {
+  brands: string[];
+  channels: string[];
+  countries: string[];
+  createdAt: Date;
+  id: string;
+  languages: string[];
+  models: AgentModel[];
+  name: string;
+  updatedAt: Date;
+}
+
+export interface BrandStoryAgentInput {
+  brandAgentId: string;
+  brands?: string[];
+  channelCodes?: string[];
+  countryCodes?: string[];
+  languages?: string[];
+  name: string;
+  prompt: string;
+}
+
+export interface BrandStoryAgentsData {
+  brandStoryAgents: BrandStoryAgent[];
 }
 
 // Measurement Source types (owned by brand agent) - stub for now

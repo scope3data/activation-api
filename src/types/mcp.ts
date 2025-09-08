@@ -76,6 +76,26 @@ export interface CreateBrandAgentParams {
   name: string;
 }
 
+export interface CreateBrandAgentStandardsParams {
+  brandAgentId: string;
+  brands?: string[];
+  channels?: string[];
+  countries?: string[];
+  languages?: string[];
+  name: string;
+  prompt: string;
+}
+
+export interface CreateBrandAgentStoryParams {
+  brandAgentId: string;
+  brands?: string[];
+  channels?: string[];
+  countries?: string[];
+  languages?: string[];
+  name: string;
+  prompt: string;
+}
+
 // Tool parameter interfaces
 export interface CreateCampaignParams {
   name: string;
@@ -91,6 +111,14 @@ export interface CreateSyntheticAudienceParams {
 
 export interface DeleteBrandAgentParams {
   brandAgentId: string;
+}
+
+export interface DeleteBrandAgentStandardsParams {
+  standardsId: string;
+}
+
+export interface DeleteBrandAgentStoryParams {
+  storyId: string;
 }
 
 export interface ExportCampaignDataParams {
@@ -133,10 +161,6 @@ export interface GetBrandAgentParams {
   brandAgentId: string;
 }
 
-export interface GetBrandStandardsParams {
-  brandAgentId: string;
-}
-
 // Reporting MCP parameter types
 export interface GetCampaignSummaryParams {
   campaignId: string;
@@ -162,6 +186,16 @@ export interface ListBrandAgentsParams {
     customerId?: number;
     name?: string;
   };
+}
+
+// Brand Standards Agent MCP parameter types
+export interface ListBrandAgentStandardsParams {
+  brandAgentId: string;
+}
+
+// Brand Story Agent MCP parameter types
+export interface ListBrandAgentStoriesParams {
+  brandAgentId: string;
 }
 
 export interface ListMeasurementSourcesParams {
@@ -211,15 +245,6 @@ export interface RegisterWebhookParams {
   };
 }
 
-// Brand Standards MCP parameter types
-export interface SetBrandStandardsParams {
-  brandAgentId: string;
-  contentCategories?: string[];
-  domainAllowlist?: string[];
-  domainBlocklist?: string[];
-  keywordFilters?: string[];
-}
-
 // Response interface for better typing (tools return JSON strings for Claude Desktop compatibility)
 export interface ToolResponse {
   data?: Record<string, unknown>;
@@ -259,6 +284,18 @@ export interface UpdateBrandAgentParams {
   brandAgentId: string;
   description?: string;
   name?: string;
+}
+
+export interface UpdateBrandAgentStandardsParams {
+  name?: string;
+  prompt: string;
+  standardsId: string;
+}
+
+export interface UpdateBrandAgentStoryParams {
+  name?: string;
+  prompt: string;
+  storyId: string;
 }
 
 export interface UpdateCampaignParams {
