@@ -5,10 +5,10 @@
 export interface AnalyzeTacticsParams {
   analysisType:
     | "attribution"
+    | "brand_stories"
     | "efficiency"
     | "optimization"
-    | "signals"
-    | "stories";
+    | "signals";
   campaignId: string;
   compareSignals?: boolean;
   compareStories?: boolean;
@@ -300,10 +300,10 @@ export interface StoryPerformanceMetrics {
 export interface TacticAnalysisParams {
   analysisType:
     | "attribution"
+    | "brand_stories"
     | "efficiency"
     | "optimization"
-    | "signals"
-    | "stories";
+    | "signals";
   campaignId: string;
   compareSignals?: boolean; // Compare signal effectiveness
   compareStories?: boolean; // Compare story performance

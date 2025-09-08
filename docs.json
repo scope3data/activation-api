@@ -16,24 +16,45 @@
         "groups": [
           {
             "group": "Get Started",
+            "icon": "rocket",
             "pages": ["mintlify/quickstart", "mintlify/concepts"]
           },
           {
-            "group": "📦 Core Objects",
+            "group": "🌟 Features",
+            "pages": [
+              "mintlify/features/media-quality",
+              "mintlify/features/publisher-integration",
+              "mintlify/features/built-for-agents"
+            ]
+          },
+          {
+            "group": "📦 Object Guides",
             "pages": [
               "mintlify/object-guides/brand-agent",
               "mintlify/object-guides/campaign",
-              "mintlify/object-guides/creative",
-              "mintlify/object-guides/format",
+              "mintlify/object-guides/tactic",
+              "mintlify/object-guides/signal",
+              "mintlify/object-guides/brand-story",
               "mintlify/object-guides/brand-standards-agent",
-              "mintlify/object-guides/brand-synthetic-audience"
+              "mintlify/object-guides/pmp",
+              "mintlify/object-guides/creative",
+              "mintlify/object-guides/format"
+            ]
+          },
+          {
+            "group": "🔧 Optimization",
+            "pages": [
+              "mintlify/optimization/scoring",
+              "mintlify/optimization/scope3-algorithms",
+              "mintlify/optimization/custom-algorithms"
             ]
           },
           {
             "group": "🔌 Integrations",
             "pages": [
               "mintlify/integrations/webhooks",
-              "mintlify/integrations/creative-agents"
+              "mintlify/integrations/creative-agents",
+              "mintlify/integrations/custom-signals-platform"
             ]
           },
           {

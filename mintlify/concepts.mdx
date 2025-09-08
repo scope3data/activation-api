@@ -8,7 +8,54 @@ icon: "lightbulb"
 
 The Scope3 Campaign API is built around a **Brand Agent** architecture that mirrors how programmatic advertising actually works in the industry.
 
-<img src="/images/architecture-diagram.svg" alt="API Architecture" />
+```mermaid
+graph TD
+    %% User/Agent Layer
+    A[AI Agent/User] --> B[MCP Interface]
+    C[Direct API] --> D[Campaign API]
+    B --> D
+    
+    %% Core Architecture
+    D --> E[Brand Agent]
+    E --> F[Campaigns]
+    E --> G[Creatives]
+    E --> H[Audiences] 
+    E --> I[Brand Standards]
+    
+    %% Campaign Execution
+    F --> J[Tactics]
+    G --> J
+    H --> J
+    
+    %% Signal Processing
+    J --> K[Signal Processing]
+    K --> L[Scope3 Signals<br/>Media Quality]
+    K --> M[Custom Signals<br/>First-Party Data]
+    K --> N[Third-Party Signals<br/>External Data]
+    
+    %% Optimization & Serving
+    K --> O[AI Optimization<br/>Engine]
+    O --> P[Inventory Selection]
+    P --> Q[Ad Serving]
+    
+    %% Performance Loop
+    Q --> R[Performance Data]
+    R --> S[Analytics & Reporting]
+    R --> O
+    S --> A
+    S --> C
+    
+    %% Styling
+    classDef userLayer fill:#e1f5fe
+    classDef coreLayer fill:#f3e5f5
+    classDef executionLayer fill:#e8f5e8
+    classDef dataLayer fill:#fff3e0
+    
+    class A,B,C userLayer
+    class D,E,F,G,H,I coreLayer
+    class J,K,O,P,Q executionLayer
+    class L,M,N,R,S dataLayer
+```
 
 ### Why Brand Agents?
 
@@ -71,17 +118,17 @@ Algorithm-driven optimization approaches that determine **how** your campaign bu
 
 Each tactic combines:
 - **Signals**: Data inputs for targeting (age, interests, behaviors)
-- **Stories**: Narrative contexts that guide messaging
+- **Brand Stories**: AI-generated audience profiles that guide targeting
 - **Optimization**: ML algorithms that improve performance
 
 ```
 Example Tactic:
 Signals: ["age_25_34", "interest_sports", "device_mobile"]
-Stories: ["performance", "lifestyle"]  
+Brand Stories: ["performance", "lifestyle"]  
 → Targets mobile sports fans 25-34 with performance/lifestyle messaging
 ```
 
-### Signals & Stories
+### Signals & Brand Stories
 
 <Tabs>
   <Tab title="Signals">
@@ -95,16 +142,16 @@ Stories: ["performance", "lifestyle"]
     
     **Usage**: Group by signals in reports to understand which audiences perform best
   </Tab>
-  <Tab title="Stories">
-    **What they are**: Narrative frameworks that guide creative messaging
+  <Tab title="Brand Stories">
+    **What they are**: AI-generated audience profiles that guide targeting optimization
     
     **Examples**:
-    - `performance`: Focus on product benefits and features
-    - `lifestyle`: Emphasize emotional connection and identity
-    - `urgency`: Create time-sensitive purchase motivation  
-    - `social_proof`: Highlight popularity and testimonials
+    - `performance`: Results-driven users focused on product benefits
+    - `lifestyle`: Experience-seeking users emphasizing identity
+    - `value`: Cost-conscious users motivated by savings
+    - `social`: Community-oriented users influenced by social proof
     
-    **Usage**: Group by stories to see which messaging themes resonate
+    **Usage**: Group by brand stories to see which AI-generated profiles perform best
   </Tab>
 </Tabs>
 
@@ -265,7 +312,7 @@ Real-time push notifications for campaign events.
   
   <Accordion title="Performance Monitoring">
     - **Set up webhooks**: Get real-time alerts for important events
-    - **Regular analysis**: Use tactic analysis tools to optimize signal/story performance  
+    - **Regular analysis**: Use tactic analysis tools to optimize signal/brand story performance  
     - **Data export**: Integrate with your BI systems for deeper analysis
   </Accordion>
 </AccordionGroup>
@@ -290,7 +337,7 @@ graph TD
     A[Get Campaign Summary] --> B{Performance Good?}
     B -->|Yes| C[Export Data for Analysis]
     B -->|No| D[Analyze Tactics] 
-    D --> E[Identify Top Signals/Stories]
+    D --> E[Identify Top Signals/Brand Stories]
     E --> F[Update Campaign Targeting]
     F --> G[Monitor for 48-72h]
     G --> A

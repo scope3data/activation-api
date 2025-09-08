@@ -9,19 +9,17 @@ import {
   createMCPResponse,
 } from "../../../utils/error-handling.js";
 
-export const createBrandAgentSyntheticAudienceTool = (
-  client: Scope3ApiClient,
-) => ({
+export const createBrandAgentBrandStoryTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "audience-management",
     dangerLevel: "low",
     openWorldHint: true,
     readOnlyHint: false,
-    title: "Create Brand Agent Synthetic Audience",
+    title: "Create Brand Agent Brand Story",
   },
 
   description:
-    "Create a new synthetic audience agent for a brand agent. The synthetic audience agent uses AI to define target audience profiles, demographics, and behavioral characteristics based on a natural language prompt. You can describe your target audience, their interests, preferences, and behaviors through conversational prompts. The agent will automatically inform campaign targeting within the brand agent. Requires authentication.",
+    "Create a new brand story for a brand agent. Brand stories are AI-powered target audience definitions that use natural language prompts to define audience profiles, demographics, and behavioral characteristics. You can describe your target audience, their interests, preferences, and behaviors through conversational prompts. The brand story will automatically inform campaign targeting within the brand agent. Requires authentication.",
 
   execute: async (
     args: {
@@ -72,24 +70,24 @@ export const createBrandAgentSyntheticAudienceTool = (
         prompt: args.prompt,
       };
 
-      const syntheticAudience = await client.createBrandAgentSyntheticAudience(
+      const brandStory = await client.createBrandAgentSyntheticAudience(
         apiKey,
         input,
       );
 
-      let summary = `✅ **Synthetic Audience Created Successfully!**\n\n`;
+      let summary = `✅ **Brand Story Created Successfully!**\n\n`;
       summary += `**Brand Agent:** ${brandAgentName} (${args.brandAgentId})\n`;
-      summary += `**Synthetic Audience:** ${syntheticAudience.name}\n`;
-      summary += `**Audience ID:** ${syntheticAudience.id}\n`;
-      summary += `**Created:** ${new Date(syntheticAudience.createdAt).toLocaleString()}\n\n`;
+      summary += `**Brand Story:** ${brandStory.name}\n`;
+      summary += `**Story ID:** ${brandStory.id}\n`;
+      summary += `**Created:** ${new Date(brandStory.createdAt).toLocaleString()}\n\n`;
 
       summary += `🎯 **Targeting Configuration:**\n`;
-      summary += `• **Countries:** ${syntheticAudience.countries.length > 0 ? syntheticAudience.countries.join(", ") : "All countries"}\n`;
-      summary += `• **Channels:** ${syntheticAudience.channels.length > 0 ? syntheticAudience.channels.join(", ") : "All channels"}\n`;
-      summary += `• **Languages:** ${syntheticAudience.languages.length > 0 ? syntheticAudience.languages.join(", ") : "All languages"}\n`;
-      summary += `• **Brands:** ${syntheticAudience.brands.length > 0 ? syntheticAudience.brands.join(", ") : "All brands"}\n\n`;
+      summary += `• **Countries:** ${brandStory.countries.length > 0 ? brandStory.countries.join(", ") : "All countries"}\n`;
+      summary += `• **Channels:** ${brandStory.channels.length > 0 ? brandStory.channels.join(", ") : "All channels"}\n`;
+      summary += `• **Languages:** ${brandStory.languages.length > 0 ? brandStory.languages.join(", ") : "All languages"}\n`;
+      summary += `• **Brands:** ${brandStory.brands.length > 0 ? brandStory.brands.join(", ") : "All brands"}\n\n`;
 
-      summary += `👥 **Audience Definition Prompt:**\n`;
+      summary += `📖 **Brand Story Prompt:**\n`;
       summary += `"${args.prompt}"\n\n`;
 
       summary += `📋 **What Happens Next:**\n`;
@@ -98,41 +96,38 @@ export const createBrandAgentSyntheticAudienceTool = (
       summary += `• All campaigns in this brand agent can leverage this audience definition\n`;
       summary += `• New campaigns will consider this audience profile in strategy development\n\n`;
 
-      summary += `🎨 **Audience Applications:**\n`;
+      summary += `🎨 **Brand Story Applications:**\n`;
       summary += `• **Campaign Targeting:** Inform campaign audience selection\n`;
       summary += `• **Campaign Strategy:** Guide campaign messaging and positioning\n`;
       summary += `• **Content Creation:** Influence creative direction and tone\n`;
       summary += `• **Market Segmentation:** Help identify relevant customer segments\n\n`;
 
       summary += `🔧 **Management:**\n`;
-      summary += `• Use \`update_brand_agent_synthetic_audience\` to refine the audience definition\n`;
-      summary += `• Use \`list_brand_agent_synthetic_audiences\` to see all configured audiences\n`;
-      summary += `• Use \`delete_brand_agent_synthetic_audience\` to archive this agent\n\n`;
+      summary += `• Use \`update_brand_agent_brand_story\` to refine the brand story definition\n`;
+      summary += `• Use \`list_brand_agent_brand_stories\` to see all configured brand stories\n`;
+      summary += `• Use \`delete_brand_agent_brand_story\` to archive this story\n\n`;
 
-      summary += `💡 **Pro Tip:** You can create multiple synthetic audiences for different market segments, demographics, or behavioral profiles within the same brand agent.`;
+      summary += `💡 **Pro Tip:** You can create multiple brand stories for different market segments, demographics, or behavioral profiles within the same brand agent.`;
 
       return createMCPResponse({
         message: summary,
         success: true,
       });
     } catch (error) {
-      return createErrorResponse(
-        "Failed to create brand synthetic audience",
-        error,
-      );
+      return createErrorResponse("Failed to create brand story", error);
     }
   },
 
-  name: "create_brand_agent_synthetic_audience",
+  name: "create_brand_agent_brand_story",
   parameters: z.object({
     brandAgentId: z
       .string()
-      .describe("ID of the brand agent to create a synthetic audience for"),
+      .describe("ID of the brand agent to create a brand story for"),
     brands: z
       .array(z.string())
       .optional()
       .describe(
-        "List of specific brands this synthetic audience applies to (leave empty for all brands)",
+        "List of specific brands this brand story applies to (leave empty for all brands)",
       ),
     channels: z
       .array(z.string())
@@ -151,12 +146,12 @@ export const createBrandAgentSyntheticAudienceTool = (
     name: z
       .string()
       .describe(
-        "Name for the synthetic audience (e.g., 'Tech Enthusiasts', 'Luxury Shoppers')",
+        "Name for the brand story (e.g., 'Tech Enthusiasts', 'Luxury Shoppers')",
       ),
     prompt: z
       .string()
       .describe(
-        "Natural language prompt defining the target audience profile, demographics, and behavioral characteristics. Describe your target audience, their interests, preferences, behaviors, and motivations.",
+        "Natural language prompt defining the target audience profile, demographics, and behavioral characteristics for this brand story. Describe your target audience, their interests, preferences, behaviors, and motivations.",
       ),
   }),
 });

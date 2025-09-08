@@ -62,7 +62,9 @@ export const createBrandAgentCampaignTool = (client: Scope3ApiClient) => ({
         creativeIds: args.creativeIds || [],
         inventoryManagement: args.inventoryManagement,
         name: args.name,
+        outcomeScoreWindowDays: args.outcomeScoreWindowDays,
         prompt: args.prompt,
+        scoringWeights: args.scoringWeights,
       };
 
       const campaign = await client.createBrandAgentCampaign(
@@ -140,6 +142,22 @@ export const createBrandAgentCampaignTool = (client: Scope3ApiClient) => ({
         });
       } else {
         summary += `\n💡 **No audiences assigned.** Consider creating synthetic audiences for better targeting.\n`;
+      }
+
+      // Show scoring configuration
+      if (campaign.scoringWeights) {
+        summary += `\n**⚖️ Scoring Configuration:**\n`;
+        summary += `• **Quality Weight:** ${(campaign.scoringWeights.quality * 100).toFixed(0)}% (Scope3 media quality assessment)\n`;
+        summary += `• **Outcome Weight:** ${(campaign.scoringWeights.outcome * 100).toFixed(0)}% (Your measurement data)\n`;
+        summary += `• **Affinity Weight:** ${(campaign.scoringWeights.affinity * 100).toFixed(0)}% (Brand story alignment)\n`;
+
+        if (campaign.outcomeScoreWindowDays !== undefined) {
+          summary += `• **Outcome Window:** ${campaign.outcomeScoreWindowDays} days (measurement data lag)\n`;
+        }
+      } else if (campaign.outcomeScoreWindowDays !== undefined) {
+        summary += `\n**⚖️ Scoring Configuration:**\n`;
+        summary += `• **Weights:** Default scoring weights (balanced optimization)\n`;
+        summary += `• **Outcome Window:** ${campaign.outcomeScoreWindowDays} days (measurement data lag)\n`;
       }
 
       summary += `\n**Next Steps:**\n`;
@@ -268,10 +286,51 @@ export const createBrandAgentCampaignTool = (client: Scope3ApiClient) => ({
       ),
 
     name: z.string().describe("Name of the campaign"),
+
+    // Outcome score measurement timing
+    outcomeScoreWindowDays: z
+      .number()
+      .min(0)
+      .max(365)
+      .optional()
+      .describe(
+        "Days before outcome measurement data arrives. Critical for RL algorithm - prevents penalizing tactics before data is available. Common values: 1-7 days (attribution), 7-30 days (brand studies), 30+ days (MMM)",
+      ),
+
     prompt: z
       .string()
       .describe(
         "Natural language description of campaign objectives and strategy",
+      ),
+
+    // Scoring weights configuration
+    scoringWeights: z
+      .object({
+        affinity: z
+          .number()
+          .min(0)
+          .max(1)
+          .describe(
+            "Weight for brand story affinity score (0-1). How well tactics align with selected brand stories",
+          ),
+        outcome: z
+          .number()
+          .min(0)
+          .max(1)
+          .describe(
+            "Weight for user-provided outcome score (0-1). Your normalized measurement data (ROAS, conversions, etc.)",
+          ),
+        quality: z
+          .number()
+          .min(0)
+          .max(1)
+          .describe(
+            "Weight for Scope3 media quality score (0-1). Impression quality, viewability, IVT detection",
+          ),
+      })
+      .optional()
+      .describe(
+        "Optional scoring weights configuration. Determines how quality, outcome, and affinity scores are combined for tactic optimization",
       ),
   }),
 });

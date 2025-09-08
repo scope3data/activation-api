@@ -1,0 +1,163 @@
+---
+title: "Tactic"
+description: "Targeting plus inventory combinations that drive campaign performance"
+icon: "crosshairs"
+---
+
+## The Core Equation
+
+**Tactics = Targeting + Inventory**
+
+Every tactic is a bet on a specific combination performing well. The platform continuously discovers, tests, and optimizes these bets using a multi-armed bandit approach.
+
+## Campaign Modes
+
+Two fundamentally different approaches:
+
+### BYOT (Bring Your Own Targeting)
+**You define the audience, we find the inventory**
+
+- Start with your brand story or custom signals
+- Platform discovers run-of-site inventory that reaches them
+- Optimization finds the most cost-effective paths to your audience
+- Example: "Find my enterprise IT buyers wherever they browse"
+
+### Collab (Collaborative)
+**Publishers package inventory + their data**
+
+- Publishers combine their inventory with first-party data
+- Pre-packaged products with built-in audience insights
+- You leverage publisher expertise and relationships
+- Example: "ESPN's fantasy football enthusiasts package"
+
+## The Optimization Engine
+
+### Multi-Armed Bandit in Action
+
+Think of each tactic as a slot machine with unknown payouts. The platform must decide which machines to play (and how much to bet) while learning their returns.
+
+**Phase 1: Discovery**  
+Campaign starts. Platform creates 20-50 initial tactics, each getting small test budgets. Like a gambler trying every machine once.
+
+**Phase 2: Exploitation vs Exploration**  
+The eternal tension:
+- **Exploit**: Pour money into the tactics showing 8+ effectiveness scores
+- **Explore**: Keep testing new combinations that might beat current winners
+
+The algorithm dynamically adjusts this balance based on:
+- Campaign maturity (explore more early, exploit more late)
+- Performance variance (stable = exploit, volatile = explore)
+- Market changes (new inventory appearing, seasonality)
+
+**Phase 3: Pacing Control**  
+Even winning tactics need throttling:
+- Prevent budget exhaustion in first hours
+- Maintain presence throughout flight dates
+- Adjust for audience behavior patterns
+- React to real-time performance shifts
+
+## How It Works
+
+### Inventory Sourcing
+
+Tactics pull inventory from the **Ad Context Protocol (AdCP)**:
+
+- Publishers define media products with targeting capabilities
+- Platform matches these to campaign requirements
+- Creative formats are matched to available placements
+- Quality signals ensure brand safety
+
+### Targeting Power-Ups
+
+Three ways to sharpen your aim:
+
+1. **Brand Stories**: "Find people like my best customers"
+2. **Custom Signals**: Your CRM segments, pixel data, lookalikes
+3. **Third-Party Signals**: LiveRamp, Oracle, TransUnion (coming soon)
+
+The platform tests how each targeting method performs across different inventory sources.
+
+### Tactic Scoring
+
+**Three-component scoring drives budget allocation:**
+
+Each tactic gets a weighted score combining:
+- **Quality Score** (Scope3): Media quality, viewability, IVT detection
+- **Outcome Score** (You): Your normalized measurement data (ROAS, conversions, etc.)
+- **Story Affinity** (Scope3): Alignment with your selected brand stories
+
+**Budget flows to higher-scoring tactics** through multi-armed bandit optimization.
+
+See [Scoring Guide](/optimization/scoring) for detailed explanation of weights and configuration.
+
+## Control Modes
+
+### Let the Platform Drive
+
+```javascript
+// BYOT example - your targeting, our inventory discovery
+const campaign = await createCampaign({
+  brandAgentId: "ba_123",
+  name: "Q4 Prospecting",
+  prompt: "Find SMB decision makers interested in cloud migration",
+  
+  // Configure scoring for performance focus
+  scoringWeights: {
+    quality: 0.3,    // 30% media quality
+    outcome: 0.7,    // 70% your conversion data
+    affinity: 0.0    // 0% story alignment (B2B focus)
+  },
+  outcomeScoreWindowDays: 14,  // B2B longer sales cycle
+  
+  budget: { total: 50000, currency: "USD" }
+});
+// Platform creates tactics, runs multi-armed bandit optimization
+```
+
+### Take the Wheel
+
+```javascript
+// Direct control - you know exactly what you want
+const campaign = await createCampaign({
+  brandAgentId: "ba_123",
+  name: "Premium Sports Deal",
+  manualTactics: [
+    {
+      inventoryId: "espn_nfl_package",
+      budget: 25000,
+      targeting: { segments: ["existing_customers"] }
+    },
+    {
+      inventoryId: "foxsports_streaming", 
+      budget: 15000
+      // No targeting = run of network
+    }
+  ]
+});
+```
+
+## Learn More
+
+For deeper understanding of how tactics work within campaigns:
+
+<CardGroup cols={2}>
+  <Card title="Campaign Optimization" href="/optimization/campaigns" icon="chart-line">
+    **Performance Tuning**
+    
+    Learn how the multi-armed bandit algorithm optimizes tactic performance.
+  </Card>
+  
+  <Card title="Signals Guide" href="/object-guides/signal" icon="radar">
+    **Targeting Data**
+    
+    Understand how signals enhance tactic targeting capabilities.
+  </Card>
+</CardGroup>
+
+## The Bottom Line
+
+- **Every tactic is a bet** on a targeting + inventory combination
+- **BYOT vs Collab** - Bring your data or use publisher packages
+- **Multi-armed bandit** continuously reallocates budget to winners
+- **Exploration never stops** - Always testing for better combinations
+- **You choose control level** - Full automation or manual override

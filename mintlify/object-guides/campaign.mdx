@@ -20,7 +20,7 @@ Before launching any campaign, ensure you have:
 
 1. **Brand Agent Created** - Your advertiser account foundation
 2. **Creative Assets Ready** - High-quality creatives significantly impact performance  
-3. **Audience Profiles (Optional)** - Synthetic audience targeting profiles
+3. **Audience Profiles (Optional)** - Brand story targeting profiles
 4. **Brand Standards Configured (Optional)** - Domain filtering and brand safety rules
 
 ```mermaid
@@ -46,7 +46,7 @@ graph LR
             ✅ Campaign created: camp_abc123
             📊 Budget: $50,000 USD
             🎯 Targeting: Sports enthusiasts, ages 25-45, CTV inventory
-            📺 Strategy: INTELLIGENT_PMPS optimization
+            📺 Strategy: AI-driven optimization
             🎨 Creatives: Auto-assigned from Nike brand agent library
             
             Status: Ready to launch
@@ -72,10 +72,10 @@ graph LR
 
 ### Phase 3: Launch & Optimization
 
-Once launched, campaigns automatically begin the **INTELLIGENT_PMPS** optimization process:
+Once launched, campaigns automatically begin the **AI optimization** process:
 
 1. **Signal Discovery** - Algorithm identifies high-performing audience signals
-2. **Story Optimization** - Narrative approaches are tested and refined
+2. **Brand Story Optimization** - AI-generated audience profiles are tested and refined
 3. **Tactic Generation** - AI creates optimized targeting combinations
 4. **Continuous Learning** - Performance data feeds back into optimization
 
@@ -91,23 +91,23 @@ Once launched, campaigns automatically begin the **INTELLIGENT_PMPS** optimizati
   <Card title="Data Export" href="/api-reference/reporting/export-campaign-data" icon="database">
     **Enterprise Analytics**
     
-    Export structured data for BI systems with flexible grouping by tactic, signal, story, and publisher.
+    Export structured data for BI systems with flexible grouping by tactic, signal, brand story, and publisher.
   </Card>
   
   <Card title="ML Analytics" href="/api-reference/reporting/analyze-tactics" icon="microscope">
     **Advanced Optimization**
     
-    Deep statistical analysis of tactic performance with actionable optimization recommendations.
+    Deep statistical analysis of tactic performance with actionable optimization recommendations. [See Tactic Guide](/object-guides/tactic) for detailed analysis.
   </Card>
 </CardGroup>
 
 ## Key Campaign Features
 
-### 🎯 INTELLIGENT_PMPS Strategy
+### 🎯 AI-Driven Optimization Strategy
 
-All campaigns use Scope3's **INTELLIGENT_PMPS** (Intelligent Programmatic Private Marketplace) strategy:
+All campaigns use Scope3's intelligent optimization approach:
 
-- **Private Marketplace Focus**: Premium, curated inventory
+- **Premium Inventory Focus**: Curated, high-quality ad placements
 - **AI-Driven Optimization**: Machine learning optimizes targeting in real-time
 - **Quality-First**: Brand-safe, viewable, fraud-free impressions
 - **Performance Optimization**: Continuous learning and adjustment
@@ -142,7 +142,7 @@ Campaigns seamlessly integrate with other Brand Agent resources:
   </Tab>
   
   <Tab title="Audience Targeting">
-    **Synthetic Audience Profiles**
+    **Brand Story Profiles**
     
     - Pre-built audience segments for precise targeting
     - Reusable across multiple campaigns
@@ -184,37 +184,14 @@ Campaigns seamlessly integrate with other Brand Agent resources:
 
 Every campaign generates rich performance data for optimization:
 
-#### Signal Performance Analysis
-Track how different audience signals (age, interests, behavior) perform across tactics:
+#### Performance Analysis
+For detailed tactic performance analysis including signal effectiveness and brand story optimization, see the [Tactic Guide](/object-guides/tactic) and [Signal Guide](/object-guides/signal).
 
-```javascript
-const analysis = await analyzeTactics({
-  campaignId: "camp_123",
-  analysisType: "signals",
-  compareSignals: true
-});
-
-// Returns signal effectiveness rankings:
-// - "age_25_34": 89% efficiency score
-// - "interest_sports": 76% efficiency score
-// - "behavior_premium_shopper": 92% efficiency score
-```
-
-#### Story Optimization
-Understand which narrative approaches drive the best performance:
-
-```javascript
-const storyAnalysis = await analyzeTactics({
-  campaignId: "camp_123",
-  analysisType: "stories",
-  compareStories: true
-});
-
-// Returns story performance breakdown:
-// - "performance" narrative: 15% higher CTR
-// - "lifestyle" narrative: 32% better completion rates
-// - "value" narrative: 8% lower CPM
-```
+**Key Analysis Types Available:**
+- **Signal Performance**: Track audience targeting effectiveness
+- **Brand Story Optimization**: Understand which AI-generated audiences perform best  
+- **Efficiency Analysis**: Compare tactic cost-effectiveness
+- **Attribution Analysis**: Understand conversion path contributions
 
 #### Real-time Delivery Monitoring
 Get instant visibility into campaign pacing and performance:
@@ -230,6 +207,115 @@ const summary = await getCampaignSummary({
 // 💰 Performance: $2.34 CPM, strong completion rates
 // 🔧 Recommendation: Increase budget for high performers
 ```
+
+### ⚖️ Scoring Configuration
+
+**Control how tactics are evaluated and optimized with three-component scoring.**
+
+Campaigns use a weighted formula combining Quality, Outcome, and Story Affinity scores to determine budget allocation. You configure the weights and outcome measurement timing.
+
+<Tabs>
+  <Tab title="Performance-Focused Setup">
+    **Optimize for conversions and outcomes**
+    
+    ```javascript
+    const campaign = await createCampaign({
+      brandAgentId: "ba_123",
+      name: "Q4 Performance Campaign",
+      prompt: "Target high-intent customers for holiday conversions",
+      
+      // Weight outcome scores heavily
+      scoringWeights: {
+        quality: 0.2,       // 20% media quality
+        outcome: 0.7,       // 70% your conversion data
+        affinity: 0.1       // 10% brand story alignment
+      },
+      
+      // Attribution data arrives in 7 days
+      outcomeScoreWindowDays: 7,
+      
+      budget: { total: 100000, currency: "USD" }
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Brand-Safe Premium Setup">
+    **Prioritize quality inventory and brand alignment**
+    
+    ```javascript
+    const campaign = await createCampaign({
+      brandAgentId: "ba_456",
+      name: "Luxury Brand Campaign",
+      prompt: "Associate with premium content and high-quality placements",
+      
+      // Pure brand focus - no outcome measurement
+      scoringWeights: {
+        quality: 0.7,       // 70% media quality (premium inventory)
+        outcome: 0.0,       // 0% outcome measurement (brand focus)
+        affinity: 0.3       // 30% brand story alignment
+      },
+      
+      budget: { total: 75000, currency: "USD" }
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Audience Testing Setup">
+    **Test brand story effectiveness**
+    
+    ```javascript
+    const campaign = await createCampaign({
+      brandAgentId: "ba_789",
+      name: "Audience Discovery Campaign",
+      prompt: "Test different audience segments against brand stories",
+      
+      // Emphasize story affinity for learning
+      scoringWeights: {
+        quality: 0.2,       // 20% media quality
+        outcome: 0.3,       // 30% outcome measurement
+        affinity: 0.5       // 50% brand story alignment
+      },
+      
+      // Real-time engagement data
+      outcomeScoreWindowDays: 1,
+      
+      budget: { total: 50000, currency: "USD" }
+    });
+    ```
+  </Tab>
+</Tabs>
+
+#### The Three Scoring Components
+
+**Quality Score** (Scope3-provided)
+- Impression quality, viewability, completion rates
+- IVT detection and brand safety metrics
+- Scale: 0-100 (100 = premium media quality)
+
+**Outcome Score** (You provide)
+- Your normalized measurement data (ROAS, conversions, brand lift)  
+- Scale: 0-1000 (100 = meets target, 1000 = 10x target)
+- You define what the numbers mean
+
+**Story Affinity Score** (Scope3-provided)
+- How well tactics align with your selected brand stories
+- Uses the brand stories you created and assigned
+- Scale: 0-100 (100 = perfect story alignment)
+
+<Note>
+**Weights determine relative importance** of each component for budget allocation. See the [Scoring Guide](/optimization/scoring) for detailed explanation and weight strategy examples.
+</Note>
+
+#### Outcome Score Window Days
+
+**Critical for RL algorithm performance.** Specify how many days before your outcome measurement data arrives:
+
+- **Immediate data**: 0-1 days (engagement, clicks)
+- **Attribution data**: 1-7 days (conversions, CRM matching) 
+- **Brand studies**: 7-30 days (lift measurement)
+- **MMM data**: 30+ days (incrementality studies)
+
+Without proper window configuration, tactics get incorrectly penalized before your measurement data arrives.
 
 ## Campaign Workflow Examples
 
@@ -325,13 +411,13 @@ const backToSchoolCampaign = await createCampaign({
 ### 3. Targeting Strategy
 - Start broad, let AI find optimal segments
 - Use natural language descriptions in campaign prompts
-- Leverage synthetic audiences for precise targeting
+- Leverage brand stories for precise targeting
 - Monitor signal performance and adjust accordingly
 
 ### 4. Monitoring & Optimization
 - Check campaign health weekly with `get_campaign_summary`
 - Export data for deeper analysis with `export_campaign_data`
-- Use ML insights from `analyze_tactics` for optimization decisions
+- Use [tactic performance insights](/object-guides/tactic) for optimization decisions
 - Set up real-time alerts for performance issues
 
 ## Common Campaign Patterns
@@ -357,15 +443,8 @@ const campaignB = await createCampaign({
 });
 
 // Compare performance after sufficient data collection
-const analysisA = await analyzeTactics({
-  campaignId: campaignA.id,
-  analysisType: "efficiency"
-});
-
-const analysisB = await analyzeTactics({
-  campaignId: campaignB.id, 
-  analysisType: "efficiency"
-});
+// Compare campaign performance using tactic analysis
+// See Tactic Guide for detailed analysis examples
 ```
 
 ### Seasonal Campaign Management
