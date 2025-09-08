@@ -8,7 +8,54 @@ icon: "lightbulb"
 
 The Scope3 Campaign API is built around a **Brand Agent** architecture that mirrors how programmatic advertising actually works in the industry.
 
-<img src="/images/architecture-diagram.svg" alt="API Architecture" />
+```mermaid
+graph TD
+    %% User/Agent Layer
+    A[AI Agent/User] --> B[MCP Interface]
+    C[Direct API] --> D[Campaign API]
+    B --> D
+    
+    %% Core Architecture
+    D --> E[Brand Agent]
+    E --> F[Campaigns]
+    E --> G[Creatives]
+    E --> H[Audiences] 
+    E --> I[Brand Standards]
+    
+    %% Campaign Execution
+    F --> J[Tactics]
+    G --> J
+    H --> J
+    
+    %% Signal Processing
+    J --> K[Signal Processing]
+    K --> L[Scope3 Signals<br/>Media Quality]
+    K --> M[Custom Signals<br/>First-Party Data]
+    K --> N[Third-Party Signals<br/>External Data]
+    
+    %% Optimization & Serving
+    K --> O[AI Optimization<br/>Engine]
+    O --> P[Inventory Selection]
+    P --> Q[Ad Serving]
+    
+    %% Performance Loop
+    Q --> R[Performance Data]
+    R --> S[Analytics & Reporting]
+    R --> O
+    S --> A
+    S --> C
+    
+    %% Styling
+    classDef userLayer fill:#e1f5fe
+    classDef coreLayer fill:#f3e5f5
+    classDef executionLayer fill:#e8f5e8
+    classDef dataLayer fill:#fff3e0
+    
+    class A,B,C userLayer
+    class D,E,F,G,H,I coreLayer
+    class J,K,O,P,Q executionLayer
+    class L,M,N,R,S dataLayer
+```
 
 ### Why Brand Agents?
 

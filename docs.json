@@ -16,7 +16,16 @@
         "groups": [
           {
             "group": "Get Started",
+            "icon": "rocket",
             "pages": ["mintlify/quickstart", "mintlify/concepts"]
+          },
+          {
+            "group": "🌟 Features",
+            "pages": [
+              "mintlify/features/media-quality",
+              "mintlify/features/publisher-integration",
+              "mintlify/features/built-for-agents"
+            ]
           },
           {
             "group": "📦 Core Objects",
@@ -27,14 +36,6 @@
               "mintlify/object-guides/signal",
               "mintlify/object-guides/creative",
               "mintlify/object-guides/format"
-            ]
-          },
-          {
-            "group": "🌟 Features",
-            "pages": [
-              "mintlify/features/media-quality",
-              "mintlify/features/publisher-integration",
-              "mintlify/features/built-for-agents"
             ]
           },
           {
