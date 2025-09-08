@@ -248,15 +248,12 @@ Campaigns use a weighted formula combining Quality, Outcome, and Story Affinity 
       name: "Luxury Brand Campaign",
       prompt: "Associate with premium content and high-quality placements",
       
-      // Emphasize quality and brand story alignment
+      // Pure brand focus - no outcome measurement
       scoringWeights: {
-        quality: 0.5,       // 50% media quality (premium inventory)
-        outcome: 0.2,       // 20% outcome measurement
+        quality: 0.7,       // 70% media quality (premium inventory)
+        outcome: 0.0,       // 0% outcome measurement (brand focus)
         affinity: 0.3       // 30% brand story alignment
       },
-      
-      // Brand lift studies take longer
-      outcomeScoreWindowDays: 30,
       
       budget: { total: 75000, currency: "USD" }
     });
@@ -306,7 +303,7 @@ Campaigns use a weighted formula combining Quality, Outcome, and Story Affinity 
 - Scale: 0-100 (100 = perfect story alignment)
 
 <Note>
-**Weights must sum to 1.0** and determine how much each component influences budget allocation. See the [Scoring Guide](/optimization/scoring) for detailed explanation and weight strategy examples.
+**Weights determine relative importance** of each component for budget allocation. See the [Scoring Guide](/optimization/scoring) for detailed explanation and weight strategy examples.
 </Note>
 
 #### Outcome Score Window Days

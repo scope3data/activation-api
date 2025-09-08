@@ -328,15 +328,6 @@ export const createBrandAgentCampaignTool = (client: Scope3ApiClient) => ({
             "Weight for Scope3 media quality score (0-1). Impression quality, viewability, IVT detection",
           ),
       })
-      .refine(
-        (weights) =>
-          Math.abs(weights.quality + weights.outcome + weights.affinity - 1.0) <
-          0.001,
-        {
-          message:
-            "Scoring weights must sum to 1.0 (quality + outcome + affinity = 1.0)",
-        },
-      )
       .optional()
       .describe(
         "Optional scoring weights configuration. Determines how quality, outcome, and affinity scores are combined for tactic optimization",

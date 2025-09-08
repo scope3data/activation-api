@@ -60,7 +60,7 @@ Story Affinity requires you to have created and assigned brand stories to your c
 Tactic Reward = (a × Quality Score) + (b × Outcome Score) + (c × Story Affinity Score)
 ```
 
-Where `a`, `b`, and `c` are weights you configure (must sum to 1.0).
+Where `a`, `b`, and `c` are weights you configure.
 
 ### Example Weight Configurations
 
@@ -154,14 +154,16 @@ await updateTacticOutcomeScore({
 ### E-commerce/Performance
 Focus on conversion results:
 ```
-Quality: 0.1, Outcome: 0.8, Affinity: 0.1
+Quality: 0.2, Outcome: 0.8, Affinity: 0.0
 ```
+*No brand stories needed - pure performance focus*
 
 ### Brand Building
 Balance quality and story alignment:
 ```
-Quality: 0.4, Outcome: 0.2, Affinity: 0.4  
+Quality: 0.6, Outcome: 0.0, Affinity: 0.4  
 ```
+*No measurable outcomes - focus on quality placement and narrative*
 
 ### Premium/Luxury
 Prioritize quality inventory:
@@ -190,10 +192,6 @@ Set `outcomeScoreWindowDays` accurately:
 - Too short = penalize tactics before data arrives
 - Too long = delay optimization decisions
 - Match your actual measurement lag for best results
-
-### Weights Must Sum to 1.0
-
-The platform validates that quality + outcome + affinity weights = 1.0. This ensures consistent scoring across campaigns.
 
 ## The Bottom Line
 

@@ -77,15 +77,18 @@ Three ways to sharpen your aim:
 
 The platform tests how each targeting method performs across different inventory sources.
 
-### The Effectiveness Score
+### Tactic Scoring
 
-**0-10 rating determines budget flow:**
-- **8-10**: Winners eating most of the budget
-- **5-7**: Steady performers maintaining baseline
-- **2-4**: Underperformers getting minimal spend
-- **0-1**: Dead tactics (auto-paused)
+**Three-component scoring drives budget allocation:**
 
-Score factors: conversions, CPM efficiency, viewability, audience match rate
+Each tactic gets a weighted score combining:
+- **Quality Score** (Scope3): Media quality, viewability, IVT detection
+- **Outcome Score** (You): Your normalized measurement data (ROAS, conversions, etc.)
+- **Story Affinity** (Scope3): Alignment with your selected brand stories
+
+**Budget flows to higher-scoring tactics** through multi-armed bandit optimization.
+
+See [Scoring Guide](/optimization/scoring) for detailed explanation of weights and configuration.
 
 ## Control Modes
 
@@ -97,6 +100,15 @@ const campaign = await createCampaign({
   brandAgentId: "ba_123",
   name: "Q4 Prospecting",
   prompt: "Find SMB decision makers interested in cloud migration",
+  
+  // Configure scoring for performance focus
+  scoringWeights: {
+    quality: 0.3,    // 30% media quality
+    outcome: 0.7,    // 70% your conversion data
+    affinity: 0.0    // 0% story alignment (B2B focus)
+  },
+  outcomeScoreWindowDays: 14,  // B2B longer sales cycle
+  
   budget: { total: 50000, currency: "USD" }
 });
 // Platform creates tactics, runs multi-armed bandit optimization
