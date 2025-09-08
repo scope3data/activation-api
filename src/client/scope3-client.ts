@@ -618,6 +618,64 @@ export class Scope3ApiClient {
     return mockCreative;
   }
 
+  async createCustomSignal(
+    apiKey: string,
+    input: {
+      clusters: Array<{
+        channel?: string;
+        gdpr?: boolean;
+        region: string;
+      }>;
+      description: string;
+      key: string;
+      name: string;
+    },
+  ): Promise<{
+    clusters: Array<{
+      channel?: string;
+      gdpr?: boolean;
+      region: string;
+    }>;
+    createdAt: string;
+    description: string;
+    id: string;
+    key: string;
+    name: string;
+  }> {
+    const response = await fetch("https://api.scope3.com/signal", {
+      body: JSON.stringify(input),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication failed");
+      }
+      if (response.status >= 500) {
+        throw new Error("External service temporarily unavailable");
+      }
+      throw new Error("Request failed");
+    }
+
+    return (await response.json()) as {
+      clusters: Array<{
+        channel?: string;
+        gdpr?: boolean;
+        region: string;
+      }>;
+      createdAt: string;
+      description: string;
+      id: string;
+      key: string;
+      name: string;
+    };
+  }
+
   // Create inventory option (product + targeting)
   async createInventoryOption(
     apiKey: string,
@@ -953,6 +1011,40 @@ export class Scope3ApiClient {
     }
 
     return result.data.updateAgent;
+  }
+
+  async deleteCustomSignal(
+    apiKey: string,
+    signalId: string,
+  ): Promise<{
+    deleted: boolean;
+    id: string;
+  }> {
+    const response = await fetch(`https://api.scope3.com/signal/${signalId}`, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication failed");
+      }
+      if (response.status === 404) {
+        throw new Error("Signal not found");
+      }
+      if (response.status >= 500) {
+        throw new Error("External service temporarily unavailable");
+      }
+      throw new Error("Request failed");
+    }
+
+    return (await response.json()) as {
+      deleted: boolean;
+      id: string;
+    };
   }
 
   // Delete inventory option
@@ -1370,6 +1462,62 @@ export class Scope3ApiClient {
     return result.data.getAPIAccessKeys.tokens[0].customerId;
   }
 
+  // Inventory Option Management Methods
+
+  async getCustomSignal(
+    apiKey: string,
+    signalId: string,
+  ): Promise<{
+    clusters: Array<{
+      channel?: string;
+      gdpr?: boolean;
+      region: string;
+    }>;
+    createdAt: string;
+    description: string;
+    id: string;
+    key: string;
+    name: string;
+    updatedAt?: string;
+  }> {
+    const response = await fetch(`https://api.scope3.com/signal/${signalId}`, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "GET",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication failed");
+      }
+      if (response.status === 404) {
+        throw new Error("Signal not found");
+      }
+      if (response.status >= 500) {
+        throw new Error("External service temporarily unavailable");
+      }
+      throw new Error("Request failed");
+    }
+
+    return (await response.json()) as {
+      clusters: Array<{
+        channel?: string;
+        gdpr?: boolean;
+        region: string;
+      }>;
+      createdAt: string;
+      description: string;
+      id: string;
+      key: string;
+      name: string;
+      updatedAt?: string;
+    };
+  }
+
+  // Inventory Option Management Methods
+
   // Get DSP seats (stubbed until backend ready)
   async getDSPSeats(
     apiKey: string,
@@ -1479,8 +1627,6 @@ export class Scope3ApiClient {
     return result.data.inventoryPerformance;
   }
 
-  // Inventory Option Management Methods
-
   // Get optimization recommendations
   async getOptimizationRecommendations(
     apiKey: string,
@@ -1548,6 +1694,8 @@ export class Scope3ApiClient {
     return this.productDiscovery.getRecommendedProducts(apiKey, params);
   }
 
+  // Inventory Option Management Methods
+
   async getScoringOutcomes(
     apiKey: string,
     campaignId: string,
@@ -1614,8 +1762,6 @@ export class Scope3ApiClient {
     return result.data?.tacticBreakdown || [];
   }
 
-  // Inventory Option Management Methods
-
   async getTacticPerformance(
     apiKey: string,
     tacticId: string,
@@ -1648,8 +1794,6 @@ export class Scope3ApiClient {
 
     return result.data?.tacticPerformance || {};
   }
-
-  // Inventory Option Management Methods
 
   // Targeting methods
   async getTargetingDimensions(apiKey: string): Promise<TargetingDimension[]> {
@@ -1901,6 +2045,10 @@ export class Scope3ApiClient {
     return result.data?.brandStoryAgents || [];
   }
 
+  // ========================================
+  // CREATIVE MANAGEMENT METHODS (MCP Orchestration + REST)
+  // ========================================
+
   /**
    * List available creative formats from all providers
    */
@@ -2135,6 +2283,74 @@ export class Scope3ApiClient {
     };
   }
 
+  async listCustomSignals(
+    apiKey: string,
+    filters?: {
+      channel?: string;
+      region?: string;
+    },
+  ): Promise<{
+    signals: Array<{
+      clusters: Array<{
+        channel?: string;
+        gdpr?: boolean;
+        region: string;
+      }>;
+      createdAt: string;
+      description: string;
+      id: string;
+      key: string;
+      name: string;
+      updatedAt?: string;
+    }>;
+    total: number;
+  }> {
+    const params = new URLSearchParams();
+    if (filters?.region) {
+      params.append("region", filters.region);
+    }
+    if (filters?.channel) {
+      params.append("channel", filters.channel);
+    }
+
+    const url = `https://api.scope3.com/signal${params.toString() ? `?${params.toString()}` : ""}`;
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "GET",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication failed");
+      }
+      if (response.status >= 500) {
+        throw new Error("External service temporarily unavailable");
+      }
+      throw new Error("Request failed");
+    }
+
+    return (await response.json()) as {
+      signals: Array<{
+        clusters: Array<{
+          channel?: string;
+          gdpr?: boolean;
+          region: string;
+        }>;
+        createdAt: string;
+        description: string;
+        id: string;
+        key: string;
+        name: string;
+        updatedAt?: string;
+      }>;
+      total: number;
+    };
+  }
+
   // List inventory options for a campaign
   async listInventoryOptions(
     apiKey: string,
@@ -2177,10 +2393,6 @@ export class Scope3ApiClient {
 
     return result.data.inventoryOptions.inventoryOptions;
   }
-
-  // ========================================
-  // CREATIVE MANAGEMENT METHODS (MCP Orchestration + REST)
-  // ========================================
 
   async listMeasurementSources(
     apiKey: string,
@@ -2470,6 +2682,10 @@ export class Scope3ApiClient {
     return result.data.updateBrandAgent;
   }
 
+  // ========================================
+  // PMP (PRIVATE MARKETPLACE) METHODS
+  // ========================================
+
   async updateBrandAgentCampaign(
     apiKey: string,
     id: string,
@@ -2648,9 +2864,10 @@ export class Scope3ApiClient {
     return result.data.createAgentModel;
   }
 
-  // ========================================
-  // PMP (PRIVATE MARKETPLACE) METHODS
-  // ========================================
+  // Removed parseCreativePrompt - AI generation handled by creative agents
+  // Removed detectFileFormat - handled by REST upload layer
+
+  // Custom Signal Definition Management Methods
 
   async updateBrandAgentSyntheticAudience(
     apiKey: string,
@@ -2741,6 +2958,69 @@ export class Scope3ApiClient {
     };
 
     return mockCreative;
+  }
+
+  async updateCustomSignal(
+    apiKey: string,
+    signalId: string,
+    input: {
+      clusters?: Array<{
+        channel?: string;
+        gdpr?: boolean;
+        region: string;
+      }>;
+      description?: string;
+      name?: string;
+    },
+  ): Promise<{
+    clusters: Array<{
+      channel?: string;
+      gdpr?: boolean;
+      region: string;
+    }>;
+    createdAt: string;
+    description: string;
+    id: string;
+    key: string;
+    name: string;
+    updatedAt: string;
+  }> {
+    const response = await fetch(`https://api.scope3.com/signal/${signalId}`, {
+      body: JSON.stringify(input),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "PUT",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication failed");
+      }
+      if (response.status === 404) {
+        throw new Error("Signal not found");
+      }
+      if (response.status >= 500) {
+        throw new Error("External service temporarily unavailable");
+      }
+      throw new Error("Request failed");
+    }
+
+    return (await response.json()) as {
+      clusters: Array<{
+        channel?: string;
+        gdpr?: boolean;
+        region: string;
+      }>;
+      createdAt: string;
+      description: string;
+      id: string;
+      key: string;
+      name: string;
+      updatedAt: string;
+    };
   }
 
   // Update inventory option
@@ -2840,7 +3120,4 @@ export class Scope3ApiClient {
 
     return result.data.updateOneStrategy;
   }
-
-  // Removed parseCreativePrompt - AI generation handled by creative agents
-  // Removed detectFileFormat - handled by REST upload layer
 }
