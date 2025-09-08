@@ -1,78 +1,13 @@
-// Event types for campaign reporting with reinforcement learning support
-
-// Generic event that can represent any interaction (impression, click, purchase, etc.)
-export interface CampaignEvent {
-  // Amount (generic - could be items, dollars, seconds, etc.)
-  amount?: {
-    unit: string; // "items", "USD", "seconds", "percentage"
-    value: number;
-  };
-  // Campaign context
-  campaignId: string;
-
-  creativeId?: string;
-  // Event identification
-  eventType: string; // "impression", "click", "purchase", "survey_response", etc.
-
-  externalId?: string; // External system reference
-  id: string;
-  // Event details (flexible like GA4)
-  parameters: Record<string, unknown>;
-
-  publisherProductId?: string; // Inventory source
-  receivedAt: Date;
-  // Reward for RL training
-  reward?: {
-    components?: Record<string, number>; // Breakdown for interpretability
-    confidence?: number; // Attribution confidence (0-1)
-    delayed?: number; // Attribution reward (may come later)
-    immediate: number; // Instant feedback (win/loss)
-  };
-
-  // Core tactic components (for grouping)
-  signals?: string[]; // Data signals used
-
-  // Source tracking
-  source: string; // "scope3", "ga4", "advertiser_api", etc.
-
-  stories?: string[]; // Brand stories/narratives
-
-  tacticId: string;
-  timestamp: Date;
-}
-
-// Input for creating events
-export interface CampaignEventInput {
-  amount?: {
-    unit: string;
-    value: number;
-  };
-  campaignId: string;
-  creativeId?: string;
-  eventType: string;
-  parameters: Record<string, unknown>;
-  publisherProductId?: string;
-  reward?: {
-    components?: Record<string, number>;
-    confidence?: number;
-    delayed?: number;
-    immediate: number;
-  };
-  signals?: string[];
-  source?: string; // Defaults to "scope3"
-  stories?: string[];
-  tacticId: string;
-  timestamp?: Date; // Defaults to now
-}
+// Scoring outcome types for campaign optimization with reinforcement learning support
 
 export interface DeliveryData {
   deliveries: TacticDelivery[];
 }
 
-// Event aggregation result
-export interface EventAggregationResult {
-  query: EventQuery;
-  results: EventQueryResponse[];
+// Scoring outcome aggregation result
+export interface OutcomeAggregationResult {
+  query: OutcomeQuery;
+  results: OutcomeQueryResponse[];
   summary: {
     dataFreshness: Date;
     timeRange: {
@@ -83,8 +18,8 @@ export interface EventAggregationResult {
   };
 }
 
-// Query interface for flexible event aggregation
-export interface EventQuery {
+// Query interface for flexible outcome aggregation
+export interface OutcomeQuery {
   // Filters
   brandAgentId?: string;
   campaignIds?: string[];
@@ -98,8 +33,6 @@ export interface EventQuery {
     start: Date;
   };
 
-  eventTypes?: string[]; // Filter by event type
-
   // Time granularity
   granularity: "day" | "hour" | "month" | "week";
 
@@ -108,7 +41,7 @@ export interface EventQuery {
     | "campaign"
     | "creative"
     | "date"
-    | "event_type"
+    | "performance_index"
     | "publisher_product"
     | "signal" // Group by signal
     | "story" // Group by story
@@ -117,19 +50,21 @@ export interface EventQuery {
 
   // Metrics to calculate
   metrics: Array<
-    | "average_reward"
+    | "average_performance_index"
     | "conversion_rate"
     | "custom" // Allow custom metric definitions
-    | "event_count"
-    | "total_amount"
+    | "outcome_count"
+    | "total_scoring_impact"
     | "total_spend"
   >;
+
+  performanceIndexRange?: { max: number; min: number }; // Filter by performance index
 
   tacticIds?: string[];
 }
 
-// Response from event queries
-export interface EventQueryResponse {
+// Response from outcome queries
+export interface OutcomeQueryResponse {
   dimensions: Record<string, unknown>; // The groupBy dimensions
   metadata?: {
     confidence?: number;
@@ -139,9 +74,59 @@ export interface EventQueryResponse {
   metrics: Record<string, number>; // Calculated metrics
 }
 
+// Scoring outcome that represents measurable performance data
+export interface ScoringOutcome {
+  // Campaign context
+  campaignId: string;
+  creativeId?: string;
+  // Exposure range (when this outcome was measured)
+  exposureRange: {
+    end: Date;
+    start: Date;
+  };
+
+  externalId?: string; // External system reference
+
+  id: string;
+  // Performance index (100 = expected performance, 1000 = 10x performance)
+  performanceIndex: number;
+
+  receivedAt: Date;
+
+  // Core tactic components (for grouping)
+  signals?: string[]; // Data signals used
+
+  // Source tracking
+  source: string; // "scope3", "ga4", "advertiser_api", etc.
+
+  stories?: string[]; // Brand stories/narratives
+
+  tacticId?: string;
+
+  timestamp: Date;
+}
+
+// Input for providing scoring outcomes
+export interface ScoringOutcomeInput {
+  campaignId: string;
+  creativeId?: string;
+  exposureRange: {
+    end: Date;
+    start: Date;
+  };
+
+  performanceIndex: number;
+
+  signals?: string[];
+  source?: string; // Defaults to "scope3"
+  stories?: string[];
+  tacticId?: string;
+  timestamp?: Date; // Defaults to now
+}
+
 // API response wrapper
-export interface EventsData {
-  events: CampaignEvent[];
+export interface ScoringOutcomesData {
+  outcomes: ScoringOutcome[];
 }
 
 // Delivery record (what we control - spend, impressions, price)

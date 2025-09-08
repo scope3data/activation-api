@@ -222,22 +222,26 @@ The API supports two distinct reporting approaches:
   </Tab>
 </Tabs>
 
-### Event Model
+### Scoring Outcome Model
 
-All campaign interactions are captured as events with reinforcement learning rewards:
+All campaign performance is captured as scoring outcomes for optimization:
 
 ```typescript
-interface CampaignEvent {
-  eventType: string;      // "impression", "click", "purchase", "survey"
-  reward: {
-    immediate: number;    // 0.0 to 1.0 reward score
-    delayed?: number;     // Future reward (LTV, brand lift)
-    confidence?: number;  // ML confidence level
+interface ScoringOutcome {
+  campaignId: string;       // Campaign this outcome applies to
+  tacticId?: string;        // Optional tactic ID for tactic-level measurement
+  creativeId?: string;      // Optional creative ID for creative-level measurement
+  exposureRange: {
+    start: Date;            // When exposure began
+    end: Date;              // When exposure ended  
   };
+  performanceIndex: number; // 0 = no value, 100 = expected, 1000 = 10x expected
+  source: string;           // Data source (e.g., "scope3")
+  timestamp: Date;          // When outcome was recorded
 }
 ```
 
-This enables sophisticated attribution and optimization algorithms.
+This feeds into the three-component scoring system for campaign optimization.
 
 ## Integration Patterns
 
@@ -260,7 +264,7 @@ RESTful API with full programmatic access.
 - Real-time webhook notifications
 
 ### Webhooks
-Real-time push notifications for campaign events.
+Real-time push notifications for scoring outcomes and campaign updates.
 
 **Use cases**:
 - Performance alerts and anomaly detection

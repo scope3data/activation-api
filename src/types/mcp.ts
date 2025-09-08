@@ -136,7 +136,7 @@ export interface ExportCampaignDataParams {
   brandAgentId?: string;
   campaignIds?: string[];
   compression?: "gzip" | "none";
-  datasets: Array<"allocations" | "delivery" | "events" | "tactics">;
+  datasets: Array<"allocations" | "delivery" | "outcomes" | "tactics">;
   dateRange: {
     end: string;
     start: string;
@@ -223,6 +223,18 @@ export interface MCPToolExecuteContext {
     scope3ApiKey?: string;
     userId?: string;
   };
+}
+
+// Scoring Outcome MCP parameter types
+export interface ProvideScoringOutcomesParams {
+  campaignId: string;
+  creativeId?: string;
+  exposureRange: {
+    end: string; // ISO date string
+    start: string; // ISO date string
+  };
+  performanceIndex: number; // 100 = expected, 1000 = 10x performance
+  tacticId?: string;
 }
 
 export interface RegisterWebhookParams {

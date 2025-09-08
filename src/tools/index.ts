@@ -63,6 +63,7 @@ import { updateBrandAgentPMPTool } from "./pmps/update-pmp.js";
 import { analyzeTacticsTool } from "./reporting/analyze-tactics.js";
 import { exportCampaignDataTool } from "./reporting/export-campaign-data.js";
 import { getCampaignSummaryTool } from "./reporting/get-campaign-summary.js";
+import { provideScoringOutcomesTool } from "./reporting/provide-scoring-outcomes.js";
 import { registerWebhookTool } from "./reporting/register-webhook.js";
 
 export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
@@ -118,6 +119,7 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(exportCampaignDataTool(client));
   server.addTool(registerWebhookTool(client));
   server.addTool(analyzeTacticsTool(client));
+  server.addTool(provideScoringOutcomesTool(client));
 
   // New Creative Management Tools (MCP Orchestration)
   server.addTool(creativeCreateTool(client)); // creative/create
@@ -207,6 +209,7 @@ export {
   listCreativeFormatsTool,
   listInventoryOptionsTool,
   listMeasurementSourcesTool,
+  provideScoringOutcomesTool,
   registerWebhookTool,
   updateBrandAgentBrandStoryTool,
   updateBrandAgentCampaignTool,

@@ -144,7 +144,7 @@ export interface DataExportParams {
   datasets: Array<
     | "allocations" // Budget allocations
     | "delivery" // Spend, impressions, price
-    | "events" // All events with rewards
+    | "outcomes" // Scoring outcomes (replaced events)
     | "tactics" // Tactic configurations
   >;
 
@@ -190,7 +190,7 @@ export interface ExportCampaignDataParams {
   brandAgentId?: string;
   campaignIds?: string[];
   compression?: "gzip" | "none";
-  datasets: Array<"allocations" | "delivery" | "events" | "tactics">;
+  datasets: Array<"allocations" | "delivery" | "outcomes" | "tactics">;
   dateRange: {
     end: string;
     start: string;
