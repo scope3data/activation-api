@@ -6,13 +6,14 @@ import type {
   MCPToolExecuteContext,
 } from "../../types/mcp.js";
 
+import { CustomSignalsClient } from "../../services/custom-signals-client.js";
 import {
   createAuthErrorResponse,
   createErrorResponse,
   createMCPResponse,
 } from "../../utils/error-handling.js";
 
-export const createCustomSignalTool = (client: Scope3ApiClient) => ({
+export const createCustomSignalTool = (_client?: Scope3ApiClient) => ({
   annotations: {
     category: "custom-signals",
     dangerLevel: "low",
@@ -73,8 +74,13 @@ export const createCustomSignalTool = (client: Scope3ApiClient) => ({
         );
       }
 
-      const signal = await client.createCustomSignal(apiKey, {
-        clusters: args.clusters,
+      const customSignalsClient = new CustomSignalsClient();
+      const signal = await customSignalsClient.createCustomSignal(apiKey, {
+        clusters: args.clusters.map((c) => ({
+          channel: c.channel,
+          gdpr: c.gdpr,
+          region: c.region,
+        })),
         description: args.description,
         key: args.key,
         name: args.name,
