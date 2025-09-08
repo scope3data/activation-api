@@ -1,0 +1,450 @@
+---
+title: "Custom Signals"
+description: "Upload and manage first-party audience data for enhanced campaign targeting"
+icon: "database"
+---
+
+## Overview
+
+The Scope3 Custom Signals Platform provides real-time resolution of identity and signals for inbound requests. This unified platform hosts custom signals across many identifiers, with audience segments being one type of custom signal alongside geographic, property, and other signal types.
+
+<Info>
+Custom signals enable you to use your first-party data (CRM segments, loyalty tiers, purchase behavior) alongside third-party signals for more precise campaign targeting.
+</Info>
+
+## Key Features
+
+- **Unified Signal Management**: Single API for all signal types (audience, geographic, property, custom)
+- **Multi-Identifier Support**: Works with MAIDs, RampIDs, postal codes, domains, and more
+- **Real-time API**: Fast key-value lookups with sub-millisecond response times
+- **Flexible Data Ingestion**: Support for cloud bucket uploads, real-time API updates, and third-party integrations
+- **Auto-expiration**: Keys automatically expire after 30 days of inactivity
+
+## Custom Signal Types
+
+Custom signals are any data points that can be associated with identifiers to inform advertising decisions:
+
+### Audience Segments
+**CRM-Based Segments**
+- `loyalty_tier_gold`, `loyalty_tier_platinum`
+- `high_value_customer`, `at_risk_churn`
+- `recent_purchaser`, `frequent_buyer`
+
+**Behavioral Segments**  
+- `sports_fan`, `auto_intender`, `luxury_shopper`
+- `bargain_hunter`, `early_adopter`, `brand_loyal`
+
+### Geographic Signals
+**Location-Based Targeting**
+- `high_income_zip`, `urban_area`, `ski_region`
+- `store_catchment_area`, `service_territory`
+- `competitor_market`, `expansion_target`
+
+### Property Signals
+**Content & Placement**
+- `premium_publisher`, `video_enabled`, `mobile_app`
+- `brand_safe_domain`, `high_engagement_site`
+- `contextually_relevant`, `category_automotive`
+
+## Getting Started
+
+### Authentication
+
+All API requests require an API key passed in the `Authorization` header:
+
+```bash
+Authorization: Bearer YOUR_API_KEY
+```
+
+<Warning>
+**API Key Requirements:**
+- Contact api-support@scope3.com to obtain your API key
+- Use HTTPS only - API keys should never be sent over HTTP
+- Store keys securely and rotate them regularly
+</Warning>
+
+### Quick Start Example
+
+Store audience segments for a mobile advertising ID (MAID):
+
+```bash
+curl -X POST https://api.scope3.com/signals/maid \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: text/plain" \
+  -d "SET abcd-2832-abcd-238-abcd sports_fan auto_intender
+ADD aefa-9281-aefa-821-aefa luxury_shopper
+DEL aaab-2712-aaab-132-aaab"
+```
+
+## Core Concepts
+
+### Signal Keys
+
+Signal keys follow the format `{identifier_type}:{identifier_value}`. Examples:
+
+- `maid:abcd-2832-abcd-238-abcd` (Mobile Advertising ID)
+- `postal_code:90210` (ZIP Code)
+- `domain:cnn.com` (Website Domain)
+
+### Data Architecture
+
+<CardGroup cols={3}>
+  <Card title="Auto-Expiration" icon="clock">
+    All keys have a 30-day default TTL that refreshes when accessed, optimizing memory usage.
+  </Card>
+  
+  <Card title="Scalable Storage" icon="server">
+    Distributed architecture supports billions of identifiers with sub-millisecond lookup times.
+  </Card>
+  
+  <Card title="Secure Access" icon="shield">
+    API key authentication ensures your data remains private and secure.
+  </Card>
+</CardGroup>
+
+## API Reference
+
+### Response Formats
+
+All API responses use JSON format with consistent structures:
+
+<Tabs>
+  <Tab title="Write Operations">
+    **POST/PUT/DELETE Operations**
+    ```json
+    {
+      "status": "success|error",
+      "processed": 4,
+      "errors": 0,
+      "message": "Optional description"
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Read Operations">
+    **GET Operations**
+    ```json
+    {
+      "identifier": "value",
+      "ttl": 18321,
+      "signals": ["signal1", "signal2"]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Store/Update Signals
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.scope3.com/signals/maid \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: text/plain" \
+  -d "SET d82a-1811-d82a-921-d82a sports_fan auto_intender
+ADD abcd-2832-abcd-238-abcd luxury_shopper
+REM aefa-9281-aefa-821-aefa outdated_segment
+DEL aaab-2712-aaab-132-aaab"
+```
+
+```python Python
+import requests
+
+def update_signals(key_type, operations):
+    url = f"https://api.scope3.com/signals/{key_type}"
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "text/plain"
+    }
+    response = requests.post(url, headers=headers, data=operations)
+    return response.json()
+
+operations = """SET d82a-1811-d82a-921-d82a sports_fan auto_intender
+ADD abcd-2832-abcd-238-abcd luxury_shopper"""
+
+result = update_signals("maid", operations)
+```
+
+```javascript JavaScript
+async function updateSignals(keyType, operations) {
+  const url = `https://api.scope3.com/signals/${keyType}`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${API_KEY}`,
+      'Content-Type': 'text/plain'
+    },
+    body: operations
+  });
+  return response.json();
+}
+
+const operations = `SET d82a-1811-d82a-921-d82a sports_fan auto_intender
+ADD abcd-2832-abcd-238-abcd luxury_shopper`;
+
+const result = await updateSignals("maid", operations);
+```
+</CodeGroup>
+
+**POST** `/signals/{key_type}`
+
+**Parameters:**
+- `key_type` (string): Type of identifier (`maid`, `rampid`, `postal_code`, `domain`, etc.)
+
+**Request Body Operations:**
+- `SET` - Replace all signals for an identifier
+- `ADD` - Add signals to an identifier  
+- `REM` - Remove specific signals from an identifier
+- `DEL` - Remove all signals for an identifier
+
+### Retrieve Signals
+
+**GET** `/signals/{key_type}/{identifier}`
+
+<CodeGroup>
+```bash cURL
+curl https://api.scope3.com/signals/maid/d82a-1811-d82a-921-d82a \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```javascript JavaScript
+async function getSignals(keyType, identifier) {
+  const url = `https://api.scope3.com/signals/${keyType}/${identifier}`;
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${API_KEY}`
+    }
+  });
+  return response.json();
+}
+
+const signals = await getSignals("maid", "d82a-1811-d82a-921-d82a");
+console.log(signals.signals); // ["sports_fan", "auto_intender"]
+```
+</CodeGroup>
+
+**Response:**
+```json
+{
+  "identifier": "d82a-1811-d82a-921-d82a",
+  "ttl": 18321,
+  "signals": ["sports_fan", "auto_intender"]
+}
+```
+
+### Multi-Field Signals
+
+Store signals for composite keys with multiple fields:
+
+**POST** `/signals/{composite_key_types}`
+
+```bash
+curl -X POST https://api.scope3.com/signals/postal_code,domain \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: text/plain" \
+  -d "SET sw12,dailymail.co.uk affluent_london news_reader
+ADD wc3,telegraph.co.uk premium_content political_interest"
+```
+
+## Supported Key Types
+
+### Identity Keys
+
+| Key Type | Description | Example | Priority |
+|----------|-------------|---------|----------|
+| `rampid` | LiveRamp Identity | `RMP_12345` | High |
+| `maid` | Mobile Advertising ID | `abcd-1234-efgh-5678` | High |
+| `id5` | ID5 Universal ID | `ID5_abc123` | Medium |
+| `coreid` | Criteo CoreID | `CORE_xyz789` | Medium |
+| `yahoo_connect` | Yahoo ConnectID | `YHOO_connect123` | Medium |
+
+### Geographic Keys
+
+| Key Type | Description | Example |
+|----------|-------------|---------|
+| `postal_code` | ZIP/Postal codes | `90210`, `SW1A 1AA` |
+| `lat_long` | Latitude/Longitude | `34.0522,-118.2437` |
+| `uk_postal_district` | UK postal districts | `SW12`, `WC1` |
+
+### Property Keys
+
+| Key Type | Description | Example |
+|----------|-------------|---------|  
+| `domain` | Website domain | `cnn.com`, `bbc.co.uk` |
+| `app_bundle` | Mobile app bundle | `com.example.app` |
+| `property_id` | Custom property ID | `prop_12345` |
+
+### Composite Keys
+
+Combine multiple key types for more specific targeting:
+
+- `postal_code,domain` - Geographic + Property targeting
+- `maid,domain` - User + Property targeting  
+- `lat_long,app_bundle` - Location + App targeting
+
+## Data Ingestion Methods
+
+<Tabs>
+  <Tab title="Real-time API">
+    **Best for:** Dynamic audience updates, real-time event-based signals, immediate data changes
+    
+    Use the POST endpoints for real-time signal updates:
+    
+    ```bash
+    # Update signals in real-time
+    curl -X POST https://api.scope3.com/signals/maid \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -H "Content-Type: text/plain" \
+      -d "SET user123 high_value_customer recent_purchaser"
+    ```
+  </Tab>
+  
+  <Tab title="Cloud Bucket Upload">
+    **Best for:** Batch processing, scheduled updates, large data volumes
+    
+    Upload CSV files to designated S3/GCS buckets for batch processing:
+    
+    ```csv
+    key_type,identifier,operation,signals
+    maid,abcd-1234-efgh-5678,SET,"sports_fan,auto_intender"
+    postal_code,90210,ADD,"affluent,coastal"
+    domain,cnn.com,SET,"news,premium_content"
+    ```
+  </Tab>
+  
+  <Tab title="LiveRamp Integration">
+    **Best for:** Automated RampID resolution, custom segment mapping, scheduled batch updates
+    
+    Direct integration with LiveRamp's custom schema and sidecar files with automated processing and RampID resolution.
+  </Tab>
+</Tabs>
+
+## Advanced Features
+
+### Signal Definition Management
+
+Create and manage signal metadata with targeting rules:
+
+**POST** `/signal/{signalId}`
+
+```json
+{
+  "key": "postal_code,domain",
+  "clusters": [
+    {"region": "emea-ex-eu", "channel": "ctv"}, 
+    {"region": "emea-ex-eu", "channel": "web"}
+  ],
+  "name": "UK Premium News Readers",
+  "description": "Users in affluent UK postal codes visiting premium news sites"
+}
+```
+
+### GDPR Compliance
+
+<Warning>
+**EU-specific clusters** ensure data residency compliance with dedicated EU infrastructure and GDPR-compliant data processing.
+</Warning>
+
+```json
+{
+  "clusters": [
+    {"region": "eu-west-1", "gdpr": true},
+    {"region": "eu-central-1", "gdpr": true}
+  ]
+}
+```
+
+## Error Handling
+
+### HTTP Status Codes
+
+| Code | Description |
+|------|-------------|
+| `200` | Success |
+| `400` | Bad Request - Invalid format or parameters |
+| `401` | Unauthorized - Invalid API key |
+| `404` | Not Found - Identifier or signal not found |
+| `429` | Rate Limited - Too many requests |
+| `500` | Internal Server Error |
+
+### Common Errors
+
+<CodeGroup>
+```json Invalid Operation
+{
+  "error": "invalid_operation",
+  "message": "Supported operations: SET, ADD, REM, DEL"
+}
+```
+
+```json Rate Limited
+{
+  "error": "rate_limited", 
+  "message": "Rate limit exceeded.",
+  "retry_after": 60
+}
+```
+
+```json Invalid Format
+{
+  "error": "invalid_format", 
+  "message": "Operation format must be: OPERATION identifier signals...",
+  "code": 400
+}
+```
+</CodeGroup>
+
+## Rate Limits
+
+- **Batch Operations**: 10,000 identifiers per request maximum
+
+## Integration with Campaign Platform
+
+### Using Custom Signals in Campaigns
+
+Reference your custom signals in campaign prompts:
+
+```javascript
+const campaign = await createCampaign({
+  brandAgentId: "ba_123",
+  name: "High-Value Customer Campaign",
+  prompt: "Target loyalty_tier_gold and high_value_customer segments interested in premium products",
+  budget: { total: 50000, currency: "USD" }
+});
+```
+
+### Performance Monitoring
+
+Monitor custom signal performance alongside third-party signals:
+
+```javascript
+const signalAnalysis = await analyzeTactics({
+  campaignId: "camp_123",
+  analysisType: "signals"
+});
+
+// Compare custom vs third-party signal effectiveness:
+// Custom: loyalty_tier_gold (92% effectiveness)
+// Third-party: age_25_34 (76% effectiveness)
+```
+
+## Support & Resources
+
+<CardGroup cols={2}>
+  <Card title="Technical Support" icon="headset" href="mailto:api-support@scope3.com">
+    **Email Support**
+    
+    Get help with integration questions, API issues, and technical implementation.
+  </Card>
+  
+  <Card title="Signal Guide" href="/object-guides/signal" icon="radar">
+    **Understanding Signals**
+    
+    Learn how custom signals work with third-party signals in campaign optimization.
+  </Card>
+</CardGroup>
+
+---
+
+For additional resources:
+- **Documentation**: https://docs.scope3.com
+- **Status Page**: https://status.scope3.com

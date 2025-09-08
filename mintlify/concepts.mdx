@@ -71,17 +71,17 @@ Algorithm-driven optimization approaches that determine **how** your campaign bu
 
 Each tactic combines:
 - **Signals**: Data inputs for targeting (age, interests, behaviors)
-- **Stories**: Narrative contexts that guide messaging
+- **Synthetic Audiences**: AI-generated audience profiles that guide targeting
 - **Optimization**: ML algorithms that improve performance
 
 ```
 Example Tactic:
 Signals: ["age_25_34", "interest_sports", "device_mobile"]
-Stories: ["performance", "lifestyle"]  
+Synthetic Audiences: ["performance", "lifestyle"]  
 → Targets mobile sports fans 25-34 with performance/lifestyle messaging
 ```
 
-### Signals & Stories
+### Signals & Synthetic Audiences
 
 <Tabs>
   <Tab title="Signals">
@@ -95,16 +95,16 @@ Stories: ["performance", "lifestyle"]
     
     **Usage**: Group by signals in reports to understand which audiences perform best
   </Tab>
-  <Tab title="Stories">
-    **What they are**: Narrative frameworks that guide creative messaging
+  <Tab title="Synthetic Audiences">
+    **What they are**: AI-generated audience profiles that guide targeting optimization
     
     **Examples**:
-    - `performance`: Focus on product benefits and features
-    - `lifestyle`: Emphasize emotional connection and identity
-    - `urgency`: Create time-sensitive purchase motivation  
-    - `social_proof`: Highlight popularity and testimonials
+    - `performance`: Results-driven users focused on product benefits
+    - `lifestyle`: Experience-seeking users emphasizing identity
+    - `value`: Cost-conscious users motivated by savings
+    - `social`: Community-oriented users influenced by social proof
     
-    **Usage**: Group by stories to see which messaging themes resonate
+    **Usage**: Group by synthetic audiences to see which AI-generated profiles perform best
   </Tab>
 </Tabs>
 
@@ -265,7 +265,7 @@ Real-time push notifications for campaign events.
   
   <Accordion title="Performance Monitoring">
     - **Set up webhooks**: Get real-time alerts for important events
-    - **Regular analysis**: Use tactic analysis tools to optimize signal/story performance  
+    - **Regular analysis**: Use tactic analysis tools to optimize signal/synthetic audience performance  
     - **Data export**: Integrate with your BI systems for deeper analysis
   </Accordion>
 </AccordionGroup>
@@ -290,7 +290,7 @@ graph TD
     A[Get Campaign Summary] --> B{Performance Good?}
     B -->|Yes| C[Export Data for Analysis]
     B -->|No| D[Analyze Tactics] 
-    D --> E[Identify Top Signals/Stories]
+    D --> E[Identify Top Signals/Synthetic Audiences]
     E --> F[Update Campaign Targeting]
     F --> G[Monitor for 48-72h]
     G --> A

@@ -75,7 +75,7 @@ graph LR
 Once launched, campaigns automatically begin the **INTELLIGENT_PMPS** optimization process:
 
 1. **Signal Discovery** - Algorithm identifies high-performing audience signals
-2. **Story Optimization** - Narrative approaches are tested and refined
+2. **Synthetic Audience Optimization** - AI-generated audience profiles are tested and refined
 3. **Tactic Generation** - AI creates optimized targeting combinations
 4. **Continuous Learning** - Performance data feeds back into optimization
 
@@ -91,13 +91,13 @@ Once launched, campaigns automatically begin the **INTELLIGENT_PMPS** optimizati
   <Card title="Data Export" href="/api-reference/reporting/export-campaign-data" icon="database">
     **Enterprise Analytics**
     
-    Export structured data for BI systems with flexible grouping by tactic, signal, story, and publisher.
+    Export structured data for BI systems with flexible grouping by tactic, signal, synthetic audience, and publisher.
   </Card>
   
   <Card title="ML Analytics" href="/api-reference/reporting/analyze-tactics" icon="microscope">
     **Advanced Optimization**
     
-    Deep statistical analysis of tactic performance with actionable optimization recommendations.
+    Deep statistical analysis of tactic performance with actionable optimization recommendations. [See Tactic Guide](/object-guides/tactic) for detailed analysis.
   </Card>
 </CardGroup>
 
@@ -184,37 +184,14 @@ Campaigns seamlessly integrate with other Brand Agent resources:
 
 Every campaign generates rich performance data for optimization:
 
-#### Signal Performance Analysis
-Track how different audience signals (age, interests, behavior) perform across tactics:
+#### Performance Analysis
+For detailed tactic performance analysis including signal effectiveness and synthetic audience optimization, see the [Tactic Guide](/object-guides/tactic) and [Signal Guide](/object-guides/signal).
 
-```javascript
-const analysis = await analyzeTactics({
-  campaignId: "camp_123",
-  analysisType: "signals",
-  compareSignals: true
-});
-
-// Returns signal effectiveness rankings:
-// - "age_25_34": 89% efficiency score
-// - "interest_sports": 76% efficiency score
-// - "behavior_premium_shopper": 92% efficiency score
-```
-
-#### Story Optimization
-Understand which narrative approaches drive the best performance:
-
-```javascript
-const storyAnalysis = await analyzeTactics({
-  campaignId: "camp_123",
-  analysisType: "stories",
-  compareStories: true
-});
-
-// Returns story performance breakdown:
-// - "performance" narrative: 15% higher CTR
-// - "lifestyle" narrative: 32% better completion rates
-// - "value" narrative: 8% lower CPM
-```
+**Key Analysis Types Available:**
+- **Signal Performance**: Track audience targeting effectiveness
+- **Synthetic Audience Optimization**: Understand which AI-generated audiences perform best  
+- **Efficiency Analysis**: Compare tactic cost-effectiveness
+- **Attribution Analysis**: Understand conversion path contributions
 
 #### Real-time Delivery Monitoring
 Get instant visibility into campaign pacing and performance:
@@ -331,7 +308,7 @@ const backToSchoolCampaign = await createCampaign({
 ### 4. Monitoring & Optimization
 - Check campaign health weekly with `get_campaign_summary`
 - Export data for deeper analysis with `export_campaign_data`
-- Use ML insights from `analyze_tactics` for optimization decisions
+- Use [tactic performance insights](/object-guides/tactic) for optimization decisions
 - Set up real-time alerts for performance issues
 
 ## Common Campaign Patterns
@@ -357,15 +334,8 @@ const campaignB = await createCampaign({
 });
 
 // Compare performance after sufficient data collection
-const analysisA = await analyzeTactics({
-  campaignId: campaignA.id,
-  analysisType: "efficiency"
-});
-
-const analysisB = await analyzeTactics({
-  campaignId: campaignB.id, 
-  analysisType: "efficiency"
-});
+// Compare campaign performance using tactic analysis
+// See Tactic Guide for detailed analysis examples
 ```
 
 ### Seasonal Campaign Management

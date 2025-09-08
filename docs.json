@@ -23,15 +23,34 @@
             "pages": [
               "mintlify/object-guides/brand-agent",
               "mintlify/object-guides/campaign",
+              "mintlify/object-guides/tactic",
+              "mintlify/object-guides/signal",
               "mintlify/object-guides/creative",
               "mintlify/object-guides/format"
+            ]
+          },
+          {
+            "group": "🌟 Features",
+            "pages": [
+              "mintlify/features/media-quality",
+              "mintlify/features/publisher-integration",
+              "mintlify/features/built-for-agents"
+            ]
+          },
+          {
+            "group": "🔧 Optimization",
+            "pages": [
+              "mintlify/optimization/measurement",
+              "mintlify/optimization/scope3-algorithms",
+              "mintlify/optimization/custom-algorithms"
             ]
           },
           {
             "group": "🔌 Integrations",
             "pages": [
               "mintlify/integrations/webhooks",
-              "mintlify/integrations/creative-agents"
+              "mintlify/integrations/creative-agents",
+              "mintlify/integrations/custom-signals-platform"
             ]
           },
           {

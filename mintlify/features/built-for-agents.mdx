@@ -1,0 +1,286 @@
+---
+title: "Built for Agents"
+description: "AI-first advertising API designed for seamless agent integration and natural language campaign management"
+icon: "robot"
+---
+
+## Overview
+
+The Scope3 Campaign API is built from the ground up for AI agents, providing both programmatic access and natural language interfaces through the Model Context Protocol (MCP). Whether you're building agents or using them, Scope3 makes advertising operations conversational and intelligent.
+
+<CardGroup cols={2}>
+  <Card title="Using Our API via MCP" icon="comment-dots">
+    Connect existing AI agents (Claude, ChatGPT, etc.) to manage campaigns through natural conversation.
+  </Card>
+  
+  <Card title="Building Agents with Our API" icon="code">
+    Develop custom AI agents using our comprehensive MCP endpoints and developer tools.
+  </Card>
+</CardGroup>
+
+---
+
+## Using Our API via MCP
+
+**Turn any AI assistant into a campaign management expert** - just add our MCP server and start talking.
+
+### Quick Setup
+
+<Warning>
+**🚀 Instant Integration**
+
+Add our MCP server to any AI assistant:
+**https://docs.agentic.scope3.com/mcp**
+
+Works with Claude, ChatGPT, Claude Code, Cursor, and any MCP-compatible agent.
+</Warning>
+
+### Popular AI Agents
+
+<Tabs>
+  <Tab title="Claude Desktop">
+    **1. Add to config file:**
+    ```json
+    // ~/.config/claude/claude_desktop_config.json
+    {
+      "mcpServers": {
+        "scope3": {
+          "command": "npx",
+          "args": ["-y", "@scope3/campaign-mcp-server"],
+          "env": {
+            "SCOPE3_API_KEY": "your-api-key"
+          }
+        }
+      }
+    }
+    ```
+    
+    **2. Restart Claude Desktop**
+    
+    **3. Ask Claude:** *"Create a sustainable fashion campaign for millennials with $50K budget"*
+    
+    **That's it!** Claude can now manage your entire advertising operation.
+  </Tab>
+  
+  <Tab title="ChatGPT">
+    **1. Create a Custom GPT:**
+    - Go to ChatGPT → My GPTs → Create
+    - Add MCP Server: `https://api.agentic.scope3.com/mcp`
+    - Add Header: `x-scope3-api-key: your-api-key`
+    
+    **2. Ask ChatGPT:** *"Find premium CTV inventory under $35 CPM and launch a brand awareness campaign"*
+    
+    **3. Watch it work!** ChatGPT discovers inventory, creates campaigns, and optimizes performance.
+  </Tab>
+  
+  <Tab title="Claude Code">
+    **1. In terminal:**
+    ```bash
+    export SCOPE3_API_KEY="your-api-key"
+    npx @scope3/campaign-mcp-server --http --port 3001
+    ```
+    
+    **2. In Claude Code:** *"Connect to http://localhost:3001/mcp and help me optimize our Q4 campaign performance"*
+    
+    **3. Code-first campaigns:** Claude Code can analyze performance, generate reports, and automate optimizations.
+  </Tab>
+  
+  <Tab title="Cursor">
+    **1. Install in your project:**
+    ```bash
+    npm install @scope3/campaign-mcp-server
+    ```
+    
+    **2. In Cursor chat:** *"Use the Scope3 MCP tools to analyze our brand performance and suggest campaign improvements"*
+    
+    **3. AI-powered insights:** Cursor can audit campaigns, suggest optimizations, and implement changes.
+  </Tab>
+</Tabs>
+
+### What Your Agents Can Do
+
+Once connected, AI agents can handle complex advertising operations:
+
+**Campaign Management:**
+- *"Launch a $25K video campaign targeting Gen Z sports fans"*
+- *"Pause underperforming campaigns and reallocate budget to winners"*
+- *"Create A/B tests comparing different audience segments"*
+
+**Performance Analysis:**
+- *"Which campaigns are overpacing and need budget adjustments?"*
+- *"Show me completion rates by publisher and recommend optimizations"*
+- *"Export last month's performance data for the board presentation"*
+
+**Strategic Insights:**
+- *"Analyze our brand's performance across all campaigns this quarter"*
+- *"What audience signals are driving the best ROI?"*
+- *"Recommend budget allocation for next month based on performance trends"*
+
+---
+
+## Building Agents with Our API
+
+**Develop powerful advertising AI agents** using our comprehensive MCP toolkit and developer resources.
+
+### MCP Server Architecture
+
+Our MCP server provides 25+ specialized tools organized by function:
+
+```typescript
+// Brand Agent Management
+create_brand_agent, list_brand_agents, update_brand_agent
+
+// Campaign Operations  
+create_campaign, update_campaign, list_campaigns
+
+// Creative Management
+create_creative, list_creatives, update_creative_status
+
+// Performance Analytics
+get_campaign_summary, analyze_tactics, export_campaign_data
+
+// Reporting & Insights
+generate_performance_report, get_campaign_health_score
+```
+
+### Developer Integration Patterns
+
+<Tabs>
+  <Tab title="Node.js Integration">
+    ```typescript
+    import { FastMCP } from 'fastmcp';
+    
+    const mcp = new FastMCP({
+      server: 'https://api.agentic.scope3.com/mcp',
+      headers: {
+        'x-scope3-api-key': process.env.SCOPE3_API_KEY
+      }
+    });
+    
+    // Your agent can now call Scope3 tools
+    const campaign = await mcp.call('create_campaign', {
+      brandAgentId: 'ba_123',
+      name: 'AI-Generated Campaign',
+      prompt: 'Target high-intent users with video creative',
+      budget: { total: 10000, currency: 'USD' }
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Python Integration">
+    ```python
+    import mcp_client
+    
+    client = mcp_client.Client(
+        server_url='https://api.agentic.scope3.com/mcp',
+        headers={'x-scope3-api-key': os.environ['SCOPE3_API_KEY']}
+    )
+    
+    # Create campaigns programmatically
+    campaign = client.call_tool('create_campaign', {
+        'brandAgentId': 'ba_123',
+        'name': 'AI-Optimized Campaign',
+        'prompt': 'Focus on premium inventory with strong completion rates',
+        'budget': {'total': 15000, 'currency': 'USD'}
+    })
+    ```
+  </Tab>
+  
+  <Tab title="Agent Framework">
+    ```javascript
+    // Example agent using our MCP endpoints
+    class AdvertisingAgent {
+      constructor(scope3MCP) {
+        this.scope3 = scope3MCP;
+      }
+      
+      async optimizeCampaigns(brandAgentId) {
+        // Get campaign performance
+        const campaigns = await this.scope3.call('list_campaigns', { brandAgentId });
+        
+        // Analyze tactics for optimization opportunities  
+        for (const campaign of campaigns) {
+          const analysis = await this.scope3.call('analyze_tactics', {
+            campaignId: campaign.id,
+            analysisType: 'efficiency'
+          });
+          
+          // Make optimization decisions based on AI analysis
+          if (analysis.recommendations.length > 0) {
+            await this.implementOptimizations(campaign, analysis);
+          }
+        }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Advanced Agent Capabilities
+
+**Multi-Agent Coordination:**
+- Campaign managers that coordinate with creative and analytics agents
+- Portfolio optimization across multiple brand agents
+- Automated A/B testing with statistical significance detection
+
+**Custom Optimization Algorithms:**
+- Build agents that implement your proprietary bidding strategies
+- Create custom attribution models using our performance data
+- Develop specialized audience targeting based on your business rules
+
+**Enterprise Integration:**
+- Connect agents to your CRM, BI tools, and marketing stack
+- Implement custom approval workflows and budget controls
+- Create automated reporting and alerting systems
+
+### Developer Resources
+
+<CardGroup cols={2}>
+  <Card title="MCP Specification" href="https://modelcontextprotocol.io/docs" icon="book">
+    **Protocol Documentation**
+    
+    Complete MCP protocol specification and implementation guidelines.
+  </Card>
+  
+  <Card title="API Reference" href="/api-reference" icon="code">
+    **Tool Documentation**
+    
+    Detailed documentation for all 25+ MCP tools with examples and parameters.
+  </Card>
+</CardGroup>
+
+## Why Agents Love Scope3
+
+### 🗣️ **Natural Language First**
+No complex API learning - agents understand advertising through conversation.
+
+### 🧠 **AI-Optimized Architecture**  
+Built specifically for AI agents with intelligent defaults and contextual responses.
+
+### ⚡ **Real-time Intelligence**
+Live performance data and optimization recommendations fuel agent decision-making.
+
+### 🔗 **Seamless Integration**
+MCP standard ensures compatibility with existing agent frameworks and tools.
+
+## Next Steps
+
+<CardGroup cols={3}>
+  <Card title="Quick Start" href="/quickstart" icon="rocket">
+    **Get Started Fast**
+    
+    Launch your first AI-managed campaign in 5 minutes.
+  </Card>
+  
+  <Card title="MCP Tools" href="/api-reference" icon="tools">
+    **Explore Capabilities**
+    
+    Browse all available MCP tools and their capabilities.
+  </Card>
+  
+  <Card title="Developer Examples" href="https://github.com/scope3/mcp-examples" icon="github">
+    **Code Examples**
+    
+    Agent implementation examples and integration patterns.
+  </Card>
+</CardGroup>

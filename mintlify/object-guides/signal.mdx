@@ -1,0 +1,146 @@
+---
+title: "Signal"
+description: "Understanding the three types of signals that power campaign optimization"
+icon: "radar"
+---
+
+## Overview
+
+**Signals** are data points that inform campaign targeting and optimization decisions. The Scope3 platform uses three distinct types of signals to create effective advertising tactics and improve campaign performance.
+
+## Three Types of Signals
+
+### 1. Scope3 Signals
+
+**Platform-provided media quality and performance data** - included at no additional cost:
+
+- **Media Quality**: Brand safety scores, content classification, publisher reputation
+- **Viewability Metrics**: Average and projected viewability rates for placements
+- **Completion Rates**: Predicted video completion rates based on placement context
+- **Ad-to-Content Ratio**: Content density analysis for web placements
+- **Inventory Quality**: Premium vs. standard inventory classifications
+
+<Note>
+For detailed information about Scope3's media quality signals, see the [Media Quality Guide](/features/media-quality) (coming soon).
+</Note>
+
+### 2. Third-Party Signals
+
+**External data providers** - additional cost applies:
+
+- **Weather Data**: Current weather conditions for user location
+- **Audience Segments**: Demographics and behavioral data from data providers
+- **Economic Indicators**: Local market conditions, spending patterns
+- **Event Data**: Local events, sports schedules, cultural activities
+- **Contextual Data**: Real-time content analysis and sentiment
+
+<Info>
+Third-party signals are **coming soon**. Contact support@scope3.com for early access and pricing information.
+</Info>
+
+### 3. Custom Signals (First-Party Data)
+
+**Your own data** - no additional cost:
+
+- **CRM Segments**: Customer loyalty tiers, purchase history, lifetime value
+- **Behavioral Data**: Website interactions, app usage patterns
+- **Geographic Data**: Store locations, service areas, market territories  
+- **Custom Attributes**: Any business-specific targeting parameters
+
+Upload and manage your first-party data through the [Custom Signals Platform](/integrations/custom-signals).
+
+## How Signal RAG Works
+
+**Signal Retrieval-Augmented Generation (RAG)** is how the platform combines multiple signal types to create optimized targeting tactics:
+
+### The Process
+
+1. **Signal Collection**: The platform gathers all available signals for each impression opportunity
+   - Scope3 signals (media quality, viewability predictions)
+   - Custom signals (your first-party data)
+   - Third-party signals (when available)
+
+2. **Context Retrieval**: Relevant signals are retrieved based on campaign objectives and targeting criteria
+
+3. **Tactic Generation**: AI combines signals to create optimized targeting combinations
+   - High-quality inventory + loyal customers + favorable weather
+   - Premium content + high completion rates + recent purchasers
+
+4. **Performance Learning**: Results feed back into the system to improve future signal combinations
+
+### Developer Benefits
+
+For technical teams, Signal RAG provides:
+- **Explainable AI**: Understand which signals drove targeting decisions
+- **Performance Attribution**: Track signal effectiveness across tactics
+- **Custom Integration**: Add your own signals to the optimization process
+- **Real-time Adaptation**: Signal combinations adjust based on performance data
+
+## Using Signals in Campaigns
+
+Signals work automatically in campaign optimization, but you can influence their usage:
+
+### In Campaign Prompts
+
+```javascript
+const campaign = await createCampaign({
+  brandAgentId: "ba_123",
+  name: "Premium Quality Campaign",
+  prompt: "Target high_value_customers on premium inventory with strong completion rates",
+  budget: { total: 50000, currency: "USD" }
+});
+
+// The platform automatically selects relevant signals:
+// - Custom: high_value_customers (your first-party data)
+// - Scope3: premium_inventory, high_completion_rate
+// - Creates optimized tactics combining these signals
+```
+
+### Performance Analysis
+
+Monitor signal effectiveness through tactic analysis:
+
+```javascript
+const signalAnalysis = await analyzeTactics({
+  campaignId: "camp_123",
+  analysisType: "signals"
+});
+
+// Returns effectiveness scores for different signal combinations
+// helping you understand what drives performance
+```
+
+## Signal Performance Metrics
+
+**Effectiveness Score**: Primary metric combining conversion rate and cost efficiency
+- **High Score (&gt;8.0)**: Scale up budget allocation
+- **Medium Score (5.0-8.0)**: Monitor performance, optimize where possible
+- **Low Score (&lt;5.0)**: Consider adjusting campaign targeting
+
+**Key Performance Indicators:**
+- **Reach**: Total impressions delivered with signal combinations
+- **Cost Efficiency**: CPM performance relative to quality
+- **Conversion Rate**: Actions taken per impression
+- **Quality Score**: Media quality metrics from Scope3 signals
+
+## Next Steps
+
+<CardGroup cols={3}>
+  <Card title="Custom Signals" href="/integrations/custom-signals" icon="upload">
+    **Upload Your Data**
+    
+    Add first-party audience segments and custom targeting data to improve campaign performance.
+  </Card>
+  
+  <Card title="Tactic Analysis" href="/object-guides/tactic" icon="crosshairs">
+    **Performance Optimization**
+    
+    Understand how signal combinations create high-performing tactics.
+  </Card>
+  
+  <Card title="Campaign Strategy" href="/object-guides/campaign" icon="bullseye-arrow">
+    **Strategic Planning**
+    
+    Learn how to structure campaigns to take advantage of signal optimization.
+  </Card>
+</CardGroup>
