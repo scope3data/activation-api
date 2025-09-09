@@ -14,7 +14,7 @@ import {
 
 export const createSyntheticAudienceTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "audience-management",
+    category: "System",
     dangerLevel: "low",
     openWorldHint: true,
     readOnlyHint: false,

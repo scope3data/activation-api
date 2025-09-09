@@ -11,7 +11,7 @@ import {
 
 export const deleteBrandAgentStandardsTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "brand-safety",
+    category: "Brand Standards",
     dangerLevel: "medium",
     openWorldHint: true,
     readOnlyHint: false,

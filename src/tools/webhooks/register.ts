@@ -15,7 +15,7 @@ import {
 
 export const registerWebhookTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "integration",
+    category: "System",
     dangerLevel: "medium",
     openWorldHint: true,
     readOnlyHint: false,

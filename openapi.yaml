@@ -274,104 +274,6 @@ info:
   version: 1.0.0
 openapi: 3.1.0
 paths:
-  /tactic/adjust-allocation:
-    post:
-      description: Adjust budget allocation for tactics within a campaign. Can update budget amounts,
-        percentages, daily caps, or pacing strategies. Supports bulk updates across multiple
-        tactics. Use this to rebalance budget based on performance or changing priorities. Requires
-        authentication.
-      operationId: tactic/adjust-allocation
-      summary: Adjust Tactic Allocation
-      tags:
-        - System
-      x-llm-hints:
-        - Use this tool when user wants to adjust budget allocation for tactics within a campaign
-        - Call this when user asks 'show me', 'list', or 'what are my'
-        - Call this when user says 'change', 'update', 'modify', or 'edit'
-      requestBody:
-        content:
-          application/json:
-            examples:
-              basic:
-                summary: Basic example
-                value: {}
-            schema:
-              properties:
-                adjustments:
-                  items:
-                    properties:
-                      budgetAllocation:
-                        properties:
-                          amount:
-                            type: number
-                            description: New budget amount
-                          dailyCap:
-                            type: number
-                            description: New daily spending cap
-                          pacing:
-                            type: string
-                            description: New pacing strategy
-                          percentage:
-                            type: number
-                            description: New percentage of campaign budget
-                        type: object
-                        description: Budget allocation updates
-                      tacticId:
-                        type: string
-                        description: ID of the tactic to update
-                    required:
-                      - tacticId
-                    type: object
-                  type: array
-                  description: Array of adjustments to make to tactics
-                reason:
-                  type: string
-                  description: Optional reason for the budget adjustment (for documentation)
-              required:
-                - adjustments
-              type: object
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
   /tactic/analyze-performance:
     post:
       description: Analyze performance metrics across all tactics in a campaign. Provides detailed
@@ -381,7 +283,7 @@ paths:
       operationId: tactic/analyze-performance
       summary: Analyze Tactic Performance
       tags:
-        - System
+        - Tactics
       x-llm-hints:
         - Use this tool when user wants to analyze performance metrics across all tactics in a
           campaign
@@ -458,7 +360,7 @@ paths:
       operationId: reporting/analyze-tactics
       summary: Analyze Tactics
       tags:
-        - System
+        - Reporting & Analytics
       x-llm-hints:
         - Use this tool when user wants to deep analysis of tactic performance with ml insights
       requestBody:
@@ -551,7 +453,7 @@ paths:
       operationId: assets/add
       summary: Add Assets (Reference Management)
       tags:
-        - Asset Management
+        - System
       x-llm-hints:
         - Use this tool when user wants to add assets to a buyer agent's library by referencing
           external urls, rest upload ids, or existing cdn urls
@@ -804,7 +706,7 @@ paths:
       operationId: brand-story/create
       summary: Create Brand Agent Brand Story
       tags:
-        - System
+        - Brand Stories
       x-llm-hints:
         - Use this tool when user wants to create a new brand story for a brand agent
         - Call this when user asks 'show me', 'list', or 'what are my'
@@ -895,122 +797,12 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /campaign/create:
-    post:
-      description: Create a new campaign within a brand agent. This creates a budget-allocated marketing
-        initiative with natural language targeting. The campaign will be managed within the
-        specified brand agent context and can use the brand agent's shared creatives and audiences.
-        Supports campaign scheduling with start and end dates. Requires authentication.
-      operationId: campaign/create
-      summary: Create Brand Agent Campaign
-      tags:
-        - Campaigns
-      x-llm-hints:
-        - Use this tool when user wants to create a new campaign within a brand agent
-        - Call this when user says 'create', 'make', 'set up', or 'add'
-        - Call this when user asks 'show me', 'list', or 'what are my'
-      requestBody:
-        content:
-          application/json:
-            examples:
-              basic:
-                summary: Basic example
-                value: {}
-            schema:
-              properties:
-                brandAgentId:
-                  type: string
-                  description: ID of the brand agent that will own this campaign
-                budget:
-                  properties:
-                    currency:
-                      type: string
-                      description: Budget currency (e.g., 'USD', 'EUR')
-                    dailyCap:
-                      type: number
-                      description: Daily spending limit in cents (e.g., 100000 = $1,000/day)
-                    pacing:
-                      type: string
-                      description: Budget pacing strategy ('even', 'accelerated', or 'front_loaded')
-                    total:
-                      type: number
-                      description: Total campaign budget in cents (e.g., 5000000 = $50,000)
-                  required:
-                    - currency
-                    - total
-                  type: object
-                  description: Budget configuration for the campaign
-                creativeIds:
-                  items:
-                    type: string
-                  type: array
-                  description: Optional array of creative IDs to assign to this campaign
-                endDate:
-                  type: string
-                  description: Campaign end date in UTC (ISO 8601 format, e.g., '2024-12-31T23:59:59Z')
-                name:
-                  type: string
-                  description: Name of the campaign
-                prompt:
-                  type: string
-                  description: Natural language description of campaign objectives, targeting, and strategy
-                startDate:
-                  type: string
-                  description: Campaign start date in UTC (ISO 8601 format, e.g., '2024-01-01T00:00:00Z')
-              required:
-                - brandAgentId
-                - budget
-                - name
-                - prompt
-              type: object
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
   /pmp/create:
     post:
       description: Create a Private Marketplace deal with natural language prompt. The backend will
         intelligently parse the prompt to extract inventory requirements, targeting, and pricing.
       operationId: pmp/create
-      summary: pmp/create
+      summary: Create Brand Agent PMP
       tags:
         - System
       x-llm-hints:
@@ -1092,7 +884,7 @@ paths:
       operationId: brand-standards/create
       summary: Create Brand Agent Standards
       tags:
-        - System
+        - Brand Standards
       x-llm-hints:
         - Use this tool when user wants to create a new brand safety standards agent for a brand
           agent
@@ -1191,7 +983,7 @@ paths:
       operationId: brand-agent/create
       summary: Create Brand Agent
       tags:
-        - System
+        - Brand Agents
       x-llm-hints:
         - Use this tool when user wants to create a new brand agent (advertiser account)
         - Call this when user says 'create', 'make', 'set up', or 'add'
@@ -1343,6 +1135,116 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /campaign/create:
+    post:
+      description: Create a new campaign within a brand agent. This creates a budget-allocated marketing
+        initiative with natural language targeting. The campaign will be managed within the
+        specified brand agent context and can use the brand agent's shared creatives and audiences.
+        Supports campaign scheduling with start and end dates. Requires authentication.
+      operationId: campaign/create
+      summary: Create Campaign
+      tags:
+        - Campaigns
+      x-llm-hints:
+        - Use this tool when user wants to create a new campaign within a brand agent
+        - Call this when user says 'create', 'make', 'set up', or 'add'
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                brandAgentId:
+                  type: string
+                  description: ID of the brand agent that will own this campaign
+                budget:
+                  properties:
+                    currency:
+                      type: string
+                      description: Budget currency (e.g., 'USD', 'EUR')
+                    dailyCap:
+                      type: number
+                      description: Daily spending limit in cents (e.g., 100000 = $1,000/day)
+                    pacing:
+                      type: string
+                      description: Budget pacing strategy ('even', 'accelerated', or 'front_loaded')
+                    total:
+                      type: number
+                      description: Total campaign budget in cents (e.g., 5000000 = $50,000)
+                  required:
+                    - currency
+                    - total
+                  type: object
+                  description: Budget configuration for the campaign
+                creativeIds:
+                  items:
+                    type: string
+                  type: array
+                  description: Optional array of creative IDs to assign to this campaign
+                endDate:
+                  type: string
+                  description: Campaign end date in UTC (ISO 8601 format, e.g., '2024-12-31T23:59:59Z')
+                name:
+                  type: string
+                  description: Name of the campaign
+                prompt:
+                  type: string
+                  description: Natural language description of campaign objectives, targeting, and strategy
+                startDate:
+                  type: string
+                  description: Campaign start date in UTC (ISO 8601 format, e.g., '2024-01-01T00:00:00Z')
+              required:
+                - brandAgentId
+                - budget
+                - name
+                - prompt
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /signal/create:
     post:
       description: Create a new custom signal definition for the Custom Signals Platform. Defines the
@@ -1351,7 +1253,7 @@ paths:
       operationId: signal/create
       summary: Create Custom Signal
       tags:
-        - System
+        - Signals
       x-llm-hints:
         - Use this tool when user wants to create a new custom signal definition for the custom
           signals platform
@@ -1448,7 +1350,7 @@ paths:
       operationId: audience/create
       summary: Create Synthetic Audience
       tags:
-        - Brand Safety & Targeting
+        - System
       x-llm-hints:
         - Use this tool when user wants to create a new synthetic audience for a brand agent
         - Call this when user asks 'show me', 'list', or 'what are my'
@@ -1525,7 +1427,7 @@ paths:
       operationId: tactic/create
       summary: Create Tactic
       tags:
-        - System
+        - Tactics
       x-llm-hints:
         - Use this tool when user wants to create a new tactic by combining a publisher media
           product with a targeting strategy
@@ -1961,6 +1863,147 @@ paths:
                 properties:
                   data:
                     $ref: "#/components/schemas/Creative"
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /creative/delete:
+    post:
+      description: Delete a creative asset permanently. This will remove the creative from all campaigns
+        and cannot be undone. Use with caution as this action is irreversible. Consider unassigning
+        the creative from campaigns first if you want to preserve campaign history. Requires
+        creative ID and authentication.
+      operationId: creative/delete
+      summary: Delete Creative
+      tags:
+        - Creatives
+      x-llm-hints:
+        - Use this tool when user wants to delete a creative asset permanently
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                creativeId:
+                  type: string
+                  description: ID of the creative to delete
+                force:
+                  type: boolean
+                  description: Force deletion even if assigned to active campaigns (not recommended)
+              required:
+                - creativeId
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /creative/get:
+    post:
+      description: Get detailed information about a specific creative asset. Shows creative content,
+        format details, assignment status, approval information, and publisher sync status. Useful
+        for reviewing creative assets before assignment or troubleshooting creative issues. Requires
+        creative ID and authentication.
+      operationId: creative/get
+      summary: Get Creative
+      tags:
+        - Creatives
+      x-llm-hints:
+        - Use this tool when user wants to get detailed information about a specific creative asset
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                creativeId:
+                  type: string
+                  description: ID of the creative to retrieve
+              required:
+                - creativeId
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
                   message:
                     type: string
                   success:
@@ -2438,7 +2481,7 @@ paths:
       operationId: brand-story/delete
       summary: Delete Brand Agent Brand Story
       tags:
-        - System
+        - Brand Stories
       x-llm-hints:
         - Use this tool when user wants to archive (soft delete) a brand story
         - Call this when user asks 'show me', 'list', or 'what are my'
@@ -2509,7 +2552,7 @@ paths:
       operationId: brand-standards/delete
       summary: Delete Brand Agent Standards
       tags:
-        - System
+        - Brand Standards
       x-llm-hints:
         - Use this tool when user wants to archive (soft delete) a brand standards agent
         - Call this when user says 'delete', 'remove', or 'destroy'
@@ -2578,7 +2621,7 @@ paths:
       operationId: brand-agent/delete
       summary: Delete Brand Agent
       tags:
-        - System
+        - Brand Agents
       x-llm-hints:
         - "Use this tool when user wants to ⚠️ danger: permanently delete a brand agent (advertiser
           account) and all associated data including campaigns, creatives, audiences, standards, and
@@ -2641,6 +2684,82 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /campaign/delete:
+    post:
+      description: Delete a campaign permanently. This action cannot be undone and will remove all
+        campaign data including tactics, targeting profiles, and performance history. Active
+        campaigns should be paused first. Use with extreme caution as this will permanently destroy
+        campaign data. Requires campaign ID and authentication.
+      operationId: campaign/delete
+      summary: Delete Campaign
+      tags:
+        - Campaigns
+      x-llm-hints:
+        - Use this tool when user wants to delete a campaign permanently
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                campaignId:
+                  type: string
+                  description: ID of the campaign to delete
+                force:
+                  type: boolean
+                  description: Force deletion of active campaigns (not recommended)
+                preserveCreatives:
+                  type: boolean
+                  description: "Explicitly preserve creative assets (default: true)"
+              required:
+                - campaignId
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /signal/delete:
     post:
       description: "Delete a custom signal definition from the Custom Signals Platform. WARNING: This will
@@ -2649,7 +2768,7 @@ paths:
       operationId: signal/delete
       summary: Delete Custom Signal
       tags:
-        - System
+        - Signals
       x-llm-hints:
         - Use this tool when user wants to delete a custom signal definition from the custom signals
           platform
@@ -2718,7 +2837,7 @@ paths:
       operationId: tactic/discover-products
       summary: Discover Publisher Products
       tags:
-        - System
+        - Tactics
       x-llm-hints:
         - Use this tool when user wants to discover available publisher media products based on
           campaign requirements
@@ -2813,7 +2932,7 @@ paths:
       operationId: format/discover-sales-agents
       summary: Discover Sales Agent Formats
       tags:
-        - System
+        - Creatives
       x-llm-hints:
         - Use this tool when user wants to discover creative formats by calling
           list_creative_formats on registered sales agents
@@ -2887,7 +3006,7 @@ paths:
       operationId: campaign/export-data
       summary: Export Campaign Data
       tags:
-        - System
+        - Campaigns
       x-llm-hints:
         - Use this tool when user wants to export raw campaign data for bi/analytics systems in
           structured format
@@ -2991,7 +3110,7 @@ paths:
       operationId: brand-agent/get
       summary: Get Brand Agent
       tags:
-        - System
+        - Brand Agents
       x-llm-hints:
         - Use this tool when user wants to get detailed information about a specific brand agent
           (advertiser account) by id
@@ -3060,7 +3179,7 @@ paths:
       operationId: campaign/get-summary
       summary: Get Campaign Summary
       tags:
-        - System
+        - Reporting & Analytics
       x-llm-hints:
         - Use this tool when user wants to get a natural language summary of campaign performance
           with insights and visualizations
@@ -3144,7 +3263,7 @@ paths:
       operationId: signal/get
       summary: Get Custom Signal
       tags:
-        - System
+        - Signals
       x-llm-hints:
         - Use this tool when user wants to retrieve detailed information about a specific custom
           signal definition
@@ -3209,7 +3328,7 @@ paths:
     post:
       description: Search for available DSP seats to add to brand agent for PMP creation
       operationId: dsp/get-seats
-      summary: dsp/get-seats
+      summary: Get DSP Seats
       tags:
         - System
       x-llm-hints:
@@ -3396,7 +3515,7 @@ paths:
       operationId: brand-story/list
       summary: List Brand Agent Brand Stories
       tags:
-        - System
+        - Brand Stories
       x-llm-hints:
         - Use this tool when user wants to list all brand stories for a brand agent
         - Call this when user asks 'show me', 'list', or 'what are my'
@@ -3461,7 +3580,7 @@ paths:
     post:
       description: List all PMPs for a brand agent with their deal IDs and status
       operationId: pmp/list
-      summary: pmp/list
+      summary: List Brand Agent PMPs
       tags:
         - System
       x-llm-hints:
@@ -3533,7 +3652,7 @@ paths:
       operationId: brand-standards/list
       summary: List Brand Agent Standards
       tags:
-        - System
+        - Brand Standards
       x-llm-hints:
         - Use this tool when user wants to list all brand safety standards agents for a brand agent
       requestBody:
@@ -3600,7 +3719,7 @@ paths:
       operationId: brand-agent/list
       summary: List Brand Agents
       tags:
-        - System
+        - Brand Agents
       x-llm-hints:
         - Use this tool when user wants to list all brand agents (advertiser accounts) for the
           authenticated user
@@ -3666,6 +3785,106 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /campaign/list:
+    post:
+      description: List campaigns with filtering and sorting options. Can filter by brand agent, status,
+        date range, or budget range. Shows campaign summary information including name, status,
+        budget, performance metrics, and schedule. Use this to get an overview of campaign portfolio
+        or find specific campaigns. Requires authentication.
+      operationId: campaign/list
+      summary: List Campaigns
+      tags:
+        - Campaigns
+      x-llm-hints:
+        - Use this tool when user wants to list campaigns with filtering and sorting options
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                brandAgentId:
+                  type: string
+                  description: Filter campaigns by brand agent ID
+                status:
+                  type: string
+                  description: Filter by campaign status (active, paused, completed, scheduled, draft)
+                dateRange:
+                  properties:
+                    start:
+                      type: string
+                      description: Start date filter (ISO format)
+                    end:
+                      type: string
+                      description: End date filter (ISO format)
+                  type: object
+                  description: Filter by date range
+                budgetRange:
+                  properties:
+                    min:
+                      type: number
+                      description: Minimum budget in cents
+                    max:
+                      type: number
+                      description: Maximum budget in cents
+                  type: object
+                  description: Filter by budget range
+                sortBy:
+                  type: string
+                  description: "Field to sort by (default: updated)"
+                sortOrder:
+                  type: string
+                  description: "Sort order (default: desc)"
+                limit:
+                  type: number
+                  description: "Maximum number of campaigns to return (default: 50)"
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /format/list:
     post:
       description: List all available creative formats from AdCP standards, publishers, and creative
@@ -3674,7 +3893,7 @@ paths:
       operationId: format/list
       summary: List Creative Formats
       tags:
-        - System
+        - Creatives
       x-llm-hints:
         - Use this tool when user wants to list all available creative formats from adcp standards,
           publishers, and creative agents
@@ -3750,7 +3969,7 @@ paths:
       operationId: signal/list
       summary: List Custom Signals
       tags:
-        - System
+        - Signals
       x-llm-hints:
         - Use this tool when user wants to list all custom signal definitions in the custom signals
           platform
@@ -3820,7 +4039,7 @@ paths:
       operationId: audience/list
       summary: List Synthetic Audiences
       tags:
-        - Brand Safety & Targeting
+        - System
       x-llm-hints:
         - Use this tool when user wants to list all synthetic audiences for a specific brand agent
         - Call this when user asks 'show me', 'list', or 'what are my'
@@ -3890,7 +4109,7 @@ paths:
       operationId: tactic/list
       summary: List Tactics
       tags:
-        - System
+        - Tactics
       x-llm-hints:
         - Use this tool when user wants to list all tactics for a specific campaign
         - Call this when user asks 'show me', 'list', or 'what are my'
@@ -3959,7 +4178,7 @@ paths:
       operationId: reporting/provide-outcomes
       summary: Provide Scoring Outcomes
       tags:
-        - System
+        - Reporting & Analytics
       x-llm-hints:
         - Use this tool when user wants to provide scoring outcomes for campaign optimization
       requestBody:
@@ -4051,7 +4270,7 @@ paths:
       operationId: webhook/register
       summary: Register Webhook
       tags:
-        - Webhooks & Integration
+        - System
       x-llm-hints:
         - Use this tool when user wants to register a webhook endpoint to receive real-time campaign
           event notifications
@@ -4183,7 +4402,7 @@ paths:
       operationId: brand-story/update
       summary: Update Brand Agent Brand Story
       tags:
-        - System
+        - Brand Stories
       x-llm-hints:
         - Use this tool when user wants to update the target audience profile and characteristics
           for an existing brand story
@@ -4260,7 +4479,7 @@ paths:
       description: Update an existing PMP with new requirements. The backend will parse the new prompt and
         adjust deal IDs accordingly.
       operationId: pmp/update
-      summary: pmp/update
+      summary: Update Brand Agent PMP
       tags:
         - System
       x-llm-hints:
@@ -4341,7 +4560,7 @@ paths:
       operationId: brand-standards/update
       summary: Update Brand Agent Standards
       tags:
-        - System
+        - Brand Standards
       x-llm-hints:
         - Use this tool when user wants to update the safety prompt and configuration for an
           existing brand standards agent
@@ -4419,7 +4638,7 @@ paths:
       operationId: brand-agent/update
       summary: Update Brand Agent
       tags:
-        - System
+        - Brand Agents
       x-llm-hints:
         - Use this tool when user wants to update the name or description of an existing brand agent
           (advertiser account)
@@ -4489,15 +4708,18 @@ paths:
           description: Unauthorized
   /campaign/update:
     post:
-      description: Update an existing campaign strategy with a new prompt. This tool parses the new
-        prompt, updates the strategy with new targeting, agents, channels, and countries, and
-        provides a summary of changes made. Requires strategy ID and authentication.
+      description: Update an existing campaign including strategy, targeting, and tactic budget
+        allocations. Can update campaign prompt/strategy, tactic budget amounts, percentages, daily
+        caps, or pacing strategies. Supports bulk tactic updates. Use this to modify campaign
+        parameters and rebalance budget based on performance or changing priorities. Requires
+        campaign ID and authentication.
       operationId: campaign/update
       summary: Update Campaign
       tags:
         - Campaigns
       x-llm-hints:
-        - Use this tool when user wants to update an existing campaign strategy with a new prompt
+        - Use this tool when user wants to update an existing campaign including strategy,
+          targeting, and tactic budget allocations
         - Call this when user asks 'show me', 'list', or 'what are my'
         - Call this when user says 'change', 'update', 'modify', or 'edit'
       requestBody:
@@ -4517,10 +4739,40 @@ paths:
                   description: New name for the campaign (optional)
                 prompt:
                   type: string
-                  description: New campaign prompt with updated objectives and strategy
+                  description: New campaign prompt with updated objectives and strategy (optional if only updating
+                    tactics)
+                tacticAdjustments:
+                  items:
+                    properties:
+                      budgetAllocation:
+                        properties:
+                          amount:
+                            type: number
+                            description: New budget amount
+                          dailyCap:
+                            type: number
+                            description: New daily spending cap
+                          pacing:
+                            type: string
+                            description: New pacing strategy
+                          percentage:
+                            type: number
+                            description: New percentage of campaign budget
+                        type: object
+                        description: Budget allocation updates
+                      tacticId:
+                        type: string
+                        description: ID of the tactic to update
+                    required:
+                      - tacticId
+                    type: object
+                  type: array
+                  description: Optional array of tactic budget adjustments to make
+                reason:
+                  type: string
+                  description: Optional reason for the update/adjustment (for documentation)
               required:
                 - campaignId
-                - prompt
               type: object
         required: true
       responses:
@@ -4571,7 +4823,7 @@ paths:
       operationId: signal/update
       summary: Update Custom Signal
       tags:
-        - System
+        - Signals
       x-llm-hints:
         - Use this tool when user wants to update an existing custom signal definition
       requestBody:

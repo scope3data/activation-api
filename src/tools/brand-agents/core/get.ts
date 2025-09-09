@@ -14,7 +14,7 @@ import {
 
 export const getBrandAgentTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "data-retrieval",
+    category: "Brand Agents",
     dangerLevel: "low",
     openWorldHint: true,
     readOnlyHint: true,

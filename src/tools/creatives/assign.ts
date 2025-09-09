@@ -15,7 +15,7 @@ import {
  */
 export const creativeAssignTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "creative-management",
+    category: "Creatives",
     dangerLevel: "medium",
     openWorldHint: true,
     readOnlyHint: false,
@@ -111,7 +111,7 @@ export const creativeAssignTool = (client: Scope3ApiClient) => ({
  */
 export const creativeUnassignTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "creative-management",
+    category: "Creatives",
     dangerLevel: "medium",
     openWorldHint: true,
     readOnlyHint: false,

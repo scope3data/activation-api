@@ -15,7 +15,7 @@ import {
  */
 export const assetsAddTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "asset-management",
+    category: "System",
     dangerLevel: "low",
     openWorldHint: true,
     readOnlyHint: false,

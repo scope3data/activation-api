@@ -25,12 +25,14 @@ import { createBrandAgentBrandStoryTool } from "./brand-stories/create.js";
 import { deleteBrandAgentBrandStoryTool } from "./brand-stories/delete.js";
 import { listBrandAgentBrandStoriesTool } from "./brand-stories/list.js";
 import { updateBrandAgentBrandStoryTool } from "./brand-stories/update.js";
-import { createCampaignTool } from "./campaigns/create-legacy.js";
+import { createCampaignLegacyTool } from "./campaigns/create-legacy.js";
 // Campaigns
-import { createBrandAgentCampaignTool } from "./campaigns/create.js";
+import { createCampaignTool } from "./campaigns/create.js";
+import { deleteCampaignTool } from "./campaigns/delete.js";
 import { exportCampaignDataTool } from "./campaigns/export-data.js";
 import { getCampaignSummaryTool } from "./campaigns/get-summary.js";
 import { campaignListCreativesTool } from "./campaigns/list-creatives.js";
+import { listCampaignsTool } from "./campaigns/list.js";
 import { updateCampaignTool } from "./campaigns/update.js";
 // Creatives
 import { creativeApprovalStatusTool } from "./creatives/approval-status.js";
@@ -39,6 +41,8 @@ import {
   creativeUnassignTool,
 } from "./creatives/assign.js";
 import { creativeCreateTool } from "./creatives/create.js";
+import { creativeDeleteTool } from "./creatives/delete.js";
+import { creativeGetTool } from "./creatives/get.js";
 import { creativeListTool } from "./creatives/list.js";
 import { creativeReviseTool } from "./creatives/revise.js";
 import { creativeSyncPublishersTool } from "./creatives/sync-publishers.js";
@@ -64,7 +68,6 @@ import { getCustomSignalTool } from "./signals/get.js";
 import { listCustomSignalsTool } from "./signals/list.js";
 import { updateCustomSignalTool } from "./signals/update.js";
 // Tactics
-import { adjustTacticAllocationTool } from "./tactics/adjust-allocation.js";
 import { analyzeTacticPerformanceTool } from "./tactics/analyze-performance.js";
 import { createTacticTool } from "./tactics/create.js";
 import { discoverPublisherProductsTool } from "./tactics/discover-products.js";
@@ -84,17 +87,21 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(deleteBrandAgentTool(client));
 
   // Campaigns
-  server.addTool(createBrandAgentCampaignTool(client)); // campaign/create
-  server.addTool(createCampaignTool(client)); // campaign/create-legacy (backward compatibility)
-  server.addTool(updateCampaignTool(client)); // campaign/update
+  server.addTool(createCampaignTool(client)); // campaign/create
   server.addTool(getCampaignSummaryTool(client)); // campaign/get-summary
+  server.addTool(listCampaignsTool(client)); // campaign/list
+  server.addTool(updateCampaignTool(client)); // campaign/update
+  server.addTool(deleteCampaignTool(client)); // campaign/delete
   server.addTool(exportCampaignDataTool(client)); // campaign/export-data
   server.addTool(campaignListCreativesTool(client)); // campaign/list-creatives
+  server.addTool(createCampaignLegacyTool(client)); // campaign/create-legacy (backward compatibility)
 
   // Creatives
   server.addTool(creativeCreateTool(client)); // creative/create
+  server.addTool(creativeGetTool(client)); // creative/get
   server.addTool(creativeListTool(client)); // creative/list
   server.addTool(creativeUpdateTool(client)); // creative/update
+  server.addTool(creativeDeleteTool(client)); // creative/delete
   server.addTool(creativeAssignTool(client)); // creative/assign
   server.addTool(creativeUnassignTool(client)); // creative/unassign
   server.addTool(creativeApprovalStatusTool(client)); // creative/approval_status
@@ -117,10 +124,9 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(createSyntheticAudienceTool(client)); // audience/create
   server.addTool(listSyntheticAudiencesTool(client)); // audience/list
 
-  // Tactics
+  // Tactics (budget allocation merged into campaign/update)
   server.addTool(createTacticTool(client)); // tactic/create
   server.addTool(listTacticsTool(client)); // tactic/list
-  server.addTool(adjustTacticAllocationTool(client)); // tactic/adjust-allocation
   server.addTool(analyzeTacticPerformanceTool(client)); // tactic/analyze-performance
   server.addTool(discoverPublisherProductsTool(client)); // tactic/discover-products
 
@@ -160,7 +166,6 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
 // Export individual tools for testing
 export {
   // Tactics
-  adjustTacticAllocationTool,
   analyzeTacticPerformanceTool,
   // Reporting
   analyzeTacticsTool,
@@ -172,13 +177,13 @@ export {
   checkAuthTool,
   // Brand Stories
   createBrandAgentBrandStoryTool,
-  createBrandAgentCampaignTool,
   // PMPs
   createBrandAgentPMPTool,
   // Brand Standards
   createBrandAgentStandardsTool,
   // Brand Agents (Core)
   createBrandAgentTool,
+  createCampaignLegacyTool,
   createCampaignTool,
   // Signals
   createCustomSignalTool,
@@ -189,6 +194,8 @@ export {
   creativeApprovalStatusTool,
   creativeAssignTool,
   creativeCreateTool,
+  creativeDeleteTool,
+  creativeGetTool,
   creativeListTool,
   creativeReviseTool,
   creativeSyncPublishersTool,
@@ -197,6 +204,8 @@ export {
   deleteBrandAgentBrandStoryTool,
   deleteBrandAgentStandardsTool,
   deleteBrandAgentTool,
+  // Campaign CRUD
+  deleteCampaignTool,
   deleteCustomSignalTool,
   discoverPublisherProductsTool,
   // Formats
@@ -213,6 +222,7 @@ export {
   listBrandAgentPMPsTool,
   listBrandAgentStandardsTool,
   listBrandAgentsTool,
+  listCampaignsTool,
   listCreativeFormatsTool,
   listCustomSignalsTool,
   listSyntheticAudiencesTool,

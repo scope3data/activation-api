@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type {
-  CreateBrandAgentCampaignParams,
+  CreateCampaignParams,
   MCPToolExecuteContext,
 } from "../../types/mcp.js";
 
@@ -12,20 +12,20 @@ import {
   createMCPResponse,
 } from "../../utils/error-handling.js";
 
-export const createBrandAgentCampaignTool = (client: Scope3ApiClient) => ({
+export const createCampaignTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "brand-agent-management",
+    category: "Campaigns",
     dangerLevel: "medium",
     openWorldHint: true,
     readOnlyHint: false,
-    title: "Create Brand Agent Campaign",
+    title: "Create Campaign",
   },
 
   description:
     "Create a new campaign within a brand agent. This creates a budget-allocated marketing initiative with natural language targeting. The campaign will be managed within the specified brand agent context and can use the brand agent's shared creatives and audiences. Supports campaign scheduling with start and end dates. Requires authentication.",
 
   execute: async (
-    args: CreateBrandAgentCampaignParams,
+    args: CreateCampaignParams,
     context: MCPToolExecuteContext,
   ): Promise<string> => {
     // Check session context first, then fall back to environment variable

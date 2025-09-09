@@ -15,7 +15,7 @@ import {
 
 export const exportCampaignDataTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "data-export",
+    category: "Campaigns",
     dangerLevel: "low",
     openWorldHint: true,
     readOnlyHint: true,

@@ -11,6 +11,13 @@ import {
 
 export const getDSPSeatsTool = (client: Scope3ApiClient) =>
   ({
+    annotations: {
+      category: "System",
+      dangerLevel: "low",
+      openWorldHint: true,
+      readOnlyHint: true,
+      title: "Get DSP Seats",
+    },
     description:
       "Search for available DSP seats to add to brand agent for PMP creation",
     execute: async (

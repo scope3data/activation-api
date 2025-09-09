@@ -976,60 +976,23 @@ function getAllTools(client: Scope3ApiClient): Record<string, any> {
   return tools;
 }
 
-function getTagForTool(toolName: string): string {
-  // Map tool names to appropriate tags
-  if (toolName === "check_auth") return "Authentication";
-
-  if (
-    toolName.includes("brand_agent") ||
-    toolName === "create_brand_agent" ||
-    toolName === "update_brand_agent" ||
-    toolName === "delete_brand_agent" ||
-    toolName === "get_brand_agent" ||
-    toolName === "list_brand_agents"
-  ) {
-    return "Brand Agents";
+function getTagForTool(tool: any): string {
+  // Use the tool's category annotation if available
+  if (tool.annotations?.category) {
+    return tool.annotations.category;
   }
 
-  if (
-    toolName.includes("campaign") &&
-    !toolName.includes("export") &&
-    !toolName.includes("summary")
-  ) {
-    return "Campaigns";
-  }
-
-  if (toolName.includes("creative") || toolName.startsWith("creative/")) {
-    return "Creatives";
-  }
-
-  if (
-    toolName === "get_campaign_summary" ||
-    toolName === "export_campaign_data" ||
-    toolName === "analyze_tactics"
-  ) {
-    return "Reporting & Analytics";
-  }
-
-  if (toolName.includes("brand_standards") || toolName.includes("audience")) {
-    return "Brand Safety & Targeting";
-  }
-
-  if (toolName.includes("inventory") || toolName.includes("publisher")) {
-    return "Inventory & Optimization";
-  }
-
-  if (toolName.includes("assets") || toolName.startsWith("assets/")) {
-    return "Asset Management";
-  }
-
-  if (toolName.includes("webhook") || toolName.includes("measurement")) {
-    return "Webhooks & Integration";
-  }
-
-  if (toolName === "get_amp_agents") {
-    return "System";
-  }
+  // Fallback to name-based mapping for tools without category annotations
+  const toolName = tool.name;
+  if (toolName === "auth/check") return "System";
+  if (toolName.includes("brand-agent/")) return "Brand Agents";
+  if (toolName.includes("campaign/")) return "Campaigns";
+  if (toolName.includes("creative/")) return "Creatives";
+  if (toolName.includes("brand-story/")) return "Brand Stories";
+  if (toolName.includes("brand-standards/")) return "Brand Standards";
+  if (toolName.includes("tactic/")) return "Tactics";
+  if (toolName.includes("signal/")) return "Signals";
+  if (toolName.includes("reporting/")) return "Reporting & Analytics";
 
   // Default fallback
   return "System";
@@ -1049,7 +1012,7 @@ function toolToOpenAPIOperation(
     description: (tool.description || "").replace(/\n\s+/g, " ").trim(),
     operationId: tool.name,
     summary: tool.annotations?.title || tool.name.replace(/_/g, " "),
-    tags: [getTagForTool(tool.name)],
+    tags: [getTagForTool(tool)],
     "x-llm-hints": extractLLMHints(tool.description),
   };
 

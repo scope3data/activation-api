@@ -11,6 +11,13 @@ import {
 
 export const listBrandAgentPMPsTool = (client: Scope3ApiClient) =>
   ({
+    annotations: {
+      category: "System",
+      dangerLevel: "low",
+      openWorldHint: true,
+      readOnlyHint: true,
+      title: "List Brand Agent PMPs",
+    },
     description:
       "List all PMPs for a brand agent with their deal IDs and status",
     execute: async (

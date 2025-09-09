@@ -14,7 +14,7 @@ import {
 
 export const getCustomSignalTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "custom-signals",
+    category: "Signals",
     dangerLevel: "low",
     openWorldHint: true,
     readOnlyHint: true,

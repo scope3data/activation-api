@@ -11,6 +11,13 @@ import {
 
 export const createBrandAgentPMPTool = (client: Scope3ApiClient) =>
   ({
+    annotations: {
+      category: "System",
+      dangerLevel: "medium",
+      openWorldHint: true,
+      readOnlyHint: false,
+      title: "Create Brand Agent PMP",
+    },
     description:
       "Create a Private Marketplace deal with natural language prompt. The backend will intelligently parse the prompt to extract inventory requirements, targeting, and pricing.",
     execute: async (

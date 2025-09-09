@@ -19,7 +19,7 @@ const mcpClientService = new MCPClientService();
 
 export const getProductsTool = () => ({
   annotations: {
-    category: "product-discovery",
+    category: "System",
     dangerLevel: "low",
     openWorldHint: true,
     readOnlyHint: true,

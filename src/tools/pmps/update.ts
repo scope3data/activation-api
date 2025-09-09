@@ -11,6 +11,13 @@ import {
 
 export const updateBrandAgentPMPTool = (client: Scope3ApiClient) =>
   ({
+    annotations: {
+      category: "System",
+      dangerLevel: "medium",
+      openWorldHint: true,
+      readOnlyHint: false,
+      title: "Update Brand Agent PMP",
+    },
     description:
       "Update an existing PMP with new requirements. The backend will parse the new prompt and adjust deal IDs accordingly.",
     execute: async (

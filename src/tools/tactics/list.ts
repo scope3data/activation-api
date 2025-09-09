@@ -11,7 +11,7 @@ import {
 
 export const listTacticsTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "tactic-management",
+    category: "Tactics",
     dangerLevel: "low",
     openWorldHint: true,
     readOnlyHint: true,

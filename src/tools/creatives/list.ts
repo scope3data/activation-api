@@ -15,7 +15,7 @@ import {
  */
 export const creativeListTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "creative-management",
+    category: "Creatives",
     dangerLevel: "low",
     openWorldHint: true,
     readOnlyHint: true,

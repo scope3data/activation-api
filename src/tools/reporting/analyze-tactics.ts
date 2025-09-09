@@ -20,7 +20,7 @@ import {
 
 export const analyzeTacticsTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "analytics",
+    category: "Reporting & Analytics",
     dangerLevel: "low",
     openWorldHint: true,
     readOnlyHint: true,

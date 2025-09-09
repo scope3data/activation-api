@@ -15,7 +15,7 @@ import {
  */
 export const campaignListCreativesTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "campaign-management",
+    category: "Campaigns",
     dangerLevel: "low",
     openWorldHint: true,
     readOnlyHint: true,
