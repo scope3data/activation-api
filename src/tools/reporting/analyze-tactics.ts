@@ -84,7 +84,7 @@ export const analyzeTacticsTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "analyze_tactics",
+  name: "reporting/analyze-tactics",
   parameters: z.object({
     analysisType: z
       .enum([
@@ -704,7 +704,7 @@ async function performTacticAnalysis(
   // Get performance data for each tactic
   const tacticPerformance = await Promise.all(
     tactics.map(async (tactic: Record<string, unknown>) => {
-      const performance = await client.getTacticPerformance(
+      const performance = await client.getTacticPerformanceById(
         apiKey,
         tactic.id as string,
         dateRange,

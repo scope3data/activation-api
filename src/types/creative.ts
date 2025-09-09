@@ -294,7 +294,7 @@ export interface CreativeAsset {
 /**
  * Creative content sources (orchestration, not upload)
  */
-export interface CreativeContent {
+export interface CreativeContent extends Record<string, unknown> {
   // Asset references (not uploads)
   assetIds?: string[]; // References to pre-uploaded assets
   // Pre-assembled content (ad server tags)
@@ -483,6 +483,8 @@ export interface UpdateCreativeInput {
   creativeId: string;
   updates: {
     content?: Partial<CreativeContent>;
+    contentCategories?: string[];
+    description?: string;
     externalId?: string;
     name?: string;
     status?:
@@ -492,5 +494,6 @@ export interface UpdateCreativeInput {
       | "paused"
       | "pending_review"
       | "rejected";
+    targetAudience?: string;
   };
 }

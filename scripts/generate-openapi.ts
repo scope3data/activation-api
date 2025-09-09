@@ -96,9 +96,22 @@ function convertZodToJsonSchema(zodSchema: unknown): unknown {
       const properties: Record<string, unknown> = {};
       const required: string[] = [];
 
-      for (const [key, value] of Object.entries(schema._def.shape || {})) {
-        properties[key] = convertZodToJsonSchema(value);
-        if (!(value as any).isOptional?.()) {
+      // Access the shape directly from the schema object
+      const shape = schema.shape;
+
+      for (const [key, value] of Object.entries(shape || {})) {
+        const fieldSchema = convertZodToJsonSchema(value);
+
+        // Add description if available from Zod's describe() method
+        const valueAny = value as any;
+        if (valueAny._def?.description) {
+          (fieldSchema as any).description = valueAny._def.description;
+        }
+
+        properties[key] = fieldSchema;
+
+        // Check if field is required by looking at the Zod type
+        if (!isZodOptional(valueAny)) {
           required.push(key);
         }
       }
@@ -110,27 +123,48 @@ function convertZodToJsonSchema(zodSchema: unknown): unknown {
       };
     }
 
+    // Handle Zod optional schemas
+    if (schema._def?.typeName === "ZodOptional") {
+      return convertZodToJsonSchema(schema._def.innerType);
+    }
+
     // Handle Zod string schemas
     if (schema._def?.typeName === "ZodString") {
-      return { type: "string" };
+      const result: any = { type: "string" };
+      if (schema._def?.description) {
+        result.description = schema._def.description;
+      }
+      return result;
     }
 
     // Handle Zod number schemas
     if (schema._def?.typeName === "ZodNumber") {
-      return { type: "number" };
+      const result: any = { type: "number" };
+      if (schema._def?.description) {
+        result.description = schema._def.description;
+      }
+      return result;
     }
 
     // Handle Zod boolean schemas
     if (schema._def?.typeName === "ZodBoolean") {
-      return { type: "boolean" };
+      const result: any = { type: "boolean" };
+      if (schema._def?.description) {
+        result.description = schema._def.description;
+      }
+      return result;
     }
 
     // Handle Zod array schemas
     if (schema._def?.typeName === "ZodArray") {
-      return {
+      const result: any = {
         items: convertZodToJsonSchema(schema._def.type),
         type: "array",
       };
+      if (schema._def?.description) {
+        result.description = schema._def.description;
+      }
+      return result;
     }
   }
 
@@ -544,6 +578,229 @@ For detailed guides, see our [documentation](https://docs.scope3.com).
   }
 }
 
+function generateResponseExamples(toolName: string): Record<string, unknown> {
+  // Map tool names to their specific response examples
+  const responseExamples: Record<string, Record<string, unknown>> = {
+    create_brand_agent: {
+      success: {
+        summary: "Brand agent created successfully",
+        value: {
+          data: {
+            advertiserDomains: ["nike.com"],
+            createdAt: "2024-01-15T10:30:00Z",
+            customerId: 1,
+            description: "Global athletic wear and equipment brand",
+            externalId: "NIKE_001",
+            id: "ba_nike_123",
+            name: "Nike Global",
+            nickname: "Nike",
+            updatedAt: "2024-01-15T10:30:00Z",
+          },
+          message: "Brand agent created successfully",
+          success: true,
+        },
+      },
+    },
+    create_brand_agent_campaign: {
+      success: {
+        summary: "Brand agent campaign created successfully",
+        value: {
+          data: {
+            brandAgentId: "ba_nike_123",
+            budget: {
+              currency: "USD",
+              dailyCap: 50000,
+              pacing: "even",
+              total: 5000000,
+            },
+            createdAt: "2024-01-15T10:30:00Z",
+            endDate: "2024-05-31T23:59:59Z",
+            id: "camp_nike_spring_2024",
+            name: "Nike Spring 2024 Campaign",
+            prompt:
+              "Target young athletes aged 18-35 interested in running and fitness",
+            startDate: "2024-03-01T00:00:00Z",
+            status: "active",
+            updatedAt: "2024-01-15T10:30:00Z",
+          },
+          message: "Campaign created successfully",
+          success: true,
+        },
+      },
+    },
+    create_campaign: {
+      success: {
+        summary: "Campaign strategy created successfully",
+        value: {
+          data: {
+            strategyId: "str_abc123",
+            targetingProfiles: [
+              {
+                dimensionName: "Demographics",
+                excludeCount: 2,
+                id: "tp_demographics_123",
+                includeCount: 5,
+              },
+            ],
+          },
+          message:
+            "Campaign strategy created successfully with targeting profiles",
+          success: true,
+        },
+      },
+    },
+    list_brand_agents: {
+      success: {
+        summary: "List of brand agents retrieved",
+        value: {
+          data: [
+            {
+              createdAt: "2024-01-15T10:30:00Z",
+              customerId: 1,
+              id: "ba_nike_123",
+              name: "Nike Global",
+              updatedAt: "2024-01-15T10:30:00Z",
+            },
+          ],
+          message: "Retrieved 1 brand agent(s)",
+          success: true,
+        },
+      },
+    },
+  };
+
+  // Return specific examples or default generic example
+  return (
+    responseExamples[toolName] || {
+      success: {
+        summary: "Successful operation",
+        value: {
+          data: {},
+          message: "Operation completed successfully",
+          success: true,
+        },
+      },
+    }
+  );
+}
+
+function generateResponseSchema(toolName: string): unknown {
+  // Map tool names to their specific response data schemas
+  const responseSchemas: Record<string, unknown> = {
+    create_brand_agent: {
+      properties: {
+        data: {
+          $ref: "#/components/schemas/BrandAgent",
+        },
+        message: { type: "string" },
+        success: { type: "boolean" },
+      },
+      type: "object",
+    },
+    create_brand_agent_campaign: {
+      properties: {
+        data: {
+          $ref: "#/components/schemas/Campaign",
+        },
+        message: { type: "string" },
+        success: { type: "boolean" },
+      },
+      type: "object",
+    },
+    create_campaign: {
+      properties: {
+        data: {
+          properties: {
+            strategyId: { type: "string" },
+            targetingProfiles: {
+              items: {
+                properties: {
+                  dimensionName: { type: "string" },
+                  excludeCount: { type: "integer" },
+                  id: { type: "string" },
+                  includeCount: { type: "integer" },
+                },
+                type: "object",
+              },
+              type: "array",
+            },
+          },
+          type: "object",
+        },
+        message: { type: "string" },
+        success: { type: "boolean" },
+      },
+      type: "object",
+    },
+    "creative/create": {
+      properties: {
+        data: {
+          $ref: "#/components/schemas/Creative",
+        },
+        message: { type: "string" },
+        success: { type: "boolean" },
+      },
+      type: "object",
+    },
+    "creative/list": {
+      properties: {
+        data: {
+          properties: {
+            assignedCreatives: { type: "integer" },
+            creatives: {
+              items: {
+                $ref: "#/components/schemas/Creative",
+              },
+              type: "array",
+            },
+            totalCreatives: { type: "integer" },
+            unassignedCreatives: { type: "integer" },
+          },
+          type: "object",
+        },
+        message: { type: "string" },
+        success: { type: "boolean" },
+      },
+      type: "object",
+    },
+    get_brand_agent: {
+      properties: {
+        data: {
+          $ref: "#/components/schemas/BrandAgent",
+        },
+        message: { type: "string" },
+        success: { type: "boolean" },
+      },
+      type: "object",
+    },
+    list_brand_agents: {
+      properties: {
+        data: {
+          items: {
+            $ref: "#/components/schemas/BrandAgent",
+          },
+          type: "array",
+        },
+        message: { type: "string" },
+        success: { type: "boolean" },
+      },
+      type: "object",
+    },
+  };
+
+  // Return specific schema or default generic schema
+  return (
+    responseSchemas[toolName] || {
+      properties: {
+        data: { type: "object" },
+        message: { type: "string" },
+        success: { type: "boolean" },
+      },
+      type: "object",
+    }
+  );
+}
+
 function generateSchemas(): Record<string, unknown> {
   return {
     BrandAgent: {
@@ -778,6 +1035,11 @@ function getTagForTool(toolName: string): string {
   return "System";
 }
 
+// Helper function to check if a Zod field is optional
+function isZodOptional(zodField: any): boolean {
+  return zodField._def?.typeName === "ZodOptional";
+}
+
 function toolToOpenAPIOperation(
   tool: any,
   method: "DELETE" | "GET" | "POST" | "PUT",
@@ -843,29 +1105,14 @@ function toolToOpenAPIOperation(
     operation.parameters = parameters;
   }
 
-  // Standard responses
+  // Generate specific response schemas based on tool
+  const responseSchema = generateResponseSchema(tool.name);
   operation.responses = {
     "200": {
       content: {
         "application/json": {
-          examples: {
-            success: {
-              summary: "Successful operation",
-              value: {
-                data: {},
-                message: "Operation completed successfully",
-                success: true,
-              },
-            },
-          },
-          schema: {
-            properties: {
-              data: { type: "object" },
-              message: { type: "string" },
-              success: { type: "boolean" },
-            },
-            type: "object",
-          },
+          examples: generateResponseExamples(tool.name),
+          schema: responseSchema,
         },
       },
       description: "Successful response",

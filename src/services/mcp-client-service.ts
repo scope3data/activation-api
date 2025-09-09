@@ -1,5 +1,4 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
@@ -166,34 +165,19 @@ export class MCPClientService {
     }
 
     // Choose the appropriate transport based on the agent URI
-    let transport;
+    // Use StreamableHTTP transport for HTTP-based MCP agents
+    // This properly handles streaming HTTP with authentication headers
+    const url = new URL(salesAgent.agent_uri);
 
-    if (salesAgent.agent_uri.startsWith("http")) {
-      // Use StreamableHTTP transport for HTTP-based MCP agents
-      // This properly handles streaming HTTP with authentication headers
-      const url = new URL(salesAgent.agent_uri);
-
-      transport = new StreamableHTTPClientTransport(url, {
-        requestInit: {
-          headers: {
-            Accept: "application/json, text/event-stream",
-            "Content-Type": "application/json",
-            "x-adcp-auth": salesAgent.auth_token,
-          },
+    const transport = new StreamableHTTPClientTransport(url, {
+      requestInit: {
+        headers: {
+          Accept: "application/json, text/event-stream",
+          "Content-Type": "application/json",
+          "x-adcp-auth": salesAgent.auth_token,
         },
-      });
-    } else {
-      // Use stdio transport for command-line based agents
-      transport = new StdioClientTransport({
-        args: [],
-        command: salesAgent.agent_uri,
-        env: {
-          ...process.env,
-          // Pass auth token through environment if needed
-          MCP_AUTH_TOKEN: salesAgent.auth_token,
-        },
-      });
-    }
+      },
+    });
 
     const client = new Client(
       {

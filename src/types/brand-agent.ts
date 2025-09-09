@@ -1,7 +1,7 @@
 // Brand Agent types - represents advertiser/account level entities
 
-import type { InventoryManagement } from "./inventory-options.js";
 import type { CampaignAlert } from "./reporting.js";
+import type { TacticManagement } from "./tactics.js";
 
 // Shared Agent Model type
 export interface AgentModel {
@@ -20,8 +20,10 @@ export interface BrandAgent {
   customerId: number;
   description?: string;
   dspSeats?: string[]; // DSP seat IDs for PMP creation
+  externalId?: string; // Customer-scoped external identifier (e.g., client's internal brand ID)
   id: string;
   name: string;
+  nickname?: string; // Customer-scoped friendly name (e.g., "Nike" for "Nike c/o Kinesso")
 
   updatedAt: Date;
 }
@@ -63,10 +65,9 @@ export interface BrandAgentCampaign {
     };
   };
 
-  id: string;
+  endDate?: Date;
 
-  // Inventory management configuration
-  inventoryManagement?: InventoryManagement;
+  id: string;
   name: string;
   // NEW: Integrated notification thresholds
   notificationThresholds?: {
@@ -98,7 +99,12 @@ export interface BrandAgentCampaign {
     quality: number; // Weight for Scope3 media quality score (0-1)
   };
 
+  // Campaign scheduling (UTC timestamps)
+  startDate?: Date;
   status: string;
+
+  // Inventory management configuration
+  tacticManagement?: TacticManagement;
 
   updatedAt: Date;
 }
@@ -114,8 +120,7 @@ export interface BrandAgentCampaignInput {
   };
   creativeIds?: string[];
 
-  // Inventory management configuration
-  inventoryManagement?: InventoryManagement;
+  endDate?: Date;
 
   name: string;
   // Optional notification thresholds
@@ -147,6 +152,11 @@ export interface BrandAgentCampaignInput {
     outcome: number; // Weight for user-provided outcome score (0-1)
     quality: number; // Weight for Scope3 media quality score (0-1)
   };
+  // Campaign scheduling (UTC timestamps)
+  startDate?: Date;
+
+  // Inventory management configuration
+  tacticManagement?: TacticManagement;
 }
 
 export interface BrandAgentCampaignsData {
@@ -163,12 +173,12 @@ export interface BrandAgentCampaignUpdateInput {
   };
   creativeIds?: string[];
 
-  // Inventory management configuration
-  inventoryManagement?: Partial<InventoryManagement>;
-
   name?: string;
+
   prompt?: string;
   status?: string;
+  // Inventory management configuration
+  tacticManagement?: Partial<TacticManagement>;
 }
 
 // Creative types (owned by brand agent)
@@ -208,10 +218,20 @@ export interface BrandAgentCreativeUpdateInput {
   url?: string;
 }
 
+// Brand Agent Descriptor - flexible way to reference brand agents in MCP tools
+export interface BrandAgentDescriptor {
+  externalId?: string; // Customer's external identifier
+  // At least one of these must be provided
+  id?: string; // Our internal brand agent ID
+  nickname?: string; // Customer's friendly name
+}
+
 export interface BrandAgentInput {
   advertiserDomains: string[]; // Required on creation
   description?: string;
+  externalId?: string; // Customer-scoped external identifier
   name: string;
+  nickname?: string; // Customer-scoped friendly name
 }
 
 // API Response types
@@ -223,7 +243,9 @@ export interface BrandAgentUpdateInput {
   advertiserDomains?: string[];
   description?: string;
   dspSeats?: string[]; // For adding/updating DSP seats
+  externalId?: string; // Customer-scoped external identifier
   name?: string;
+  nickname?: string; // Customer-scoped friendly name
 }
 
 export interface BrandAgentWhereInput {

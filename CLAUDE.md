@@ -18,7 +18,28 @@ This is the Scope3 Campaign API MCP server with comprehensive brand agent manage
 - **Runtime**: Node.js with TypeScript
 - **Protocol**: MCP (Model Context Protocol)
 - **Documentation**: Mintlify with OpenAPI auto-generation
-- **API**: GraphQL backend integration
+- **Backend**: Hybrid GraphQL + BigQuery architecture
+
+### Backend Architecture
+
+The server uses a **hybrid backend approach**:
+
+- **BigQuery** (`bok-playground.agenticapi`): Core entities (campaigns, creatives, brand agent extensions)
+- **GraphQL** (`https://api.scope3.com/graphql`): Brand stories, brand standards, PMPs, measurement sources
+- **Automatic Fallback**: BigQuery methods fall back to GraphQL where available
+
+#### BigQuery Tables
+
+- `brand_agent_extensions` - Extends existing `public_agent` table
+- `campaigns` - Campaign management with budget tracking
+- `creatives` - Creative assets with format/content metadata
+- `campaign_creatives` - Campaign-creative assignment mapping
+- `campaign_brand_stories` - Campaign-brand story assignment mapping
+
+#### Key Services
+
+- **CampaignBigQueryService** (`src/services/campaign-bigquery-service.ts`) - CRUD operations for BigQuery entities
+- **Scope3ApiClient** (`src/client/scope3-client.ts`) - Hybrid routing with transparent fallbacks
 
 ## Development Standards
 
@@ -46,6 +67,15 @@ All MCP tools should follow these patterns:
 - Separate brand agent queries in dedicated files
 - Follow resource ownership model (brand agents own campaigns/creatives)
 - Support both create/update patterns for assignments
+
+### BigQuery Integration
+
+- **Hybrid Routing**: Always try BigQuery first, fall back to GraphQL on failure
+- **Type Safety**: Use proper TypeScript interfaces for BigQuery row structures
+- **Error Handling**: Log BigQuery failures and gracefully fall back
+- **Schema Changes**: Update both BigQuery tables and TypeScript interfaces
+- **Setup Scripts**: Use `scripts/create-bigquery-tables.sql` for table creation
+- **Testing**: Use `scripts/test-bigquery-integration.ts` for integration validation
 
 ## Mintlify Documentation Standards
 

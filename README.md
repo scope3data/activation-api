@@ -58,6 +58,21 @@ npm run docs:dev
 npm run docs:validate:links
 ```
 
+### BigQuery Setup (Optional)
+
+For backend development with BigQuery integration:
+
+```bash
+# Create BigQuery tables
+bq query --project_id=bok-playground --use_legacy_sql=false < scripts/create-bigquery-tables.sql
+
+# Seed demo data
+tsx scripts/seed-bigquery-data.ts
+
+# Test BigQuery integration
+tsx scripts/test-bigquery-integration.ts
+```
+
 ### Project Structure
 
 ```
@@ -104,9 +119,10 @@ Connect to the server endpoint with proper authentication headers.
 ## Core Capabilities
 
 - **Brand Agent Management** - Create advertiser accounts
-- **Campaign Management** - Launch and optimize campaigns
-- **Creative Management** - Upload and manage ad creatives
-- **Inventory Control** - Configure targeting and budget allocation
+- **Campaign Management** - Launch and optimize campaigns (BigQuery backend)
+- **Creative Management** - Upload and manage ad creatives (BigQuery backend)
+- **Tactic Management** - Configure targeting and budget allocation
+- **Product Discovery** - Distributed inventory via MCP agent network
 - **Reporting & Analytics** - Campaign performance insights
 
 ## Support
