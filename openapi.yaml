@@ -1847,9 +1847,9 @@ paths:
                 creatives:
                   items:
                     properties:
-                      creativeName:
+                      assemblyMethod:
                         type: string
-                        description: Human-readable name for this creative
+                        description: Who assembles this creative (overrides shared default)
                       content:
                         properties:
                           assetIds:
@@ -1863,9 +1863,9 @@ paths:
                           javascriptTag:
                             type: string
                             description: JavaScript ad tag from ad server
-                          vastTag:
+                          productUrl:
                             type: string
-                            description: VAST XML tag for video ads
+                            description: Product page URL for creative agent to extract from
                           snippet:
                             type: string
                             description: Third-party creative snippet (ADCP format)
@@ -1875,11 +1875,25 @@ paths:
                           templateVariables:
                             type: string
                             description: Template variable mapping for native ad formats
-                          productUrl:
+                          vastTag:
                             type: string
-                            description: Product page URL for creative agent to extract from
+                            description: VAST XML tag for video ads
                         type: object
                         description: Content sources - at least one is required
+                      contentCategories:
+                        items:
+                          type: string
+                        type: array
+                        description: IAB content categories for this creative (overrides shared default)
+                      creativeDescription:
+                        type: string
+                        description: Description of this creative's purpose and usage
+                      creativeName:
+                        type: string
+                        description: Human-readable name for this creative
+                      externalId:
+                        type: string
+                        description: Your external ID for managing this creative in your system
                       format:
                         properties:
                           formatId:
@@ -1893,30 +1907,20 @@ paths:
                           - type
                         type: object
                         description: Creative format specification - use format/list to see available options
-                      assemblyMethod:
-                        type: string
-                        description: Who assembles this creative (overrides shared default)
-                      creativeDescription:
-                        type: string
-                        description: Description of this creative's purpose and usage
-                      externalId:
-                        type: string
-                        description: Your external ID for managing this creative in your system
-                      contentCategories:
-                        items:
-                          type: string
-                        type: array
-                        description: IAB content categories for this creative (overrides shared default)
                       targetAudience:
                         type: string
                         description: Target audience for this creative (overrides shared default)
                     required:
-                      - creativeName
                       - content
+                      - creativeName
                       - format
                     type: object
                   type: array
                   description: Array of creatives to create (minimum 1, no maximum limit)
+                processingMode:
+                  type: string
+                  description: "How to handle errors: fail_fast stops on first error, continue_on_error processes all
+                    creatives (default: continue_on_error)"
                 sharedDefaults:
                   properties:
                     assemblyMethod:
@@ -1937,10 +1941,6 @@ paths:
                       description: Default target audience description for all creatives
                   type: object
                   description: Shared defaults applied to all creatives (can be overridden per creative)
-                processingMode:
-                  type: string
-                  description: "How to handle errors: fail_fast stops on first error, continue_on_error processes all
-                    creatives (default: continue_on_error)"
               required:
                 - buyerAgentId
                 - creatives
@@ -2827,15 +2827,15 @@ paths:
                 value: {}
             schema:
               properties:
-                salesAgentUrl:
-                  type: string
-                  description: Specific sales agent URL to query (if not provided, queries all registered agents)
                 includeAdcpStandards:
                   type: boolean
                   description: "Include ADCP standard formats in results (default: true)"
                 refreshCache:
                   type: boolean
                   description: "Refresh format cache from live sales agents (default: false, uses cached data)"
+                salesAgentUrl:
+                  type: string
+                  description: Specific sales agent URL to query (if not provided, queries all registered agents)
               type: object
         required: true
       responses:
