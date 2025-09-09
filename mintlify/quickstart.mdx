@@ -11,7 +11,7 @@ icon: "rocket"
 Create your first agentic advertising campaign:
 1. Connect your MCP client to the Scope3 API
 2. Create a brand agent, which holds the goals and key objects for an advertiser
-3. Add creatives directly or connect a [creative agent](creative agent)
+3. Add creatives directly or connect a [creative agent](integration/creative-agents)
 4. Use a prompt to set up a campaign
 5. Explore the tactics the campaign is using
 6. Monitor performance
@@ -29,8 +29,7 @@ If you use Claude Code or another coding agent, try adding our [docs as an MCP s
 Authentication depends on how you're integrating the API:
 
 <Tabs>
-  <Tab title="Agent-to-Agent (Python/Node.js)">
-    **Python MCP Client:**
+  <Tab title="Python">
     ```python
     from mcp_client import MCPClient
     
@@ -45,8 +44,8 @@ Authentication depends on how you're integrating the API:
     result = await client.call_tool('check_auth_status')
     print(result)  # ✅ Authenticated as user@company.com
     ```
-    
-    **Node.js:**
+  </Tab>
+  <Tab title="Node JS">
     ```javascript
     import { Client } from "@modelcontextprotocol/sdk/client/index.js";
     import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
@@ -194,6 +193,7 @@ Call tool `create_campaign` with data:
   "success": true,
   "message": "Campaign created successfully"
 }
+```
 
 ## Step 5: Explore tactics
 Tactics are a combination of inventory and signals that are executed in an actual media buy with a publisher. To execute a campaign, we need to:

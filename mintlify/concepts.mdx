@@ -10,40 +10,35 @@ The Scope3 Campaign API is built around a **Brand Agent** architecture that mirr
 
 ```mermaid
 graph TD
-    %% User/Agent Layer
+    %% User Layer
     A[AI Agent/User] --> B[MCP Interface]
     C[Direct API] --> D[Campaign API]
     B --> D
     
-    %% Core Architecture
+    %% Core Resources
     D --> E[Brand Agent]
     E --> F[Campaigns]
     E --> G[Creatives]
-    E --> H[Audiences] 
     E --> I[Brand Standards]
+    E --> BS[Brand Stories]
     
     %% Campaign Execution
-    F --> J[Tactics]
-    G --> J
-    H --> J
+    F --> J[Tactics<br/>Auto-generated]
     
-    %% Signal Processing
-    J --> K[Signal Processing]
-    K --> L[Scope3 Signals<br/>Media Quality]
-    K --> M[Custom Signals<br/>First-Party Data]
-    K --> N[Third-Party Signals<br/>External Data]
+    %% Tactic Components
+    J --> K[Publishers<br/>Inventory]
+    J --> L[Signals<br/>Targeting Data]
     
-    %% Optimization & Serving
-    K --> O[AI Optimization<br/>Engine]
-    O --> P[Inventory Selection]
-    P --> Q[Ad Serving]
+    %% Optimization Loop
+    J --> M[Campaign Delivery]
+    M --> N[Performance Data]
+    N --> O[Outcome Scoring]
+    O --> F
     
-    %% Performance Loop
-    Q --> R[Performance Data]
-    R --> S[Analytics & Reporting]
-    R --> O
-    S --> A
-    S --> C
+    %% Reporting
+    N --> P[Analytics & Reporting]
+    P --> A
+    P --> C
     
     %% Styling
     classDef userLayer fill:#e1f5fe
@@ -52,9 +47,9 @@ graph TD
     classDef dataLayer fill:#fff3e0
     
     class A,B,C userLayer
-    class D,E,F,G,H,I coreLayer
-    class J,K,O,P,Q executionLayer
-    class L,M,N,R,S dataLayer
+    class D,E,F,G,I,BS coreLayer
+    class J,M,O executionLayer
+    class K,L,N,P dataLayer
 ```
 
 ### Why Brand Agents?
@@ -74,10 +69,11 @@ Your advertiser account that owns all resources. Think of it as your marketing o
 ```
 Brand Agent: "Nike"
 ├── Campaigns: Holiday Sale, Summer Launch, Back to School
+│   └── Tactics: Auto-generated inventory + signal combinations
 ├── Creatives: Video ads, display banners, native content
-├── Audiences: Sports enthusiasts, runners, basketball fans  
+├── Brand Stories: Performance-focused, lifestyle-oriented audiences
 ├── Brand Standards: Safety rules, blocked domains
-└── Measurement: Analytics integrations, conversion tracking
+└── Outcome Scoring: Performance measurement and optimization
 ```
 
 **When to create:** One per advertiser/brand. Most organizations have 1-3 brand agents.
@@ -88,7 +84,7 @@ Marketing initiatives with specific budgets, targeting, and optimization goals.
 <Tabs>
   <Tab title="Campaign Properties">
     - **Budget**: Total spend and pacing rules
-    - **Targeting**: Who to reach (via audiences and signals)
+    - **Targeting**: Who to reach (via signals and brand stories)
     - **Creative**: What content to show (via creative assets)
     - **Optimization**: How to improve performance (via tactics)
     - **Delivery**: Real-time spend and performance tracking
@@ -164,11 +160,11 @@ Brand Agent (ba_*)
 ├── Campaigns (camp_*)
 │   ├── Delivery Summary (real-time performance)
 │   ├── Notification Thresholds (automated alerts)
-│   └── Tactics (optimization components)
+│   └── Tactics (tactic_*) - Auto-generated combinations
 ├── Creatives (cr_*) - Shared across campaigns  
-├── Audiences (aud_*) - Shared across campaigns
+├── Brand Stories - AI-generated audience profiles
 ├── Brand Standards (domain blocks, safety rules)
-├── Measurement Sources (analytics integrations)
+├── Outcome Scoring (performance measurement)
 └── Webhook Subscriptions (real-time notifications)
 ```
 
@@ -178,7 +174,7 @@ All resources follow consistent ID patterns:
 - Brand Agents: `ba_abc123`
 - Campaigns: `camp_xyz789` 
 - Creatives: `cr_def456`
-- Audiences: `aud_ghi789`
+- Brand Stories: `bs_ghi789`
 - Tactics: `tactic_jkl012`
 
 ## Reporting Architecture
@@ -305,7 +301,7 @@ Real-time push notifications for scoring outcomes and campaign updates.
   <Accordion title="Brand Agent Organization">
     - **One per brand/advertiser**: Don't create multiple brand agents for the same brand
     - **Clear naming**: Use descriptive names that team members will understand
-    - **Resource sharing**: Take advantage of shared creatives and audiences across campaigns
+    - **Resource sharing**: Take advantage of shared creatives and brand stories across campaigns
   </Accordion>
   
   <Accordion title="Campaign Structure">
@@ -329,7 +325,7 @@ Real-time push notifications for scoring outcomes and campaign updates.
 graph TD
     A[Create Brand Agent] --> B[Configure Brand Standards]
     B --> C[Add Creative Assets]
-    C --> D[Create Audience Profiles]
+    C --> D[Create Brand Stories]
     D --> E[Launch First Campaign]
     E --> F[Set Up Monitoring]
 ```
