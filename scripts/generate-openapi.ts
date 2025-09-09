@@ -96,9 +96,25 @@ function convertZodToJsonSchema(zodSchema: unknown): unknown {
       const properties: Record<string, unknown> = {};
       const required: string[] = [];
 
-      for (const [key, value] of Object.entries(schema._def.shape || {})) {
-        properties[key] = convertZodToJsonSchema(value);
-        if (!(value as any).isOptional?.()) {
+      // Handle both function-based shape (newer Zod) and object-based shape (older Zod)
+      const shape =
+        typeof schema._def.shape === "function"
+          ? schema.shape
+          : schema._def.shape;
+
+      for (const [key, value] of Object.entries(shape || {})) {
+        const fieldSchema = convertZodToJsonSchema(value);
+
+        // Add description if available from Zod's describe() method
+        const valueAny = value as any;
+        if (valueAny._def?.description) {
+          (fieldSchema as any).description = valueAny._def.description;
+        }
+
+        properties[key] = fieldSchema;
+
+        // Check if field is required by looking at the Zod type
+        if (!isZodOptional(valueAny)) {
           required.push(key);
         }
       }
@@ -110,27 +126,48 @@ function convertZodToJsonSchema(zodSchema: unknown): unknown {
       };
     }
 
+    // Handle Zod optional schemas
+    if (schema._def?.typeName === "ZodOptional") {
+      return convertZodToJsonSchema(schema._def.innerType);
+    }
+
     // Handle Zod string schemas
     if (schema._def?.typeName === "ZodString") {
-      return { type: "string" };
+      const result: any = { type: "string" };
+      if (schema._def?.description) {
+        result.description = schema._def.description;
+      }
+      return result;
     }
 
     // Handle Zod number schemas
     if (schema._def?.typeName === "ZodNumber") {
-      return { type: "number" };
+      const result: any = { type: "number" };
+      if (schema._def?.description) {
+        result.description = schema._def.description;
+      }
+      return result;
     }
 
     // Handle Zod boolean schemas
     if (schema._def?.typeName === "ZodBoolean") {
-      return { type: "boolean" };
+      const result: any = { type: "boolean" };
+      if (schema._def?.description) {
+        result.description = schema._def.description;
+      }
+      return result;
     }
 
     // Handle Zod array schemas
     if (schema._def?.typeName === "ZodArray") {
-      return {
+      const result: any = {
         items: convertZodToJsonSchema(schema._def.type),
         type: "array",
       };
+      if (schema._def?.description) {
+        result.description = schema._def.description;
+      }
+      return result;
     }
   }
 
@@ -776,6 +813,11 @@ function getTagForTool(toolName: string): string {
 
   // Default fallback
   return "System";
+}
+
+// Helper function to check if a Zod field is optional
+function isZodOptional(zodField: any): boolean {
+  return zodField._def?.typeName === "ZodOptional";
 }
 
 function toolToOpenAPIOperation(

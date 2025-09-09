@@ -296,7 +296,39 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                adjustments:
+                  items:
+                    properties:
+                      budgetAllocation:
+                        properties:
+                          amount:
+                            type: number
+                            description: New budget amount
+                          dailyCap:
+                            type: number
+                            description: New daily spending cap
+                          pacing:
+                            type: string
+                            description: New pacing strategy
+                          percentage:
+                            type: number
+                            description: New percentage of campaign budget
+                        type: object
+                        description: Budget allocation updates
+                      tacticId:
+                        type: string
+                        description: ID of the tactic to update
+                    required:
+                      - tacticId
+                    type: object
+                  type: array
+                  description: Array of adjustments to make to tactics
+                reason:
+                  type: string
+                  description: Optional reason for the budget adjustment (for documentation)
+              required:
+                - adjustments
               type: object
         required: true
       responses:
@@ -361,7 +393,20 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                campaignId:
+                  type: string
+                  description: ID of the campaign to analyze
+                includeRecommendations:
+                  type: string
+                  description: Whether to include AI-powered optimization recommendations
+                optimizationGoal:
+                  type: string
+                  description: Goal for optimization recommendations
+              required:
+                - campaignId
+                - includeRecommendations
+                - optimizationGoal
               type: object
         required: true
       responses:
@@ -424,7 +469,37 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                analysisType:
+                  type: string
+                  description: Type of analysis to perform
+                campaignId:
+                  type: string
+                  description: Campaign ID to analyze
+                compareSignals:
+                  type: boolean
+                  description: Compare signal effectiveness (applies to relevant analysis types)
+                compareStories:
+                  type: boolean
+                  description: Compare story performance (applies to relevant analysis types)
+                customDateRange:
+                  properties:
+                    end:
+                      type: string
+                      description: End date (YYYY-MM-DD)
+                    start:
+                      type: string
+                      description: Start date (YYYY-MM-DD)
+                  required:
+                    - end
+                    - start
+                  type: object
+                timeframe:
+                  type: string
+                  description: Analysis timeframe (defaults to 14d)
+              required:
+                - analysisType
+                - campaignId
               type: object
         required: true
       parameters:
@@ -495,7 +570,57 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                assets:
+                  items:
+                    properties:
+                      metadata:
+                        properties:
+                          dimensions:
+                            properties:
+                              height:
+                                type: number
+                              width:
+                                type: number
+                            required:
+                              - height
+                              - width
+                            type: object
+                            description: Dimensions for visual assets
+                          duration:
+                            type: number
+                            description: Duration in seconds for video/audio
+                          fileSize:
+                            type: number
+                            description: File size in bytes
+                          tags:
+                            items:
+                              type: string
+                            type: array
+                            description: Tags for organization
+                        type: object
+                        description: Optional metadata for the asset
+                      name:
+                        type: string
+                        description: Human-readable name for the asset
+                      source:
+                        type: string
+                      type:
+                        type: string
+                        description: Type of asset
+                    required:
+                      - name
+                      - source
+                      - type
+                    type: object
+                  type: array
+                  description: Array of assets to add
+                buyerAgentId:
+                  type: string
+                  description: The buyer agent that will own these assets
+              required:
+                - assets
+                - buyerAgentId
               type: object
         required: true
       responses:
@@ -559,7 +684,18 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                campaignId:
+                  type: string
+                  description: Campaign/strategy ID to list creatives for
+                includeAssets:
+                  type: string
+                  description: Include asset details for each creative
+                includePerformance:
+                  type: string
+                  description: Include performance metrics for each creative
+              required:
+                - campaignId
               type: object
         required: true
       responses:
@@ -687,7 +823,42 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                brandAgentId:
+                  type: string
+                  description: ID of the brand agent to create a brand story for
+                brands:
+                  items:
+                    type: string
+                  type: array
+                  description: List of specific brands this brand story applies to (leave empty for all brands)
+                channels:
+                  items:
+                    type: string
+                  type: array
+                  description: List of channels to target (e.g., ['web', 'social', 'mobile'])
+                countries:
+                  items:
+                    type: string
+                  type: array
+                  description: List of country codes to target (e.g., ['US', 'CA', 'GB'])
+                languages:
+                  items:
+                    type: string
+                  type: array
+                  description: List of language codes to target (e.g., ['en', 'es', 'fr'])
+                name:
+                  type: string
+                  description: Name for the brand story (e.g., 'Tech Enthusiasts', 'Luxury Shoppers')
+                prompt:
+                  type: string
+                  description: Natural language prompt defining the target audience profile, demographics, and
+                    behavioral characteristics for this brand story. Describe your target audience,
+                    their interests, preferences, behaviors, and motivations.
+              required:
+                - brandAgentId
+                - name
+                - prompt
               type: object
         required: true
       responses:
@@ -751,7 +922,20 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                brand_agent_id:
+                  type: string
+                  description: Brand agent ID that will own this PMP
+                name:
+                  type: string
+                  description: Optional name for the PMP (auto-generated if not provided)
+                prompt:
+                  type: string
+                  description: Natural language description of PMP requirements (e.g., 'Create PMP with CTV inventory
+                    from Hulu and Fox News targeting tall people audience')
+              required:
+                - brand_agent_id
+                - prompt
               type: object
         required: true
       responses:
@@ -817,7 +1001,42 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                brandAgentId:
+                  type: string
+                  description: ID of the brand agent to create standards for
+                brands:
+                  items:
+                    type: string
+                  type: array
+                  description: List of specific brands this agent applies to (leave empty for all brands)
+                channels:
+                  items:
+                    type: string
+                  type: array
+                  description: List of channels to target (e.g., ['web', 'social', 'mobile'])
+                countries:
+                  items:
+                    type: string
+                  type: array
+                  description: List of country codes to target (e.g., ['US', 'CA', 'GB'])
+                languages:
+                  items:
+                    type: string
+                  type: array
+                  description: List of language codes to target (e.g., ['en', 'es', 'fr'])
+                name:
+                  type: string
+                  description: Name for the brand standards agent (e.g., 'Family-Safe Standards', 'Premium Brand
+                    Guidelines')
+                prompt:
+                  type: string
+                  description: Natural language prompt defining the brand safety rules and guidelines. Be specific
+                    about what content should be approved or rejected.
+              required:
+                - brandAgentId
+                - name
+                - prompt
               type: object
         required: true
       responses:
@@ -944,7 +1163,21 @@ paths:
                   description: Global athletic wear and equipment brand
                   name: Nike Global
             schema:
-              properties: {}
+              properties:
+                advertiserDomains:
+                  items:
+                    type: string
+                  type: array
+                  description: Domains where users will be sent from all campaigns/creatives
+                description:
+                  type: string
+                  description: Optional description of the brand agent
+                name:
+                  type: string
+                  description: Name of the brand agent (advertiser account)
+              required:
+                - advertiserDomains
+                - name
               type: object
         required: true
       responses:
@@ -1034,7 +1267,16 @@ paths:
                   prompt: Launch our latest running shoe to serious runners and marathon enthusiasts aged 25-45 in
                     major metropolitan areas
             schema:
-              properties: {}
+              properties:
+                name:
+                  type: string
+                  description: Name for the campaign strategy
+                prompt:
+                  type: string
+                  description: Natural language description of campaign objectives and strategy
+              required:
+                - name
+                - prompt
               type: object
         required: true
       responses:
@@ -1101,7 +1343,98 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                budgetAllocation:
+                  properties:
+                    amount:
+                      type: number
+                      description: Budget amount for this tactic
+                    currency:
+                      type: string
+                      description: "Currency code (default: USD)"
+                    dailyCap:
+                      type: number
+                      description: Optional daily spending limit
+                    pacing:
+                      type: string
+                      description: Budget pacing strategy
+                    percentage:
+                      type: number
+                      description: Percentage of total campaign budget
+                  required:
+                    - amount
+                    - currency
+                    - pacing
+                  type: object
+                  description: Budget allocation configuration
+                campaignId:
+                  type: string
+                  description: ID of the campaign to add this tactic to
+                description:
+                  type: string
+                  description: Optional description of the tactic
+                mediaProductId:
+                  type: string
+                  description: ID of the publisher media product to use
+                name:
+                  type: string
+                  description: Name for this tactic (e.g., 'Hulu Premium + Scope3')
+                targeting:
+                  properties:
+                    inheritFromCampaign:
+                      type: string
+                      description: Whether to inherit targeting from the campaign
+                    overrides:
+                      properties:
+                        demographics:
+                          type: string
+                          description: Demographic targeting overrides
+                        geo:
+                          items:
+                            type: string
+                          type: array
+                          description: Geographic targeting override
+                        interests:
+                          items:
+                            type: string
+                          type: array
+                          description: Interest targeting override
+                      type: object
+                      description: Targeting overrides for this specific option
+                    signalConfiguration:
+                      properties:
+                        audienceIds:
+                          items:
+                            type: string
+                          type: array
+                          description: Audience IDs to target
+                        customParameters:
+                          type: string
+                          description: Custom signal parameters
+                        segments:
+                          items:
+                            type: string
+                          type: array
+                          description: Segment names to target
+                      type: object
+                      description: Signal-specific configuration
+                    signalProvider:
+                      type: string
+                      description: Signal provider name (e.g., 'LiveRamp', 'Scope3')
+                    signalType:
+                      type: string
+                      description: Type of data signal to apply
+                  required:
+                    - inheritFromCampaign
+                    - signalType
+                  type: object
+                  description: Targeting strategy configuration
+              required:
+                - budgetAllocation
+                - campaignId
+                - mediaProductId
+                - name
+                - targeting
               type: object
         required: true
       responses:
@@ -1164,7 +1497,15 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                creativeId:
+                  type: string
+                  description: ID of the creative to check
+                publisherId:
+                  type: string
+                  description: Filter to specific publisher (optional)
+              required:
+                - creativeId
               type: object
         required: true
       responses:
@@ -1227,7 +1568,20 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                buyerAgentId:
+                  type: string
+                  description: The buyer agent that owns both the creative and campaign
+                campaignId:
+                  type: string
+                  description: ID of the campaign/strategy to assign the creative to
+                creativeId:
+                  type: string
+                  description: ID of the creative to assign
+              required:
+                - buyerAgentId
+                - campaignId
+                - creativeId
               type: object
         required: true
       responses:
@@ -1293,7 +1647,76 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                assemblyMethod:
+                  type: string
+                  description: "Who assembles the creative (default: pre_assembled)"
+                assignToCampaignIds:
+                  items:
+                    type: string
+                  type: array
+                  description: Campaign IDs to immediately assign these creatives to
+                buyerAgentId:
+                  type: string
+                  description: The buyer agent that will own this creative
+                content:
+                  properties:
+                    assetIds:
+                      items:
+                        type: string
+                      type: array
+                      description: Array of asset IDs from assets/add
+                    htmlSnippet:
+                      type: string
+                      description: HTML5 creative snippet
+                    javascriptTag:
+                      type: string
+                      description: JavaScript ad tag from ad server
+                    productUrl:
+                      type: string
+                      description: Product page URL for creative agent to extract from
+                    vastTag:
+                      type: string
+                      description: VAST XML tag for video ads
+                  type: object
+                  description: Content sources - at least one is required
+                contentCategories:
+                  items:
+                    type: string
+                  type: array
+                  description: IAB content categories for this creative
+                creativeDescription:
+                  type: string
+                  description: Description of the creative's purpose and usage
+                creativeName:
+                  type: string
+                  description: Human-readable name for the creative
+                externalId:
+                  type: string
+                  description: Your external ID for managing this creative in your system
+                format:
+                  properties:
+                    formatId:
+                      type: string
+                      description: Specific format ID, e.g., 'display_banner', 'ctv_video', 'dynamic_product'
+                    type:
+                      type: string
+                      description: Format provider type
+                  required:
+                    - formatId
+                    - type
+                  type: object
+                  description: Creative format specification - use list_creative_formats to see available options
+                targetAudience:
+                  type: string
+                  description: Natural language description of target audience
+                variants:
+                  type: number
+                  description: "Number of creative variants to generate (default: 1)"
+              required:
+                - buyerAgentId
+                - creativeName
+                - format
               type: object
         required: true
       responses:
@@ -1357,7 +1780,43 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                buyerAgentId:
+                  type: string
+                  description: The buyer agent to list creatives for
+                filter:
+                  properties:
+                    campaignId:
+                      type: string
+                      description: Filter by campaign assignment
+                    hasAssetType:
+                      type: string
+                      description: Filter creatives that have this asset type
+                    searchTerm:
+                      type: string
+                      description: Search in creative names and descriptions
+                    status:
+                      type: string
+                      description: Filter by creative status
+                    unassigned:
+                      type: boolean
+                      description: Only show creatives not assigned to any campaigns
+                  type: object
+                  description: Optional filters to apply
+                includeAssets:
+                  type: string
+                  description: Include asset details in the response
+                includeCampaigns:
+                  type: string
+                  description: Include campaign assignments in the response
+                limit:
+                  type: string
+                  description: Maximum number of creatives to return
+                offset:
+                  type: string
+                  description: Number of creatives to skip (for pagination)
+              required:
+                - buyerAgentId
               type: object
         required: true
       responses:
@@ -1421,7 +1880,49 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                autoResync:
+                  type: boolean
+                  description: "Automatically re-sync to publisher after revision (default: true)"
+                creativeId:
+                  type: string
+                  description: ID of the creative to revise
+                publisherId:
+                  type: string
+                  description: ID of the publisher that rejected or requested changes
+                revisionNotes:
+                  type: string
+                  description: Notes explaining what was changed and why
+                revisions:
+                  properties:
+                    assetIds:
+                      items:
+                        type: string
+                      type: array
+                      description: Updated array of asset IDs
+                    contentCategories:
+                      items:
+                        type: string
+                      type: array
+                      description: Updated IAB content categories
+                    htmlSnippet:
+                      type: string
+                      description: Updated HTML5 creative snippet
+                    javascriptTag:
+                      type: string
+                      description: Updated JavaScript ad tag
+                    targetAudience:
+                      type: string
+                      description: Updated target audience description
+                    vastTag:
+                      type: string
+                      description: Updated VAST XML tag
+                  type: object
+                  description: Specific revisions to make based on publisher feedback
+              required:
+                - creativeId
+                - publisherId
+                - revisions
               type: object
         required: true
       responses:
@@ -1484,7 +1985,24 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                campaignId:
+                  type: string
+                  description: Campaign ID if syncing for specific campaign
+                creativeId:
+                  type: string
+                  description: ID of the creative to sync
+                preApproval:
+                  type: boolean
+                  description: "Request pre-approval before campaign launch (default: false)"
+                publisherIds:
+                  items:
+                    type: string
+                  type: array
+                  description: Array of publisher IDs to sync to
+              required:
+                - creativeId
+                - publisherIds
               type: object
         required: true
       responses:
@@ -1546,7 +2064,16 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                campaignId:
+                  type: string
+                  description: ID of the campaign to remove the creative from
+                creativeId:
+                  type: string
+                  description: ID of the creative to unassign
+              required:
+                - campaignId
+                - creativeId
               type: object
         required: true
       responses:
@@ -1610,7 +2137,16 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                creativeId:
+                  type: string
+                  description: ID of the creative to update
+                updates:
+                  type: string
+                  description: Update fields - at least one must be provided
+              required:
+                - creativeId
+                - updates
               type: object
         required: true
       responses:
@@ -1740,7 +2276,20 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                brandStoryId:
+                  type: string
+                  description: ID of the brand story to update
+                name:
+                  type: string
+                  description: Optional name for the new model version (defaults to timestamped name)
+                prompt:
+                  type: string
+                  description: Updated natural language prompt defining the target audience profile, demographics, and
+                    behavioral characteristics for this brand story
+              required:
+                - brandStoryId
+                - prompt
               type: object
         required: true
       parameters:
@@ -1874,7 +2423,19 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                name:
+                  type: string
+                  description: Optional name for the new model version (defaults to timestamped name)
+                prompt:
+                  type: string
+                  description: Updated natural language prompt defining the brand safety rules and guidelines
+                standardsId:
+                  type: string
+                  description: ID of the brand standards agent to update
+              required:
+                - prompt
+                - standardsId
               type: object
         required: true
       parameters:
@@ -2065,7 +2626,18 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                brandAgentId:
+                  type: string
+                  description: ID of the brand agent to update
+                description:
+                  type: string
+                  description: New description for the brand agent
+                name:
+                  type: string
+                  description: New name for the brand agent
+              required:
+                - brandAgentId
               type: object
         required: true
       parameters:
@@ -2252,7 +2824,35 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                clusters:
+                  items:
+                    properties:
+                      channel:
+                        type: string
+                        description: Optional channel targeting (e.g., 'ctv', 'web', 'mobile')
+                      gdpr:
+                        type: boolean
+                        description: Enable GDPR compliance for EU data residency
+                      region:
+                        type: string
+                        description: Region code (e.g., 'us-east-1', 'eu-west-1', 'emea-ex-eu')
+                    required:
+                      - region
+                    type: object
+                  type: array
+                  description: Updated cluster configurations for regional deployment
+                description:
+                  type: string
+                  description: Updated description of the signal's purpose and usage
+                name:
+                  type: string
+                  description: Updated human-readable name for the custom signal
+                signalId:
+                  type: string
+                  description: The unique ID of the custom signal to update
+              required:
+                - signalId
               type: object
         required: true
       parameters:
@@ -2324,7 +2924,37 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                campaignBrief:
+                  type: string
+                  description: Natural language description of campaign goals to help match relevant inventory
+                deliveryType:
+                  type: string
+                  description: Filter by delivery guarantee type
+                formats:
+                  items:
+                    type: string
+                  type: array
+                  description: Creative formats to filter by
+                inventoryType:
+                  type: string
+                  description: Type of inventory to search for
+                maxCpm:
+                  type: number
+                  description: Maximum CPM price filter
+                minCpm:
+                  type: number
+                  description: Minimum CPM price filter
+                publisherIds:
+                  items:
+                    type: string
+                  type: array
+                  description: Specific publisher IDs to search within
+                supportedSignals:
+                  items:
+                    type: string
+                  type: array
+                  description: Filter products by signal support
               type: object
         required: true
       responses:
@@ -2388,7 +3018,48 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                brandAgentId:
+                  type: string
+                  description: Export all campaigns for this brand agent (optional if campaignIds provided)
+                campaignIds:
+                  items:
+                    type: string
+                  type: array
+                  description: Specific campaign IDs to export (optional if brandAgentId provided)
+                compression:
+                  type: string
+                  description: Compression method (defaults to none)
+                datasets:
+                  items:
+                    type: string
+                  type: array
+                  description: Which datasets to include in export (outcomes replaces events)
+                dateRange:
+                  properties:
+                    end:
+                      type: string
+                      description: End date (YYYY-MM-DD)
+                    start:
+                      type: string
+                      description: Start date (YYYY-MM-DD)
+                  required:
+                    - end
+                    - start
+                  type: object
+                  description: Date range for export
+                format:
+                  type: string
+                  description: Export format (defaults to json)
+                groupBy:
+                  items:
+                    type: string
+                  type: array
+                  description: How to group/aggregate the data
+              required:
+                - datasets
+                - dateRange
+                - groupBy
               type: object
         required: true
       responses:
@@ -2895,7 +3566,36 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                campaignId:
+                  type: string
+                  description: Campaign ID that this outcome applies to
+                creativeId:
+                  type: string
+                  description: Optional creative ID associated with this outcome
+                exposureRange:
+                  properties:
+                    end:
+                      type: string
+                      description: End of exposure range (YYYY-MM-DD or ISO date)
+                    start:
+                      type: string
+                      description: Start of exposure range (YYYY-MM-DD or ISO date)
+                  required:
+                    - end
+                    - start
+                  type: object
+                  description: Time range when this performance was measured
+                performanceIndex:
+                  type: number
+                  description: "Performance index: 0 = no value, 100 = expected performance, 1000 = 10x expected"
+                tacticId:
+                  type: string
+                  description: Optional tactic ID that this outcome measures
+              required:
+                - campaignId
+                - exposureRange
+                - performanceIndex
               type: object
         required: true
       responses:
@@ -2960,7 +3660,73 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                brandAgentId:
+                  type: string
+                  description: Brand agent ID to register webhook for
+                endpoint:
+                  properties:
+                    authentication:
+                      properties:
+                        credentials:
+                          type: string
+                          description: Authentication credentials
+                        type:
+                          type: string
+                      required:
+                        - credentials
+                        - type
+                      type: object
+                    headers:
+                      type: string
+                      description: Additional HTTP headers to send
+                    method:
+                      type: string
+                      description: HTTP method (defaults to POST)
+                    url:
+                      type: string
+                      description: Webhook endpoint URL (must be HTTPS)
+                  required:
+                    - url
+                  type: object
+                eventTypes:
+                  items:
+                    type: string
+                  type: array
+                  description: Event types to subscribe to (e.g., 'delivery_update', 'performance_event',
+                    'threshold_alert')
+                filters:
+                  properties:
+                    campaigns:
+                      items:
+                        type: string
+                      type: array
+                      description: Filter to specific campaign IDs
+                    metrics:
+                      items:
+                        type: string
+                      type: array
+                      description: Filter to specific metrics
+                    minSeverity:
+                      type: string
+                      description: Minimum alert severity
+                  type: object
+                retryPolicy:
+                  properties:
+                    backoffMultiplier:
+                      type: number
+                      description: Backoff multiplier (defaults to 2.0)
+                    maxBackoffSeconds:
+                      type: number
+                      description: Maximum backoff time in seconds
+                    maxRetries:
+                      type: number
+                      description: Maximum retry attempts (defaults to 25)
+                  type: object
+              required:
+                - brandAgentId
+                - endpoint
+                - eventTypes
               type: object
         required: true
       responses:
@@ -3022,7 +3788,22 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                name:
+                  type: string
+                  description: New name for the PMP
+                pmp_id:
+                  type: string
+                  description: ID of the PMP to update
+                prompt:
+                  type: string
+                  description: New requirements in natural language (e.g., 'Add Netflix CTV inventory and increase
+                    budget by 20%')
+                status:
+                  type: string
+                  description: Update the PMP status
+              required:
+                - pmp_id
               type: object
         required: true
       parameters:
@@ -3094,7 +3875,19 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties: {}
+              properties:
+                campaignId:
+                  type: string
+                  description: ID of the campaign to update
+                name:
+                  type: string
+                  description: New name for the campaign (optional)
+                prompt:
+                  type: string
+                  description: New campaign prompt with updated objectives and strategy
+              required:
+                - campaignId
+                - prompt
               type: object
         required: true
       parameters:
