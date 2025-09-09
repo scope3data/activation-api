@@ -43,7 +43,9 @@ export const createBrandAgentTool = (client: Scope3ApiClient) => ({
       const brandAgent = await client.createBrandAgent(apiKey, {
         advertiserDomains: args.advertiserDomains,
         description: args.description,
+        externalId: args.externalId,
         name: args.name,
+        nickname: args.nickname,
       });
 
       let summary = `✅ Brand Agent Created Successfully!\n\n`;
@@ -86,6 +88,18 @@ export const createBrandAgentTool = (client: Scope3ApiClient) => ({
       .string()
       .optional()
       .describe("Optional description of the brand agent"),
+    externalId: z
+      .string()
+      .optional()
+      .describe(
+        "Your internal ID for this brand agent (e.g., client code or account ID)",
+      ),
     name: z.string().describe("Name of the brand agent (advertiser account)"),
+    nickname: z
+      .string()
+      .optional()
+      .describe(
+        "Friendly name for easy identification (e.g., 'Nike' for 'Nike c/o Kinesso')",
+      ),
   }),
 });

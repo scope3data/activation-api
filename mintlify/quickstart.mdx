@@ -1,33 +1,26 @@
 ---
 title: "Quick Start"
-description: "Get started with the Scope3 Campaign API in 5 minutes"
+description: "Get started with the Scope3 Agentic API"
 icon: "rocket"
 ---
 
-<img src="/api_header.svg" alt="Scope3 Campaign API" className="w-full mb-6" />
+<img src="/mintlify/api_header.svg" alt="Scope3 Campaign API" className="w-full mb-6" />
 
-## What You'll Learn
+## Steps to Launch a Basic Campaign
 
-Create your first programmatic advertising campaign in 5 minutes:
-1. Set up authentication
-2. Create a brand agent (advertiser account)
-3. Add a creative asset
-4. Launch a campaign
-5. Monitor performance
-
-<Note>
-This guide shows you the complete workflow. Choose your integration method:
-- **Conversational AI**: Use with Claude, ChatGPT, or other AI assistants
-- **Direct API**: Integrate into your application
-- **MCP Server**: Use the Model Context Protocol server
-</Note>
+Create your first agentic advertising campaign:
+1. Connect your MCP client to the Scope3 API
+2. Create a brand agent, which holds the goals and key objects for an advertiser
+3. Add creatives directly or connect a [creative agent](creative agent)
+4. Use a prompt to set up a campaign
+5. Launch and monitor performance
 
 ## Prerequisites
 
-- Scope3 API key ([Get one here](https://app.scope3.com/api-keys))
+- Scope3 API key ([Get one here](https://scope3.com/integrate/api-keys))
 
 <Info>
-**Building Agent-to-Agent Workflows**: This API uses MCP (Model Context Protocol) for agent communication. Integrate it into your Python/Node.js applications to build automated campaign management systems. Consumer agents like Claude Desktop are useful for exploring the API while building your app.
+If you use Claude Code or another coding agent, try adding our [docs as an MCP server](https://methodology.scope3.com/mcp)!
 </Info>
 
 ## Step 1: Authentication
@@ -52,28 +45,38 @@ Authentication depends on how you're integrating the API:
     print(result)  # ✅ Authenticated as user@company.com
     ```
     
-    **Node.js MCP Client:**
+    **Node.js:**
     ```javascript
-    const { MCPClient } = require('@modelcontextprotocol/client');
-    
-    // TODO: Add authentication token here
-    // The exact method for passing auth headers needs to be verified
-    const client = new MCPClient('https://api.agentic.scope3.com/mcp', {
-      headers: {
-        'x-scope3-api-key': 'your-api-key-here'
-      }
-    });
+    import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+    import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+
+    const scope3_api_key = 'scope3_...';
+    const scope3_api_url = 'https://api.agentic.scope3.com/mcp';
+
+    var transport = new StreamableHTTPClientTransport(scope3_api_url, {
+        requestInit: {
+          headers: {
+            Accept: "application/json, text/event-stream",
+            "Content-Type": "application/json",
+            "x-adcp-auth": scope3_api_key,
+          },
+        },
+      });
+
+    const client = new Client(...);
+    await client.connect(transport);
     
     // Test authentication
     const result = await client.callTool('check_auth_status');
     console.log(result); // ✅ Authenticated as user@company.com
     ```
   </Tab>
-  <Tab title="Direct HTTP">
+  <Tab title="REST">
     ```bash
     curl -H "x-scope3-api-key: YOUR_API_KEY" \
          -H "Content-Type: application/json" \
-         https://api.agentic.scope3.com/mcp
+         -d '{request data}' \
+         https://api.agentic.scope3.com/rest/v1/...
     ```
   </Tab>
 </Tabs>
@@ -81,6 +84,34 @@ Authentication depends on how you're integrating the API:
 ## Step 2: Create Brand Agent
 
 Your brand agent acts as an advertiser account that owns all campaigns and assets.
+
+Brand agents have three identifiers that you can use to reference them across all of our APIs, which saves a lookup roundtrip or the need to cache our ID somewhere:
+- Internal Scope3 ID
+- Your ID, which we call this the external ID. For instance, if your naming scheme is 'scope3-nike-us-aug2025-lightup-2823', you could pass that into any tool and we will map it to this agent.
+- A nickname. For instance if you give the agent the nickname "Nike EMEA", you could ask "what are all the campaigns live for the Nike EMEA agent" and send "Nike EMEA" into any of our MCP tools
+
+To get started, let's create a simple agent. This is a good example of a synchronous tool call where the response will be immediate. Some tools are asynchronous and could take some time to return - we'll cover that later!
+
+*User*:
+Please create a Scope3 brand agent for Nike EMEA c/o Kinesso (which we call Nike), mapping to our internal advertiser ID abc-123. Their primary domain is nike.com.
+
+*Agent*:
+Call tool 'create_brand_agent' with body:
+```json
+{
+  "name": "Nike EMEA c/o Kinesso",
+  "external_id": "abc-123",
+  "nickname": "Nike",
+  "advertiser_domains": ["nike.com"]
+}
+```
+
+*Scope3 API response*
+```
+{
+  "status": "success",
+  "id": "ba-1283"
+}
 
 <Tabs>
   <Tab title="API Call">

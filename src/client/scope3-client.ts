@@ -332,10 +332,17 @@ export class Scope3ApiClient {
     apiKey: string,
     input: BrandAgentInput,
   ): Promise<BrandAgent> {
+    // Create the core brand agent via GraphQL (without customer-scoped fields)
     const response = await fetch(this.graphqlUrl, {
       body: JSON.stringify({
         query: CREATE_BRAND_AGENT_MUTATION,
-        variables: { input },
+        variables: {
+          input: {
+            advertiserDomains: input.advertiserDomains,
+            description: input.description,
+            name: input.name,
+          },
+        },
       }),
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -367,7 +374,29 @@ export class Scope3ApiClient {
       throw new Error("No data received");
     }
 
-    return result.data.createBrandAgent;
+    const brandAgent = result.data.createBrandAgent;
+
+    // If we have customer-scoped fields, create/update the BigQuery extension
+    if (input.externalId || input.nickname) {
+      try {
+        await this.campaignBQ.upsertBrandAgentExtension(brandAgent.id, {
+          advertiserDomains: input.advertiserDomains,
+          description: input.description,
+          externalId: input.externalId,
+          nickname: input.nickname,
+        });
+      } catch (error) {
+        console.warn("Failed to create brand agent extension:", error);
+        // Don't fail the entire operation - the core brand agent was created successfully
+      }
+    }
+
+    // Return the enhanced brand agent with extension fields
+    return {
+      ...brandAgent,
+      externalId: input.externalId,
+      nickname: input.nickname,
+    };
   }
 
   // Brand Agent Campaign methods
@@ -666,7 +695,7 @@ export class Scope3ApiClient {
       });
 
       // Return the created creative
-      const creative = await this.campaignBQ.getCreative(creativeId);
+      const creative = await this.campaignBQ.getCreative(creativeId, apiKey);
       if (!creative) {
         throw new Error("Failed to retrieve created creative");
       }
@@ -1993,7 +2022,11 @@ export class Scope3ApiClient {
   ): Promise<BrandAgentCreative[]> {
     try {
       // Try BigQuery first - convert Creative[] to BrandAgentCreative[]
-      const creatives = await this.campaignBQ.listCreatives(brandAgentId);
+      const creatives = await this.campaignBQ.listCreatives(
+        brandAgentId,
+        undefined,
+        apiKey,
+      );
       return creatives.map((creative) => ({
         // Optional fields
         body: creative.creativeDescription,
@@ -2400,6 +2433,7 @@ export class Scope3ApiClient {
       const creatives = await this.campaignBQ.listCreatives(
         buyerAgentId,
         filter?.status,
+        apiKey,
       );
 
       // Get assignment counts
@@ -3156,6 +3190,7 @@ export class Scope3ApiClient {
       const updatedCreative = await this.campaignBQ.updateCreative(
         input.creativeId,
         updateData,
+        apiKey,
       );
       return updatedCreative;
     } catch (error) {

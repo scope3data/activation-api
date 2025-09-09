@@ -1172,9 +1172,15 @@ paths:
                 description:
                   type: string
                   description: Optional description of the brand agent
+                externalId:
+                  type: string
+                  description: Your internal ID for this brand agent (e.g., client code or account ID)
                 name:
                   type: string
                   description: Name of the brand agent (advertiser account)
+                nickname:
+                  type: string
+                  description: Friendly name for easy identification (e.g., 'Nike' for 'Nike c/o Kinesso')
               required:
                 - advertiserDomains
                 - name

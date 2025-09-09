@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.brand_agent_extensions` (
   advertiser_domains ARRAY<STRING>,
   dsp_seats ARRAY<STRING>,
   description STRING,
+  external_id STRING, -- Customer-scoped external identifier
+  nickname STRING, -- Customer-scoped friendly name
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
 )

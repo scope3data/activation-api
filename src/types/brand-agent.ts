@@ -20,8 +20,10 @@ export interface BrandAgent {
   customerId: number;
   description?: string;
   dspSeats?: string[]; // DSP seat IDs for PMP creation
+  externalId?: string; // Customer-scoped external identifier (e.g., client's internal brand ID)
   id: string;
   name: string;
+  nickname?: string; // Customer-scoped friendly name (e.g., "Nike" for "Nike c/o Kinesso")
 
   updatedAt: Date;
 }
@@ -216,10 +218,20 @@ export interface BrandAgentCreativeUpdateInput {
   url?: string;
 }
 
+// Brand Agent Descriptor - flexible way to reference brand agents in MCP tools
+export interface BrandAgentDescriptor {
+  externalId?: string; // Customer's external identifier
+  // At least one of these must be provided
+  id?: string; // Our internal brand agent ID
+  nickname?: string; // Customer's friendly name
+}
+
 export interface BrandAgentInput {
   advertiserDomains: string[]; // Required on creation
   description?: string;
+  externalId?: string; // Customer-scoped external identifier
   name: string;
+  nickname?: string; // Customer-scoped friendly name
 }
 
 // API Response types
@@ -231,7 +243,9 @@ export interface BrandAgentUpdateInput {
   advertiserDomains?: string[];
   description?: string;
   dspSeats?: string[]; // For adding/updating DSP seats
+  externalId?: string; // Customer-scoped external identifier
   name?: string;
+  nickname?: string; // Customer-scoped friendly name
 }
 
 export interface BrandAgentWhereInput {

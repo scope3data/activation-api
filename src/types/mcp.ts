@@ -84,7 +84,9 @@ export interface CreateBrandAgentCreativeParams {
 export interface CreateBrandAgentParams {
   advertiserDomains: string[];
   description?: string;
+  externalId?: string;
   name: string;
+  nickname?: string;
 }
 
 export interface CreateBrandAgentStandardsParams {

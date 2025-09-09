@@ -96,11 +96,8 @@ function convertZodToJsonSchema(zodSchema: unknown): unknown {
       const properties: Record<string, unknown> = {};
       const required: string[] = [];
 
-      // Handle both function-based shape (newer Zod) and object-based shape (older Zod)
-      const shape =
-        typeof schema._def.shape === "function"
-          ? schema.shape
-          : schema._def.shape;
+      // Access the shape directly from the schema object
+      const shape = schema.shape;
 
       for (const [key, value] of Object.entries(shape || {})) {
         const fieldSchema = convertZodToJsonSchema(value);

@@ -3,8 +3,11 @@ import { BigQuery } from "@google-cloud/bigquery";
 import type { BrandAgent, BrandAgentCampaign } from "../types/brand-agent.js";
 import type { Creative } from "../types/creative.js";
 
+import { AuthenticationService } from "./auth-service.js";
+
 export class CampaignBigQueryService {
   private agentTableRef: string;
+  private authService: AuthenticationService;
   private bigquery: BigQuery;
   private dataset: string;
   private projectId: string;
@@ -18,10 +21,11 @@ export class CampaignBigQueryService {
     this.projectId = projectId;
     this.dataset = dataset;
     this.agentTableRef = agentTableRef;
+    this.authService = new AuthenticationService(this.bigquery);
   }
 
   // ============================================================================
-  // BRAND AGENT METHODS (joining with existing table)
+  // CUSTOMER ID RESOLUTION (using AuthenticationService)
   // ============================================================================
 
   /**
@@ -72,6 +76,10 @@ export class CampaignBigQueryService {
     });
   }
 
+  // ============================================================================
+  // BRAND AGENT METHODS (joining with existing table)
+  // ============================================================================
+
   /**
    * Create a new campaign
    */
@@ -120,10 +128,6 @@ export class CampaignBigQueryService {
 
     return campaignId;
   }
-
-  // ============================================================================
-  // CAMPAIGN METHODS
-  // ============================================================================
 
   /**
    * Create a new creative
@@ -186,6 +190,8 @@ export class CampaignBigQueryService {
         ext.advertiser_domains,
         ext.dsp_seats,
         ext.description,
+        ext.external_id,
+        ext.nickname,
         COALESCE(ext.created_at, a.created_at) as created_at,
         COALESCE(ext.updated_at, a.updated_at, a.created_at) as updated_at
       FROM \`${this.agentTableRef}\` a
@@ -211,11 +217,17 @@ export class CampaignBigQueryService {
       customerId: Number(row.customer_id),
       description: row.description ? String(row.description) : undefined,
       dspSeats: Array.isArray(row.dsp_seats) ? (row.dsp_seats as string[]) : [],
+      externalId: row.external_id ? String(row.external_id) : undefined,
       id: String(row.id),
       name: String(row.name),
+      nickname: row.nickname ? String(row.nickname) : undefined,
       updatedAt: new Date(row.updated_at as Date | number | string),
     };
   }
+
+  // ============================================================================
+  // CAMPAIGN METHODS
+  // ============================================================================
 
   /**
    * Get campaign with relationships
@@ -292,20 +304,16 @@ export class CampaignBigQueryService {
     };
   }
 
-  // ============================================================================
-  // CREATIVE METHODS
-  // ============================================================================
-
   /**
    * Get creative by ID
    */
-  async getCreative(creativeId: string): Promise<Creative | null> {
+  async getCreative(
+    creativeId: string,
+    apiToken?: string,
+  ): Promise<Creative | null> {
     const query = `
-      SELECT 
-        c.*,
-        a.customer_id
+      SELECT c.*
       FROM \`${this.projectId}.${this.dataset}.creatives\` c
-      JOIN \`${this.agentTableRef}\` a ON c.brand_agent_id = a.id
       WHERE c.id = @creativeId
       LIMIT 1
     `;
@@ -341,7 +349,7 @@ export class CampaignBigQueryService {
         : undefined,
       creativeId: String(row.id),
       creativeName: String(row.name),
-      customerId: Number(row.customer_id),
+      customerId: await this.resolveCustomerId(apiToken),
       format:
         row.format_type && row.format_id
           ? {
@@ -400,6 +408,13 @@ export class CampaignBigQueryService {
   }
 
   /**
+   * Get customer ID from API token (backward compatibility)
+   */
+  async getCustomerIdFromToken(apiToken: string): Promise<null | number> {
+    return this.authService.getCustomerIdFromToken(apiToken);
+  }
+
+  /**
    * Health check - test BigQuery connectivity
    */
   async healthCheck(): Promise<boolean> {
@@ -412,6 +427,10 @@ export class CampaignBigQueryService {
       return false;
     }
   }
+
+  // ============================================================================
+  // CREATIVE METHODS
+  // ============================================================================
 
   /**
    * List brand agents for a customer
@@ -455,10 +474,6 @@ export class CampaignBigQueryService {
       updatedAt: new Date(row.updated_at as Date | number | string),
     }));
   }
-
-  // ============================================================================
-  // RELATIONSHIP METHODS
-  // ============================================================================
 
   /**
    * List campaigns for a brand agent
@@ -552,13 +567,11 @@ export class CampaignBigQueryService {
   async listCreatives(
     brandAgentId: string,
     status?: string,
+    apiToken?: string,
   ): Promise<Creative[]> {
     let query = `
-      SELECT 
-        c.*,
-        a.customer_id
+      SELECT c.*
       FROM \`${this.projectId}.${this.dataset}.creatives\` c
-      JOIN \`${this.agentTableRef}\` a ON c.brand_agent_id = a.id
       WHERE c.brand_agent_id = @brandAgentId
     `;
 
@@ -572,6 +585,7 @@ export class CampaignBigQueryService {
     query += ` ORDER BY c.created_at DESC`;
 
     const [rows] = await this.bigquery.query({ params, query });
+    const customerId = await this.resolveCustomerId(apiToken);
 
     return rows.map((row: Record<string, unknown>) => ({
       assemblyMethod: String(row.assembly_method) as
@@ -596,7 +610,7 @@ export class CampaignBigQueryService {
         : undefined,
       creativeId: String(row.id),
       creativeName: String(row.name),
-      customerId: Number(row.customer_id),
+      customerId,
       format:
         row.format_type && row.format_id
           ? {
@@ -624,6 +638,70 @@ export class CampaignBigQueryService {
       version: String(row.version),
     }));
   }
+
+  /**
+   * Resolve brand agent descriptor to brand agent ID
+   * Supports lookup by ID, external ID, or nickname (customer-scoped)
+   */
+  async resolveBrandAgentId(
+    descriptor: { externalId?: string; id?: string; nickname?: string },
+    customerId: number,
+  ): Promise<null | string> {
+    if (descriptor.id) {
+      // Direct ID lookup - verify it exists and belongs to customer
+      const query = `
+        SELECT a.id
+        FROM \`${this.agentTableRef}\` a
+        WHERE a.id = @agentId AND a.customer_id = @customerId
+        LIMIT 1
+      `;
+
+      const [rows] = await this.bigquery.query({
+        params: { agentId: descriptor.id, customerId },
+        query,
+      });
+
+      return rows.length > 0 ? descriptor.id : null;
+    }
+
+    // Lookup by external ID or nickname in extensions table
+    const conditions: string[] = [];
+    const params: Record<string, unknown> = { customerId };
+
+    if (descriptor.externalId) {
+      conditions.push("ext.external_id = @externalId");
+      params.externalId = descriptor.externalId;
+    }
+
+    if (descriptor.nickname) {
+      conditions.push("ext.nickname = @nickname");
+      params.nickname = descriptor.nickname;
+    }
+
+    if (conditions.length === 0) {
+      return null; // No valid descriptor provided
+    }
+
+    const query = `
+      SELECT a.id
+      FROM \`${this.agentTableRef}\` a
+      INNER JOIN \`${this.projectId}.${this.dataset}.brand_agent_extensions\` ext
+        ON a.id = ext.agent_id
+      WHERE a.customer_id = @customerId AND (${conditions.join(" OR ")})
+      LIMIT 1
+    `;
+
+    const [rows] = await this.bigquery.query({
+      params,
+      query,
+    });
+
+    return rows.length > 0 ? String(rows[0].id) : null;
+  }
+
+  // ============================================================================
+  // RELATIONSHIP METHODS
+  // ============================================================================
 
   /**
    * Remove creative from campaign
@@ -657,6 +735,7 @@ export class CampaignBigQueryService {
       status?: string;
       targetAudience?: Record<string, unknown>;
     },
+    apiToken?: string,
   ): Promise<Creative> {
     const setClause = [];
     const params: Record<string, unknown> = { creativeId };
@@ -713,7 +792,7 @@ export class CampaignBigQueryService {
     await this.bigquery.query({ params, query });
 
     // Return the updated creative
-    const updatedCreative = await this.getCreative(creativeId);
+    const updatedCreative = await this.getCreative(creativeId, apiToken);
     if (!updatedCreative) {
       throw new Error(`Creative not found: ${creativeId}`);
     }
@@ -721,12 +800,8 @@ export class CampaignBigQueryService {
     return updatedCreative;
   }
 
-  // ============================================================================
-  // UTILITY METHODS
-  // ============================================================================
-
   /**
-   * Create or update brand agent extension data
+   * Create or update brand agent extension with customer-scoped fields
    */
   async upsertBrandAgentExtension(
     agentId: string,
@@ -734,28 +809,35 @@ export class CampaignBigQueryService {
       advertiserDomains?: string[];
       description?: string;
       dspSeats?: string[];
+      externalId?: string;
+      nickname?: string;
     },
   ): Promise<void> {
     const query = `
-      MERGE \`${this.projectId}.${this.dataset}.brand_agent_extensions\` AS target
-      USING (SELECT 
-        @agentId as agent_id,
-        @advertiserDomains as advertiser_domains,
-        @dspSeats as dsp_seats,
-        @description as description,
-        CURRENT_TIMESTAMP() as created_at,
-        CURRENT_TIMESTAMP() as updated_at
-      ) AS source
-      ON target.agent_id = source.agent_id
+      MERGE \`${this.projectId}.${this.dataset}.brand_agent_extensions\` ext
+      USING (
+        SELECT 
+          @agentId as agent_id,
+          @advertiserDomains as advertiser_domains,
+          @description as description,
+          @dspSeats as dsp_seats,
+          @externalId as external_id,
+          @nickname as nickname,
+          CURRENT_TIMESTAMP() as created_at,
+          CURRENT_TIMESTAMP() as updated_at
+      ) new
+      ON ext.agent_id = new.agent_id
       WHEN MATCHED THEN
-        UPDATE SET 
-          advertiser_domains = source.advertiser_domains,
-          dsp_seats = source.dsp_seats,
-          description = source.description,
+        UPDATE SET
+          advertiser_domains = COALESCE(new.advertiser_domains, ext.advertiser_domains),
+          description = COALESCE(new.description, ext.description),
+          dsp_seats = COALESCE(new.dsp_seats, ext.dsp_seats),
+          external_id = COALESCE(new.external_id, ext.external_id),
+          nickname = COALESCE(new.nickname, ext.nickname),
           updated_at = CURRENT_TIMESTAMP()
       WHEN NOT MATCHED THEN
-        INSERT (agent_id, advertiser_domains, dsp_seats, description, created_at, updated_at)
-        VALUES (source.agent_id, source.advertiser_domains, source.dsp_seats, source.description, source.created_at, source.updated_at)
+        INSERT (agent_id, advertiser_domains, description, dsp_seats, external_id, nickname, created_at, updated_at)
+        VALUES (new.agent_id, new.advertiser_domains, new.description, new.dsp_seats, new.external_id, new.nickname, new.created_at, new.updated_at)
     `;
 
     await this.bigquery.query({
@@ -764,8 +846,28 @@ export class CampaignBigQueryService {
         agentId,
         description: data.description || null,
         dspSeats: data.dspSeats || null,
+        externalId: data.externalId || null,
+        nickname: data.nickname || null,
       },
       query,
     });
   }
+
+  /**
+   * Helper method to resolve customer ID from token or use fallback
+   */
+  private async resolveCustomerId(apiToken?: string): Promise<number> {
+    if (apiToken) {
+      const customerId =
+        await this.authService.getCustomerIdFromToken(apiToken);
+      if (customerId) {
+        return customerId;
+      }
+    }
+    return 1; // Default fallback
+  }
+
+  // ============================================================================
+  // UTILITY METHODS
+  // ============================================================================
 }
