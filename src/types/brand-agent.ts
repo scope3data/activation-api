@@ -1,6 +1,6 @@
 // Brand Agent types - represents advertiser/account level entities
 
-import type { InventoryManagement } from "./inventory-options.js";
+import type { TacticManagement } from "./tactics.js";
 import type { CampaignAlert } from "./reporting.js";
 
 // Shared Agent Model type
@@ -66,7 +66,7 @@ export interface BrandAgentCampaign {
   id: string;
 
   // Inventory management configuration
-  inventoryManagement?: InventoryManagement;
+  tacticManagement?: TacticManagement;
   name: string;
   // NEW: Integrated notification thresholds
   notificationThresholds?: {
@@ -115,7 +115,7 @@ export interface BrandAgentCampaignInput {
   creativeIds?: string[];
 
   // Inventory management configuration
-  inventoryManagement?: InventoryManagement;
+  tacticManagement?: TacticManagement;
 
   name: string;
   // Optional notification thresholds
@@ -164,7 +164,7 @@ export interface BrandAgentCampaignUpdateInput {
   creativeIds?: string[];
 
   // Inventory management configuration
-  inventoryManagement?: Partial<InventoryManagement>;
+  tacticManagement?: Partial<TacticManagement>;
 
   name?: string;
   prompt?: string;

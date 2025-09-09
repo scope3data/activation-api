@@ -9,17 +9,17 @@ import {
   createMCPResponse,
 } from "../../../utils/error-handling.js";
 
-export const createInventoryOptionTool = (client: Scope3ApiClient) => ({
+export const createTacticTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "inventory-management",
+    category: "tactic-management",
     dangerLevel: "medium",
     openWorldHint: true,
     readOnlyHint: false,
-    title: "Create Inventory Option",
+    title: "Create Tactic",
   },
 
   description:
-    "Create a new inventory option by combining a publisher media product with a targeting strategy. This creates a 'tactic' that represents a specific way to buy and target inventory. The inventory option includes budget allocation, signal configuration, and effective pricing. Requires authentication.",
+    "Create a new tactic by combining a publisher media product with a targeting strategy. This creates a 'tactic' that represents a specific way to buy and target inventory. The tactic includes budget allocation, signal configuration, and effective pricing. Requires authentication.",
 
   execute: async (
     args: {
@@ -64,7 +64,7 @@ export const createInventoryOptionTool = (client: Scope3ApiClient) => ({
     }
 
     try {
-      const inventoryOptionInput = {
+      const tacticInput = {
         budgetAllocation: {
           amount: args.budgetAllocation.amount,
           currency: args.budgetAllocation.currency || "USD",
@@ -85,22 +85,22 @@ export const createInventoryOptionTool = (client: Scope3ApiClient) => ({
         },
       };
 
-      const inventoryOption = await client.createInventoryOption(
+      const tactic = await client.createTactic(
         apiKey,
-        inventoryOptionInput,
+        tacticInput,
       );
 
-      let summary = `✅ **Inventory Option Created Successfully!**\n\n`;
+      let summary = `✅ **Tactic Created Successfully!**\n\n`;
 
       // Header with option details
-      summary += `## 🎯 **${inventoryOption.name}**\n\n`;
+      summary += `## 🎯 **${tactic.name}**\n\n`;
 
-      if (inventoryOption.description) {
-        summary += `**Description:** ${inventoryOption.description}\n\n`;
+      if (tactic.description) {
+        summary += `**Description:** ${tactic.description}\n\n`;
       }
 
       // Publisher product information
-      const product = inventoryOption.mediaProduct;
+      const product = tactic.mediaProduct;
       summary += `### 📦 **Publisher Product**\n`;
       summary += `• **Publisher:** ${product.publisherName}\n`;
       summary += `• **Product:** ${product.name}\n`;
@@ -125,107 +125,107 @@ export const createInventoryOptionTool = (client: Scope3ApiClient) => ({
 
       // Targeting strategy
       summary += `### 🎯 **Targeting Strategy**\n`;
-      summary += `• **Signal Type:** ${inventoryOption.targeting.signalType.replace(/_/g, " ")}\n`;
+      summary += `• **Signal Type:** ${tactic.targeting.signalType.replace(/_/g, " ")}\n`;
 
-      if (inventoryOption.targeting.signalProvider) {
-        summary += `• **Signal Provider:** ${inventoryOption.targeting.signalProvider}\n`;
+      if (tactic.targeting.signalProvider) {
+        summary += `• **Signal Provider:** ${tactic.targeting.signalProvider}\n`;
       }
 
-      if (inventoryOption.targeting.signalConfiguration?.audienceIds?.length) {
-        summary += `• **Audiences:** ${inventoryOption.targeting.signalConfiguration.audienceIds.length} audiences assigned\n`;
+      if (tactic.targeting.signalConfiguration?.audienceIds?.length) {
+        summary += `• **Audiences:** ${tactic.targeting.signalConfiguration.audienceIds.length} audiences assigned\n`;
       }
 
-      if (inventoryOption.targeting.signalConfiguration?.segments?.length) {
-        summary += `• **Segments:** ${inventoryOption.targeting.signalConfiguration.segments.join(", ")}\n`;
+      if (tactic.targeting.signalConfiguration?.segments?.length) {
+        summary += `• **Segments:** ${tactic.targeting.signalConfiguration.segments.join(", ")}\n`;
       }
 
-      summary += `• **Inherit Campaign Targeting:** ${inventoryOption.targeting.inheritFromCampaign ? "Yes" : "No"}\n`;
+      summary += `• **Inherit Campaign Targeting:** ${tactic.targeting.inheritFromCampaign ? "Yes" : "No"}\n`;
 
       // Geographic overrides
-      if (inventoryOption.targeting.overrides?.geo?.length) {
-        summary += `• **Geographic Override:** ${inventoryOption.targeting.overrides.geo.join(", ")}\n`;
+      if (tactic.targeting.overrides?.geo?.length) {
+        summary += `• **Geographic Override:** ${tactic.targeting.overrides.geo.join(", ")}\n`;
       }
 
       summary += `\n`;
 
       // Effective pricing (after signals)
       summary += `### 💰 **Effective Pricing**\n`;
-      summary += `• **Base CPM:** $${inventoryOption.effectivePricing.cpm.toFixed(2)}\n`;
+      summary += `• **Base CPM:** $${tactic.effectivePricing.cpm.toFixed(2)}\n`;
 
       if (
-        inventoryOption.effectivePricing.signalCost &&
-        inventoryOption.effectivePricing.signalCost > 0
+        tactic.effectivePricing.signalCost &&
+        tactic.effectivePricing.signalCost > 0
       ) {
-        summary += `• **Signal Cost:** +$${inventoryOption.effectivePricing.signalCost.toFixed(2)}\n`;
+        summary += `• **Signal Cost:** +$${tactic.effectivePricing.signalCost.toFixed(2)}\n`;
       }
 
-      summary += `• **🏷️ Total Effective CPM:** $${inventoryOption.effectivePricing.totalCpm.toFixed(2)}\n\n`;
+      summary += `• **🏷️ Total Effective CPM:** $${tactic.effectivePricing.totalCpm.toFixed(2)}\n\n`;
 
       // Budget allocation
       summary += `### 💳 **Budget Allocation**\n`;
-      summary += `• **Budget:** $${inventoryOption.budgetAllocation.amount.toLocaleString()} ${inventoryOption.budgetAllocation.currency}\n`;
+      summary += `• **Budget:** $${tactic.budgetAllocation.amount.toLocaleString()} ${tactic.budgetAllocation.currency}\n`;
 
-      if (inventoryOption.budgetAllocation.percentage) {
-        summary += `• **Campaign Share:** ${inventoryOption.budgetAllocation.percentage}%\n`;
+      if (tactic.budgetAllocation.percentage) {
+        summary += `• **Campaign Share:** ${tactic.budgetAllocation.percentage}%\n`;
       }
 
-      if (inventoryOption.budgetAllocation.dailyCap) {
-        summary += `• **Daily Cap:** $${inventoryOption.budgetAllocation.dailyCap.toLocaleString()} ${inventoryOption.budgetAllocation.currency}\n`;
+      if (tactic.budgetAllocation.dailyCap) {
+        summary += `• **Daily Cap:** $${tactic.budgetAllocation.dailyCap.toLocaleString()} ${tactic.budgetAllocation.currency}\n`;
       }
 
-      summary += `• **Pacing:** ${inventoryOption.budgetAllocation.pacing.replace(/_/g, " ")}\n`;
+      summary += `• **Pacing:** ${tactic.budgetAllocation.pacing.replace(/_/g, " ")}\n`;
 
       // Calculate projected impressions
       const projectedImpressions = Math.floor(
-        (inventoryOption.budgetAllocation.amount /
-          inventoryOption.effectivePricing.totalCpm) *
+        (tactic.budgetAllocation.amount /
+          tactic.effectivePricing.totalCpm) *
           1000,
       );
       summary += `• **Projected Impressions:** ~${projectedImpressions.toLocaleString()}\n\n`;
 
       // Status and metadata
       summary += `### ℹ️ **Status**\n`;
-      summary += `• **Option ID:** ${inventoryOption.id}\n`;
-      summary += `• **Status:** ${inventoryOption.status}\n`;
-      summary += `• **Created:** ${new Date(inventoryOption.createdAt).toLocaleString()}\n\n`;
+      summary += `• **Tactic ID:** ${tactic.id}\n`;
+      summary += `• **Status:** ${tactic.status}\n`;
+      summary += `• **Created:** ${new Date(tactic.createdAt).toLocaleString()}\n\n`;
 
       // Next steps and recommendations
       summary += `### 📋 **Next Steps**\n`;
-      summary += `• Review and activate the inventory option when ready\n`;
-      summary += `• Monitor performance using analyze_inventory_performance\n`;
-      summary += `• Adjust budget allocation with adjust_inventory_allocation as needed\n`;
+      summary += `• Review and activate the tactic when ready\n`;
+      summary += `• Monitor performance using analyze_tactic_performance\n`;
+      summary += `• Adjust budget allocation with adjust_tactic_allocation as needed\n`;
 
-      if (inventoryOption.targeting.signalType === "none") {
+      if (tactic.targeting.signalType === "none") {
         summary += `• ⚠️ Consider adding signals for better targeting effectiveness\n`;
       }
 
       if (
-        inventoryOption.effectivePricing.signalCost &&
-        inventoryOption.effectivePricing.signalCost >
-          inventoryOption.effectivePricing.cpm * 0.5
+        tactic.effectivePricing.signalCost &&
+        tactic.effectivePricing.signalCost >
+          tactic.effectivePricing.cpm * 0.5
       ) {
         summary += `• ⚠️ Signal cost is high relative to base CPM - review cost-effectiveness\n`;
       }
 
-      summary += `\n✨ **Inventory option is ready for campaign activation!**`;
+      summary += `\n✨ **Tactic is ready for campaign activation!**`;
 
       return createMCPResponse({
         message: summary,
         success: true,
       });
     } catch (error) {
-      return createErrorResponse("Failed to create inventory option", error);
+      return createErrorResponse("Failed to create tactic", error);
     }
   },
 
-  name: "create_inventory_option",
+  name: "create_tactic",
   parameters: z.object({
     budgetAllocation: z
       .object({
         amount: z
           .number()
           .min(0)
-          .describe("Budget amount for this inventory option"),
+          .describe("Budget amount for this tactic"),
         currency: z
           .string()
           .default("USD")
@@ -249,18 +249,18 @@ export const createInventoryOptionTool = (client: Scope3ApiClient) => ({
       .describe("Budget allocation configuration"),
     campaignId: z
       .string()
-      .describe("ID of the campaign to add this inventory option to"),
+      .describe("ID of the campaign to add this tactic to"),
     description: z
       .string()
       .optional()
-      .describe("Optional description of the inventory option"),
+      .describe("Optional description of the tactic"),
     mediaProductId: z
       .string()
       .describe("ID of the publisher media product to use"),
     name: z
       .string()
       .describe(
-        "Name for this inventory option (e.g., 'Hulu Premium + Scope3')",
+        "Name for this tactic (e.g., 'Hulu Premium + Scope3')",
       ),
     targeting: z
       .object({

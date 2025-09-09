@@ -1,6 +1,6 @@
-// Inventory Options types - manages publisher products with targeting strategies
+// Tactics types - manages publisher products with targeting strategies
 
-// Budget allocation for an inventory option
+// Budget allocation for a tactic
 export interface BudgetAllocation {
   amount: number;
   currency: string;
@@ -20,8 +20,8 @@ export interface EffectivePricing {
   totalCpm: number; // Final effective CPM
 }
 
-// Campaign inventory management configuration
-export interface InventoryManagement {
+// Campaign tactic management configuration
+export interface TacticManagement {
   // Auto-discovery settings
   autoDiscoverProducts?: boolean;
   autoOptimize?: boolean;
@@ -32,7 +32,7 @@ export interface InventoryManagement {
   };
   discoveryCriteria?: ProductDiscoveryQuery;
 
-  inventoryOptions?: InventoryOption[];
+  tactics?: Tactic[];
 
   mode: "hybrid" | "scope3_managed" | "user_managed";
 
@@ -45,9 +45,9 @@ export interface InventoryManagement {
   preferredSignals?: ("buyer" | "scope3" | "third_party")[];
 }
 
-// Our inventory option (product + targeting)
-export interface InventoryOption {
-  // Budget allocation for this option
+// Our tactic (product + targeting)
+export interface Tactic {
+  // Budget allocation for this tactic
   budgetAllocation: BudgetAllocation;
   campaignId: string;
   // Metadata
@@ -64,7 +64,7 @@ export interface InventoryOption {
 
   name: string; // e.g., "Hulu Premium + Scope3 Signals"
 
-  performance?: InventoryPerformance;
+  performance?: TacticPerformance;
   // Status and performance
   status: "active" | "completed" | "draft" | "paused";
 
@@ -73,7 +73,7 @@ export interface InventoryOption {
   updatedAt: Date;
 }
 
-export interface InventoryOptionInput {
+export interface TacticInput {
   budgetAllocation: BudgetAllocation;
   campaignId: string;
   description?: string;
@@ -82,11 +82,11 @@ export interface InventoryOptionInput {
   targeting: TargetingStrategy;
 }
 
-export interface InventoryOptionsData {
-  inventoryOptions: InventoryOption[];
+export interface TacticsData {
+  tactics: Tactic[];
 }
 
-export interface InventoryOptionUpdateInput {
+export interface TacticUpdateInput {
   budgetAllocation?: Partial<BudgetAllocation>;
   description?: string;
   name?: string;
@@ -94,8 +94,8 @@ export interface InventoryOptionUpdateInput {
   targeting?: Partial<TargetingStrategy>;
 }
 
-// Performance metrics for an inventory option
-export interface InventoryPerformance {
+// Performance metrics for a tactic
+export interface TacticPerformance {
   clicks?: number;
   conversions?: number;
   cpa?: number; // Cost per acquisition
@@ -180,7 +180,7 @@ export interface PublisherMediaProduct {
   updatedAt: Date;
 }
 
-// Input types for creating inventory options
+// Input types for creating tactics
 export interface PublisherMediaProductInput {
   basePricing: {
     fixedCpm?: number;

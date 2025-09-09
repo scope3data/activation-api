@@ -274,84 +274,18 @@ info:
   version: 1.0.0
 openapi: 3.1.0
 paths:
-  /add-measurement-source:
+  /adjust-tactic-allocation:
     post:
-      description: Add a measurement source to a brand agent for tracking campaign performance. Supports
-        conversion APIs, analytics platforms, brand studies, and MMM (Media Mix Modeling)
-        integrations. Currently supports basic configuration (stub implementation). Requires
+      description: Adjust budget allocation for tactics within a campaign. Can update budget amounts,
+        percentages, daily caps, or pacing strategies. Supports bulk updates across multiple
+        tactics. Use this to rebalance budget based on performance or changing priorities. Requires
         authentication.
-      operationId: add_measurement_source
-      summary: Add Measurement Source
+      operationId: adjust_tactic_allocation
+      summary: Adjust Tactic Allocation
       tags:
-        - Webhooks & Integration
+        - System
       x-llm-hints:
-        - Use this tool when user wants to add a measurement source to a brand agent for tracking
-          campaign performance
-      requestBody:
-        content:
-          application/json:
-            examples:
-              basic:
-                summary: Basic example
-                value: {}
-            schema:
-              properties: {}
-              type: object
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-  /adjust-inventory-allocation:
-    post:
-      description: Adjust budget allocation for inventory options within a campaign. Can update budget
-        amounts, percentages, daily caps, or pacing strategies. Supports bulk updates across
-        multiple options. Use this to rebalance budget based on performance or changing priorities.
-        Requires authentication.
-      operationId: adjust_inventory_allocation
-      summary: Adjust Inventory Allocation
-      tags:
-        - Inventory & Optimization
-      x-llm-hints:
-        - Use this tool when user wants to adjust budget allocation for inventory options within a
-          campaign
+        - Use this tool when user wants to adjust budget allocation for tactics within a campaign
         - Call this when user asks 'show me', 'list', or 'what are my'
         - Call this when user says 'change', 'update', 'modify', or 'edit'
       requestBody:
@@ -406,19 +340,19 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /analyze-inventory-performance:
+  /analyze-tactic-performance:
     post:
-      description: Analyze performance metrics across all inventory options in a campaign. Provides
-        detailed breakdowns by publisher, signal type, and delivery model. Includes performance
-        comparisons, efficiency metrics, and optimization recommendations. Use this to understand
-        which inventory tactics are performing best. Requires authentication.
-      operationId: analyze_inventory_performance
-      summary: Analyze Inventory Performance
+      description: Analyze performance metrics across all tactics in a campaign. Provides detailed
+        breakdowns by publisher, signal type, and delivery model. Includes performance comparisons,
+        efficiency metrics, and optimization recommendations. Use this to understand which tactics
+        are performing best. Requires authentication.
+      operationId: analyze_tactic_performance
+      summary: Analyze Tactic Performance
       tags:
-        - Inventory & Optimization
+        - System
       x-llm-hints:
-        - Use this tool when user wants to analyze performance metrics across all inventory options
-          in a campaign
+        - Use this tool when user wants to analyze performance metrics across all tactics in a
+          campaign
       requestBody:
         content:
           application/json:
@@ -553,71 +487,6 @@ paths:
       x-llm-hints:
         - Use this tool when user wants to add assets to a buyer agent's library by referencing
           external urls, rest upload ids, or existing cdn urls
-      requestBody:
-        content:
-          application/json:
-            examples:
-              basic:
-                summary: Basic example
-                value: {}
-            schema:
-              properties: {}
-              type: object
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-  /campaign/attach-creative:
-    post:
-      description: Attach existing creatives to a campaign or create new creatives and attach them in one
-        operation. This is the campaign-centric way to manage creative assignments, allowing you to
-        build a campaign's creative strategy efficiently.
-      operationId: campaign/attach_creative
-      summary: Attach Creatives to Campaign
-      tags:
-        - Campaigns
-      x-llm-hints:
-        - Use this tool when user wants to attach existing creatives to a campaign or create new
-          creatives and attach them in one operation
-        - Call this when user says 'create', 'make', 'set up', or 'add'
       requestBody:
         content:
           application/json:
@@ -817,180 +686,6 @@ paths:
               basic:
                 summary: Basic example
                 value: {}
-            schema:
-              properties: {}
-              type: object
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-  /campaigns:
-    post:
-      description: Create a complete campaign in Scope3 by parsing a natural language prompt and
-        automatically creating the strategy and targeting profiles. Returns the created strategy ID
-        and a human-readable summary of what was created. Uses INTELLIGENT_PMPS strategy type by
-        default (future versions will support media buys). Requires authentication.
-      operationId: create_campaign
-      summary: Create Campaign
-      tags:
-        - Campaigns
-      x-llm-hints:
-        - Use this tool when user wants to create a complete campaign in scope3 by parsing a natural
-          language prompt and automatically creating the strategy and targeting profiles
-        - Call this when user says 'create', 'make', 'set up', or 'add'
-        - Call this when user asks 'show me', 'list', or 'what are my'
-      x-migration-notes:
-        amazon: Creates an Order equivalent
-        dv360: Creates an Insertion Order equivalent
-        ttd: Creates a Line Item equivalent within your Advertiser
-      requestBody:
-        content:
-          application/json:
-            examples:
-              holiday:
-                summary: Holiday campaign
-                value:
-                  brandAgentId: ba_nike_123
-                  budget:
-                    currency: USD
-                    dailyCap: 100000
-                    pacing: even
-                    total: 5000000
-                  name: Holiday Sale 2024
-                  prompt: Target gift buyers during holiday season with our premium athletic wear, focusing on people
-                    shopping for fitness enthusiasts and athletes
-              product_launch:
-                summary: Product launch campaign
-                value:
-                  brandAgentId: ba_nike_123
-                  budget:
-                    currency: USD
-                    total: 7500000
-                  name: New Running Shoe Launch
-                  prompt: Launch our latest running shoe to serious runners and marathon enthusiasts aged 25-45 in
-                    major metropolitan areas
-            schema:
-              properties: {}
-              type: object
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-  /creatives:
-    post:
-      description: Create a new creative asset within a brand agent (advertiser account). The creative
-        will be owned by the specified brand agent and can be used across multiple campaigns within
-        that brand agent. Supports image, video, native, and HTML5 creative types. Requires
-        authentication.
-      operationId: create_creative
-      summary: Create Brand Agent Creative
-      tags:
-        - Creatives
-      x-llm-hints:
-        - Use this tool when user wants to create a new creative asset within a brand agent
-          (advertiser account)
-      x-migration-notes:
-        amazon: Creates a Creative asset (same concept, but shared across campaigns)
-        dv360: Creates a Creative asset (same concept, but shared across campaigns)
-        ttd: Creates a Creative asset (same concept, but shared across campaigns)
-      requestBody:
-        content:
-          application/json:
-            examples:
-              image:
-                summary: Image creative
-                value:
-                  brandAgentId: ba_nike_123
-                  cta: Discover More
-                  headline: Premium Athletic Wear
-                  name: Product Hero Image
-                  type: image
-                  url: https://cdn.nike.com/product-hero.jpg
-              video:
-                summary: Video creative
-                value:
-                  brandAgentId: ba_nike_123
-                  cta: Shop Now
-                  headline: Just Do It
-                  name: Hero Video 30s
-                  type: video
-                  url: https://cdn.nike.com/hero-video-30s.mp4
             schema:
               properties: {}
               type: object
@@ -1293,19 +988,109 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /inventory-options:
+  /campaigns:
     post:
-      description: Create a new inventory option by combining a publisher media product with a targeting
-        strategy. This creates a 'tactic' that represents a specific way to buy and target
-        inventory. The inventory option includes budget allocation, signal configuration, and
-        effective pricing. Requires authentication.
-      operationId: create_inventory_option
-      summary: Create Inventory Option
+      description: Create a complete campaign in Scope3 by parsing a natural language prompt and
+        automatically creating the strategy and targeting profiles. Returns the created strategy ID
+        and a human-readable summary of what was created. Uses INTELLIGENT_PMPS strategy type by
+        default (future versions will support media buys). Requires authentication.
+      operationId: create_campaign
+      summary: Create Campaign
       tags:
-        - Inventory & Optimization
+        - Campaigns
       x-llm-hints:
-        - Use this tool when user wants to create a new inventory option by combining a publisher
-          media product with a targeting strategy
+        - Use this tool when user wants to create a complete campaign in scope3 by parsing a natural
+          language prompt and automatically creating the strategy and targeting profiles
+        - Call this when user says 'create', 'make', 'set up', or 'add'
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      x-migration-notes:
+        amazon: Creates an Order equivalent
+        dv360: Creates an Insertion Order equivalent
+        ttd: Creates a Line Item equivalent within your Advertiser
+      requestBody:
+        content:
+          application/json:
+            examples:
+              holiday:
+                summary: Holiday campaign
+                value:
+                  brandAgentId: ba_nike_123
+                  budget:
+                    currency: USD
+                    dailyCap: 100000
+                    pacing: even
+                    total: 5000000
+                  name: Holiday Sale 2024
+                  prompt: Target gift buyers during holiday season with our premium athletic wear, focusing on people
+                    shopping for fitness enthusiasts and athletes
+              product_launch:
+                summary: Product launch campaign
+                value:
+                  brandAgentId: ba_nike_123
+                  budget:
+                    currency: USD
+                    total: 7500000
+                  name: New Running Shoe Launch
+                  prompt: Launch our latest running shoe to serious runners and marathon enthusiasts aged 25-45 in
+                    major metropolitan areas
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /tactics:
+    post:
+      description: Create a new tactic by combining a publisher media product with a targeting strategy.
+        This creates a 'tactic' that represents a specific way to buy and target inventory. The
+        tactic includes budget allocation, signal configuration, and effective pricing. Requires
+        authentication.
+      operationId: create_tactic
+      summary: Create Tactic
+      tags:
+        - System
+      x-llm-hints:
+        - Use this tool when user wants to create a new tactic by combining a publisher media
+          product with a targeting strategy
         - Call this when user says 'create', 'make', 'set up', or 'add'
         - Call this when user asks 'show me', 'list', or 'what are my'
       requestBody:
@@ -2694,113 +2479,6 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /campaignss:
-    get:
-      description: List all campaigns for a specific brand agent (advertiser account). Optionally filter
-        by campaign status. Shows campaign details including budget, creative assignments, and
-        current status. Requires authentication.
-      operationId: list_campaigns
-      summary: List Brand Agent Campaigns
-      tags:
-        - Campaigns
-      x-llm-hints:
-        - Use this tool when user wants to list all campaigns for a specific brand agent (advertiser
-          account)
-        - Call this when user asks 'show me', 'list', or 'what are my'
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-  /creativess:
-    get:
-      description: List all creative assets for a specific brand agent (advertiser account). Shows
-        creative details including type, URLs, and metadata. These creatives can be assigned to any
-        campaign within the same brand agent. Requires authentication.
-      operationId: list_creatives
-      summary: List Brand Agent Creatives
-      tags:
-        - Creatives
-      x-llm-hints:
-        - Use this tool when user wants to list all creative assets for a specific brand agent
-          (advertiser account)
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
   /brand-agent-pmpss:
     get:
       description: List all PMPs for a brand agent with their deal IDs and status
@@ -2957,72 +2635,19 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /inventory-optionss:
+  /tacticss:
     get:
-      description: List all inventory options for a specific campaign. Shows the complete breakdown of
-        publisher products, targeting strategies, budget allocations, and performance metrics. Use
-        this to get an overview of how campaign budget is distributed across different inventory
-        tactics. Requires authentication.
-      operationId: list_inventory_options
-      summary: List Inventory Options
+      description: List all tactics for a specific campaign. Shows the complete breakdown of publisher
+        products, targeting strategies, budget allocations, and performance metrics. Use this to get
+        an overview of how campaign budget is distributed across different tactics. Requires
+        authentication.
+      operationId: list_tactics
+      summary: List Tactics
       tags:
-        - Inventory & Optimization
+        - System
       x-llm-hints:
-        - Use this tool when user wants to list all inventory options for a specific campaign
+        - Use this tool when user wants to list all tactics for a specific campaign
         - Call this when user asks 'show me', 'list', or 'what are my'
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-  /measurement-sourcess:
-    get:
-      description: List all measurement sources configured for a specific brand agent. Shows all tracking
-        and analytics integrations including conversion APIs, analytics platforms, brand studies,
-        and MMM sources. Requires authentication.
-      operationId: list_measurement_sources
-      summary: List Measurement Sources
-      tags:
-        - Webhooks & Integration
-      x-llm-hints:
-        - Use this tool when user wants to list all measurement sources configured for a specific
-          brand agent
       responses:
         "200":
           content:
@@ -3192,6 +2817,75 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /brand-agent-pmps/{id}:
+    put:
+      description: Update an existing PMP with new requirements. The backend will parse the new prompt and
+        adjust deal IDs accordingly.
+      operationId: update_brand_agent_pmp
+      summary: update brand agent pmp
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - Use this tool when user wants to update an existing pmp with new requirements
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      parameters:
+        - description: Resource identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /campaigns/{id}:
     put:
       description: Update an existing campaign strategy with a new prompt. This tool parses the new
@@ -3205,147 +2899,6 @@ paths:
         - Use this tool when user wants to update an existing campaign strategy with a new prompt
         - Call this when user asks 'show me', 'list', or 'what are my'
         - Call this when user says 'change', 'update', 'modify', or 'edit'
-      requestBody:
-        content:
-          application/json:
-            examples:
-              basic:
-                summary: Basic example
-                value: {}
-            schema:
-              properties: {}
-              type: object
-        required: true
-      parameters:
-        - description: Resource identifier
-          in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-  /creatives/{id}:
-    put:
-      description: Update an existing creative asset's details including name, type, URL, headline, body
-        text, or call-to-action. This tool supports partial updates - only provide the fields you
-        want to change. Changes affect all campaigns using this creative. Requires authentication.
-      operationId: update_creative
-      summary: Update Brand Agent Creative
-      tags:
-        - Creatives
-      x-llm-hints:
-        - Use this tool when user wants to update an existing creative asset's details including
-          name, type, url, headline, body text, or call-to-action
-        - Call this when user says 'change', 'update', 'modify', or 'edit'
-      requestBody:
-        content:
-          application/json:
-            examples:
-              basic:
-                summary: Basic example
-                value: {}
-            schema:
-              properties: {}
-              type: object
-        required: true
-      parameters:
-        - description: Resource identifier
-          in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-  /brand-agent-pmps/{id}:
-    put:
-      description: Update an existing PMP with new requirements. The backend will parse the new prompt and
-        adjust deal IDs accordingly.
-      operationId: update_brand_agent_pmp
-      summary: update brand agent pmp
-      tags:
-        - Brand Agents
-      x-llm-hints:
-        - Use this tool when user wants to update an existing pmp with new requirements
       requestBody:
         content:
           application/json:

@@ -1,9 +1,9 @@
-// GraphQL queries and mutations for inventory options management
+// GraphQL queries and mutations for tactics management
 
-// Mutation to create a new inventory option
-export const CREATE_INVENTORY_OPTION_MUTATION = `
-  mutation CreateInventoryOption($input: InventoryOptionInput!) {
-    createInventoryOption(input: $input) {
+// Mutation to create a new tactic
+export const CREATE_TACTIC_MUTATION = `
+  mutation CreateTactic($input: TacticInput!) {
+    createTactic(input: $input) {
       id
       campaignId
       name
@@ -63,10 +63,10 @@ export const CREATE_INVENTORY_OPTION_MUTATION = `
   }
 `;
 
-// Mutation to update an existing inventory option
-export const UPDATE_INVENTORY_OPTION_MUTATION = `
-  mutation UpdateInventoryOption($id: String!, $input: InventoryOptionUpdateInput!) {
-    updateInventoryOption(id: $id, input: $input) {
+// Mutation to update an existing tactic
+export const UPDATE_TACTIC_MUTATION = `
+  mutation UpdateTactic($id: String!, $input: TacticUpdateInput!) {
+    updateTactic(id: $id, input: $input) {
       id
       campaignId
       name
@@ -138,11 +138,11 @@ export const UPDATE_INVENTORY_OPTION_MUTATION = `
   }
 `;
 
-// Query to list all inventory options for a campaign
-export const LIST_INVENTORY_OPTIONS_QUERY = `
-  query ListInventoryOptions($campaignId: String!) {
-    inventoryOptions(campaignId: $campaignId) {
-      inventoryOptions {
+// Query to list all tactics for a campaign
+export const LIST_TACTICS_QUERY = `
+  query ListTactics($campaignId: String!) {
+    tactics(campaignId: $campaignId) {
+      tactics {
         id
         campaignId
         name
@@ -215,19 +215,19 @@ export const LIST_INVENTORY_OPTIONS_QUERY = `
   }
 `;
 
-// Mutation to delete an inventory option
-export const DELETE_INVENTORY_OPTION_MUTATION = `
-  mutation DeleteInventoryOption($id: String!) {
-    deleteInventoryOption(id: $id) {
+// Mutation to delete a tactic
+export const DELETE_TACTIC_MUTATION = `
+  mutation DeleteTactic($id: String!) {
+    deleteTactic(id: $id) {
       success
     }
   }
 `;
 
-// Query to get inventory performance metrics for a campaign
-export const GET_INVENTORY_PERFORMANCE_QUERY = `
-  query GetInventoryPerformance($campaignId: String!) {
-    inventoryPerformance(campaignId: $campaignId) {
+// Query to get tactic performance metrics for a campaign
+export const GET_TACTIC_PERFORMANCE_QUERY = `
+  query GetTacticPerformance($campaignId: String!) {
+    tacticPerformance(campaignId: $campaignId) {
       campaign {
         id
         name

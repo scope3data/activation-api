@@ -9,17 +9,17 @@ import {
   createMCPResponse,
 } from "../../../utils/error-handling.js";
 
-export const analyzeInventoryPerformanceTool = (client: Scope3ApiClient) => ({
+export const analyzeTacticPerformanceTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "inventory-management",
+    category: "tactic-management",
     dangerLevel: "low",
     openWorldHint: true,
     readOnlyHint: true,
-    title: "Analyze Inventory Performance",
+    title: "Analyze Tactic Performance",
   },
 
   description:
-    "Analyze performance metrics across all inventory options in a campaign. Provides detailed breakdowns by publisher, signal type, and delivery model. Includes performance comparisons, efficiency metrics, and optimization recommendations. Use this to understand which inventory tactics are performing best. Requires authentication.",
+    "Analyze performance metrics across all tactics in a campaign. Provides detailed breakdowns by publisher, signal type, and delivery model. Includes performance comparisons, efficiency metrics, and optimization recommendations. Use this to understand which tactics are performing best. Requires authentication.",
 
   execute: async (
     args: {
@@ -45,7 +45,7 @@ export const analyzeInventoryPerformanceTool = (client: Scope3ApiClient) => ({
     }
 
     try {
-      const performanceData = await client.getInventoryPerformance(
+      const performanceData = await client.getTacticPerformance(
         apiKey,
         args.campaignId,
       );
@@ -447,7 +447,7 @@ export const analyzeInventoryPerformanceTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "analyze_inventory_performance",
+  name: "analyze_tactic_performance",
   parameters: z.object({
     campaignId: z.string().describe("ID of the campaign to analyze"),
     includeRecommendations: z
