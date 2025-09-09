@@ -13,7 +13,8 @@ Create your first agentic advertising campaign:
 2. Create a brand agent, which holds the goals and key objects for an advertiser
 3. Add creatives directly or connect a [creative agent](creative agent)
 4. Use a prompt to set up a campaign
-5. Launch and monitor performance
+5. Explore the tactics the campaign is using
+6. Monitor performance
 
 ## Prerequisites
 
@@ -90,7 +91,7 @@ Brand agents have three identifiers that you can use to reference them across al
 - Your ID, which we call this the external ID. For instance, if your naming scheme is 'scope3-nike-us-aug2025-lightup-2823', you could pass that into any tool and we will map it to this agent.
 - A nickname. For instance if you give the agent the nickname "Nike EMEA", you could ask "what are all the campaigns live for the Nike EMEA agent" and send "Nike EMEA" into any of our MCP tools
 
-To get started, let's create a simple agent. This is a good example of a synchronous tool call where the response will be immediate. Some tools are asynchronous and could take some time to return - we'll cover that later!
+To get started, let's create a simple agent.
 
 *User*:
 Please create a Scope3 brand agent for Nike EMEA c/o Kinesso (which we call Nike), mapping to our internal advertiser ID abc-123. Their primary domain is nike.com.
@@ -115,196 +116,183 @@ Call tool `create_brand_agent` with body:
 }
 ```
 
-<Tabs>
-  <Tab title="API Call">
-    ```json
-    POST /brand-agents
+## Step 3: Add Creatives
+
+Creatives can be added after the campaign is set up, but let's do it now. Let's assume we're running a third-party tag for the purposes of this demo, but the platform also supports native, hosted, and custom formats too.
+Again, the platform supports external IDs and nicknames if helpful.
+
+*User*:
+OK, here are my ad tags for this campaign:
+
+Creative 1
+`<html>...</html>`
+
+Creative 2
+`<html>...</html>`
+
+*Agent*:
+Call tool `create_creatives` with body:
+```json
+[
+  {
+    "name": "Creative 1",
+    "snippet": "<html>...</html>",
+    "snippet_type": "html"
+  },
+  {
+    "name": "Creative 2",
+    "snippet": "<html>...</html>",
+    "snippet_type": "html"
+  }
+]
+```
+
+*Scope3*
+`create_creatives` response
+```json
+{
+  "success": true,
+  "message": "Two creatives created successfully"
+}
+```
+
+## Step 4: Set up the campaign
+The "magic" of using an agentic API is that we don't need to try to map all of the complex targeting fields across platforms because AI is very good at figuring out, for instance, that "US" and "USA" are the same thing - we don't need a complex protocol spec for handling ISO country codes.
+
+We also don't need to try to take a well-thought-out brief and map it to an audience or contextual taxonomy. Instead, we can send our brief to signals agents - which could include an internal agent that knows about our customer data - and let the agent recommend the best audiences for this brief.
+
+We could also manage this selection process with our own algorithm, or feed in sales data to score outcomes that would inform the Scope3 algorithm.
+
+There is a lot more to say about how campaigns work in the agentic context, but we'll save that for later. For now, let's write a simple brief and let the Scope3 engine recommend the best tactics for our brief.
+
+(to do - let's add scoring and optimization to this example)
+
+*User*:
+Nike is looking for high school and college volleyball players for their new line of "Super Spike" shoes - the first indoor spikes. They think the target audience skews female, but recognize that volleyball parents are often called in to make these complex shoe purchases. They want to launch in the US in Q4 with a total budget of $250,000 running on premium display inventory. We will run creative 1 and creative 2 on this campaign.
+
+*Agent*:
+Call tool `create_campaign` with data:
+```json
+{
+  "brand_agent": "Nike",
+  "prompt": "Nike is looking for...",
+  "nickname": "Super Spike Q4",
+  "budget": {
+    "total": 250000,
+    "currency": "USD"
+  },
+  "start_utc": "2025-09-01 00:00:00",
+  "end_utc": "2025-12-31 23:59:59",
+  "creatives": ["creative 1", "creative 2"]
+}
+```
+
+*Scope3*
+`create_creatives` response
+```json
+{
+  "success": true,
+  "message": "Campaign created successfully"
+}
+
+## Step 5: Explore tactics
+Tactics are a combination of inventory and signals that are executed in an actual media buy with a publisher. To execute a campaign, we need to:
+- Find inventory that could be a fit for our campaign
+- Find signals that could be a fit for our campaign
+- Build a candidate list of tactics that combine inventory and signals
+- Calculate how many tactics we can explore given our budget and measurement sensitivity
+- Select the initial set of tactics to try
+- Select a price point and daily budget for each tactic
+
+As the campaign progresses:
+- Allocate more budget to the tactics that are working
+- Adjust price for tactics 
+
+and explore more tactics to replace those that aren't
+
+Since we didn't turn off the built-in algorithm, it will:
+- Send the Nike brief and our creative formats to each publisher using the AdCP `get_products` tool and get back a list of media products (which could include publisher data or optimization)
+- Send the Nike brief to any connected signals agents to see if any audience data might help find volleyball players or families
+- (to do - scoring details)
+- Select the initial tactics and prices based on heuristic and historical data
+
+Let's see the tactics that the algorithm has chosen...
+
+*User*:
+What are the tactics for the Super Spike Q4 campaign?
+
+*Agent*":
+Call tool `get_campaign_tactics` with data:
+```json
+{
+  "campaign": "Super Spike Q4"
+}
+```
+
+*Scope3*:
+`get_campaign_tactics` response:
+```json
+{
+  "tactics": [
+    {"id": "asci82", "publisher": "Yahoo", "product": "Yahoo Sports - youth athletes", "daily_budget": 100, "cpm", 4.50},
+    {"id": "8adai", "publisher": "Raptive", "product": "Sports network", "daily_budget": 100, "cpm": 2.50},
+    {"id": "as822ns", "publisher": "Weather.com", "product": "run of network", "signal_provider": "Mastercard", "signal": "Volleyball shoe buyers", "daily_budget": 100, "cpm": 5.00}
+  ]
+}
+```
+
+## Step 6: Monitor Performance
+
+Once the campaign launches, we can monitor performance in a few ways, from getting log-level data pushed to a cloud bucket, using the APIs to dump aggregated data into an analytics system, or simply asking how the campaign is doing.
+
+If we don't specify a date range, the system will assume "lifetime to date".
+
+*User*:
+How is Super Spike Q4 doing?
+
+*Agent*:
+Call tool `get_campaign_summary`:
+```json
+{
+  "campaign": "Super Spike Q4"
+}
+```
+
+*Scope3*:
+`get_campaign_summary` response:
+```json
+{
+  "dateRange": {
+    "start": "2024-12-01",
+    "end": "2024-12-07"
+  },
+  "currency": "USD",
+  "summary": {
+    "spend": 12450.00,
+    "impressions": 2100000,
+    "averageCpm": 3.93
+  },
+  "insights": [
     {
-      "name": "Nike",
-      "description": "Athletic footwear and apparel campaigns"
-    }
-    ```
-    **Response:**
-    ```json
-    {
-      "id": "ba_abc123",
-      "name": "Nike",
-      "status": "active"
-    }
-    ```
-  </Tab>
-  <Tab title="Conversational">
-    ```
-    User: "Create a brand agent for Nike"
-    Claude: ✅ Created brand agent ba_abc123 for Nike
-            Ready to add campaigns and creative assets!
-    ```
-  </Tab>
-</Tabs>
-
-## Step 3: Add Creative Asset
-
-<Tabs>
-  <Tab title="API Call">
-    ```json
-    POST /creatives
-    {
-      "brandAgentId": "ba_abc123",
-      "name": "Holiday Sale Video",
-      "type": "video",
-      "url": "https://cdn.nike.com/holiday-sale.mp4",
-      "headline": "Nike Holiday Sale",
-      "cta": "Shop Now"
-    }
-    ```
-  </Tab>
-  <Tab title="Conversational">
-    ```
-    User: "Add a video creative called 'Holiday Sale' to Nike brand agent"
-    Claude: ✅ Created creative cr_def456 for Nike
-            Video creative ready to use in campaigns!
-    ```
-  </Tab>
-</Tabs>
-
-## Step 4: Launch Campaign
-
-<Tabs>
-  <Tab title="API Call">
-    ```json
-    POST /campaigns
-    {
-      "brandAgentId": "ba_abc123",
-      "name": "Nike Holiday Campaign 2024",
-      "prompt": "Target sports enthusiasts aged 25-45 interested in athletic footwear during holiday shopping season",
-      "budget": {
-        "total": 50000,
-        "currency": "USD"
-      },
-      "creativeIds": ["cr_def456"]
-    }
-    ```
-  </Tab>
-  <Tab title="Conversational">
-    ```
-    User: "Create a $50,000 holiday campaign for Nike targeting sports fans with the holiday sale video"
-    Claude: 🚀 Launched campaign camp_xyz789
-            📊 Budget: $50,000
-            🎯 Targeting: Sports enthusiasts, holiday shoppers
-            ✅ Status: Live and delivering
-    ```
-  </Tab>
-</Tabs>
-
-## Step 5: Monitor Performance
-
-<Tabs>
-  <Tab title="Natural Language Summary">
-    ```
-    User: "How's my Nike campaign doing?"
-    Claude: 🎯 Nike Holiday Campaign Summary
-            
-            📊 **Performance Summary**
-            • Spend: $12,450 USD of $50,000 (25%)
-            • Impressions: 2.1M delivered
-            • CPM: $5.93 USD (efficient)
-            • Flight Progress: Day 7 of 30
-            
-            📈 **Pacing Status: On Track**
-            • Budget utilization: 25% used, 23% of flight elapsed
-            • Projected final spend: $49,200 (98% of budget)
-            
-            ⚡ **Top Performing Tactics**
-            • Mobile video targeting sports enthusiasts aged 25-34: $4.89 USD CPM
-            • CTV targeting weekend sports viewers: $6.12 USD CPM
-            
-            💡 **Key Insights**
-            • Mobile targeting shows 32% better conversion rates
-            • Performance narrative drives 45% higher engagement
-            • Premium publisher inventory delivering 15% lower CPM
-    ```
-  </Tab>
-  <Tab title="Data Export">
-    ```json
-    {
-      "campaignId": "camp_xyz789",
-      "dateRange": {
-        "start": "2024-12-01",
-        "end": "2024-12-07"
-      },
-      "currency": "USD",
-      "summary": {
-        "spend": 12450.00,
-        "impressions": 2100000,
-        "averageCpm": 5.93
-      },
-      "insights": [
-        {
-          "type": "top_tactics",
-          "message": "Top 2 performing tactics available",
-          "tactics": [
-            {
-              "tacticId": "tactic_123",
-              "description": "Mobile video targeting sports enthusiasts aged 25-34",
-              "spend": 8200.00,
-              "cpm": 4.89
-            }
-          ]
-        }
+      "type": "top_tactics_by_spend",
+      "tactics": [
+        ...
       ]
     }
-    ```
-  </Tab>
-</Tabs>
-
-## Step 6: Set Up Real-time Alerts (Optional)
-
-Get notified instantly when your campaign needs attention:
-
-<Tabs>
-  <Tab title="Dashboard Setup (Recommended)">
-    1. **Log into [Scope3](https://app.scope3.com)**
-    2. **Go to Campaign Settings** → **Notifications**  
-    3. **Choose where to send alerts:**
-       - Slack channel
-       - Email address
-       - Custom webhook URL
-       
-    You'll get simple alerts like:
-    ```
-    🚨 Budget Alert: Nike Holiday Campaign
-    💰 Daily spend: $3,247 (30% over limit)
-    🔧 Action: Review budget or pause campaign
-    📊 View: https://app.scope3.com/campaigns/123
-    ```
-  </Tab>
-  <Tab title="Conversational">
-    ```
-    User: "How do I get notified when campaigns have problems?"
-    Claude: The easiest way is through your Scope3 dashboard:
-            
-            1. Log into app.scope3.com
-            2. Go to Campaign Settings → Notifications
-            3. Add your Slack channel or email
-            
-            You'll get alerts for budget overruns, performance drops,
-            and campaign status changes. Much simpler than API setup!
-    ```
-  </Tab>
-</Tabs>
+  ]
+}
+```
 
 ## 🎉 Congratulations!
 
 You've successfully:
 - ✅ Created your first brand agent
-- ✅ Added creative assets
-- ✅ Launched a programmatic campaign
-- ✅ Set up performance monitoring
-- ✅ Configured real-time alerts
+- ✅ Added creatives
+- ✅ Launched a campaign
+- ✅ Explored optimization tactics
+- ✅ Monitored performance
 
-## Next Steps
-
-### 📊 Explore Powerful Reporting & Analytics
+## Next Steps (to do)
 
 <CardGroup cols={3}>
   <Card title="Campaign Insights" href="/api-reference/reporting/get-campaign-summary" icon="chart-mixed" color="#0D9373">
@@ -318,18 +306,7 @@ You've successfully:
   </Card>
 </CardGroup>
 
-### 🚀 Advanced Features
-
-<CardGroup cols={2}>
-  <Card title="Reporting Overview" href="reporting-overview" icon="chart-line">
-    Comprehensive guide to all reporting capabilities and use cases
-  </Card>
-  <Card title="Webhooks & Alerts" href="integrations/webhooks" icon="bell">
-    Set up real-time notifications via Slack, email, or custom endpoints
-  </Card>
-</CardGroup>
-
-## Common Questions
+## Common Questions (to do)
 
 <Accordion title="How long until I see campaign delivery?">
 Campaigns typically start delivering within 2-4 hours of launch. Initial optimization begins immediately, with meaningful performance data available within 24-48 hours.

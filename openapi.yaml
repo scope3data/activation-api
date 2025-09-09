@@ -980,19 +980,19 @@ paths:
                   summary: Brand agent campaign created successfully
                   value:
                     data:
-                      id: camp_nike_spring_2024
                       brandAgentId: ba_nike_123
-                      name: Nike Spring 2024 Campaign
-                      prompt: Target young athletes aged 18-35 interested in running and fitness
                       budget:
-                        total: 5000000
                         currency: USD
                         dailyCap: 50000
                         pacing: even
-                      status: active
-                      startDate: 2024-03-01T00:00:00Z
-                      endDate: 2024-05-31T23:59:59Z
+                        total: 5000000
                       createdAt: 2024-01-15T10:30:00Z
+                      endDate: 2024-05-31T23:59:59Z
+                      id: camp_nike_spring_2024
+                      name: Nike Spring 2024 Campaign
+                      prompt: Target young athletes aged 18-35 interested in running and fitness
+                      startDate: 2024-03-01T00:00:00Z
+                      status: active
                       updatedAt: 2024-01-15T10:30:00Z
                     message: Campaign created successfully
                     success: true
@@ -1319,15 +1319,15 @@ paths:
                   summary: Brand agent created successfully
                   value:
                     data:
-                      id: ba_nike_123
-                      name: Nike Global
-                      description: Global athletic wear and equipment brand
-                      customerId: 1
                       advertiserDomains:
                         - nike.com
-                      externalId: NIKE_001
-                      nickname: Nike
                       createdAt: 2024-01-15T10:30:00Z
+                      customerId: 1
+                      description: Global athletic wear and equipment brand
+                      externalId: NIKE_001
+                      id: ba_nike_123
+                      name: Nike Global
+                      nickname: Nike
                       updatedAt: 2024-01-15T10:30:00Z
                     message: Brand agent created successfully
                     success: true
@@ -1430,10 +1430,10 @@ paths:
                     data:
                       strategyId: str_abc123
                       targetingProfiles:
-                        - id: tp_demographics_123
-                          dimensionName: Demographics
-                          includeCount: 5
+                        - dimensionName: Demographics
                           excludeCount: 2
+                          id: tp_demographics_123
+                          includeCount: 5
                     message: Campaign strategy created successfully with targeting profiles
                     success: true
               schema:
@@ -3581,10 +3581,10 @@ paths:
                   summary: List of brand agents retrieved
                   value:
                     data:
-                      - id: ba_nike_123
-                        name: Nike Global
+                      - createdAt: 2024-01-15T10:30:00Z
                         customerId: 1
-                        createdAt: 2024-01-15T10:30:00Z
+                        id: ba_nike_123
+                        name: Nike Global
                         updatedAt: 2024-01-15T10:30:00Z
                     message: Retrieved 1 brand agent(s)
                     success: true

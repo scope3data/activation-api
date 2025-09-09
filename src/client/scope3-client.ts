@@ -1,3 +1,5 @@
+import { BigQuery } from "@google-cloud/bigquery";
+
 import type {
   BrandAgent,
   BrandAgentCampaign,
@@ -82,7 +84,10 @@ import type {
   WebhookSubscriptionInput,
 } from "../types/webhooks.js";
 
-import { CampaignBigQueryService } from "../services/campaign-bigquery-service.js";
+import { AuthenticationService } from "../services/auth-service.js";
+import { BrandAgentService } from "../services/brand-agent-service.js";
+import { CampaignService } from "../services/campaign-service.js";
+import { CreativeService } from "../services/creative-service.js";
 import { GET_AGENTS_QUERY } from "./queries/agents.js";
 import { GET_API_ACCESS_KEYS_QUERY } from "./queries/auth.js";
 import {
@@ -159,14 +164,24 @@ import {
 import { ProductDiscoveryService } from "./services/product-discovery.js";
 
 export class Scope3ApiClient {
-  private campaignBQ: CampaignBigQueryService;
+  private authService: AuthenticationService;
+  private brandAgentService: BrandAgentService;
+  private campaignService: CampaignService;
+  private creativeService: CreativeService;
   private graphqlUrl: string;
   private productDiscovery: ProductDiscoveryService;
 
   constructor(graphqlUrl: string) {
     this.graphqlUrl = graphqlUrl;
     this.productDiscovery = new ProductDiscoveryService(graphqlUrl);
-    this.campaignBQ = new CampaignBigQueryService();
+
+    // Initialize shared authentication service
+    this.authService = new AuthenticationService(new BigQuery());
+
+    // Initialize specialized services
+    this.brandAgentService = new BrandAgentService(this.authService);
+    this.campaignService = new CampaignService(this.authService);
+    this.creativeService = new CreativeService(this.authService);
   }
 
   /**
@@ -250,10 +265,9 @@ export class Scope3ApiClient {
   ): Promise<AssignmentResult> {
     try {
       // Assign creative to campaign in BigQuery
-      await this.campaignBQ.assignCreativeToCampaign(
+      await this.campaignService.assignCreativeToCampaign(
         campaignId,
         creativeId,
-        "api_user",
       );
 
       return {
@@ -379,7 +393,7 @@ export class Scope3ApiClient {
     // If we have customer-scoped fields, create/update the BigQuery extension
     if (input.externalId || input.nickname) {
       try {
-        await this.campaignBQ.upsertBrandAgentExtension(brandAgent.id, {
+        await this.brandAgentService.upsertBrandAgentExtension(brandAgent.id, {
           advertiserDomains: input.advertiserDomains,
           description: input.description,
           externalId: input.externalId,
@@ -406,17 +420,20 @@ export class Scope3ApiClient {
   ): Promise<BrandAgentCampaign> {
     try {
       // Create campaign in BigQuery
-      const campaignId = await this.campaignBQ.createCampaign({
+      const campaignId = await this.campaignService.createCampaign({
         brandAgentId: input.brandAgentId,
-        budgetCurrency: input.budget?.currency,
-        budgetDailyCap: input.budget?.dailyCap,
-        budgetPacing: input.budget?.pacing,
-        budgetTotal: input.budget?.total,
+        budget: input.budget
+          ? {
+              currency: input.budget.currency,
+              dailyCap: input.budget.dailyCap,
+              pacing: input.budget.pacing,
+              total: input.budget.total,
+            }
+          : undefined,
+        creativeIds: input.creativeIds,
         endDate: input.endDate,
         name: input.name,
-        outcomeScoreWindowDays: input.outcomeScoreWindowDays,
         prompt: input.prompt,
-        scoringWeights: input.scoringWeights,
         startDate: input.startDate,
         status: "draft", // Always start as draft
       });
@@ -424,12 +441,15 @@ export class Scope3ApiClient {
       // Assign audience IDs (brand stories) if provided
       if (input.audienceIds?.length) {
         for (const storyId of input.audienceIds) {
-          await this.campaignBQ.assignBrandStoryToCampaign(campaignId, storyId);
+          await this.campaignService.assignBrandStoryToCampaign(
+            campaignId,
+            storyId,
+          );
         }
       }
 
       // Return the created campaign
-      const campaign = await this.campaignBQ.getCampaign(campaignId);
+      const campaign = await this.campaignService.getCampaign(campaignId);
       if (!campaign) {
         throw new Error("Failed to retrieve created campaign");
       }
@@ -676,26 +696,23 @@ export class Scope3ApiClient {
 
     try {
       // Create creative in BigQuery
-      const creativeId = await this.campaignBQ.createCreative({
-        assemblyMethod: input.assemblyMethod || "pre_assembled",
+      const creativeId = await this.creativeService.createCreative({
         brandAgentId: input.buyerAgentId,
-        content: input.content,
-        contentCategories: input.contentCategories,
-        createdBy: "api_user",
-        description: input.creativeDescription,
-        formatId: input.format.formatId,
-        formatType: input.format.type,
-        name: input.creativeName,
-        status: "draft",
+        content: input.content || {},
+        creativeDescription: input.creativeDescription,
+        format: input.format.formatId,
         targetAudience:
           typeof input.targetAudience === "string"
             ? { description: input.targetAudience }
             : input.targetAudience,
-        version: "1.0.0",
       });
 
       // Return the created creative
-      const creative = await this.campaignBQ.getCreative(creativeId, apiKey);
+      const creative = await this.creativeService.getCreative(
+        creativeId,
+        undefined,
+        apiKey,
+      );
       if (!creative) {
         throw new Error("Failed to retrieve created creative");
       }
@@ -1291,7 +1308,7 @@ export class Scope3ApiClient {
   async getBrandAgent(apiKey: string, id: string): Promise<BrandAgent> {
     try {
       // Try BigQuery first
-      const agent = await this.campaignBQ.getBrandAgent(id);
+      const agent = await this.brandAgentService.getBrandAgent(id);
       if (agent) {
         return agent;
       }
@@ -1966,7 +1983,7 @@ export class Scope3ApiClient {
   ): Promise<BrandAgentCampaign[]> {
     try {
       // Try BigQuery first
-      const campaigns = await this.campaignBQ.listCampaigns(
+      const campaigns = await this.campaignService.listCampaigns(
         brandAgentId,
         status,
       );
@@ -2022,7 +2039,7 @@ export class Scope3ApiClient {
   ): Promise<BrandAgentCreative[]> {
     try {
       // Try BigQuery first - convert Creative[] to BrandAgentCreative[]
-      const creatives = await this.campaignBQ.listCreatives(
+      const creatives = await this.creativeService.listCreatives(
         brandAgentId,
         undefined,
         apiKey,
@@ -2430,7 +2447,7 @@ export class Scope3ApiClient {
   ): Promise<CreativeListResponse> {
     try {
       // Try BigQuery first
-      const creatives = await this.campaignBQ.listCreatives(
+      const creatives = await this.creativeService.listCreatives(
         buyerAgentId,
         filter?.status,
         apiKey,
@@ -2438,7 +2455,7 @@ export class Scope3ApiClient {
 
       // Get assignment counts
       const assignmentCounts =
-        await this.campaignBQ.getCreativeAssignmentCounts(buyerAgentId);
+        await this.creativeService.getCreativeAssignmentCounts(buyerAgentId);
 
       // Apply pagination if provided
       const startIndex = pagination?.offset || 0;
@@ -3187,11 +3204,23 @@ export class Scope3ApiClient {
 
       updateData.lastModifiedBy = "api_user";
 
-      const updatedCreative = await this.campaignBQ.updateCreative(
+      await this.creativeService.updateCreative(
         input.creativeId,
         updateData,
         apiKey,
       );
+
+      // Get the updated creative to return
+      const updatedCreative = await this.creativeService.getCreative(
+        input.creativeId,
+        undefined,
+        apiKey,
+      );
+
+      if (!updatedCreative) {
+        throw new Error("Creative not found after update");
+      }
+
       return updatedCreative;
     } catch (error) {
       console.log(
