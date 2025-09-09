@@ -301,8 +301,12 @@ export class CampaignBigQueryService {
    */
   async getCreative(creativeId: string): Promise<Creative | null> {
     const query = `
-      SELECT * FROM \`${this.projectId}.${this.dataset}.creatives\`
-      WHERE id = @creativeId
+      SELECT 
+        c.*,
+        a.customer_id
+      FROM \`${this.projectId}.${this.dataset}.creatives\` c
+      JOIN \`${this.agentTableRef}\` a ON c.brand_agent_id = a.id
+      WHERE c.id = @creativeId
       LIMIT 1
     `;
 
@@ -319,7 +323,7 @@ export class CampaignBigQueryService {
         | "creative_agent"
         | "pre_assembled"
         | "publisher",
-      assetIds: [], // TODO: Implement when we add assets
+      assetIds: [], // No assets table implemented yet
       buyerAgentId: String(row.brand_agent_id),
       content:
         row.content && typeof row.content === "object"
@@ -337,7 +341,7 @@ export class CampaignBigQueryService {
         : undefined,
       creativeId: String(row.id),
       creativeName: String(row.name),
-      customerId: 1, // TODO: Get from brand agent
+      customerId: Number(row.customer_id),
       format:
         row.format_type && row.format_id
           ? {
@@ -364,6 +368,35 @@ export class CampaignBigQueryService {
         : undefined,
       version: String(row.version),
     };
+  }
+
+  /**
+   * Get assignment counts for creatives by brand agent
+   */
+  async getCreativeAssignmentCounts(
+    brandAgentId: string,
+  ): Promise<Record<string, number>> {
+    const query = `
+      SELECT 
+        cc.creative_id,
+        COUNT(*) as assignment_count
+      FROM \`${this.projectId}.${this.dataset}.campaign_creatives\` cc
+      JOIN \`${this.projectId}.${this.dataset}.campaigns\` c ON cc.campaign_id = c.id
+      WHERE c.brand_agent_id = @brandAgentId AND cc.status = 'active'
+      GROUP BY cc.creative_id
+    `;
+
+    const [rows] = await this.bigquery.query({
+      params: { brandAgentId },
+      query,
+    });
+
+    const counts: Record<string, number> = {};
+    rows.forEach((row: Record<string, unknown>) => {
+      counts[String(row.creative_id)] = Number(row.assignment_count);
+    });
+
+    return counts;
   }
 
   /**
@@ -422,6 +455,10 @@ export class CampaignBigQueryService {
       updatedAt: new Date(row.updated_at as Date | number | string),
     }));
   }
+
+  // ============================================================================
+  // RELATIONSHIP METHODS
+  // ============================================================================
 
   /**
    * List campaigns for a brand agent
@@ -509,10 +546,6 @@ export class CampaignBigQueryService {
     }));
   }
 
-  // ============================================================================
-  // RELATIONSHIP METHODS
-  // ============================================================================
-
   /**
    * List creatives for a brand agent
    */
@@ -521,18 +554,22 @@ export class CampaignBigQueryService {
     status?: string,
   ): Promise<Creative[]> {
     let query = `
-      SELECT * FROM \`${this.projectId}.${this.dataset}.creatives\`
-      WHERE brand_agent_id = @brandAgentId
+      SELECT 
+        c.*,
+        a.customer_id
+      FROM \`${this.projectId}.${this.dataset}.creatives\` c
+      JOIN \`${this.agentTableRef}\` a ON c.brand_agent_id = a.id
+      WHERE c.brand_agent_id = @brandAgentId
     `;
 
     const params: Record<string, unknown> = { brandAgentId };
 
     if (status) {
-      query += ` AND status = @status`;
+      query += ` AND c.status = @status`;
       params.status = status;
     }
 
-    query += ` ORDER BY created_at DESC`;
+    query += ` ORDER BY c.created_at DESC`;
 
     const [rows] = await this.bigquery.query({ params, query });
 
@@ -541,7 +578,7 @@ export class CampaignBigQueryService {
         | "creative_agent"
         | "pre_assembled"
         | "publisher",
-      assetIds: [], // TODO: Implement when we add assets
+      assetIds: [], // No assets table implemented yet
       buyerAgentId: String(row.brand_agent_id),
       content:
         row.content && typeof row.content === "object"
@@ -559,7 +596,7 @@ export class CampaignBigQueryService {
         : undefined,
       creativeId: String(row.id),
       creativeName: String(row.name),
-      customerId: 1, // TODO: Get from brand agent
+      customerId: Number(row.customer_id),
       format:
         row.format_type && row.format_id
           ? {

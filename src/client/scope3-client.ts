@@ -2402,6 +2402,10 @@ export class Scope3ApiClient {
         filter?.status,
       );
 
+      // Get assignment counts
+      const assignmentCounts =
+        await this.campaignBQ.getCreativeAssignmentCounts(buyerAgentId);
+
       // Apply pagination if provided
       const startIndex = pagination?.offset || 0;
       const limit = pagination?.limit || 50;
@@ -2432,12 +2436,16 @@ export class Scope3ApiClient {
       }));
 
       // Calculate summary statistics
+      const assignedCreativeCount = creatives.filter(
+        (c) => assignmentCounts[c.creativeId] > 0,
+      ).length;
+
       const summary = {
         activeCreatives: creatives.filter((c) => c.status === "active").length,
-        assignedCreatives: 0, // TODO: Count campaign assignments
+        assignedCreatives: assignedCreativeCount,
         draftCreatives: creatives.filter((c) => c.status === "draft").length,
         totalCreatives: creatives.length,
-        unassignedCreatives: 0, // TODO: Count unassigned creatives
+        unassignedCreatives: creatives.length - assignedCreativeCount,
       };
 
       return {
