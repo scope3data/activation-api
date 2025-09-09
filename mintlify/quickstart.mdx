@@ -31,14 +31,16 @@ Authentication depends on how you're integrating the API:
 <Tabs>
   <Tab title="Python">
     ```python
-    from mcp_client import MCPClient
-    
-    # TODO: Add authentication token here
-    # The exact method for passing auth headers needs to be verified
-    client = MCPClient(
-        'https://api.agentic.scope3.com/mcp',
-        headers={'x-scope3-api-key': 'your-api-key-here'}
+    from fastmcp import Client
+    from fastmcp.client.transports import StreamableHttpTransport
+
+    transport = StreamableHttpTransport(
+        "https://api.agentic.scope3.com/mcp", 
+        auth="<scope3_api_key>",
     )
+
+    async with Client(transport) as client:
+        await client.ping()
     
     # Test authentication
     result = await client.call_tool('check_auth_status')

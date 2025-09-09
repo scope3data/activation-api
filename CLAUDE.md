@@ -79,11 +79,16 @@ All MCP tools should follow these patterns:
 
 ## Mintlify Documentation Standards
 
-### Working Relationship
+### Documentation Audience and Accuracy
 
+- **Target audience**: Developers and coding agents
+- **Tone**: Matter-of-fact, technical, precise
+- **Accuracy requirement**: All information must be factual and verifiable
 - Push back on ideas with reasoning - this leads to better documentation
 - ALWAYS ask for clarification rather than making assumptions
 - NEVER lie, guess, or make up information
+- NEVER reference non-existent packages, tools, or features
+- NEVER include inaccurate tool lists or capabilities
 
 ### Project Context
 
@@ -149,6 +154,9 @@ All MCP tools should follow these patterns:
 - Duplicate API reference content (use OpenAPI auto-generation)
 - Create excessive navigation depth
 - **Confuse the two MCP endpoints** - always use the right one for the context
+- Reference non-existent npm packages or dependencies
+- Include inaccurate tool lists or feature claims
+- Use marketing language or subjective claims without evidence
 
 ## Git Workflow
 
