@@ -33,19 +33,26 @@ export class BrandAgentService extends BigQueryBaseService {
     const row = await this.executeQuerySingle(query, { agentId });
     if (!row) return null;
 
+    const typedRow = row as Record<string, unknown>;
     return {
-      advertiserDomains: Array.isArray(row.advertiser_domains)
-        ? (row.advertiser_domains as string[])
+      advertiserDomains: Array.isArray(typedRow.advertiser_domains)
+        ? (typedRow.advertiser_domains as string[])
         : [],
-      createdAt: new Date(row.created_at as Date | number | string),
-      customerId: Number(row.customer_id),
-      description: row.description ? String(row.description) : undefined,
-      dspSeats: Array.isArray(row.dsp_seats) ? (row.dsp_seats as string[]) : [],
-      externalId: row.external_id ? String(row.external_id) : undefined,
-      id: String(row.id),
-      name: String(row.name),
-      nickname: row.nickname ? String(row.nickname) : undefined,
-      updatedAt: new Date(row.updated_at as Date | number | string),
+      createdAt: new Date(typedRow.created_at as Date | number | string),
+      customerId: Number(typedRow.customer_id),
+      description: typedRow.description
+        ? String(typedRow.description)
+        : undefined,
+      dspSeats: Array.isArray(typedRow.dsp_seats)
+        ? (typedRow.dsp_seats as string[])
+        : [],
+      externalId: typedRow.external_id
+        ? String(typedRow.external_id)
+        : undefined,
+      id: String(typedRow.id),
+      name: String(typedRow.name),
+      nickname: typedRow.nickname ? String(typedRow.nickname) : undefined,
+      updatedAt: new Date(typedRow.updated_at as Date | number | string),
     };
   }
 
@@ -82,24 +89,29 @@ export class BrandAgentService extends BigQueryBaseService {
 
     const rows = await this.executeQuery(query, params);
 
-    return rows.map(
-      (row): BrandAgent => ({
-        advertiserDomains: Array.isArray(row.advertiser_domains)
-          ? (row.advertiser_domains as string[])
+    return rows.map((row): BrandAgent => {
+      const typedRow = row as Record<string, unknown>;
+      return {
+        advertiserDomains: Array.isArray(typedRow.advertiser_domains)
+          ? (typedRow.advertiser_domains as string[])
           : [],
-        createdAt: new Date(row.created_at as Date | number | string),
-        customerId: Number(row.customer_id),
-        description: row.description ? String(row.description) : undefined,
-        dspSeats: Array.isArray(row.dsp_seats)
-          ? (row.dsp_seats as string[])
+        createdAt: new Date(typedRow.created_at as Date | number | string),
+        customerId: Number(typedRow.customer_id),
+        description: typedRow.description
+          ? String(typedRow.description)
+          : undefined,
+        dspSeats: Array.isArray(typedRow.dsp_seats)
+          ? (typedRow.dsp_seats as string[])
           : [],
-        externalId: row.external_id ? String(row.external_id) : undefined,
-        id: String(row.id),
-        name: String(row.name),
-        nickname: row.nickname ? String(row.nickname) : undefined,
-        updatedAt: new Date(row.updated_at as Date | number | string),
-      }),
-    );
+        externalId: typedRow.external_id
+          ? String(typedRow.external_id)
+          : undefined,
+        id: String(typedRow.id),
+        name: String(typedRow.name),
+        nickname: typedRow.nickname ? String(typedRow.nickname) : undefined,
+        updatedAt: new Date(typedRow.updated_at as Date | number | string),
+      };
+    });
   }
 
   /**
@@ -155,7 +167,7 @@ export class BrandAgentService extends BigQueryBaseService {
     `;
 
     const row = await this.executeQuerySingle(query, params);
-    return row ? String(row.id) : null;
+    return row ? String((row as Record<string, unknown>).id) : null;
   }
 
   /**

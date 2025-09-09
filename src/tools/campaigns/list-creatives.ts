@@ -151,7 +151,7 @@ export const campaignListCreativesTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "campaign/list_creatives",
+  name: "campaign/list-creatives",
 
   parameters: z.object({
     campaignId: z

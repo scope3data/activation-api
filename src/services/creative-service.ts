@@ -69,7 +69,7 @@ export class CreativeService extends BigQueryBaseService {
       customerId,
     });
 
-    return row ? this.mapCreativeRow(row) : null;
+    return row ? this.mapCreativeRow(row as Record<string, unknown>) : null;
   }
 
   /**
@@ -93,7 +93,8 @@ export class CreativeService extends BigQueryBaseService {
 
     const counts: Record<string, number> = {};
     for (const row of rows) {
-      counts[String(row.creative_id)] = Number(row.assignment_count);
+      const typedRow = row as Record<string, unknown>;
+      counts[String(typedRow.creative_id)] = Number(typedRow.assignment_count);
     }
 
     return counts;
@@ -129,7 +130,9 @@ export class CreativeService extends BigQueryBaseService {
     `;
 
     const rows = await this.executeQuery(query, params);
-    return rows.map((row) => this.mapCreativeRow(row));
+    return rows.map((row) =>
+      this.mapCreativeRow(row as Record<string, unknown>),
+    );
   }
 
   /**
@@ -258,7 +261,13 @@ export class CreativeService extends BigQueryBaseService {
       lastModifiedDate: new Date(
         row.last_modified_date as Date | number | string,
       ).toISOString(),
-      status: String(row.status || "active"),
+      status: String(row.status || "active") as
+        | "active"
+        | "archived"
+        | "draft"
+        | "paused"
+        | "pending_review"
+        | "rejected",
       targetAudience,
       version: "1.0", // Default version
     };

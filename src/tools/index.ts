@@ -2,36 +2,37 @@ import type { FastMCP } from "fastmcp";
 
 import type { Scope3ApiClient } from "../client/scope3-client.js";
 
-// New Creative Management Tools (MCP Orchestration)
+// Asset Management
 import { assetsAddTool } from "./assets/add.js";
-import { checkAuthTool } from "./auth/check-auth.js";
-// Brand Agent brand story tools
-import { createBrandAgentBrandStoryTool } from "./brand-agents/brand-stories/create-brand-agent-brand-story.js";
-import { deleteBrandAgentBrandStoryTool } from "./brand-agents/brand-stories/delete-brand-agent-brand-story.js";
-import { listBrandAgentBrandStoriesTool } from "./brand-agents/brand-stories/list-brand-agent-brand-stories.js";
-import { updateBrandAgentBrandStoryTool } from "./brand-agents/brand-stories/update-brand-agent-brand-story.js";
-// Brand Agent campaign tools
-import { createBrandAgentCampaignTool } from "./brand-agents/campaigns/create-brand-agent-campaign.js";
-// Brand Agent core tools
-import { createBrandAgentTool } from "./brand-agents/core/create-brand-agent.js";
-import { deleteBrandAgentTool } from "./brand-agents/core/delete-brand-agent.js";
-import { getBrandAgentTool } from "./brand-agents/core/get-brand-agent.js";
-import { listBrandAgentsTool } from "./brand-agents/core/list-brand-agents.js";
-import { updateBrandAgentTool } from "./brand-agents/core/update-brand-agent.js";
-// Brand Agent standards tools
-import { createBrandAgentStandardsTool } from "./brand-agents/standards/create-brand-agent-standards.js";
-import { deleteBrandAgentStandardsTool } from "./brand-agents/standards/delete-brand-agent-standards.js";
-import { listBrandAgentStandardsTool } from "./brand-agents/standards/list-brand-agent-standards.js";
-import { updateBrandAgentStandardsTool } from "./brand-agents/standards/update-brand-agent-standards.js";
-// Brand Agent tactic tools
-import { adjustTacticAllocationTool } from "./brand-agents/tactics/adjust-tactic-allocation.js";
-import { analyzeTacticPerformanceTool } from "./brand-agents/tactics/analyze-tactic-performance.js";
-import { createTacticTool } from "./brand-agents/tactics/create-tactic.js";
-import { discoverPublisherProductsTool } from "./brand-agents/tactics/discover-publisher-products.js";
-import { listTacticsTool } from "./brand-agents/tactics/list-tactics.js";
-import { createCampaignTool } from "./campaigns/create-campaign.js";
+// Audiences
+import { createSyntheticAudienceTool } from "./audiences/create.js";
+import { listSyntheticAudiencesTool } from "./audiences/list.js";
+// Authentication
+import { checkAuthTool } from "./auth/check.js";
+// Brand Agents (Core)
+import { createBrandAgentTool } from "./brand-agents/core/create.js";
+import { deleteBrandAgentTool } from "./brand-agents/core/delete.js";
+import { getBrandAgentTool } from "./brand-agents/core/get.js";
+import { listBrandAgentsTool } from "./brand-agents/core/list.js";
+import { updateBrandAgentTool } from "./brand-agents/core/update.js";
+// Brand Standards
+import { createBrandAgentStandardsTool } from "./brand-standards/create.js";
+import { deleteBrandAgentStandardsTool } from "./brand-standards/delete.js";
+import { listBrandAgentStandardsTool } from "./brand-standards/list.js";
+import { updateBrandAgentStandardsTool } from "./brand-standards/update.js";
+// Brand Stories
+import { createBrandAgentBrandStoryTool } from "./brand-stories/create.js";
+import { deleteBrandAgentBrandStoryTool } from "./brand-stories/delete.js";
+import { listBrandAgentBrandStoriesTool } from "./brand-stories/list.js";
+import { updateBrandAgentBrandStoryTool } from "./brand-stories/update.js";
+import { createCampaignTool } from "./campaigns/create-legacy.js";
+// Campaigns
+import { createBrandAgentCampaignTool } from "./campaigns/create.js";
+import { exportCampaignDataTool } from "./campaigns/export-data.js";
+import { getCampaignSummaryTool } from "./campaigns/get-summary.js";
 import { campaignListCreativesTool } from "./campaigns/list-creatives.js";
-import { updateCampaignTool } from "./campaigns/update-campaign.js";
+import { updateCampaignTool } from "./campaigns/update.js";
+// Creatives
 import { creativeApprovalStatusTool } from "./creatives/approval-status.js";
 import {
   creativeAssignTool,
@@ -42,138 +43,152 @@ import { creativeListTool } from "./creatives/list.js";
 import { creativeReviseTool } from "./creatives/revise.js";
 import { creativeSyncPublishersTool } from "./creatives/sync-publishers.js";
 import { creativeUpdateTool } from "./creatives/update.js";
+// DSP
+import { getDSPSeatsTool } from "./dsp/get-seats.js";
+// Formats
 import { listCreativeFormatsTool } from "./formats/list.js";
-// PMP tools
-import { createBrandAgentPMPTool } from "./pmps/create-pmp.js";
-import { getDSPSeatsTool } from "./pmps/get-dsp-seats.js";
-import { listBrandAgentPMPsTool } from "./pmps/list-pmps.js";
-import { updateBrandAgentPMPTool } from "./pmps/update-pmp.js";
-// Product discovery tools
-import { getProductsTool } from "./products/get-products.js";
-// Reporting tools
+// PMPs
+import { createBrandAgentPMPTool } from "./pmps/create.js";
+import { listBrandAgentPMPsTool } from "./pmps/list.js";
+import { updateBrandAgentPMPTool } from "./pmps/update.js";
+// Products
+import { getProductsTool } from "./products/list.js";
+// Reporting
 import { analyzeTacticsTool } from "./reporting/analyze-tactics.js";
-import { exportCampaignDataTool } from "./reporting/export-campaign-data.js";
-import { getCampaignSummaryTool } from "./reporting/get-campaign-summary.js";
-import { provideScoringOutcomesTool } from "./reporting/provide-scoring-outcomes.js";
-import { registerWebhookTool } from "./reporting/register-webhook.js";
-// Custom Signal tools
-import { createCustomSignalTool } from "./signals/create-custom-signal.js";
-import { deleteCustomSignalTool } from "./signals/delete-custom-signal.js";
-import { getCustomSignalTool } from "./signals/get-custom-signal.js";
-import { listCustomSignalsTool } from "./signals/list-custom-signals.js";
-import { updateCustomSignalTool } from "./signals/update-custom-signal.js";
+import { provideScoringOutcomesTool } from "./reporting/provide-outcomes.js";
+// Signals
+import { createCustomSignalTool } from "./signals/create.js";
+import { deleteCustomSignalTool } from "./signals/delete.js";
+import { getCustomSignalTool } from "./signals/get.js";
+import { listCustomSignalsTool } from "./signals/list.js";
+import { updateCustomSignalTool } from "./signals/update.js";
+// Tactics
+import { adjustTacticAllocationTool } from "./tactics/adjust-allocation.js";
+import { analyzeTacticPerformanceTool } from "./tactics/analyze-performance.js";
+import { createTacticTool } from "./tactics/create.js";
+import { discoverPublisherProductsTool } from "./tactics/discover-products.js";
+import { listTacticsTool } from "./tactics/list.js";
+// Webhooks
+import { registerWebhookTool } from "./webhooks/register.js";
 
 export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
-  // Authentication and existing agent tools
+  // Authentication
   server.addTool(checkAuthTool(client));
 
-  // Original campaign tools (kept for backward compatibility)
-  server.addTool(createCampaignTool(client));
-  server.addTool(updateCampaignTool(client));
-
-  // Brand Agent core tools
+  // Brand Agents (Core)
   server.addTool(createBrandAgentTool(client));
-  server.addTool(updateBrandAgentTool(client));
-  server.addTool(deleteBrandAgentTool(client));
   server.addTool(getBrandAgentTool(client));
   server.addTool(listBrandAgentsTool(client));
+  server.addTool(updateBrandAgentTool(client));
+  server.addTool(deleteBrandAgentTool(client));
 
-  // Brand Agent tactic tools
-  server.addTool(discoverPublisherProductsTool(client));
-  server.addTool(createTacticTool(client));
-  server.addTool(listTacticsTool(client));
-  server.addTool(adjustTacticAllocationTool(client));
-  server.addTool(analyzeTacticPerformanceTool(client));
+  // Campaigns
+  server.addTool(createBrandAgentCampaignTool(client)); // campaign/create
+  server.addTool(createCampaignTool(client)); // campaign/create-legacy (backward compatibility)
+  server.addTool(updateCampaignTool(client)); // campaign/update
+  server.addTool(getCampaignSummaryTool(client)); // campaign/get-summary
+  server.addTool(exportCampaignDataTool(client)); // campaign/export-data
+  server.addTool(campaignListCreativesTool(client)); // campaign/list-creatives
 
-  // Brand Agent standards tools
-  server.addTool(listBrandAgentStandardsTool(client));
-  server.addTool(createBrandAgentStandardsTool(client));
-  server.addTool(updateBrandAgentStandardsTool(client));
-  server.addTool(deleteBrandAgentStandardsTool(client));
-
-  // Brand Agent brand story tools
-  server.addTool(listBrandAgentBrandStoriesTool(client));
-  server.addTool(createBrandAgentBrandStoryTool(client));
-  server.addTool(updateBrandAgentBrandStoryTool(client));
-  server.addTool(deleteBrandAgentBrandStoryTool(client));
-
-  // Brand Agent campaign tools
-  server.addTool(createBrandAgentCampaignTool(client)); // create_brand_agent_campaign
-
-  // Reporting tools
-  server.addTool(getCampaignSummaryTool(client));
-  server.addTool(exportCampaignDataTool(client));
-  server.addTool(registerWebhookTool(client));
-  server.addTool(analyzeTacticsTool(client));
-  server.addTool(provideScoringOutcomesTool(client));
-
-  // New Creative Management Tools (MCP Orchestration)
+  // Creatives
   server.addTool(creativeCreateTool(client)); // creative/create
-  server.addTool(creativeUpdateTool(client)); // creative/update
   server.addTool(creativeListTool(client)); // creative/list
+  server.addTool(creativeUpdateTool(client)); // creative/update
   server.addTool(creativeAssignTool(client)); // creative/assign
   server.addTool(creativeUnassignTool(client)); // creative/unassign
-
-  // Publisher Approval Workflow
-  server.addTool(creativeSyncPublishersTool(client)); // creative/sync_publishers
   server.addTool(creativeApprovalStatusTool(client)); // creative/approval_status
   server.addTool(creativeReviseTool(client)); // creative/revise
+  server.addTool(creativeSyncPublishersTool(client)); // creative/sync_publishers
 
-  // Asset Management (Reference-Based)
+  // Brand Stories (formerly Synthetic Audiences)
+  server.addTool(createBrandAgentBrandStoryTool(client)); // brand-story/create
+  server.addTool(listBrandAgentBrandStoriesTool(client)); // brand-story/list
+  server.addTool(updateBrandAgentBrandStoryTool(client)); // brand-story/update
+  server.addTool(deleteBrandAgentBrandStoryTool(client)); // brand-story/delete
+
+  // Brand Standards
+  server.addTool(createBrandAgentStandardsTool(client)); // brand-standards/create
+  server.addTool(listBrandAgentStandardsTool(client)); // brand-standards/list
+  server.addTool(updateBrandAgentStandardsTool(client)); // brand-standards/update
+  server.addTool(deleteBrandAgentStandardsTool(client)); // brand-standards/delete
+
+  // Audiences
+  server.addTool(createSyntheticAudienceTool(client)); // audience/create
+  server.addTool(listSyntheticAudiencesTool(client)); // audience/list
+
+  // Tactics
+  server.addTool(createTacticTool(client)); // tactic/create
+  server.addTool(listTacticsTool(client)); // tactic/list
+  server.addTool(adjustTacticAllocationTool(client)); // tactic/adjust-allocation
+  server.addTool(analyzeTacticPerformanceTool(client)); // tactic/analyze-performance
+  server.addTool(discoverPublisherProductsTool(client)); // tactic/discover-products
+
+  // PMPs
+  server.addTool(createBrandAgentPMPTool(client)); // pmp/create
+  server.addTool(listBrandAgentPMPsTool(client)); // pmp/list
+  server.addTool(updateBrandAgentPMPTool(client)); // pmp/update
+
+  // Signals
+  server.addTool(createCustomSignalTool(client)); // signal/create
+  server.addTool(getCustomSignalTool(client)); // signal/get
+  server.addTool(listCustomSignalsTool(client)); // signal/list
+  server.addTool(updateCustomSignalTool(client)); // signal/update
+  server.addTool(deleteCustomSignalTool(client)); // signal/delete
+
+  // Reporting
+  server.addTool(analyzeTacticsTool(client)); // reporting/analyze-tactics
+  server.addTool(provideScoringOutcomesTool(client)); // reporting/provide-outcomes
+
+  // Webhooks
+  server.addTool(registerWebhookTool(client)); // webhook/register
+
+  // Formats
+  server.addTool(listCreativeFormatsTool(client)); // format/list
+
+  // Products
+  server.addTool(getProductsTool()); // product/list
+
+  // DSP
+  server.addTool(getDSPSeatsTool(client)); // dsp/get-seats
+
+  // Assets
   server.addTool(assetsAddTool(client)); // assets/add
-
-  // Format Discovery
-  server.addTool(listCreativeFormatsTool(client)); // list_creative_formats
-
-  server.addTool(campaignListCreativesTool(client)); // campaign/list_creatives
-
-  // PMP tools
-  server.addTool(getDSPSeatsTool(client)); // get_dsp_seats
-  server.addTool(createBrandAgentPMPTool(client)); // create_brand_agent_pmp
-  server.addTool(updateBrandAgentPMPTool(client)); // update_brand_agent_pmp
-  server.addTool(listBrandAgentPMPsTool(client)); // list_brand_agent_pmps
-
-  // Custom Signal tools
-  server.addTool(createCustomSignalTool(client)); // create_custom_signal
-  server.addTool(listCustomSignalsTool(client)); // list_custom_signals
-  server.addTool(getCustomSignalTool(client)); // get_custom_signal
-  server.addTool(updateCustomSignalTool(client)); // update_custom_signal
-  server.addTool(deleteCustomSignalTool(client)); // delete_custom_signal
-
-  // Product discovery tools
-  server.addTool(getProductsTool()); // get_products - calls multiple sales agents via MCP
 };
 
 // Export individual tools for testing
 export {
-  // Brand Agent tactic tools
+  // Tactics
   adjustTacticAllocationTool,
   analyzeTacticPerformanceTool,
-  // Reporting tools
+  // Reporting
   analyzeTacticsTool,
   // Asset Management
   assetsAddTool,
+  // Campaigns
   campaignListCreativesTool,
-  // Original tools
+  // Authentication
   checkAuthTool,
+  // Brand Stories
   createBrandAgentBrandStoryTool,
-  // Brand Agent campaign tools
   createBrandAgentCampaignTool,
-
-  // PMP tools
+  // PMPs
   createBrandAgentPMPTool,
+  // Brand Standards
   createBrandAgentStandardsTool,
-  // Brand Agent core tools
+  // Brand Agents (Core)
   createBrandAgentTool,
   createCampaignTool,
+  // Signals
+  createCustomSignalTool,
+  // Audiences
+  createSyntheticAudienceTool,
   createTacticTool,
+  // Creatives
   creativeApprovalStatusTool,
   creativeAssignTool,
-  // New Creative Management Tools
   creativeCreateTool,
   creativeListTool,
   creativeReviseTool,
-  // Publisher Approval Workflow
   creativeSyncPublishersTool,
   creativeUnassignTool,
   creativeUpdateTool,
@@ -186,19 +201,21 @@ export {
   getBrandAgentTool,
   getCampaignSummaryTool,
   getCustomSignalTool,
+  // DSP
   getDSPSeatsTool,
-  // Product discovery tools
+  // Products
   getProductsTool,
-  // Brand Agent synthetic audience tools
   listBrandAgentBrandStoriesTool,
   listBrandAgentPMPsTool,
-  // Brand Agent standards tools
   listBrandAgentStandardsTool,
   listBrandAgentsTool,
-  // Format Discovery
+  // Formats
   listCreativeFormatsTool,
+  listCustomSignalsTool,
+  listSyntheticAudiencesTool,
   listTacticsTool,
   provideScoringOutcomesTool,
+  // Webhooks
   registerWebhookTool,
   updateBrandAgentBrandStoryTool,
   updateBrandAgentPMPTool,

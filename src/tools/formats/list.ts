@@ -243,7 +243,7 @@ creative/create format.type="creative_agent" format.formatId="dynamic_product"
     }
   },
 
-  name: "list_creative_formats",
+  name: "format/list",
 
   parameters: z.object({
     acceptsThirdPartyTags: z

@@ -84,7 +84,7 @@ export const analyzeTacticsTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "analyze_tactics",
+  name: "reporting/analyze-tactics",
   parameters: z.object({
     analysisType: z
       .enum([

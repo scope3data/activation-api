@@ -121,7 +121,7 @@ export class CampaignService extends BigQueryBaseService {
     const row = await this.executeQuerySingle(query, { campaignId });
     if (!row) return null;
 
-    return this.mapCampaignRow(row);
+    return this.mapCampaignRow(row as Record<string, unknown>);
   }
 
   /**
@@ -153,7 +153,9 @@ export class CampaignService extends BigQueryBaseService {
     `;
 
     const rows = await this.executeQuery(query, params);
-    return rows.map((row) => this.mapCampaignRow(row));
+    return rows.map((row) =>
+      this.mapCampaignRow(row as Record<string, unknown>),
+    );
   }
 
   /**
