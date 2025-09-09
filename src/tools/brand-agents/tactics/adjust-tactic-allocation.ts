@@ -257,7 +257,9 @@ export const adjustTacticAllocationTool = (client: Scope3ApiClient) => ({
       summary += `• Consider activating any draft tactics if budget allows\n`;
 
       if (
-        updatedTactics.some((tactic) => tactic.budgetAllocation.pacing === "asap")
+        updatedTactics.some(
+          (tactic) => tactic.budgetAllocation.pacing === "asap",
+        )
       ) {
         summary += `• ⚠️ Monitor ASAP paced tactics closely to avoid overspend\n`;
       }
@@ -265,7 +267,8 @@ export const adjustTacticAllocationTool = (client: Scope3ApiClient) => ({
       const totalEffectiveCpm =
         updatedTactics.reduce(
           (sum, tactic) =>
-            sum + tactic.effectivePricing.totalCpm * tactic.budgetAllocation.amount,
+            sum +
+            tactic.effectivePricing.totalCpm * tactic.budgetAllocation.amount,
           0,
         ) / totalNewBudget;
 
@@ -276,10 +279,7 @@ export const adjustTacticAllocationTool = (client: Scope3ApiClient) => ({
         success: true,
       });
     } catch (error) {
-      return createErrorResponse(
-        "Failed to adjust tactic allocation",
-        error,
-      );
+      return createErrorResponse("Failed to adjust tactic allocation", error);
     }
   },
 

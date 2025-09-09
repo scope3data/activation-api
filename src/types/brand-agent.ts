@@ -1,7 +1,7 @@
 // Brand Agent types - represents advertiser/account level entities
 
-import type { TacticManagement } from "./tactics.js";
 import type { CampaignAlert } from "./reporting.js";
+import type { TacticManagement } from "./tactics.js";
 
 // Shared Agent Model type
 export interface AgentModel {
@@ -63,10 +63,9 @@ export interface BrandAgentCampaign {
     };
   };
 
-  id: string;
+  endDate?: Date;
 
-  // Inventory management configuration
-  tacticManagement?: TacticManagement;
+  id: string;
   name: string;
   // NEW: Integrated notification thresholds
   notificationThresholds?: {
@@ -98,7 +97,12 @@ export interface BrandAgentCampaign {
     quality: number; // Weight for Scope3 media quality score (0-1)
   };
 
+  // Campaign scheduling (UTC timestamps)
+  startDate?: Date;
   status: string;
+
+  // Inventory management configuration
+  tacticManagement?: TacticManagement;
 
   updatedAt: Date;
 }
@@ -114,8 +118,7 @@ export interface BrandAgentCampaignInput {
   };
   creativeIds?: string[];
 
-  // Inventory management configuration
-  tacticManagement?: TacticManagement;
+  endDate?: Date;
 
   name: string;
   // Optional notification thresholds
@@ -147,6 +150,11 @@ export interface BrandAgentCampaignInput {
     outcome: number; // Weight for user-provided outcome score (0-1)
     quality: number; // Weight for Scope3 media quality score (0-1)
   };
+  // Campaign scheduling (UTC timestamps)
+  startDate?: Date;
+
+  // Inventory management configuration
+  tacticManagement?: TacticManagement;
 }
 
 export interface BrandAgentCampaignsData {
@@ -163,12 +171,12 @@ export interface BrandAgentCampaignUpdateInput {
   };
   creativeIds?: string[];
 
-  // Inventory management configuration
-  tacticManagement?: Partial<TacticManagement>;
-
   name?: string;
+
   prompt?: string;
   status?: string;
+  // Inventory management configuration
+  tacticManagement?: Partial<TacticManagement>;
 }
 
 // Creative types (owned by brand agent)

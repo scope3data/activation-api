@@ -16,17 +16,17 @@ import { deleteBrandAgentTool } from "./brand-agents/core/delete-brand-agent.js"
 import { getBrandAgentTool } from "./brand-agents/core/get-brand-agent.js";
 import { listBrandAgentsTool } from "./brand-agents/core/list-brand-agents.js";
 import { updateBrandAgentTool } from "./brand-agents/core/update-brand-agent.js";
+// Brand Agent standards tools
+import { createBrandAgentStandardsTool } from "./brand-agents/standards/create-brand-agent-standards.js";
+import { deleteBrandAgentStandardsTool } from "./brand-agents/standards/delete-brand-agent-standards.js";
+import { listBrandAgentStandardsTool } from "./brand-agents/standards/list-brand-agent-standards.js";
+import { updateBrandAgentStandardsTool } from "./brand-agents/standards/update-brand-agent-standards.js";
 // Brand Agent tactic tools
 import { adjustTacticAllocationTool } from "./brand-agents/tactics/adjust-tactic-allocation.js";
 import { analyzeTacticPerformanceTool } from "./brand-agents/tactics/analyze-tactic-performance.js";
 import { createTacticTool } from "./brand-agents/tactics/create-tactic.js";
 import { discoverPublisherProductsTool } from "./brand-agents/tactics/discover-publisher-products.js";
 import { listTacticsTool } from "./brand-agents/tactics/list-tactics.js";
-// Brand Agent standards tools
-import { createBrandAgentStandardsTool } from "./brand-agents/standards/create-brand-agent-standards.js";
-import { deleteBrandAgentStandardsTool } from "./brand-agents/standards/delete-brand-agent-standards.js";
-import { listBrandAgentStandardsTool } from "./brand-agents/standards/list-brand-agent-standards.js";
-import { updateBrandAgentStandardsTool } from "./brand-agents/standards/update-brand-agent-standards.js";
 import { createCampaignTool } from "./campaigns/create-campaign.js";
 import { campaignListCreativesTool } from "./campaigns/list-creatives.js";
 import { updateCampaignTool } from "./campaigns/update-campaign.js";
@@ -76,8 +76,6 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(getBrandAgentTool(client));
   server.addTool(listBrandAgentsTool(client));
 
-
-
   // Brand Agent tactic tools
   server.addTool(discoverPublisherProductsTool(client));
   server.addTool(createTacticTool(client));
@@ -96,7 +94,6 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(createBrandAgentBrandStoryTool(client));
   server.addTool(updateBrandAgentBrandStoryTool(client));
   server.addTool(deleteBrandAgentBrandStoryTool(client));
-
 
   // Reporting tools
   server.addTool(getCampaignSummaryTool(client));

@@ -41,13 +41,6 @@ import type {
 } from "../types/creative.js";
 import type { ScoringOutcome, ScoringOutcomeInput } from "../types/events.js";
 import type {
-  TacticPerformance,
-  OptimizationGoal,
-  OptimizationRecommendations,
-  ProductDiscoveryQuery,
-  PublisherMediaProduct,
-} from "../types/tactics.js";
-import type {
   BrandAgentPMPInput,
   DSPSeat,
   PMP,
@@ -74,10 +67,22 @@ import type {
   UpdateStrategyInput,
 } from "../types/scope3.js";
 import type {
+  OptimizationGoal,
+  OptimizationRecommendations,
+  ProductDiscoveryQuery,
+  PublisherMediaProduct,
+  Tactic,
+  TacticInput,
+  TacticPerformance,
+  TacticsData,
+  TacticUpdateInput,
+} from "../types/tactics.js";
+import type {
   WebhookSubscription,
   WebhookSubscriptionInput,
 } from "../types/webhooks.js";
 
+import { CampaignBigQueryService } from "../services/campaign-bigquery-service.js";
 import { GET_AGENTS_QUERY } from "./queries/agents.js";
 import { GET_API_ACCESS_KEYS_QUERY } from "./queries/auth.js";
 import {
@@ -111,20 +116,6 @@ import {
   PARSE_STRATEGY_PROMPT_QUERY,
   UPDATE_ONE_STRATEGY_MUTATION,
 } from "./queries/campaigns.js";
-// Creative queries will be imported when needed for actual implementation
-// import {
-//   ASSIGN_CREATIVE_TO_CAMPAIGN_MUTATION,
-//   CREATE_CREATIVE_MUTATION,
-//   GET_CAMPAIGN_CREATIVES_QUERY,
-//   GET_CREATIVE_QUERY,
-//   GET_CREATIVES_QUERY,
-//   UNASSIGN_CREATIVE_FROM_CAMPAIGN_MUTATION,
-//   UPLOAD_ASSET_MUTATION,
-// } from "./queries/creatives.js";
-import {
-  GET_TACTIC_PERFORMANCE_QUERY,
-  GET_OPTIMIZATION_RECOMMENDATIONS_QUERY,
-} from "./queries/tactics.js";
 import {
   CREATE_SCORING_OUTCOME_MUTATION,
   CREATE_WEBHOOK_SUBSCRIPTION_MUTATION,
@@ -137,6 +128,24 @@ import {
   LIST_WEBHOOK_SUBSCRIPTIONS_QUERY,
 } from "./queries/reporting.js";
 import {
+  CREATE_TACTIC_MUTATION,
+  DELETE_TACTIC_MUTATION,
+  GET_TACTIC_PERFORMANCE_QUERY,
+  LIST_TACTICS_QUERY,
+  UPDATE_TACTIC_MUTATION,
+} from "./queries/tactics.js";
+// Creative queries will be imported when needed for actual implementation
+// import {
+//   ASSIGN_CREATIVE_TO_CAMPAIGN_MUTATION,
+//   CREATE_CREATIVE_MUTATION,
+//   GET_CAMPAIGN_CREATIVES_QUERY,
+//   GET_CREATIVE_QUERY,
+//   GET_CREATIVES_QUERY,
+//   UNASSIGN_CREATIVE_FROM_CAMPAIGN_MUTATION,
+//   UPLOAD_ASSET_MUTATION,
+// } from "./queries/creatives.js";
+import { GET_OPTIMIZATION_RECOMMENDATIONS_QUERY } from "./queries/tactics.js";
+import {
   CREATE_BITMAP_TARGETING_PROFILE_MUTATION,
   GET_TARGETING_DIMENSIONS_QUERY,
 } from "./queries/targeting.js";
@@ -148,12 +157,11 @@ import {
 //   UPDATE_BRAND_AGENT_PMP_MUTATION,
 // } from "./queries/pmps.js";
 import { ProductDiscoveryService } from "./services/product-discovery.js";
-import { CampaignBigQueryService } from "../services/campaign-bigquery-service.js";
 
 export class Scope3ApiClient {
+  private campaignBQ: CampaignBigQueryService;
   private graphqlUrl: string;
   private productDiscovery: ProductDiscoveryService;
-  private campaignBQ: CampaignBigQueryService;
 
   constructor(graphqlUrl: string) {
     this.graphqlUrl = graphqlUrl;
@@ -242,8 +250,12 @@ export class Scope3ApiClient {
   ): Promise<AssignmentResult> {
     try {
       // Assign creative to campaign in BigQuery
-      await this.campaignBQ.assignCreativeToCampaign(campaignId, creativeId, 'api_user');
-      
+      await this.campaignBQ.assignCreativeToCampaign(
+        campaignId,
+        creativeId,
+        "api_user",
+      );
+
       return {
         campaignId,
         creativeId,
@@ -251,7 +263,10 @@ export class Scope3ApiClient {
         success: true,
       };
     } catch (error) {
-      console.log('BigQuery assignCreativeToCampaign failed, falling back to stub:', error);
+      console.log(
+        "BigQuery assignCreativeToCampaign failed, falling back to stub:",
+        error,
+      );
     }
 
     // Fallback to stub (since this was stubbed before)
@@ -364,15 +379,17 @@ export class Scope3ApiClient {
       // Create campaign in BigQuery
       const campaignId = await this.campaignBQ.createCampaign({
         brandAgentId: input.brandAgentId,
-        name: input.name,
-        prompt: input.prompt,
-        status: 'draft', // Always start as draft
-        budgetTotal: input.budget?.total,
         budgetCurrency: input.budget?.currency,
         budgetDailyCap: input.budget?.dailyCap,
         budgetPacing: input.budget?.pacing,
+        budgetTotal: input.budget?.total,
+        endDate: input.endDate,
+        name: input.name,
+        outcomeScoreWindowDays: input.outcomeScoreWindowDays,
+        prompt: input.prompt,
         scoringWeights: input.scoringWeights,
-        outcomeScoreWindowDays: input.outcomeScoreWindowDays
+        startDate: input.startDate,
+        status: "draft", // Always start as draft
       });
 
       // Assign audience IDs (brand stories) if provided
@@ -385,12 +402,15 @@ export class Scope3ApiClient {
       // Return the created campaign
       const campaign = await this.campaignBQ.getCampaign(campaignId);
       if (!campaign) {
-        throw new Error('Failed to retrieve created campaign');
+        throw new Error("Failed to retrieve created campaign");
       }
-      
+
       return campaign;
     } catch (error) {
-      console.log('BigQuery createBrandAgentCampaign failed, falling back to GraphQL:', error);
+      console.log(
+        "BigQuery createBrandAgentCampaign failed, falling back to GraphQL:",
+        error,
+      );
     }
 
     // Fallback to GraphQL
@@ -628,29 +648,35 @@ export class Scope3ApiClient {
     try {
       // Create creative in BigQuery
       const creativeId = await this.campaignBQ.createCreative({
+        assemblyMethod: input.assemblyMethod || "pre_assembled",
         brandAgentId: input.buyerAgentId,
-        name: input.creativeName,
-        description: input.creativeDescription,
-        formatType: input.format.type,
-        formatId: input.format.formatId,
         content: input.content,
-        status: 'draft',
-        version: '1.0.0',
-        assemblyMethod: input.assemblyMethod || 'pre_assembled',
-        targetAudience: typeof input.targetAudience === 'string' ? { description: input.targetAudience } : input.targetAudience,
         contentCategories: input.contentCategories,
-        createdBy: 'api_user'
+        createdBy: "api_user",
+        description: input.creativeDescription,
+        formatId: input.format.formatId,
+        formatType: input.format.type,
+        name: input.creativeName,
+        status: "draft",
+        targetAudience:
+          typeof input.targetAudience === "string"
+            ? { description: input.targetAudience }
+            : input.targetAudience,
+        version: "1.0.0",
       });
 
       // Return the created creative
       const creative = await this.campaignBQ.getCreative(creativeId);
       if (!creative) {
-        throw new Error('Failed to retrieve created creative');
+        throw new Error("Failed to retrieve created creative");
       }
 
       return creative;
     } catch (error) {
-      console.log('BigQuery createCreative failed, falling back to mock:', error);
+      console.log(
+        "BigQuery createCreative failed, falling back to mock:",
+        error,
+      );
     }
 
     // Fallback to mock (since this was stubbed before)
@@ -736,49 +762,6 @@ export class Scope3ApiClient {
       key: string;
       name: string;
     };
-  }
-
-  // Create inventory option (product + targeting)
-  async createInventoryOption(
-    apiKey: string,
-    input: InventoryOptionInput,
-  ): Promise<InventoryOption> {
-    const response = await fetch(this.graphqlUrl, {
-      body: JSON.stringify({
-        query: CREATE_INVENTORY_OPTION_MUTATION,
-        variables: { input },
-      }),
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "User-Agent": "MCP-Server/1.0",
-      },
-      method: "POST",
-    });
-
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        throw new Error("Authentication failed");
-      }
-      if (response.status >= 500) {
-        throw new Error("External service temporarily unavailable");
-      }
-      throw new Error("Request failed");
-    }
-
-    const result = (await response.json()) as GraphQLResponse<{
-      createInventoryOption: InventoryOption;
-    }>;
-
-    if (result.errors && result.errors.length > 0) {
-      throw new Error("Invalid request parameters or query");
-    }
-
-    if (!result.data?.createInventoryOption) {
-      throw new Error("No data received");
-    }
-
-    return result.data.createInventoryOption;
   }
 
   async createScoringOutcome(
@@ -918,6 +901,46 @@ export class Scope3ApiClient {
     }
 
     return result.data.createSyntheticAudience;
+  }
+
+  // Create tactic (product + targeting)
+  async createTactic(apiKey: string, input: TacticInput): Promise<Tactic> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: CREATE_TACTIC_MUTATION,
+        variables: { input },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication failed");
+      }
+      if (response.status >= 500) {
+        throw new Error("External service temporarily unavailable");
+      }
+      throw new Error("Request failed");
+    }
+
+    const result = (await response.json()) as GraphQLResponse<{
+      createTactic: Tactic;
+    }>;
+
+    if (result.errors && result.errors.length > 0) {
+      throw new Error("Invalid request parameters or query");
+    }
+
+    if (!result.data?.createTactic) {
+      throw new Error("No data received");
+    }
+
+    return result.data.createTactic;
   }
 
   async createWebhookSubscription(
@@ -1109,15 +1132,12 @@ export class Scope3ApiClient {
     };
   }
 
-  // Delete inventory option
-  async deleteInventoryOption(
-    apiKey: string,
-    optionId: string,
-  ): Promise<boolean> {
+  // Delete tactic
+  async deleteTactic(apiKey: string, tacticId: string): Promise<boolean> {
     const response = await fetch(this.graphqlUrl, {
       body: JSON.stringify({
-        query: DELETE_INVENTORY_OPTION_MUTATION,
-        variables: { id: optionId },
+        query: DELETE_TACTIC_MUTATION,
+        variables: { id: tacticId },
       }),
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -1138,18 +1158,18 @@ export class Scope3ApiClient {
     }
 
     const result = (await response.json()) as GraphQLResponse<{
-      deleteInventoryOption: { success: boolean };
+      deleteTactic: { success: boolean };
     }>;
 
     if (result.errors && result.errors.length > 0) {
       throw new Error("Invalid request parameters or query");
     }
 
-    if (!result.data?.deleteInventoryOption) {
+    if (!result.data?.deleteTactic) {
       throw new Error("No data received");
     }
 
-    return result.data.deleteInventoryOption.success;
+    return result.data.deleteTactic.success;
   }
 
   // Discover publisher media products
@@ -1247,7 +1267,10 @@ export class Scope3ApiClient {
         return agent;
       }
     } catch (error) {
-      console.log('BigQuery getBrandAgent failed, falling back to GraphQL:', error);
+      console.log(
+        "BigQuery getBrandAgent failed, falling back to GraphQL:",
+        error,
+      );
     }
 
     // Fallback to GraphQL
@@ -1631,75 +1654,6 @@ export class Scope3ApiClient {
     return mockSeats;
   }
 
-  // Get inventory performance metrics
-  async getInventoryPerformance(
-    apiKey: string,
-    campaignId: string,
-  ): Promise<{
-    campaign: { id: string; name: string };
-    options: Array<{
-      option: InventoryOption;
-      performance: InventoryPerformance;
-    }>;
-    summary: {
-      averageCpm: number;
-      totalClicks?: number;
-      totalConversions?: number;
-      totalImpressions: number;
-      totalSpend: number;
-    };
-  }> {
-    const response = await fetch(this.graphqlUrl, {
-      body: JSON.stringify({
-        query: GET_INVENTORY_PERFORMANCE_QUERY,
-        variables: { campaignId },
-      }),
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "User-Agent": "MCP-Server/1.0",
-      },
-      method: "POST",
-    });
-
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        throw new Error("Authentication failed");
-      }
-      if (response.status >= 500) {
-        throw new Error("External service temporarily unavailable");
-      }
-      throw new Error("Request failed");
-    }
-
-    const result = (await response.json()) as GraphQLResponse<{
-      inventoryPerformance: {
-        campaign: { id: string; name: string };
-        options: Array<{
-          option: InventoryOption;
-          performance: InventoryPerformance;
-        }>;
-        summary: {
-          averageCpm: number;
-          totalClicks?: number;
-          totalConversions?: number;
-          totalImpressions: number;
-          totalSpend: number;
-        };
-      };
-    }>;
-
-    if (result.errors && result.errors.length > 0) {
-      throw new Error("Invalid request parameters or query");
-    }
-
-    if (!result.data?.inventoryPerformance) {
-      throw new Error("No data received");
-    }
-
-    return result.data.inventoryPerformance;
-  }
-
   // Get optimization recommendations
   async getOptimizationRecommendations(
     apiKey: string,
@@ -1743,8 +1697,6 @@ export class Scope3ApiClient {
 
     return result.data.optimizationRecommendations;
   }
-
-  // Inventory Option Management Methods
 
   // Get product recommendations
   async getProductRecommendations(
@@ -1802,6 +1754,8 @@ export class Scope3ApiClient {
     return result.data?.scoringOutcomes || [];
   }
 
+  // Inventory Option Management Methods
+
   async getTacticBreakdown(
     apiKey: string,
     campaignId: string,
@@ -1835,7 +1789,76 @@ export class Scope3ApiClient {
     return result.data?.tacticBreakdown || [];
   }
 
+  // Get tactic performance metrics
   async getTacticPerformance(
+    apiKey: string,
+    campaignId: string,
+  ): Promise<{
+    campaign: { id: string; name: string };
+    options: Array<{
+      option: Tactic;
+      performance: TacticPerformance;
+    }>;
+    summary: {
+      averageCpm: number;
+      totalClicks?: number;
+      totalConversions?: number;
+      totalImpressions: number;
+      totalSpend: number;
+    };
+  }> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: GET_TACTIC_PERFORMANCE_QUERY,
+        variables: { campaignId },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication failed");
+      }
+      if (response.status >= 500) {
+        throw new Error("External service temporarily unavailable");
+      }
+      throw new Error("Request failed");
+    }
+
+    const result = (await response.json()) as GraphQLResponse<{
+      tacticPerformance: {
+        campaign: { id: string; name: string };
+        options: Array<{
+          option: Tactic;
+          performance: TacticPerformance;
+        }>;
+        summary: {
+          averageCpm: number;
+          totalClicks?: number;
+          totalConversions?: number;
+          totalImpressions: number;
+          totalSpend: number;
+        };
+      };
+    }>;
+
+    if (result.errors && result.errors.length > 0) {
+      throw new Error("Invalid request parameters or query");
+    }
+
+    if (!result.data?.tacticPerformance) {
+      throw new Error("No data received");
+    }
+
+    return result.data.tacticPerformance;
+  }
+
+  async getTacticPerformanceById(
     apiKey: string,
     tacticId: string,
     dateRange: { end: Date; start: Date },
@@ -1914,10 +1937,16 @@ export class Scope3ApiClient {
   ): Promise<BrandAgentCampaign[]> {
     try {
       // Try BigQuery first
-      const campaigns = await this.campaignBQ.listCampaigns(brandAgentId, status);
+      const campaigns = await this.campaignBQ.listCampaigns(
+        brandAgentId,
+        status,
+      );
       return campaigns;
     } catch (error) {
-      console.log('BigQuery listBrandAgentCampaigns failed, falling back to GraphQL:', error);
+      console.log(
+        "BigQuery listBrandAgentCampaigns failed, falling back to GraphQL:",
+        error,
+      );
     }
 
     // Fallback to GraphQL
@@ -1965,21 +1994,24 @@ export class Scope3ApiClient {
     try {
       // Try BigQuery first - convert Creative[] to BrandAgentCreative[]
       const creatives = await this.campaignBQ.listCreatives(brandAgentId);
-      return creatives.map(creative => ({
-        brandAgentId,
-        createdAt: new Date(creative.createdDate),
-        id: creative.creativeId,
-        name: creative.creativeName,
-        type: this.mapFormatToType(creative.format?.type || 'adcp'),
-        url: this.extractUrlFromContent(creative.content),
-        updatedAt: new Date(creative.lastModifiedDate),
+      return creatives.map((creative) => ({
         // Optional fields
         body: creative.creativeDescription,
+        brandAgentId,
+        createdAt: new Date(creative.createdDate),
+        cta: this.extractCTAFromContent(creative.content),
         headline: creative.creativeName,
-        cta: this.extractCTAFromContent(creative.content)
+        id: creative.creativeId,
+        name: creative.creativeName,
+        type: this.mapFormatToType(creative.format?.type || "adcp"),
+        updatedAt: new Date(creative.lastModifiedDate),
+        url: this.extractUrlFromContent(creative.content),
       }));
     } catch (error) {
-      console.log('BigQuery listBrandAgentCreatives failed, falling back to GraphQL:', error);
+      console.log(
+        "BigQuery listBrandAgentCreatives failed, falling back to GraphQL:",
+        error,
+      );
     }
 
     // Fallback to GraphQL
@@ -2365,36 +2397,49 @@ export class Scope3ApiClient {
   ): Promise<CreativeListResponse> {
     try {
       // Try BigQuery first
-      const creatives = await this.campaignBQ.listCreatives(buyerAgentId, filter?.status);
-      
+      const creatives = await this.campaignBQ.listCreatives(
+        buyerAgentId,
+        filter?.status,
+      );
+
       // Apply pagination if provided
       const startIndex = pagination?.offset || 0;
       const limit = pagination?.limit || 50;
-      const paginatedCreatives = creatives.slice(startIndex, startIndex + limit);
-      
+      const paginatedCreatives = creatives.slice(
+        startIndex,
+        startIndex + limit,
+      );
+
       // Convert to expected format
-      const formattedCreatives = paginatedCreatives.map(creative => ({
+      const formattedCreatives = paginatedCreatives.map((creative) => ({
+        assemblyMethod: creative.assemblyMethod,
+        assetIds: creative.assetIds,
+        buyerAgentId: creative.buyerAgentId,
+        content: creative.content,
+        contentCategories: creative.contentCategories,
+        createdBy: creative.createdBy,
+        createdDate: creative.createdDate,
+        creativeDescription: creative.creativeDescription,
         creativeId: creative.creativeId,
         creativeName: creative.creativeName,
-        buyerAgentId: creative.buyerAgentId,
+        customerId: creative.customerId,
         format: creative.format,
-        content: creative.content,
-        status: creative.status,
-        assemblyMethod: creative.assemblyMethod,
-        createdDate: creative.createdDate,
+        lastModifiedBy: creative.lastModifiedBy,
         lastModifiedDate: creative.lastModifiedDate,
-        assetIds: creative.assetIds
+        status: creative.status,
+        targetAudience: creative.targetAudience,
+        version: creative.version,
       }));
-      
+
       // Calculate summary statistics
       const summary = {
-        totalCreatives: creatives.length,
-        activeCreatives: creatives.filter(c => c.status === 'active').length,
-        draftCreatives: creatives.filter(c => c.status === 'draft').length,
+        activeCreatives: creatives.filter((c) => c.status === "active").length,
         assignedCreatives: 0, // TODO: Count campaign assignments
-        unassignedCreatives: 0 // TODO: Count unassigned creatives
+        draftCreatives: creatives.filter((c) => c.status === "draft").length,
+        totalCreatives: creatives.length,
+        unassignedCreatives: 0, // TODO: Count unassigned creatives
       };
-      
+
       return {
         creatives: formattedCreatives,
         hasMore: startIndex + limit < creatives.length,
@@ -2402,7 +2447,10 @@ export class Scope3ApiClient {
         totalCount: creatives.length,
       };
     } catch (error) {
-      console.log('BigQuery listCreatives failed, returning empty result:', error);
+      console.log(
+        "BigQuery listCreatives failed, returning empty result:",
+        error,
+      );
       return {
         creatives: [],
         hasMore: false,
@@ -2486,49 +2534,6 @@ export class Scope3ApiClient {
     };
   }
 
-  // List inventory options for a campaign
-  async listInventoryOptions(
-    apiKey: string,
-    campaignId: string,
-  ): Promise<InventoryOption[]> {
-    const response = await fetch(this.graphqlUrl, {
-      body: JSON.stringify({
-        query: LIST_INVENTORY_OPTIONS_QUERY,
-        variables: { campaignId },
-      }),
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "User-Agent": "MCP-Server/1.0",
-      },
-      method: "POST",
-    });
-
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        throw new Error("Authentication failed");
-      }
-      if (response.status >= 500) {
-        throw new Error("External service temporarily unavailable");
-      }
-      throw new Error("Request failed");
-    }
-
-    const result = (await response.json()) as GraphQLResponse<{
-      inventoryOptions: InventoryOptionsData;
-    }>;
-
-    if (result.errors && result.errors.length > 0) {
-      throw new Error("Invalid request parameters or query");
-    }
-
-    if (!result.data?.inventoryOptions) {
-      throw new Error("No data received");
-    }
-
-    return result.data.inventoryOptions.inventoryOptions;
-  }
-
   async listMeasurementSources(
     apiKey: string,
     brandAgentId: string,
@@ -2609,6 +2614,46 @@ export class Scope3ApiClient {
     }
 
     return result.data.syntheticAudiences;
+  }
+
+  // List tactics for a campaign
+  async listTactics(apiKey: string, campaignId: string): Promise<Tactic[]> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: LIST_TACTICS_QUERY,
+        variables: { campaignId },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication failed");
+      }
+      if (response.status >= 500) {
+        throw new Error("External service temporarily unavailable");
+      }
+      throw new Error("Request failed");
+    }
+
+    const result = (await response.json()) as GraphQLResponse<{
+      tactics: TacticsData;
+    }>;
+
+    if (result.errors && result.errors.length > 0) {
+      throw new Error("Invalid request parameters or query");
+    }
+
+    if (!result.data?.tactics) {
+      throw new Error("No data received");
+    }
+
+    return result.data.tactics.tactics;
   }
 
   async listWebhookSubscriptions(
@@ -3070,41 +3115,47 @@ export class Scope3ApiClient {
     try {
       // Use BigQuery to update the creative
       const updateData: Record<string, unknown> = {};
-      
+
       if (input.updates.name) {
         updateData.name = input.updates.name;
       }
-      
+
       if (input.updates.description !== undefined) {
         updateData.description = input.updates.description;
       }
-      
+
       if (input.updates.content) {
         updateData.content = input.updates.content;
       }
-      
+
       if (input.updates.status) {
         updateData.status = input.updates.status;
       }
-      
+
       if (input.updates.targetAudience) {
-        updateData.targetAudience = typeof input.updates.targetAudience === 'string' 
-          ? { description: input.updates.targetAudience } 
-          : input.updates.targetAudience;
+        updateData.targetAudience =
+          typeof input.updates.targetAudience === "string"
+            ? { description: input.updates.targetAudience }
+            : input.updates.targetAudience;
       }
-      
+
       if (input.updates.contentCategories) {
         updateData.contentCategories = input.updates.contentCategories;
       }
-      
-      updateData.lastModifiedBy = 'api_user';
-      
-      const updatedCreative = await this.campaignBQ.updateCreative(input.creativeId, updateData);
+
+      updateData.lastModifiedBy = "api_user";
+
+      const updatedCreative = await this.campaignBQ.updateCreative(
+        input.creativeId,
+        updateData,
+      );
       return updatedCreative;
-      
     } catch (error) {
-      console.log('BigQuery updateCreative failed, falling back to mock:', error);
-      
+      console.log(
+        "BigQuery updateCreative failed, falling back to mock:",
+        error,
+      );
+
       // Fallback to mock response
       const mockCreative: Creative = {
         assemblyMethod: "pre_assembled",
@@ -3122,7 +3173,7 @@ export class Scope3ApiClient {
         status: input.updates.status || "draft",
         version: "1.1.0",
       };
-      
+
       return mockCreative;
     }
   }
@@ -3190,50 +3241,6 @@ export class Scope3ApiClient {
     };
   }
 
-  // Update inventory option
-  async updateInventoryOption(
-    apiKey: string,
-    optionId: string,
-    input: InventoryOptionUpdateInput,
-  ): Promise<InventoryOption> {
-    const response = await fetch(this.graphqlUrl, {
-      body: JSON.stringify({
-        query: UPDATE_INVENTORY_OPTION_MUTATION,
-        variables: { id: optionId, input },
-      }),
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "User-Agent": "MCP-Server/1.0",
-      },
-      method: "POST",
-    });
-
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        throw new Error("Authentication failed");
-      }
-      if (response.status >= 500) {
-        throw new Error("External service temporarily unavailable");
-      }
-      throw new Error("Request failed");
-    }
-
-    const result = (await response.json()) as GraphQLResponse<{
-      updateInventoryOption: InventoryOption;
-    }>;
-
-    if (result.errors && result.errors.length > 0) {
-      throw new Error("Invalid request parameters or query");
-    }
-
-    if (!result.data?.updateInventoryOption) {
-      throw new Error("No data received");
-    }
-
-    return result.data.updateInventoryOption;
-  }
-
   async updateOneStrategy(
     apiKey: string,
     input: UpdateStrategyInput,
@@ -3288,49 +3295,102 @@ export class Scope3ApiClient {
     return result.data.updateOneStrategy;
   }
 
+  // Update tactic
+  async updateTactic(
+    apiKey: string,
+    tacticId: string,
+    input: TacticUpdateInput,
+  ): Promise<Tactic> {
+    const response = await fetch(this.graphqlUrl, {
+      body: JSON.stringify({
+        query: UPDATE_TACTIC_MUTATION,
+        variables: { id: tacticId, input },
+      }),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "User-Agent": "MCP-Server/1.0",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Authentication failed");
+      }
+      if (response.status >= 500) {
+        throw new Error("External service temporarily unavailable");
+      }
+      throw new Error("Request failed");
+    }
+
+    const result = (await response.json()) as GraphQLResponse<{
+      updateTactic: Tactic;
+    }>;
+
+    if (result.errors && result.errors.length > 0) {
+      throw new Error("Invalid request parameters or query");
+    }
+
+    if (!result.data?.updateTactic) {
+      throw new Error("No data received");
+    }
+
+    return result.data.updateTactic;
+  }
+
   // ============================================================================
   // HELPER METHODS FOR TYPE CONVERSIONS
   // ============================================================================
 
   /**
-   * Map Creative format type to BrandAgentCreative type
+   * Extract CTA text from creative content
    */
-  private mapFormatToType(formatType: string): "html5" | "image" | "native" | "video" {
-    switch (formatType) {
-      case 'adcp':
-        return 'image'; // Default for ADCP formats
-      case 'creative_agent':
-        return 'html5'; // AI-generated creatives are typically HTML5
-      case 'publisher':
-        return 'native'; // Publisher-specific formats are often native
-      default:
-        return 'image'; // Safe default
+  private extractCTAFromContent(
+    content: Record<string, unknown>,
+  ): string | undefined {
+    // Try to extract CTA from HTML snippet or return undefined
+    const html = content?.htmlSnippet;
+    if (html && typeof html === "string") {
+      const ctaMatch =
+        html.match(/<button[^>]*>(.*?)<\/button>/i) ||
+        html.match(
+          />(Shop|Buy|Learn More|Download|Sign Up|Get Started)[^<]*</i,
+        );
+      return ctaMatch?.[1];
     }
+    return undefined;
   }
 
   /**
    * Extract URL from creative content
    */
-  private extractUrlFromContent(content: Record<string, any>): string {
+  private extractUrlFromContent(content: Record<string, unknown>): string {
     // Try to find a URL in the content
-    return content?.productUrl || 
-           content?.landingUrl || 
-           content?.clickUrl ||
-           'https://example.com'; // Fallback URL
+    return (
+      (typeof content?.productUrl === "string" ? content.productUrl : null) ||
+      (typeof content?.landingUrl === "string" ? content.landingUrl : null) ||
+      (typeof content?.clickUrl === "string" ? content.clickUrl : null) ||
+      "https://example.com"
+    ); // Fallback URL
   }
 
   /**
-   * Extract CTA text from creative content
+   * Map Creative format type to BrandAgentCreative type
    */
-  private extractCTAFromContent(content: Record<string, any>): string | undefined {
-    // Try to extract CTA from HTML snippet or return undefined
-    const html = content?.htmlSnippet;
-    if (html && typeof html === 'string') {
-      const ctaMatch = html.match(/<button[^>]*>(.*?)<\/button>/i) || 
-                       html.match(/>(Shop|Buy|Learn More|Download|Sign Up|Get Started)[^<]*</i);
-      return ctaMatch?.[1];
+  private mapFormatToType(
+    formatType: string,
+  ): "html5" | "image" | "native" | "video" {
+    switch (formatType) {
+      case "adcp":
+        return "image"; // Default for ADCP formats
+      case "creative_agent":
+        return "html5"; // AI-generated creatives are typically HTML5
+      case "publisher":
+        return "native"; // Publisher-specific formats are often native
+      default:
+        return "image"; // Safe default
     }
-    return undefined;
   }
 
   // Removed parseCreativePrompt - AI generation handled by creative agents

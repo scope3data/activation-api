@@ -20,94 +20,6 @@ export interface EffectivePricing {
   totalCpm: number; // Final effective CPM
 }
 
-// Campaign tactic management configuration
-export interface TacticManagement {
-  // Auto-discovery settings
-  autoDiscoverProducts?: boolean;
-  autoOptimize?: boolean;
-  // Budget constraints
-  budgetSplit?: {
-    guaranteed: number; // percentage
-    nonGuaranteed: number; // percentage
-  };
-  discoveryCriteria?: ProductDiscoveryQuery;
-
-  tactics?: Tactic[];
-
-  mode: "hybrid" | "scope3_managed" | "user_managed";
-
-  optimizationGoal?:
-    | "clicks"
-    | "conversions"
-    | "cost_efficiency"
-    | "impressions";
-  // Signal preferences
-  preferredSignals?: ("buyer" | "scope3" | "third_party")[];
-}
-
-// Our tactic (product + targeting)
-export interface Tactic {
-  // Budget allocation for this tactic
-  budgetAllocation: BudgetAllocation;
-  campaignId: string;
-  // Metadata
-  createdAt: Date;
-  description?: string;
-
-  // Effective pricing (may differ based on signal type)
-  effectivePricing: EffectivePricing;
-
-  id: string;
-
-  // The underlying publisher product
-  mediaProduct: PublisherMediaProduct;
-
-  name: string; // e.g., "Hulu Premium + Scope3 Signals"
-
-  performance?: TacticPerformance;
-  // Status and performance
-  status: "active" | "completed" | "draft" | "paused";
-
-  // Our targeting layer
-  targeting: TargetingStrategy;
-  updatedAt: Date;
-}
-
-export interface TacticInput {
-  budgetAllocation: BudgetAllocation;
-  campaignId: string;
-  description?: string;
-  mediaProductId: string; // Reference to existing publisher product
-  name: string;
-  targeting: TargetingStrategy;
-}
-
-export interface TacticsData {
-  tactics: Tactic[];
-}
-
-export interface TacticUpdateInput {
-  budgetAllocation?: Partial<BudgetAllocation>;
-  description?: string;
-  name?: string;
-  status?: "active" | "completed" | "draft" | "paused";
-  targeting?: Partial<TargetingStrategy>;
-}
-
-// Performance metrics for a tactic
-export interface TacticPerformance {
-  clicks?: number;
-  conversions?: number;
-  cpa?: number; // Cost per acquisition
-  cpc?: number; // Cost per click
-  cpm: number; // Actual CPM achieved
-  ctr?: number; // Click-through rate
-  cvr?: number; // Conversion rate
-  impressions: number;
-  lastUpdated: Date;
-  spend: number;
-}
-
 // Optimization types
 export type OptimizationGoal =
   | "clicks"
@@ -208,6 +120,94 @@ export interface SignalConfiguration {
   audienceIds?: string[];
   customParameters?: Record<string, unknown>;
   segments?: string[];
+}
+
+// Our tactic (product + targeting)
+export interface Tactic {
+  // Budget allocation for this tactic
+  budgetAllocation: BudgetAllocation;
+  campaignId: string;
+  // Metadata
+  createdAt: Date;
+  description?: string;
+
+  // Effective pricing (may differ based on signal type)
+  effectivePricing: EffectivePricing;
+
+  id: string;
+
+  // The underlying publisher product
+  mediaProduct: PublisherMediaProduct;
+
+  name: string; // e.g., "Hulu Premium + Scope3 Signals"
+
+  performance?: TacticPerformance;
+  // Status and performance
+  status: "active" | "completed" | "draft" | "paused";
+
+  // Our targeting layer
+  targeting: TargetingStrategy;
+  updatedAt: Date;
+}
+
+export interface TacticInput {
+  budgetAllocation: BudgetAllocation;
+  campaignId: string;
+  description?: string;
+  mediaProductId: string; // Reference to existing publisher product
+  name: string;
+  targeting: TargetingStrategy;
+}
+
+// Campaign tactic management configuration
+export interface TacticManagement {
+  // Auto-discovery settings
+  autoDiscoverProducts?: boolean;
+  autoOptimize?: boolean;
+  // Budget constraints
+  budgetSplit?: {
+    guaranteed: number; // percentage
+    nonGuaranteed: number; // percentage
+  };
+  discoveryCriteria?: ProductDiscoveryQuery;
+
+  mode: "hybrid" | "scope3_managed" | "user_managed";
+
+  optimizationGoal?:
+    | "clicks"
+    | "conversions"
+    | "cost_efficiency"
+    | "impressions";
+
+  // Signal preferences
+  preferredSignals?: ("buyer" | "scope3" | "third_party")[];
+  tactics?: Tactic[];
+}
+
+// Performance metrics for a tactic
+export interface TacticPerformance {
+  clicks?: number;
+  conversions?: number;
+  cpa?: number; // Cost per acquisition
+  cpc?: number; // Cost per click
+  cpm: number; // Actual CPM achieved
+  ctr?: number; // Click-through rate
+  cvr?: number; // Conversion rate
+  impressions: number;
+  lastUpdated: Date;
+  spend: number;
+}
+
+export interface TacticsData {
+  tactics: Tactic[];
+}
+
+export interface TacticUpdateInput {
+  budgetAllocation?: Partial<BudgetAllocation>;
+  description?: string;
+  name?: string;
+  status?: "active" | "completed" | "draft" | "paused";
+  targeting?: Partial<TargetingStrategy>;
 }
 
 // Targeting strategy applied to a media product

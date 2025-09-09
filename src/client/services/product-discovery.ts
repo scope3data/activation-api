@@ -4,7 +4,7 @@ import type {
   ProductDiscoveryQuery,
   PublisherMediaProduct,
   PublisherMediaProductsData,
-} from "../../types/inventory-options.js";
+} from "../../types/tactics.js";
 
 export interface GraphQLResponse<T> {
   data?: T;

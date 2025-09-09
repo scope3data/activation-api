@@ -325,10 +325,10 @@ export const DISCOVER_PRODUCTS_QUERY = `
   }
 `;
 
-// Query to get a specific inventory option by ID
-export const GET_INVENTORY_OPTION_QUERY = `
-  query GetInventoryOption($id: String!) {
-    inventoryOption(id: $id) {
+// Query to get a specific tactic by ID
+export const GET_TACTIC_QUERY = `
+  query GetTactic($id: String!) {
+    tactic(id: $id) {
       id
       campaignId
       name
@@ -411,7 +411,7 @@ export const GET_BUDGET_ALLOCATION_SUMMARY_QUERY = `
         currency
       }
       allocations {
-        inventoryOption {
+        tactic {
           id
           name
           mediaProduct {

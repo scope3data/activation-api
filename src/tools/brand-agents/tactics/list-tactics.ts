@@ -39,10 +39,7 @@ export const listTacticsTool = (client: Scope3ApiClient) => ({
     }
 
     try {
-      const tactics = await client.listTactics(
-        apiKey,
-        args.campaignId,
-      );
+      const tactics = await client.listTactics(apiKey, args.campaignId);
 
       if (tactics.length === 0) {
         return createMCPResponse({
@@ -96,10 +93,7 @@ export const listTacticsTool = (client: Scope3ApiClient) => ({
       summary += `• **Active Tactics:** ${activeTactics.length} | **Draft:** ${draftTactics.length} | **Paused:** ${pausedTactics.length}\n\n`;
 
       // Function to display tactic details
-      const displayTactic = (
-        tactic: (typeof tactics)[0],
-        index: number,
-      ) => {
+      const displayTactic = (tactic: (typeof tactics)[0], index: number) => {
         const statusIcon =
           {
             active: "🟢",
@@ -253,7 +247,9 @@ export const listTacticsTool = (client: Scope3ApiClient) => ({
 
       const performingTactics = tactics.filter(
         (tactic) =>
-          tactic.performance && tactic.performance.ctr && tactic.performance.ctr > 0.002,
+          tactic.performance &&
+          tactic.performance.ctr &&
+          tactic.performance.ctr > 0.002,
       );
       if (performingTactics.length > 0) {
         summary += `• **${performingTactics.length} tactic(s)** showing strong CTR performance - consider increasing budget\n`;
@@ -275,8 +271,6 @@ export const listTacticsTool = (client: Scope3ApiClient) => ({
 
   name: "list_tactics",
   parameters: z.object({
-    campaignId: z
-      .string()
-      .describe("ID of the campaign to list tactics for"),
+    campaignId: z.string().describe("ID of the campaign to list tactics for"),
   }),
 });

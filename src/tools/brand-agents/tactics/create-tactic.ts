@@ -85,10 +85,7 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
         },
       };
 
-      const tactic = await client.createTactic(
-        apiKey,
-        tacticInput,
-      );
+      const tactic = await client.createTactic(apiKey, tacticInput);
 
       let summary = `✅ **Tactic Created Successfully!**\n\n`;
 
@@ -177,8 +174,7 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
 
       // Calculate projected impressions
       const projectedImpressions = Math.floor(
-        (tactic.budgetAllocation.amount /
-          tactic.effectivePricing.totalCpm) *
+        (tactic.budgetAllocation.amount / tactic.effectivePricing.totalCpm) *
           1000,
       );
       summary += `• **Projected Impressions:** ~${projectedImpressions.toLocaleString()}\n\n`;
@@ -201,8 +197,7 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
 
       if (
         tactic.effectivePricing.signalCost &&
-        tactic.effectivePricing.signalCost >
-          tactic.effectivePricing.cpm * 0.5
+        tactic.effectivePricing.signalCost > tactic.effectivePricing.cpm * 0.5
       ) {
         summary += `• ⚠️ Signal cost is high relative to base CPM - review cost-effectiveness\n`;
       }
@@ -222,10 +217,7 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
   parameters: z.object({
     budgetAllocation: z
       .object({
-        amount: z
-          .number()
-          .min(0)
-          .describe("Budget amount for this tactic"),
+        amount: z.number().min(0).describe("Budget amount for this tactic"),
         currency: z
           .string()
           .default("USD")
@@ -247,9 +239,7 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
           .describe("Percentage of total campaign budget"),
       })
       .describe("Budget allocation configuration"),
-    campaignId: z
-      .string()
-      .describe("ID of the campaign to add this tactic to"),
+    campaignId: z.string().describe("ID of the campaign to add this tactic to"),
     description: z
       .string()
       .optional()
@@ -259,9 +249,7 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
       .describe("ID of the publisher media product to use"),
     name: z
       .string()
-      .describe(
-        "Name for this tactic (e.g., 'Hulu Premium + Scope3')",
-      ),
+      .describe("Name for this tactic (e.g., 'Hulu Premium + Scope3')"),
     targeting: z
       .object({
         inheritFromCampaign: z

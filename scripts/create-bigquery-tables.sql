@@ -28,6 +28,8 @@ CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.campaigns` (
   budget_pacing STRING DEFAULT 'even',
   scoring_weights JSON,
   outcome_score_window_days INT64 DEFAULT 7,
+  start_date TIMESTAMP,
+  end_date TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
 )
