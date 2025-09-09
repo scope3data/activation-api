@@ -41,10 +41,6 @@ import type {
 } from "../types/creative.js";
 import type { ScoringOutcome, ScoringOutcomeInput } from "../types/events.js";
 import type {
-  Tactic,
-  TacticInput,
-  TacticsData,
-  TacticUpdateInput,
   TacticPerformance,
   OptimizationGoal,
   OptimizationRecommendations,
@@ -126,12 +122,8 @@ import {
 //   UPLOAD_ASSET_MUTATION,
 // } from "./queries/creatives.js";
 import {
-  CREATE_TACTIC_MUTATION,
-  DELETE_TACTIC_MUTATION,
   GET_TACTIC_PERFORMANCE_QUERY,
   GET_OPTIMIZATION_RECOMMENDATIONS_QUERY,
-  LIST_TACTICS_QUERY,
-  UPDATE_TACTIC_MUTATION,
 } from "./queries/tactics.js";
 import {
   CREATE_SCORING_OUTCOME_MUTATION,
@@ -246,7 +238,7 @@ export class Scope3ApiClient {
     apiKey: string,
     creativeId: string,
     campaignId: string,
-    buyerAgentId: string,
+    _buyerAgentId: string,
   ): Promise<AssignmentResult> {
     try {
       // Assign creative to campaign in BigQuery
@@ -2221,7 +2213,7 @@ export class Scope3ApiClient {
     buyerAgentId: string,
     filter?: CreativeFilter,
     pagination?: PaginationInput,
-    includeCampaigns?: boolean,
+    _includeCampaigns?: boolean,
   ): Promise<CreativeListResponse> {
     try {
       // Try BigQuery first
@@ -2860,7 +2852,7 @@ export class Scope3ApiClient {
   ): Promise<Creative> {
     try {
       // Use BigQuery to update the creative
-      const updateData: any = {};
+      const updateData: Record<string, unknown> = {};
       
       if (input.updates.name) {
         updateData.name = input.updates.name;

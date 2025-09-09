@@ -1,5 +1,5 @@
 import { BigQuery } from "@google-cloud/bigquery";
-import type { BrandAgent, BrandAgentCampaign, BrandAgentCreative } from "../types/brand-agent.js";
+import type { BrandAgent, BrandAgentCampaign } from "../types/brand-agent.js";
 import type { Creative } from "../types/creative.js";
 
 export class CampaignBigQueryService {
@@ -93,7 +93,7 @@ export class CampaignBigQueryService {
 
     const [rows] = await this.bigquery.query({ query, params });
 
-    return rows.map((row: any) => ({
+    return rows.map((row: Record<string, unknown>) => ({
       id: row.id,
       name: row.name,
       customerId: row.customer_id,
@@ -280,7 +280,7 @@ export class CampaignBigQueryService {
 
     const [rows] = await this.bigquery.query({ query, params });
 
-    return rows.map((row: any) => ({
+    return rows.map((row: Record<string, unknown>) => ({
       id: row.id,
       brandAgentId: row.brand_agent_id,
       name: row.name,
@@ -418,7 +418,7 @@ export class CampaignBigQueryService {
 
     const [rows] = await this.bigquery.query({ query, params });
 
-    return rows.map((row: any) => ({
+    return rows.map((row: Record<string, unknown>) => ({
       creativeId: row.id,
       creativeName: row.name,
       buyerAgentId: row.brand_agent_id,

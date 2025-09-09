@@ -30,7 +30,7 @@ async function testBigQueryIntegration() {
       } else {
         console.log("ℹ️  No brand agent found (this is expected if tables are empty)");
       }
-    } catch (error) {
+    } catch (_error) {
       console.log("ℹ️  Brand agent test skipped (tables may not exist yet)");
     }
 
@@ -42,7 +42,7 @@ async function testBigQueryIntegration() {
       campaigns.forEach(campaign => {
         console.log(`   - ${campaign.name} (${campaign.status})`);
       });
-    } catch (error) {
+    } catch (_error) {
       console.log("ℹ️  Campaign test skipped (tables may not exist yet)");
     }
 
@@ -54,7 +54,7 @@ async function testBigQueryIntegration() {
       creatives.forEach(creative => {
         console.log(`   - ${creative.creativeName} (${creative.status})`);
       });
-    } catch (error) {
+    } catch (_error) {
       console.log("ℹ️  Creative test skipped (tables may not exist yet)");
     }
 
@@ -66,7 +66,7 @@ async function testBigQueryIntegration() {
     console.log("   tsx scripts/seed-bigquery-data.ts");
     console.log("3. Test the MCP tools with real data");
 
-  } catch (error) {
+  } catch (_error) {
     console.error("\n❌ BigQuery integration test failed:");
     console.error(error instanceof Error ? error.message : String(error));
     

@@ -234,7 +234,7 @@ async function seedBigQueryData() {
       
       await bq.assignBrandStoryToCampaign(createdCampaigns[3], sampleBrandStoryIds[3], 1.0); // TechStart -> Innovation
       console.log(`  ✅ Assigned brand stories to TechStart App Launch campaign`);
-    } catch (error) {
+    } catch (_error) {
       console.log(`  ℹ️  Brand story assignments skipped (brand stories may not exist yet)`);
     }
 
