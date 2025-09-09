@@ -2116,6 +2116,193 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /custom-signals/{id}:
+    delete:
+      description: "Delete a custom signal definition from the Custom Signals Platform. WARNING: This will
+        permanently remove the signal definition and all associated data. This action cannot be
+        undone. Requires authentication."
+      operationId: delete_custom_signal
+      summary: Delete Custom Signal
+      tags:
+        - System
+      x-llm-hints:
+        - Use this tool when user wants to delete a custom signal definition from the custom signals
+          platform
+      parameters:
+        - description: Resource identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+    get:
+      description: Retrieve detailed information about a specific custom signal definition. Shows complete
+        configuration including all cluster settings, metadata, and usage instructions. Requires
+        authentication.
+      operationId: get_custom_signal
+      summary: Get Custom Signal
+      tags:
+        - System
+      x-llm-hints:
+        - Use this tool when user wants to retrieve detailed information about a specific custom
+          signal definition
+      parameters:
+        - description: Resource identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+    put:
+      description: "Update an existing custom signal definition. Can modify name, description, and cluster
+        configurations. Note: Key type cannot be changed after creation. Requires authentication."
+      operationId: update_custom_signal
+      summary: Update Custom Signal
+      tags:
+        - System
+      x-llm-hints:
+        - Use this tool when user wants to update an existing custom signal definition
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      parameters:
+        - description: Resource identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /discover-publisher-products:
     post:
       description: Discover available publisher media products based on campaign requirements. Returns raw

@@ -16,6 +16,7 @@
     "docs:validate": "mintlify broken-links && mintlify openapi-check openapi.yaml",
     "docs:validate:links": "mintlify broken-links",
     "docs:validate:openapi": "mintlify openapi-check openapi.yaml",
+    "setup:bigquery": "tsx scripts/setup-bigquery-signals.ts",
     "prebuild": "npm run generate:openapi",
     "prepare": "husky",
     "postinstall": "npm run build"
@@ -43,9 +44,11 @@
     "@google-cloud/bigquery": "^8.1.1",
     "@modelcontextprotocol/sdk": "^1.17.5",
     "@types/node": "^24.3.1",
+    "@types/uuid": "^10.0.0",
     "fastmcp": "^3.15.2",
     "npm": "^11.6.0",
     "typescript": "^5.8.3",
+    "uuid": "^13.0.0",
     "zod": "^3.24.4"
   },
   "release": {
