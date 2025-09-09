@@ -278,11 +278,19 @@ export interface CreativeAsset {
   lastModifiedDate: string;
   metadata?: Record<string, unknown>;
 
-  // Asset source (reference, not upload)
-  source: AssetSource;
+  // ADCP snippet support (PR #49) - mutually exclusive with source
+  snippet?: string; // Third-party creative snippet content
+
+  snippetType?: "DAAST" | "HTML" | "iFrame" | "JavaScript" | "VAST"; // Type of snippet
+  // Asset source (reference, not upload) - mutually exclusive with snippet
+  source?: AssetSource;
+
   // Organization
   tags?: string[];
-  // Text content (for text assets)
+  // Native ad template variables (PR #49)
+  templateVariables?: Record<string, string>; // Placeholder mapping for native ad templates
+
+  // Text content (for text assets and native ad templates)
   textContent?: {
     bodyText?: string;
     callToAction?: string;
@@ -293,16 +301,24 @@ export interface CreativeAsset {
 
 /**
  * Creative content sources (orchestration, not upload)
+ * Updated to support ADCP PR #49 creative format changes
  */
 export interface CreativeContent extends Record<string, unknown> {
   // Asset references (not uploads)
   assetIds?: string[]; // References to pre-uploaded assets
+
   // Pre-assembled content (ad server tags)
   htmlSnippet?: string; // For HTML5 creatives
   javascriptTag?: string; // For JS ad tags
-
   // External sources
   productUrl?: string; // For product-based generation
+
+  // ADCP snippet support (PR #49)
+  snippet?: string; // Third-party creative snippet content
+  snippetType?: "DAAST" | "HTML" | "iFrame" | "JavaScript" | "VAST"; // Type of snippet
+
+  // Native ad template variables (PR #49)
+  templateVariables?: Record<string, string>; // Placeholder mapping for native ad templates
 
   vastTag?: string; // For video ads
 }

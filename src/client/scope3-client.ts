@@ -292,6 +292,89 @@ export class Scope3ApiClient {
     };
   }
 
+  /**
+   * Call list_creative_formats on a specific sales agent
+   */
+  async callSalesAgentFormatDiscovery(
+    salesAgentUrl: string,
+    params: {
+      acceptsThirdPartyTags?: boolean;
+      includeRequirements?: boolean;
+    },
+  ): Promise<{
+    formats: Array<{
+      description: string;
+      formatId: string;
+      name: string;
+      requirements: {
+        acceptsThirdPartyTags: boolean;
+        assemblyCapable: boolean;
+        requiredAssets: Array<{
+          specs: {
+            dimensions?: string;
+            formats?: string[];
+            maxSize?: string;
+          };
+          type: string;
+        }>;
+      };
+    }>;
+  }> {
+    console.log(
+      `[DISCOVERY] Calling list_creative_formats on ${salesAgentUrl}`,
+      params,
+    );
+
+    try {
+      // Make MCP call to sales agent's list_creative_formats tool
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+      const response = await fetch(salesAgentUrl, {
+        body: JSON.stringify({
+          id: `format-discovery-${Date.now()}`,
+          jsonrpc: "2.0",
+          method: "tools/call",
+          params: {
+            arguments: params,
+            name: "list_creative_formats",
+          },
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          "User-Agent": "Scope3-MCP-Client/1.0",
+        },
+        method: "POST",
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const result = (await response.json()) as Record<string, unknown>;
+
+      if (result.error) {
+        const error = result.error as Record<string, unknown>;
+        throw new Error(`MCP Error: ${error.message || "Unknown error"}`);
+      }
+
+      // Parse the response - assuming it follows our format structure
+      // In real implementation, we'd need to handle different sales agent response formats
+      const resultData = result.result as Record<string, unknown> | undefined;
+      const formats = Array.isArray(resultData?.formats)
+        ? resultData.formats
+        : [];
+
+      return { formats };
+    } catch (error) {
+      console.warn(`Failed to discover formats from ${salesAgentUrl}:`, error);
+      throw error;
+    }
+  }
+
   async createBitmapTargetingProfile(
     apiKey: string,
     input: CreateBitmapTargetingProfileInput,
@@ -1267,6 +1350,136 @@ export class Scope3ApiClient {
     return result.data.generateUpdatedStrategyPrompt;
   }
 
+  /**
+   * Get ADCP standard formats (from specification)
+   */
+  async getAdcpStandardFormats(): Promise<
+    Array<{
+      description: string;
+      formatId: string;
+      name: string;
+      requirements: {
+        acceptsThirdPartyTags: boolean;
+        assemblyCapable: boolean;
+        requiredAssets: Array<{
+          specs: {
+            dimensions?: string;
+            formats?: string[];
+            maxSize?: string;
+          };
+          type: string;
+        }>;
+      };
+    }>
+  > {
+    // Return the ADCP standard formats from the official specification
+    // This could be fetched from https://adcontextprotocol.org in real implementation
+    return [
+      {
+        description: "Standard display banner with flexible dimensions",
+        formatId: "display_banner",
+        name: "Display Banner",
+        requirements: {
+          acceptsThirdPartyTags: true,
+          assemblyCapable: true,
+          requiredAssets: [
+            {
+              specs: {
+                dimensions: "flexible",
+                formats: ["jpg", "png", "gif", "webp"],
+                maxSize: "150KB",
+              },
+              type: "image",
+            },
+          ],
+        },
+      },
+      {
+        description:
+          "Native ad template with headline, body, and image (ADCP PR #49)",
+        formatId: "native_sponsored_post",
+        name: "Native Sponsored Post",
+        requirements: {
+          acceptsThirdPartyTags: false,
+          assemblyCapable: true,
+          requiredAssets: [
+            {
+              specs: {
+                dimensions: "1200x628",
+                formats: ["jpg", "png"],
+                maxSize: "1MB",
+              },
+              type: "image",
+            },
+            {
+              specs: {},
+              type: "text",
+            },
+          ],
+        },
+      },
+      {
+        description:
+          "Native article template with template variables (ADCP PR #49)",
+        formatId: "native_article",
+        name: "Native Article",
+        requirements: {
+          acceptsThirdPartyTags: false,
+          assemblyCapable: true,
+          requiredAssets: [
+            {
+              specs: {},
+              type: "text",
+            },
+          ],
+        },
+      },
+      {
+        description: "Native product showcase template (ADCP PR #49)",
+        formatId: "native_product",
+        name: "Native Product",
+        requirements: {
+          acceptsThirdPartyTags: false,
+          assemblyCapable: true,
+          requiredAssets: [
+            {
+              specs: {
+                dimensions: "square",
+                formats: ["jpg", "png"],
+                maxSize: "500KB",
+              },
+              type: "image",
+            },
+            {
+              specs: {},
+              type: "text",
+            },
+          ],
+        },
+      },
+      {
+        description:
+          "VAST 4.0 compliant video with snippet support (ADCP PR #49)",
+        formatId: "video_vast",
+        name: "VAST Video",
+        requirements: {
+          acceptsThirdPartyTags: true,
+          assemblyCapable: true,
+          requiredAssets: [
+            {
+              specs: {
+                dimensions: "16:9",
+                formats: ["mp4", "webm"],
+                maxSize: "100MB",
+              },
+              type: "video",
+            },
+          ],
+        },
+      },
+    ];
+  }
+
   // Agent methods
   async getAgents(apiKey: string, where?: AgentWhereInput): Promise<Agent[]> {
     const response = await fetch(this.graphqlUrl, {
@@ -1503,6 +1716,8 @@ export class Scope3ApiClient {
     return result.data?.campaignTactics || [];
   }
 
+  // Inventory Option Management Methods
+
   /**
    * Get a specific creative with full details including approval status
    */
@@ -1563,6 +1778,8 @@ export class Scope3ApiClient {
     };
   }
 
+  // Inventory Option Management Methods
+
   // Authentication methods
   async getCustomerId(apiKey: string): Promise<number> {
     const response = await fetch(this.graphqlUrl, {
@@ -1603,8 +1820,6 @@ export class Scope3ApiClient {
 
     return result.data.getAPIAccessKeys.tokens[0].customerId;
   }
-
-  // Inventory Option Management Methods
 
   async getCustomSignal(
     apiKey: string,
@@ -1658,8 +1873,6 @@ export class Scope3ApiClient {
     };
   }
 
-  // Inventory Option Management Methods
-
   // Get DSP seats (stubbed until backend ready)
   async getDSPSeats(
     apiKey: string,
@@ -1699,6 +1912,8 @@ export class Scope3ApiClient {
 
     return mockSeats;
   }
+
+  // Inventory Option Management Methods
 
   // Get optimization recommendations
   async getOptimizationRecommendations(
@@ -1744,6 +1959,8 @@ export class Scope3ApiClient {
     return result.data.optimizationRecommendations;
   }
 
+  // Inventory Option Management Methods
+
   // Get product recommendations
   async getProductRecommendations(
     apiKey: string,
@@ -1765,7 +1982,24 @@ export class Scope3ApiClient {
     return this.productDiscovery.getRecommendedProducts(apiKey, params);
   }
 
-  // Inventory Option Management Methods
+  /**
+   * Get list of registered sales agents for format discovery
+   */
+  async getRegisteredSalesAgents(
+    _apiKey: string,
+  ): Promise<Array<{ name: string; url: string }>> {
+    console.log(
+      "[STUB] getRegisteredSalesAgents - would query registry of active sales agents",
+    );
+
+    // Mock sales agents for now - in real implementation this would query a registry
+    return [
+      { name: "Amazon DSP", url: "https://api.amazon-dsp.com/mcp" },
+      { name: "The Trade Desk", url: "https://api.thetradedesk.com/mcp" },
+      { name: "Microsoft Advertising", url: "https://api.adnexus.com/mcp" },
+      { name: "Scope3 Platform", url: "https://api.scope3.com/mcp" },
+    ];
+  }
 
   async getScoringOutcomes(
     apiKey: string,
@@ -1799,8 +2033,6 @@ export class Scope3ApiClient {
 
     return result.data?.scoringOutcomes || [];
   }
-
-  // Inventory Option Management Methods
 
   async getTacticBreakdown(
     apiKey: string,
@@ -2114,6 +2346,10 @@ export class Scope3ApiClient {
     return [];
   }
 
+  // ========================================
+  // CREATIVE MANAGEMENT METHODS (MCP Orchestration + REST)
+  // ========================================
+
   async listBrandAgents(
     apiKey: string,
     where?: BrandAgentWhereInput,
@@ -2229,10 +2465,6 @@ export class Scope3ApiClient {
 
     return result.data?.brandStoryAgents || [];
   }
-
-  // ========================================
-  // CREATIVE MANAGEMENT METHODS (MCP Orchestration + REST)
-  // ========================================
 
   /**
    * List available creative formats from all providers

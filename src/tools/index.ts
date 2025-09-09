@@ -45,6 +45,7 @@ import { creativeSyncPublishersTool } from "./creatives/sync-publishers.js";
 import { creativeUpdateTool } from "./creatives/update.js";
 // DSP
 import { getDSPSeatsTool } from "./dsp/get-seats.js";
+import { discoverSalesAgentFormatsTool } from "./formats/discover-sales-agents.js";
 // Formats
 import { listCreativeFormatsTool } from "./formats/list.js";
 // PMPs
@@ -144,6 +145,7 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
 
   // Formats
   server.addTool(listCreativeFormatsTool(client)); // format/list
+  server.addTool(discoverSalesAgentFormatsTool(client)); // format/discover-sales-agents
 
   // Products
   server.addTool(getProductsTool()); // product/list
@@ -197,6 +199,8 @@ export {
   deleteBrandAgentTool,
   deleteCustomSignalTool,
   discoverPublisherProductsTool,
+  // Formats
+  discoverSalesAgentFormatsTool,
   exportCampaignDataTool,
   getBrandAgentTool,
   getCampaignSummaryTool,
@@ -209,7 +213,6 @@ export {
   listBrandAgentPMPsTool,
   listBrandAgentStandardsTool,
   listBrandAgentsTool,
-  // Formats
   listCreativeFormatsTool,
   listCustomSignalsTool,
   listSyntheticAudiencesTool,

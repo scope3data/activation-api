@@ -1823,18 +1823,15 @@ paths:
           description: Unauthorized
   /creative/create:
     post:
-      description: Create creatives with format specification and content sources. Supports HTML snippets,
-        JavaScript ad tags, VAST tags, asset ID references, and product URLs. This is orchestration
-        only - no file uploads. Can create multiple creatives at once with different assembly
-        methods.
+      description: Create one or more creatives with array-first design. Each creative can have different
+        formats, content, and assembly methods. Supports ADCP snippets, template variables for
+        native ads, and shared defaults. Single creative = array with 1 item.
       operationId: creative/create
       summary: Create Creative (Orchestration)
       tags:
         - Creatives
       x-llm-hints:
-        - Use this tool when user wants to create creatives with format specification and content
-          sources
-        - Call this when user says 'create', 'make', 'set up', or 'add'
+        - Use this tool when user wants to create one or more creatives with array-first design
       requestBody:
         content:
           application/json:
@@ -1844,75 +1841,109 @@ paths:
                 value: {}
             schema:
               properties:
-                assemblyMethod:
-                  type: string
-                  description: "Who assembles the creative (default: pre_assembled)"
-                assignToCampaignIds:
-                  items:
-                    type: string
-                  type: array
-                  description: Campaign IDs to immediately assign these creatives to
                 buyerAgentId:
                   type: string
-                  description: The buyer agent that will own this creative
-                content:
+                  description: The buyer agent that will own all creatives
+                creatives:
+                  items:
+                    properties:
+                      assemblyMethod:
+                        type: string
+                        description: Who assembles this creative (overrides shared default)
+                      content:
+                        properties:
+                          assetIds:
+                            items:
+                              type: string
+                            type: array
+                            description: Array of asset IDs from assets/add
+                          htmlSnippet:
+                            type: string
+                            description: HTML5 creative snippet
+                          javascriptTag:
+                            type: string
+                            description: JavaScript ad tag from ad server
+                          productUrl:
+                            type: string
+                            description: Product page URL for creative agent to extract from
+                          snippet:
+                            type: string
+                            description: Third-party creative snippet (ADCP format)
+                          snippetType:
+                            type: string
+                            description: Type of creative snippet (required if snippet provided)
+                          templateVariables:
+                            type: string
+                            description: Template variable mapping for native ad formats
+                          vastTag:
+                            type: string
+                            description: VAST XML tag for video ads
+                        type: object
+                        description: Content sources - at least one is required
+                      contentCategories:
+                        items:
+                          type: string
+                        type: array
+                        description: IAB content categories for this creative (overrides shared default)
+                      creativeDescription:
+                        type: string
+                        description: Description of this creative's purpose and usage
+                      creativeName:
+                        type: string
+                        description: Human-readable name for this creative
+                      externalId:
+                        type: string
+                        description: Your external ID for managing this creative in your system
+                      format:
+                        properties:
+                          formatId:
+                            type: string
+                            description: Specific format ID, e.g., 'display_banner', 'native_sponsored_post'
+                          type:
+                            type: string
+                            description: Format provider type
+                        required:
+                          - formatId
+                          - type
+                        type: object
+                        description: Creative format specification - use format/list to see available options
+                      targetAudience:
+                        type: string
+                        description: Target audience for this creative (overrides shared default)
+                    required:
+                      - content
+                      - creativeName
+                      - format
+                    type: object
+                  type: array
+                  description: Array of creatives to create (minimum 1, no maximum limit)
+                processingMode:
+                  type: string
+                  description: "How to handle errors: fail_fast stops on first error, continue_on_error processes all
+                    creatives (default: continue_on_error)"
+                sharedDefaults:
                   properties:
-                    assetIds:
+                    assemblyMethod:
+                      type: string
+                      description: "Default assembly method for all creatives (default: pre_assembled)"
+                    assignToCampaignIds:
                       items:
                         type: string
                       type: array
-                      description: Array of asset IDs from assets/add
-                    htmlSnippet:
+                      description: Campaign IDs to assign all created creatives to
+                    contentCategories:
+                      items:
+                        type: string
+                      type: array
+                      description: Default IAB content categories for all creatives
+                    targetAudience:
                       type: string
-                      description: HTML5 creative snippet
-                    javascriptTag:
-                      type: string
-                      description: JavaScript ad tag from ad server
-                    productUrl:
-                      type: string
-                      description: Product page URL for creative agent to extract from
-                    vastTag:
-                      type: string
-                      description: VAST XML tag for video ads
+                      description: Default target audience description for all creatives
                   type: object
-                  description: Content sources - at least one is required
-                contentCategories:
-                  items:
-                    type: string
-                  type: array
-                  description: IAB content categories for this creative
-                creativeDescription:
-                  type: string
-                  description: Description of the creative's purpose and usage
-                creativeName:
-                  type: string
-                  description: Human-readable name for the creative
-                externalId:
-                  type: string
-                  description: Your external ID for managing this creative in your system
-                format:
-                  properties:
-                    formatId:
-                      type: string
-                      description: Specific format ID, e.g., 'display_banner', 'ctv_video', 'dynamic_product'
-                    type:
-                      type: string
-                      description: Format provider type
-                  required:
-                    - formatId
-                    - type
-                  type: object
-                  description: Creative format specification - use list_creative_formats to see available options
-                targetAudience:
-                  type: string
-                  description: Natural language description of target audience
-                variants:
-                  type: number
-                  description: "Number of creative variants to generate (default: 1)"
+                  description: Shared defaults applied to all creatives (can be overridden per creative)
               required:
                 - buyerAgentId
-                - creativeName
-                - format
+                - creatives
               type: object
         required: true
       responses:
@@ -2731,6 +2762,80 @@ paths:
                     type: string
                   type: array
                   description: Filter products by signal support
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /format/discover-sales-agents:
+    post:
+      description: Discover creative formats by calling list_creative_formats on registered sales agents.
+        This pulls the latest supported formats directly from active sales agents in the network,
+        ensuring our format library stays current with what's actually available.
+      operationId: format/discover-sales-agents
+      summary: Discover Sales Agent Formats
+      tags:
+        - System
+      x-llm-hints:
+        - Use this tool when user wants to discover creative formats by calling
+          list_creative_formats on registered sales agents
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                includeAdcpStandards:
+                  type: boolean
+                  description: "Include ADCP standard formats in results (default: true)"
+                refreshCache:
+                  type: boolean
+                  description: "Refresh format cache from live sales agents (default: false, uses cached data)"
+                salesAgentUrl:
+                  type: string
+                  description: Specific sales agent URL to query (if not provided, queries all registered agents)
               type: object
         required: true
       responses:
