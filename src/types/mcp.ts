@@ -25,48 +25,19 @@ export interface AnalyzeTacticsParams {
   timeframe?: "14d" | "30d" | "7d" | "custom";
 }
 
-// Brand Agent Campaign MCP parameter types
 export interface CreateBrandAgentCampaignParams {
-  audienceIds?: string[];
   brandAgentId: string;
-  budget?: {
-    currency: string;
+  budget: {
+    currency?: string;
     dailyCap?: number;
     pacing?: string;
     total: number;
   };
   creativeIds?: string[];
-
-  // Inventory management configuration
-  inventoryManagement?: {
-    autoDiscoverProducts?: boolean;
-    autoOptimize?: boolean;
-    budgetSplit?: {
-      guaranteed: number;
-      nonGuaranteed: number;
-    };
-    mode: "hybrid" | "scope3_managed" | "user_managed";
-    optimizationGoal?:
-      | "clicks"
-      | "conversions"
-      | "cost_efficiency"
-      | "impressions";
-    preferredSignals?: ("buyer" | "scope3" | "third_party")[];
-  };
-
+  endDate?: string;
   name: string;
-
-  // Outcome score measurement timing
-  outcomeScoreWindowDays?: number;
-
   prompt: string;
-
-  // Scoring weights configuration
-  scoringWeights?: {
-    affinity: number; // Weight for brand story affinity score (0-1)
-    outcome: number; // Weight for user-provided outcome score (0-1)
-    quality: number; // Weight for Scope3 media quality score (0-1)
-  };
+  startDate?: string;
 }
 
 // Brand Agent Creative MCP parameter types

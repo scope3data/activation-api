@@ -902,6 +902,130 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /brand-agent-campaigns:
+    post:
+      description: Create a new campaign within a brand agent. This creates a budget-allocated marketing
+        initiative with natural language targeting. The campaign will be managed within the
+        specified brand agent context and can use the brand agent's shared creatives and audiences.
+        Supports campaign scheduling with start and end dates. Requires authentication.
+      operationId: create_brand_agent_campaign
+      summary: Create Brand Agent Campaign
+      tags:
+        - Brand Agents
+      x-llm-hints:
+        - Use this tool when user wants to create a new campaign within a brand agent
+        - Call this when user says 'create', 'make', 'set up', or 'add'
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                brandAgentId:
+                  type: string
+                  description: ID of the brand agent that will own this campaign
+                budget:
+                  properties:
+                    currency:
+                      type: string
+                      description: Budget currency (e.g., 'USD', 'EUR')
+                    dailyCap:
+                      type: number
+                      description: Daily spending limit in cents (e.g., 100000 = $1,000/day)
+                    pacing:
+                      type: string
+                      description: Budget pacing strategy ('even', 'accelerated', or 'front_loaded')
+                    total:
+                      type: number
+                      description: Total campaign budget in cents (e.g., 5000000 = $50,000)
+                  required:
+                    - currency
+                    - total
+                  type: object
+                  description: Budget configuration for the campaign
+                creativeIds:
+                  items:
+                    type: string
+                  type: array
+                  description: Optional array of creative IDs to assign to this campaign
+                endDate:
+                  type: string
+                  description: Campaign end date in UTC (ISO 8601 format, e.g., '2024-12-31T23:59:59Z')
+                name:
+                  type: string
+                  description: Name of the campaign
+                prompt:
+                  type: string
+                  description: Natural language description of campaign objectives, targeting, and strategy
+                startDate:
+                  type: string
+                  description: Campaign start date in UTC (ISO 8601 format, e.g., '2024-01-01T00:00:00Z')
+              required:
+                - brandAgentId
+                - budget
+                - name
+                - prompt
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Brand agent campaign created successfully
+                  value:
+                    data:
+                      id: camp_nike_spring_2024
+                      brandAgentId: ba_nike_123
+                      name: Nike Spring 2024 Campaign
+                      prompt: Target young athletes aged 18-35 interested in running and fitness
+                      budget:
+                        total: 5000000
+                        currency: USD
+                        dailyCap: 50000
+                        pacing: even
+                      status: active
+                      startDate: 2024-03-01T00:00:00Z
+                      endDate: 2024-05-31T23:59:59Z
+                      createdAt: 2024-01-15T10:30:00Z
+                      updatedAt: 2024-01-15T10:30:00Z
+                    message: Campaign created successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Campaign"
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /brand-agent-pmps:
     post:
       description: Create a Private Marketplace deal with natural language prompt. The backend will
@@ -1192,15 +1316,25 @@ paths:
             application/json:
               examples:
                 success:
-                  summary: Successful operation
+                  summary: Brand agent created successfully
                   value:
-                    data: {}
-                    message: Operation completed successfully
+                    data:
+                      id: ba_nike_123
+                      name: Nike Global
+                      description: Global athletic wear and equipment brand
+                      customerId: 1
+                      advertiserDomains:
+                        - nike.com
+                      externalId: NIKE_001
+                      nickname: Nike
+                      createdAt: 2024-01-15T10:30:00Z
+                      updatedAt: 2024-01-15T10:30:00Z
+                    message: Brand agent created successfully
                     success: true
               schema:
                 properties:
                   data:
-                    type: object
+                    $ref: "#/components/schemas/BrandAgent"
                   message:
                     type: string
                   success:
@@ -1291,14 +1425,36 @@ paths:
             application/json:
               examples:
                 success:
-                  summary: Successful operation
+                  summary: Campaign strategy created successfully
                   value:
-                    data: {}
-                    message: Operation completed successfully
+                    data:
+                      strategyId: str_abc123
+                      targetingProfiles:
+                        - id: tp_demographics_123
+                          dimensionName: Demographics
+                          includeCount: 5
+                          excludeCount: 2
+                    message: Campaign strategy created successfully with targeting profiles
                     success: true
               schema:
                 properties:
                   data:
+                    properties:
+                      strategyId:
+                        type: string
+                      targetingProfiles:
+                        items:
+                          properties:
+                            dimensionName:
+                              type: string
+                            excludeCount:
+                              type: integer
+                            id:
+                              type: string
+                            includeCount:
+                              type: integer
+                          type: object
+                        type: array
                     type: object
                   message:
                     type: string
@@ -1739,7 +1895,7 @@ paths:
               schema:
                 properties:
                   data:
-                    type: object
+                    $ref: "#/components/schemas/Creative"
                   message:
                     type: string
                   success:
@@ -1839,6 +1995,17 @@ paths:
               schema:
                 properties:
                   data:
+                    properties:
+                      assignedCreatives:
+                        type: integer
+                      creatives:
+                        items:
+                          $ref: "#/components/schemas/Creative"
+                        type: array
+                      totalCreatives:
+                        type: integer
+                      unassignedCreatives:
+                        type: integer
                     type: object
                   message:
                     type: string
@@ -2585,7 +2752,7 @@ paths:
               schema:
                 properties:
                   data:
-                    type: object
+                    $ref: "#/components/schemas/BrandAgent"
                   message:
                     type: string
                   success:
@@ -3411,15 +3578,22 @@ paths:
             application/json:
               examples:
                 success:
-                  summary: Successful operation
+                  summary: List of brand agents retrieved
                   value:
-                    data: {}
-                    message: Operation completed successfully
+                    data:
+                      - id: ba_nike_123
+                        name: Nike Global
+                        customerId: 1
+                        createdAt: 2024-01-15T10:30:00Z
+                        updatedAt: 2024-01-15T10:30:00Z
+                    message: Retrieved 1 brand agent(s)
                     success: true
               schema:
                 properties:
                   data:
-                    type: object
+                    items:
+                      $ref: "#/components/schemas/BrandAgent"
+                    type: array
                   message:
                     type: string
                   success:

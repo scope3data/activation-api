@@ -96,7 +96,7 @@ To get started, let's create a simple agent. This is a good example of a synchro
 Please create a Scope3 brand agent for Nike EMEA c/o Kinesso (which we call Nike), mapping to our internal advertiser ID abc-123. Their primary domain is nike.com.
 
 *Agent*:
-Call tool 'create_brand_agent' with body:
+Call tool `create_brand_agent` with body:
 ```json
 {
   "name": "Nike EMEA c/o Kinesso",
@@ -106,12 +106,14 @@ Call tool 'create_brand_agent' with body:
 }
 ```
 
-*Scope3 API response*
-```
+*Scope3*
+`create_brand_agent` response
+```json
 {
-  "status": "success",
-  "id": "ba-1283"
+  "success": true,
+  "message": "Brand agent created successfully"
 }
+```
 
 <Tabs>
   <Tab title="API Call">

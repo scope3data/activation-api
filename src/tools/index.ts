@@ -10,6 +10,8 @@ import { createBrandAgentBrandStoryTool } from "./brand-agents/brand-stories/cre
 import { deleteBrandAgentBrandStoryTool } from "./brand-agents/brand-stories/delete-brand-agent-brand-story.js";
 import { listBrandAgentBrandStoriesTool } from "./brand-agents/brand-stories/list-brand-agent-brand-stories.js";
 import { updateBrandAgentBrandStoryTool } from "./brand-agents/brand-stories/update-brand-agent-brand-story.js";
+// Brand Agent campaign tools
+import { createBrandAgentCampaignTool } from "./brand-agents/campaigns/create-brand-agent-campaign.js";
 // Brand Agent core tools
 import { createBrandAgentTool } from "./brand-agents/core/create-brand-agent.js";
 import { deleteBrandAgentTool } from "./brand-agents/core/delete-brand-agent.js";
@@ -95,6 +97,9 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(updateBrandAgentBrandStoryTool(client));
   server.addTool(deleteBrandAgentBrandStoryTool(client));
 
+  // Brand Agent campaign tools
+  server.addTool(createBrandAgentCampaignTool(client)); // create_brand_agent_campaign
+
   // Reporting tools
   server.addTool(getCampaignSummaryTool(client));
   server.addTool(exportCampaignDataTool(client));
@@ -152,6 +157,8 @@ export {
   // Original tools
   checkAuthTool,
   createBrandAgentBrandStoryTool,
+  // Brand Agent campaign tools
+  createBrandAgentCampaignTool,
 
   // PMP tools
   createBrandAgentPMPTool,
