@@ -71,6 +71,18 @@
         ]
       },
       {
+        "tab": "For Partners",
+        "icon": "handshake",
+        "groups": [
+          {
+            "group": "Publisher Integration",
+            "pages": [
+              "mintlify/partners/publisher-prebid-setup"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "API Reference",
         "icon": "code",
         "openapi": "openapi.yaml"
