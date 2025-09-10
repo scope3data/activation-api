@@ -11,7 +11,7 @@ import {
 
 export const discoverPublisherProductsTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "inventory-management",
+    category: "Tactics",
     dangerLevel: "low",
     openWorldHint: true,
     readOnlyHint: true,

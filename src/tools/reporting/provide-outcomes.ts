@@ -15,7 +15,7 @@ import {
 
 export const provideScoringOutcomesTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "scoring",
+    category: "Reporting & Analytics",
     dangerLevel: "low",
     openWorldHint: false,
     readOnlyHint: false,

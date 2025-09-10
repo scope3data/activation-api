@@ -11,7 +11,7 @@ import {
 
 export const checkAuthTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "authentication",
+    category: "System",
     dangerLevel: "low",
     openWorldHint: true,
     readOnlyHint: true,

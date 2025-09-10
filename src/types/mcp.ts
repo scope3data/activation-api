@@ -25,21 +25,6 @@ export interface AnalyzeTacticsParams {
   timeframe?: "14d" | "30d" | "7d" | "custom";
 }
 
-export interface CreateBrandAgentCampaignParams {
-  brandAgentId: string;
-  budget: {
-    currency?: string;
-    dailyCap?: number;
-    pacing?: string;
-    total: number;
-  };
-  creativeIds?: string[];
-  endDate?: string;
-  name: string;
-  prompt: string;
-  startDate?: string;
-}
-
 // Brand Agent Creative MCP parameter types
 export interface CreateBrandAgentCreativeParams {
   body?: string;
@@ -80,11 +65,23 @@ export interface CreateBrandAgentStoryParams {
   prompt: string;
 }
 
-// Tool parameter interfaces
+// Campaign MCP parameter types
 export interface CreateCampaignParams {
+  brandAgentId: string;
+  budget: {
+    currency?: string;
+    dailyCap?: number;
+    pacing?: string;
+    total: number;
+  };
+  creativeIds?: string[];
+  endDate?: string;
   name: string;
   prompt: string;
+  startDate?: string;
 }
+
+// Tool parameter interfaces (legacy - remove if unused)
 
 // Custom Signal Definition MCP parameter types
 export interface CreateCustomSignalParams {
@@ -268,6 +265,7 @@ export interface ToolResponse {
   success: boolean;
 }
 
+// Legacy interface - use UpdateCampaignParams instead
 export interface UpdateBrandAgentCampaignParams {
   audienceIds?: string[];
   budget?: {
@@ -315,7 +313,17 @@ export interface UpdateBrandAgentStoryParams {
 export interface UpdateCampaignParams {
   campaignId: string;
   name?: string;
-  prompt: string;
+  prompt?: string;
+  reason?: string;
+  tacticAdjustments?: Array<{
+    budgetAllocation?: {
+      amount?: number;
+      dailyCap?: number;
+      pacing?: "asap" | "even" | "front_loaded";
+      percentage?: number;
+    };
+    tacticId: string;
+  }>;
 }
 
 export interface UpdateCustomSignalParams {

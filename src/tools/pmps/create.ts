@@ -9,8 +9,15 @@ import {
   createMCPResponse,
 } from "../../utils/error-handling.js";
 
-export const createBrandAgentPMPTool = (client: Scope3ApiClient) =>
+export const createPMPTool = (client: Scope3ApiClient) =>
   ({
+    annotations: {
+      category: "PMPs",
+      dangerLevel: "medium",
+      openWorldHint: true,
+      readOnlyHint: false,
+      title: "Create PMP",
+    },
     description:
       "Create a Private Marketplace deal with natural language prompt. The backend will intelligently parse the prompt to extract inventory requirements, targeting, and pricing.",
     execute: async (
@@ -85,4 +92,4 @@ export const createBrandAgentPMPTool = (client: Scope3ApiClient) =>
     }),
   }) as const;
 
-export { createBrandAgentPMPTool as default };
+export { createPMPTool as default };

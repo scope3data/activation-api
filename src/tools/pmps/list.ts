@@ -9,8 +9,15 @@ import {
   createMCPResponse,
 } from "../../utils/error-handling.js";
 
-export const listBrandAgentPMPsTool = (client: Scope3ApiClient) =>
+export const listPMPsTool = (client: Scope3ApiClient) =>
   ({
+    annotations: {
+      category: "PMPs",
+      dangerLevel: "low",
+      openWorldHint: true,
+      readOnlyHint: true,
+      title: "List PMPs",
+    },
     description:
       "List all PMPs for a brand agent with their deal IDs and status",
     execute: async (
@@ -109,4 +116,4 @@ export const listBrandAgentPMPsTool = (client: Scope3ApiClient) =>
     }),
   }) as const;
 
-export { listBrandAgentPMPsTool as default };
+export { listPMPsTool as default };

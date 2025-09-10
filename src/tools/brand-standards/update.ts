@@ -11,7 +11,7 @@ import {
 
 export const updateBrandAgentStandardsTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "brand-safety",
+    category: "Brand Standards",
     dangerLevel: "low",
     openWorldHint: true,
     readOnlyHint: false,

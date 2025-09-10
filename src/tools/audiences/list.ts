@@ -14,7 +14,7 @@ import {
 
 export const listSyntheticAudiencesTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "data-retrieval",
+    category: "System",
     dangerLevel: "low",
     openWorldHint: true,
     readOnlyHint: true,

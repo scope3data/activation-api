@@ -11,7 +11,7 @@ import {
 
 export const createTacticTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "tactic-management",
+    category: "Tactics",
     dangerLevel: "medium",
     openWorldHint: true,
     readOnlyHint: false,
@@ -19,10 +19,11 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
   },
 
   description:
-    "Create a new tactic by combining a publisher media product with a targeting strategy. This creates a 'tactic' that represents a specific way to buy and target inventory. The tactic includes budget allocation, signal configuration, and effective pricing. Requires authentication.",
+    "Create a new tactic by combining a publisher media product with a brand story and signal. Simplified targeting approach focusing on the core components: media product + brand story + signal configuration. Includes budget allocation and effective pricing. Requires authentication.",
 
   execute: async (
     args: {
+      brandStoryId: string;
       budgetAllocation: {
         amount: number;
         currency?: string;
@@ -31,24 +32,11 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
         percentage?: number;
       };
       campaignId: string;
+      cpm: number;
       description?: string;
       mediaProductId: string;
       name: string;
-      targeting: {
-        inheritFromCampaign?: boolean;
-        overrides?: {
-          demographics?: Record<string, unknown>;
-          geo?: string[];
-          interests?: string[];
-        };
-        signalConfiguration?: {
-          audienceIds?: string[];
-          customParameters?: Record<string, unknown>;
-          segments?: string[];
-        };
-        signalProvider?: string;
-        signalType: "buyer" | "none" | "scope3" | "third_party";
-      };
+      signalId?: string;
     },
     context: MCPToolExecuteContext,
   ): Promise<string> => {
@@ -65,6 +53,7 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
 
     try {
       const tacticInput = {
+        brandStoryId: args.brandStoryId,
         budgetAllocation: {
           amount: args.budgetAllocation.amount,
           currency: args.budgetAllocation.currency || "USD",
@@ -73,16 +62,11 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
           percentage: args.budgetAllocation.percentage,
         },
         campaignId: args.campaignId,
+        cpm: args.cpm,
         description: args.description,
         mediaProductId: args.mediaProductId,
         name: args.name,
-        targeting: {
-          inheritFromCampaign: args.targeting.inheritFromCampaign ?? true,
-          overrides: args.targeting.overrides,
-          signalConfiguration: args.targeting.signalConfiguration,
-          signalProvider: args.targeting.signalProvider,
-          signalType: args.targeting.signalType,
-        },
+        signalId: args.signalId,
       };
 
       const tactic = await client.createTactic(apiKey, tacticInput);
@@ -120,27 +104,15 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
 
       summary += `\n`;
 
-      // Targeting strategy
+      // Simplified targeting strategy
       summary += `### 🎯 **Targeting Strategy**\n`;
-      summary += `• **Signal Type:** ${tactic.targeting.signalType.replace(/_/g, " ")}\n`;
+      summary += `• **Brand Story ID:** ${tactic.brandStoryId}\n`;
+      summary += `• **CPM:** $${args.cpm.toFixed(2)}\n`;
 
-      if (tactic.targeting.signalProvider) {
-        summary += `• **Signal Provider:** ${tactic.targeting.signalProvider}\n`;
-      }
-
-      if (tactic.targeting.signalConfiguration?.audienceIds?.length) {
-        summary += `• **Audiences:** ${tactic.targeting.signalConfiguration.audienceIds.length} audiences assigned\n`;
-      }
-
-      if (tactic.targeting.signalConfiguration?.segments?.length) {
-        summary += `• **Segments:** ${tactic.targeting.signalConfiguration.segments.join(", ")}\n`;
-      }
-
-      summary += `• **Inherit Campaign Targeting:** ${tactic.targeting.inheritFromCampaign ? "Yes" : "No"}\n`;
-
-      // Geographic overrides
-      if (tactic.targeting.overrides?.geo?.length) {
-        summary += `• **Geographic Override:** ${tactic.targeting.overrides.geo.join(", ")}\n`;
+      if (tactic.signalId) {
+        summary += `• **Signal ID:** ${tactic.signalId}\n`;
+      } else {
+        summary += `• **Signal:** None (basic targeting)\n`;
       }
 
       summary += `\n`;
@@ -191,8 +163,8 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
       summary += `• Monitor performance using analyze_tactic_performance\n`;
       summary += `• Adjust budget allocation with adjust_tactic_allocation as needed\n`;
 
-      if (tactic.targeting.signalType === "none") {
-        summary += `• ⚠️ Consider adding signals for better targeting effectiveness\n`;
+      if (!tactic.signalId) {
+        summary += `• ⚠️ Consider adding a signal ID for better targeting effectiveness\n`;
       }
 
       if (
@@ -215,6 +187,9 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
 
   name: "tactic/create",
   parameters: z.object({
+    brandStoryId: z
+      .string()
+      .describe("ID of the brand story to use for this tactic"),
     budgetAllocation: z
       .object({
         amount: z.number().min(0).describe("Budget amount for this tactic"),
@@ -240,6 +215,7 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
       })
       .describe("Budget allocation configuration"),
     campaignId: z.string().describe("ID of the campaign to add this tactic to"),
+    cpm: z.number().min(0).describe("Cost per mille (CPM) for this tactic"),
     description: z
       .string()
       .optional()
@@ -249,55 +225,10 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
       .describe("ID of the publisher media product to use"),
     name: z
       .string()
-      .describe("Name for this tactic (e.g., 'Hulu Premium + Scope3')"),
-    targeting: z
-      .object({
-        inheritFromCampaign: z
-          .boolean()
-          .default(true)
-          .describe("Whether to inherit targeting from the campaign"),
-        overrides: z
-          .object({
-            demographics: z
-              .record(z.unknown())
-              .optional()
-              .describe("Demographic targeting overrides"),
-            geo: z
-              .array(z.string())
-              .optional()
-              .describe("Geographic targeting override"),
-            interests: z
-              .array(z.string())
-              .optional()
-              .describe("Interest targeting override"),
-          })
-          .optional()
-          .describe("Targeting overrides for this specific option"),
-        signalConfiguration: z
-          .object({
-            audienceIds: z
-              .array(z.string())
-              .optional()
-              .describe("Audience IDs to target"),
-            customParameters: z
-              .record(z.unknown())
-              .optional()
-              .describe("Custom signal parameters"),
-            segments: z
-              .array(z.string())
-              .optional()
-              .describe("Segment names to target"),
-          })
-          .optional()
-          .describe("Signal-specific configuration"),
-        signalProvider: z
-          .string()
-          .optional()
-          .describe("Signal provider name (e.g., 'LiveRamp', 'Scope3')"),
-        signalType: z
-          .enum(["buyer", "scope3", "third_party", "none"])
-          .describe("Type of data signal to apply"),
-      })
-      .describe("Targeting strategy configuration"),
+      .describe("Name for this tactic (e.g., 'Hulu Premium + Brand Story')"),
+    signalId: z
+      .string()
+      .optional()
+      .describe("Optional signal ID for enhanced targeting"),
   }),
 });

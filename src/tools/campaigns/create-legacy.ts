@@ -1,10 +1,7 @@
 import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
-import type {
-  CreateCampaignParams,
-  MCPToolExecuteContext,
-} from "../../types/mcp.js";
+import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
 import {
   getTargetingDimensionsMap,
@@ -16,9 +13,9 @@ import {
   createMCPResponse,
 } from "../../utils/error-handling.js";
 
-export const createCampaignTool = (client: Scope3ApiClient) => ({
+export const createCampaignLegacyTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "campaign-management",
+    category: "Campaigns",
     dangerLevel: "medium",
     openWorldHint: true,
     readOnlyHint: false,
@@ -29,7 +26,7 @@ export const createCampaignTool = (client: Scope3ApiClient) => ({
     "Create a complete campaign in Scope3 by parsing a natural language prompt and automatically creating the strategy and targeting profiles. Returns the created strategy ID and a human-readable summary of what was created. Uses INTELLIGENT_PMPS strategy type by default (future versions will support media buys). Requires authentication.",
 
   execute: async (
-    args: CreateCampaignParams,
+    args: { name: string; prompt: string },
     context: MCPToolExecuteContext,
   ): Promise<string> => {
     // Check session context first, then fall back to environment variable

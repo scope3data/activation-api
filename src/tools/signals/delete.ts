@@ -14,7 +14,7 @@ import {
 
 export const deleteCustomSignalTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "custom-signals",
+    category: "Signals",
     dangerLevel: "high",
     openWorldHint: true,
     readOnlyHint: false,

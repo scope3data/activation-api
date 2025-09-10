@@ -24,7 +24,7 @@ import {
 
 export const getCampaignSummaryTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "reporting",
+    category: "Reporting & Analytics",
     dangerLevel: "low",
     openWorldHint: true,
     readOnlyHint: true,

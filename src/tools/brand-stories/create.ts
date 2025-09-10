@@ -11,7 +11,7 @@ import {
 
 export const createBrandAgentBrandStoryTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "audience-management",
+    category: "Brand Stories",
     dangerLevel: "low",
     openWorldHint: true,
     readOnlyHint: false,

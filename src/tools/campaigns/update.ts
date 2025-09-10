@@ -18,7 +18,7 @@ import {
 
 export const updateCampaignTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "campaign-management",
+    category: "Campaigns",
     dangerLevel: "medium",
     openWorldHint: true,
     readOnlyHint: false,
@@ -26,7 +26,7 @@ export const updateCampaignTool = (client: Scope3ApiClient) => ({
   },
 
   description:
-    "Update an existing campaign strategy with a new prompt. This tool parses the new prompt, updates the strategy with new targeting, agents, channels, and countries, and provides a summary of changes made. Requires strategy ID and authentication.",
+    "Update an existing campaign including strategy, targeting, and tactic budget allocations. Can update campaign prompt/strategy, tactic budget amounts, percentages, daily caps, or pacing strategies. Supports bulk tactic updates. Use this to modify campaign parameters and rebalance budget based on performance or changing priorities. Requires campaign ID and authentication.",
 
   execute: async (
     args: UpdateCampaignParams,
@@ -44,112 +44,220 @@ export const updateCampaignTool = (client: Scope3ApiClient) => ({
     }
 
     try {
-      // Step 1: Parse the new prompt to understand what changes are needed
-      const parsedStrategy = await client.parseStrategyPrompt(apiKey, {
-        prompt: args.prompt,
-        strategyType: "INTELLIGENT_PMPS",
-      });
+      let summary = `✅ Campaign ${args.name ? `"${args.name}"` : args.campaignId} updated successfully\n\n`;
 
-      // Step 2: Get customer ID for targeting profile operations
-      const customerId = await client.getCustomerId(apiKey);
+      if (args.reason) {
+        summary += `**Reason for Update:** ${args.reason}\n\n`;
+      }
 
-      // Step 3: Update the strategy with new information
-      await client.updateOneStrategy(apiKey, {
-        brandStandardsAgentId:
-          parsedStrategy.brandStandardsAgents?.[0]?.id?.toString(),
-        brandStoryAgentIds: parsedStrategy.brandStoryAgents?.map((agent) =>
-          agent.id.toString(),
-        ),
-        channelCodes: parsedStrategy.channels || undefined,
-        countryCodes: parsedStrategy.countries || undefined,
-        name: args.name || undefined,
-        prompt: args.prompt,
-        strategyId: args.campaignId,
-      });
+      // Step 1: Handle strategy updates if prompt is provided
+      if (args.prompt) {
+        const parsedStrategy = await client.parseStrategyPrompt(apiKey, {
+          prompt: args.prompt,
+          strategyType: "INTELLIGENT_PMPS",
+        });
 
-      // Step 4: Update targeting profiles
-      // Note: For simplicity, we'll add new targeting profiles rather than trying to update existing ones
-      // In a production system, you might want to implement more sophisticated profile management
-      const createdTargetingProfiles = [];
-      for (const bitmapProfile of parsedStrategy.bitmapTargetingProfiles ||
-        []) {
-        try {
-          const targetingProfile = await client.createBitmapTargetingProfile(
-            apiKey,
-            {
-              anyOf: (bitmapProfile.anyOfItems || []).map((item) =>
-                item.id.toString(),
-              ),
-              customerId: customerId.toString(),
+        // Get customer ID for targeting profile operations
+        const customerId = await client.getCustomerId(apiKey);
+
+        // Update the strategy with new information
+        await client.updateOneStrategy(apiKey, {
+          brandStandardsAgentId:
+            parsedStrategy.brandStandardsAgents?.[0]?.id?.toString(),
+          brandStoryAgentIds: parsedStrategy.brandStoryAgents?.map((agent) =>
+            agent.id.toString(),
+          ),
+          channelCodes: parsedStrategy.channels || undefined,
+          countryCodes: parsedStrategy.countries || undefined,
+          name: args.name || undefined,
+          prompt: args.prompt,
+          strategyId: args.campaignId,
+        });
+
+        // Update targeting profiles
+        const createdTargetingProfiles = [];
+        for (const bitmapProfile of parsedStrategy.bitmapTargetingProfiles ||
+          []) {
+          try {
+            const targetingProfile = await client.createBitmapTargetingProfile(
+              apiKey,
+              {
+                anyOf: (bitmapProfile.anyOfItems || []).map((item) =>
+                  item.id.toString(),
+                ),
+                customerId: customerId.toString(),
+                dimensionName: bitmapProfile.dimensionName,
+                noneOf: (bitmapProfile.noneOfItems || []).map((item) =>
+                  item.id.toString(),
+                ),
+                strategyId: args.campaignId.toString(),
+              },
+            );
+            createdTargetingProfiles.push({
               dimensionName: bitmapProfile.dimensionName,
-              noneOf: (bitmapProfile.noneOfItems || []).map((item) =>
-                item.id.toString(),
-              ),
-              strategyId: args.campaignId.toString(),
-            },
-          );
-          createdTargetingProfiles.push({
-            dimensionName: bitmapProfile.dimensionName,
-            excludeCount: (bitmapProfile.noneOfItems || []).length,
-            id: targetingProfile.id,
-            includeCount: (bitmapProfile.anyOfItems || []).length,
+              excludeCount: (bitmapProfile.noneOfItems || []).length,
+              id: targetingProfile.id,
+              includeCount: (bitmapProfile.anyOfItems || []).length,
+            });
+          } catch (error) {
+            console.warn(
+              `Failed to create targeting profile for ${bitmapProfile.dimensionName}:`,
+              error,
+            );
+          }
+        }
+
+        // Get human-readable targeting summary
+        const dimensionsMap = await getTargetingDimensionsMap(client, apiKey);
+        const targetingProfiles = transformTargetingProfiles(
+          parsedStrategy.bitmapTargetingProfiles,
+          dimensionsMap,
+        );
+
+        // Add strategy update details to summary
+        summary += `## 🎯 **Strategy Updates**\n\n`;
+
+        if (parsedStrategy.channels?.length) {
+          summary += `**Channels:** ${parsedStrategy.channels.join(", ")}\n`;
+        }
+        if (parsedStrategy.countries?.length) {
+          summary += `**Countries:** ${parsedStrategy.countries.join(", ")}\n`;
+        }
+
+        if (parsedStrategy.brandStandardsAgents?.length) {
+          summary += `**Brand Standards Agent:** ${parsedStrategy.brandStandardsAgents[0].name}\n`;
+        }
+        if (parsedStrategy.brandStoryAgents?.length) {
+          summary += `**Brand Story Agents:** ${parsedStrategy.brandStoryAgents.map((a) => a.name).join(", ")}\n`;
+        }
+
+        if (createdTargetingProfiles.length > 0) {
+          summary += `\n**Targeting Updated** (${createdTargetingProfiles.length} new profiles):\n`;
+          targetingProfiles.forEach((profile) => {
+            if (
+              profile.includeTargets?.length ||
+              profile.excludeTargets?.length
+            ) {
+              summary += `  • ${profile.category}:`;
+              if (profile.includeTargets?.length) {
+                summary += ` include ${profile.includeTargets.length} items`;
+              }
+              if (profile.excludeTargets?.length) {
+                summary += ` exclude ${profile.excludeTargets.length} items`;
+              }
+              summary += `\n`;
+            }
           });
-        } catch (error) {
-          // Continue with other targeting profiles if one fails
-          console.warn(
-            `Failed to create targeting profile for ${bitmapProfile.dimensionName}:`,
-            error,
+        }
+        summary += `\n`;
+      }
+
+      // Step 2: Handle tactic adjustments if provided
+      if (args.tacticAdjustments && args.tacticAdjustments.length > 0) {
+        const updatedTactics = [];
+        const errors = [];
+
+        for (const adjustment of args.tacticAdjustments) {
+          try {
+            const updateInput = {
+              budgetAllocation: adjustment.budgetAllocation,
+            };
+
+            // Remove undefined values
+            if (updateInput.budgetAllocation) {
+              Object.keys(updateInput.budgetAllocation).forEach((key) => {
+                if (
+                  (updateInput.budgetAllocation as Record<string, unknown>)[
+                    key
+                  ] === undefined
+                ) {
+                  delete (
+                    updateInput.budgetAllocation as Record<string, unknown>
+                  )[key];
+                }
+              });
+            }
+
+            const updatedTactic = await client.updateTactic(
+              apiKey!,
+              adjustment.tacticId,
+              updateInput,
+            );
+
+            updatedTactics.push(updatedTactic);
+          } catch (error) {
+            errors.push({
+              error: error instanceof Error ? error.message : String(error),
+              tacticId: adjustment.tacticId,
+            });
+          }
+        }
+
+        if (updatedTactics.length > 0) {
+          summary += `## 📊 **Tactic Budget Updates** (${updatedTactics.length} updated)\n\n`;
+
+          const totalNewBudget = updatedTactics.reduce(
+            (sum, tactic) => sum + tactic.budgetAllocation.amount,
+            0,
           );
+
+          updatedTactics.forEach((tactic, index) => {
+            summary += `### ${index + 1}. **${tactic.name}**\n`;
+            summary += `**Publisher:** ${tactic.mediaProduct.publisherName} → ${tactic.mediaProduct.name}\n`;
+            if (tactic.targeting) {
+              summary += `**Signal:** ${tactic.targeting.signalType.replace(/_/g, " ")}`;
+              if (tactic.targeting.signalProvider) {
+                summary += ` (${tactic.targeting.signalProvider})`;
+              }
+            } else if (tactic.brandStoryId) {
+              summary += `**Brand Story:** ${tactic.brandStoryId}`;
+              if (tactic.signalId) {
+                summary += ` + Signal: ${tactic.signalId}`;
+              }
+            } else {
+              summary += `**Targeting:** Basic targeting`;
+            }
+            summary += `\n`;
+
+            summary += `\n**💳 New Budget Allocation:**\n`;
+            summary += `• **Budget:** $${tactic.budgetAllocation.amount.toLocaleString()} ${tactic.budgetAllocation.currency}`;
+
+            if (tactic.budgetAllocation.percentage) {
+              summary += ` (${tactic.budgetAllocation.percentage}% of campaign)`;
+            }
+            summary += `\n`;
+
+            if (tactic.budgetAllocation.dailyCap) {
+              summary += `• **Daily Cap:** $${tactic.budgetAllocation.dailyCap.toLocaleString()}\n`;
+            }
+
+            summary += `• **Pacing:** ${tactic.budgetAllocation.pacing.replace(/_/g, " ")}\n`;
+            summary += `• **Effective CPM:** $${tactic.effectivePricing.totalCpm.toFixed(2)}\n`;
+
+            const projectedImpressions = Math.floor(
+              (tactic.budgetAllocation.amount /
+                tactic.effectivePricing.totalCpm) *
+                1000,
+            );
+            summary += `• **Projected Impressions:** ~${projectedImpressions.toLocaleString()}\n\n`;
+          });
+
+          if (updatedTactics.length > 1) {
+            summary += `**Total Budget (Updated Tactics):** $${totalNewBudget.toLocaleString()}\n\n`;
+          }
+        }
+
+        if (errors.length > 0) {
+          summary += `## ⚠️ **Tactic Update Errors** (${errors.length})\n\n`;
+          errors.forEach((error, index) => {
+            summary += `${index + 1}. **Tactic ID:** ${error.tacticId} - ${error.error}\n`;
+          });
+          summary += `\n`;
         }
       }
 
-      // Step 5: Get human-readable targeting summary
-      const dimensionsMap = await getTargetingDimensionsMap(client, apiKey);
-      const targetingProfiles = transformTargetingProfiles(
-        parsedStrategy.bitmapTargetingProfiles,
-        dimensionsMap,
-      );
+      summary += `**Campaign updates have been applied successfully!**`;
 
-      // Step 6: Build friendly text summary
-      let summary = `Campaign ${args.name ? `"${args.name}"` : args.campaignId} updated successfully\n\n`;
-
-      // Add updated strategy details
-      if (parsedStrategy.channels?.length) {
-        summary += `Channels: ${parsedStrategy.channels.join(", ")}\n`;
-      }
-      if (parsedStrategy.countries?.length) {
-        summary += `Countries: ${parsedStrategy.countries.join(", ")}\n`;
-      }
-
-      // Add agents
-      if (parsedStrategy.brandStandardsAgents?.length) {
-        summary += `Brand Standards Agent: ${parsedStrategy.brandStandardsAgents[0].name}\n`;
-      }
-      if (parsedStrategy.brandStoryAgents?.length) {
-        summary += `Brand Story Agents: ${parsedStrategy.brandStoryAgents.map((a) => a.name).join(", ")}\n`;
-      }
-
-      // Add targeting updates
-      if (createdTargetingProfiles.length > 0) {
-        summary += `\nTargeting Updated (${createdTargetingProfiles.length} new profiles):\n`;
-        targetingProfiles.forEach((profile) => {
-          if (
-            profile.includeTargets?.length ||
-            profile.excludeTargets?.length
-          ) {
-            summary += `  • ${profile.category}:`;
-            if (profile.includeTargets?.length) {
-              summary += ` include ${profile.includeTargets.length} items`;
-            }
-            if (profile.excludeTargets?.length) {
-              summary += ` exclude ${profile.excludeTargets.length} items`;
-            }
-            summary += `\n`;
-          }
-        });
-      }
-
-      summary += `\nCampaign updates have been applied!`;
       return createMCPResponse({
         message: summary,
         success: true,
@@ -168,6 +276,48 @@ export const updateCampaignTool = (client: Scope3ApiClient) => ({
       .describe("New name for the campaign (optional)"),
     prompt: z
       .string()
-      .describe("New campaign prompt with updated objectives and strategy"),
+      .optional()
+      .describe(
+        "New campaign prompt with updated objectives and strategy (optional if only updating tactics)",
+      ),
+    reason: z
+      .string()
+      .optional()
+      .describe(
+        "Optional reason for the update/adjustment (for documentation)",
+      ),
+    tacticAdjustments: z
+      .array(
+        z.object({
+          budgetAllocation: z
+            .object({
+              amount: z
+                .number()
+                .min(0)
+                .optional()
+                .describe("New budget amount"),
+              dailyCap: z
+                .number()
+                .min(0)
+                .optional()
+                .describe("New daily spending cap"),
+              pacing: z
+                .enum(["even", "asap", "front_loaded"])
+                .optional()
+                .describe("New pacing strategy"),
+              percentage: z
+                .number()
+                .min(0)
+                .max(100)
+                .optional()
+                .describe("New percentage of campaign budget"),
+            })
+            .optional()
+            .describe("Budget allocation updates"),
+          tacticId: z.string().describe("ID of the tactic to update"),
+        }),
+      )
+      .optional()
+      .describe("Optional array of tactic budget adjustments to make"),
   }),
 });
