@@ -11,6 +11,11 @@
   "navigation": {
     "tabs": [
       {
+        "tab": "API Reference",
+        "icon": "code",
+        "openapi": "openapi.yaml"
+      },
+      {
         "tab": "Guides",
         "icon": "book",
         "groups": [
@@ -81,11 +86,6 @@
             ]
           }
         ]
-      },
-      {
-        "tab": "API Reference",
-        "icon": "code",
-        "openapi": "openapi.yaml"
       }
     ]
   },
