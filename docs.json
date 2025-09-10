@@ -81,9 +81,7 @@
         "groups": [
           {
             "group": "Publisher Integration",
-            "pages": [
-              "mintlify/partners/publisher-prebid-setup"
-            ]
+            "pages": ["mintlify/partners/publisher-prebid-setup"]
           }
         ]
       }
