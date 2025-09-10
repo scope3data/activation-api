@@ -21,7 +21,11 @@ Create your first agentic advertising campaign:
 - Scope3 API key ([Get one here](https://scope3.com/integrate/api-keys))
 
 <Info>
-If you use Claude Code or another coding agent, try adding our [docs as an MCP server](https://methodology.scope3.com/mcp)!
+If you use Claude Code or another coding agent, try adding our [docs as an MCP server](https://docs.agentic.scope3.com/mcp)!
+
+```bash
+claude mcp add --transport http scope3 https://docs.agentic.scope3.com/mcp
+```
 </Info>
 
 ## Step 1: Authentication
@@ -75,10 +79,10 @@ Authentication depends on how you're integrating the API:
   </Tab>
   <Tab title="REST">
     ```bash
-    curl -H "x-scope3-api-key: YOUR_API_KEY" \
+    curl -H "Authorization: Bearer YOUR_API_KEY" \
          -H "Content-Type: application/json" \
-         -d '{request data}' \
-         https://api.agentic.scope3.com/rest/v1/...
+         -d '{}' \
+         https://api.agentic.scope3.com/rest/v1/auth/check
     ```
   </Tab>
 </Tabs>

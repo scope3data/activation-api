@@ -15,10 +15,12 @@
         "icon": "book",
         "groups": [
           {
-            "group": "Get Started",
+            "group": "Overview",
             "icon": "rocket",
             "pages": [
               "mintlify/quickstart",
+              "mintlify/authentication",
+              "mintlify/concepts/philosophy",
               "mintlify/concepts",
               "mintlify/roadmap"
             ]
@@ -84,10 +86,9 @@
       "display": "interactive"
     },
     "mdx": {
-      "server": "https://api.agentic.scope3.com/v1",
+      "server": "https://api.agentic.scope3.com/rest/v1",
       "auth": {
-        "method": "key",
-        "name": "x-scope3-api-key"
+        "method": "bearer"
       }
     }
   },

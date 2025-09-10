@@ -1,0 +1,260 @@
+---
+title: "Authentication"
+description: "How to authenticate with the Scope3 Campaign API using API keys"
+icon: "key"
+---
+
+# Authentication
+
+The Scope3 Campaign API uses API keys for authentication. All requests must include a valid API key to access your campaigns, creatives, and other resources.
+
+## Getting Your API Key
+
+1. Visit [scope3.com/integrate/api-keys](https://scope3.com/integrate/api-keys)
+2. Sign up or log into your Scope3 account
+3. Generate a new API key for your integration
+4. Copy the key - it starts with `scope3_`
+
+<Warning>
+**Keep your API key secure!** Don't commit it to version control or share it publicly. Use environment variables or secure key management systems.
+</Warning>
+
+## API Key Format
+
+Scope3 API keys follow this format:
+```
+scope3_<32_character_client_id>_<secret>
+```
+
+Example: `scope3_abc123def456ghi789jkl012mno345pq_xyz789`
+
+## Authentication Methods
+
+<Tabs>
+  <Tab title="REST API">
+    For direct REST API calls, use Bearer authentication with your API key:
+
+    ```bash
+    curl --request POST \
+      --url https://api.agentic.scope3.com/rest/v1/auth/check \
+      --header 'Authorization: Bearer scope3_your_api_key_here' \
+      --header 'Content-Type: application/json' \
+      --data '{}'
+    ```
+
+    **All REST endpoints** use Bearer authentication:
+    ```bash
+    Authorization: Bearer YOUR_API_KEY
+    ```
+
+    <Note>
+    **Legacy Support**: The `x-scope3-api-key` header is still supported for backward compatibility, but Bearer auth is recommended for new integrations.
+    </Note>
+  </Tab>
+  
+  <Tab title="MCP (AI Agents)">
+    For Model Context Protocol integrations with AI agents like Claude, OpenAI, or Anthropic:
+
+    **Python (Claude Code)**:
+    ```python
+    from mcp.client.streamable_http_transport import StreamableHttpTransport
+    from mcp.client import Client
+
+    transport = StreamableHttpTransport(
+        "https://api.agentic.scope3.com/mcp", 
+        auth="scope3_your_api_key_here",
+    )
+
+    async with Client(transport) as client:
+        result = await client.call_tool('check_auth_status')
+        print(result)  # ✅ Authenticated as user@company.com
+    ```
+
+    **Node.js**:
+    ```javascript
+    import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+    import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+
+    const scope3_api_key = 'scope3_your_api_key_here';
+    const transport = new StreamableHTTPClientTransport(
+      'https://api.agentic.scope3.com/mcp',
+      {
+        fetch: (url, init) => fetch(url, {
+          ...init,
+          headers: {
+            ...init.headers,
+            "x-adcp-auth": scope3_api_key,
+          },
+        }),
+      }
+    );
+
+    const client = new Client(...);
+    await client.connect(transport);
+    
+    const result = await client.callTool('check_auth_status');
+    console.log(result); // ✅ Authenticated as user@company.com
+    ```
+  </Tab>
+
+  <Tab title="Environment Variables">
+    **Recommended**: Store your API key as an environment variable:
+
+    ```bash
+    # .env file
+    SCOPE3_API_KEY=scope3_your_api_key_here
+    ```
+
+    **Python**:
+    ```python
+    import os
+    api_key = os.getenv('SCOPE3_API_KEY')
+    ```
+
+    **Node.js**:
+    ```javascript
+    const apiKey = process.env.SCOPE3_API_KEY;
+    ```
+
+    **cURL**:
+    ```bash
+    curl --request POST \
+      --url https://api.agentic.scope3.com/rest/v1/auth/check \
+      --header "Authorization: Bearer $SCOPE3_API_KEY" \
+      --header 'Content-Type: application/json' \
+      --data '{}'
+    ```
+  </Tab>
+</Tabs>
+
+## Testing Authentication
+
+### Check Authentication Status
+
+Test your API key with the `/rest/v1/auth/check` endpoint:
+
+```bash
+curl --request POST \
+  --url https://api.agentic.scope3.com/rest/v1/auth/check \
+  --header 'Authorization: Bearer YOUR_API_KEY' \
+  --header 'Content-Type: application/json' \
+  --data '{}'
+```
+
+**Success Response**:
+```json
+{
+  "authenticated": true,
+  "user": "user@company.com",
+  "customerId": 12345,
+  "permissions": ["campaigns:read", "campaigns:write", "creatives:read"]
+}
+```
+
+**Error Response**:
+```json
+{
+  "error": "Invalid API key",
+  "authenticated": false
+}
+```
+
+### MCP Authentication Test
+
+If using MCP with AI agents, test with the `check_auth_status` tool:
+
+```python
+result = await client.call_tool('check_auth_status')
+# ✅ Authenticated as user@company.com (Customer ID: 12345)
+```
+
+## Security Model
+
+### Data Isolation
+All API operations are automatically scoped to your **Customer ID**:
+
+- You can only access your own brand agents, campaigns, and creatives
+- Multi-tenant security prevents cross-customer data access
+- Agency accounts can manage multiple brand agents under one customer ID
+
+### Rate Limits
+
+| Resource | Limit | Notes |
+|----------|--------|-------|
+| **API Requests** | 1,000/hour per key | Burst allowance available |
+| **MCP Requests** | 500/hour per key | AI agent usage |
+| **Data Exports** | 50/hour per key | Large report generation |
+
+### Best Practices
+
+<AccordionGroup>
+  <Accordion title="API Key Management">
+    - **Environment Variables**: Never hardcode keys in source code
+    - **Key Rotation**: Rotate API keys every 90 days
+    - **Least Privilege**: Request only necessary permissions
+    - **Monitoring**: Track API key usage for anomalies
+  </Accordion>
+  
+  <Accordion title="Error Handling">
+    - **401 Unauthorized**: Check if API key is valid and not expired
+    - **403 Forbidden**: Verify you have permission for the requested resource
+    - **429 Too Many Requests**: Implement exponential backoff retry logic
+  </Accordion>
+  
+  <Accordion title="Production Setup">
+    - **HTTPS Only**: All API calls must use HTTPS
+    - **Secure Storage**: Use secure key management (AWS Secrets Manager, Azure Key Vault, etc.)
+    - **Logging**: Log authentication failures for security monitoring
+    - **Backup Keys**: Keep backup API keys for continuity
+  </Accordion>
+</AccordionGroup>
+
+## Common Error Scenarios
+
+### Invalid API Key
+```bash
+HTTP/1.1 401 Unauthorized
+{
+  "error": "Invalid or expired API key",
+  "code": "AUTH_INVALID_KEY"
+}
+```
+**Solution**: Check your API key format and generate a new one if needed.
+
+### Missing Authentication Header
+```bash
+HTTP/1.1 401 Unauthorized
+{
+  "error": "Missing authentication header",
+  "code": "AUTH_MISSING_HEADER"
+}
+```
+**Solution**: Include the `x-scope3-api-key` header in your request.
+
+### Rate Limit Exceeded
+```bash
+HTTP/1.1 429 Too Many Requests
+{
+  "error": "Rate limit exceeded",
+  "code": "RATE_LIMIT_EXCEEDED",
+  "resetTime": "2024-01-15T10:30:00Z"
+}
+```
+**Solution**: Wait until `resetTime` or implement exponential backoff.
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quick Start Guide" href="/mintlify/quickstart" icon="rocket">
+    Create your first campaign with authentication setup
+  </Card>
+  <Card title="Brand Agents" href="/mintlify/object-guides/brand-agent" icon="building">
+    Set up your advertiser account after authentication
+  </Card>
+  <Card title="API Reference" href="/api-reference/authentication/auth-check" icon="code">
+    Complete authentication endpoint documentation
+  </Card>
+  <Card title="MCP Integration" href="/mintlify/features/built-for-agents" icon="robot">
+    Use with Claude, ChatGPT, and other AI assistants
+  </Card>
+</CardGroup>

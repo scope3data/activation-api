@@ -51,6 +51,7 @@ async function setupBigQuerySignals() {
         { mode: "REQUIRED", name: "name", type: "STRING" },
         { mode: "NULLABLE", name: "description", type: "STRING" },
         { mode: "REQUIRED", name: "key_type", type: "STRING" },
+        { mode: "REQUIRED", name: "customer_id", type: "INTEGER" },
         { mode: "REQUIRED", name: "created_at", type: "TIMESTAMP" },
         { mode: "NULLABLE", name: "updated_at", type: "TIMESTAMP" },
         { mode: "NULLABLE", name: "created_by", type: "STRING" },
@@ -60,7 +61,7 @@ async function setupBigQuerySignals() {
 
       await definitionsTable.create({
         clustering: {
-          fields: ["signal_id", "key_type"],
+          fields: ["customer_id", "signal_id", "key_type"],
         },
         description:
           "Custom signal definitions with metadata and key type specifications",

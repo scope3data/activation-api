@@ -61,6 +61,23 @@ Every major programmatic platform uses an account-based hierarchy:
 
 Brand agents serve as your advertiser account, owning all marketing assets and campaigns.
 
+### Platform Migration Reference
+
+If you're migrating from other platforms, here are the key concept mappings:
+
+| Scope3 Concept | The Trade Desk | Display & Video 360 | Amazon DSP | Meta Business |
+|----------------|----------------|---------------------|-------------|---------------|
+| **Brand Agent** | Advertiser | Advertiser | Account | Ad Account |
+| **Campaign** | Line Item | Insertion Order | Order | Campaign |
+| **Creative** | Creative | Asset | Creative | Ad Creative |
+| **Signal** | Data Element | First-Party Data | Audience Signal | Custom Audience |
+| **Brand Story** | Audience Segment | Audience | Lifestyle Segment | Lookalike Audience |
+| **Tactic** | Deal/Strategy | Targeting Combo | Optimization Strategy | Ad Set |
+
+<Note>
+**Migration Tip**: Start by creating one Brand Agent per advertiser account you currently manage. Most of your existing campaign structure can map directly to Scope3 campaigns.
+</Note>
+
 ## Core Concepts
 
 ### Brand Agent
@@ -108,6 +125,40 @@ Your actual ad content - videos, images, text, or interactive media.
 | **HTML5** | Interactive, rich media | Playable game ads |
 
 **Reusability**: Creatives can be shared across multiple campaigns within the same brand agent.
+
+### Natural Language Campaign Creation
+
+Unlike traditional DSPs that require manual parameter configuration, Scope3 campaigns are created using **natural language prompts** that describe your goals in plain English.
+
+<Tabs>
+  <Tab title="How It Works">
+    **Agentic Campaign Management**: AI agents automatically convert your natural language instructions into technical advertising configurations.
+    
+    Instead of filling out forms with targeting parameters, you describe campaign goals, and AI agents handle:
+    - Audience targeting configuration
+    - Bidding strategy selection  
+    - Creative optimization rules
+    - Performance monitoring setup
+  </Tab>
+  <Tab title="Example Prompts">
+    **Good prompts** are specific and include key details:
+    
+    - *"Target college students with back-to-school athletic wear, $25K budget"*
+    - *"Launch premium running shoes to marathon enthusiasts in major cities"*  
+    - *"Holiday gift campaign for eco-conscious parents, emphasizing sustainability"*
+    - *"Retarget website visitors with 20% off coupon, focus on mobile users"*
+  </Tab>
+  <Tab title="Best Practices">
+    **Include in your prompts:**
+    - Target audience description (demographics, interests, behaviors)
+    - Business objectives and success metrics
+    - Geographic, demographic, or interest constraints
+    - Budget and timing requirements
+    - Product/service focus areas
+    
+    **Use business language**, not technical parameters - the AI handles the translation to programmatic settings.
+  </Tab>
+</Tabs>
 
 ### Tactics
 Algorithm-driven optimization approaches that determine **how** your campaign buys inventory.
@@ -268,11 +319,35 @@ Real-time push notifications for scoring outcomes and campaign updates.
 - Optimization opportunity alerts
 - Integration with Slack, PagerDuty, etc.
 
+## Account Organization
+
+### Customer ID
+The billing account identifier that groups multiple brand agents under a single organization. This enables:
+
+**Agency Management**: Multiple client brand agents under one customer account
+**Enterprise Management**: Multiple brand divisions or product lines  
+**Reseller Accounts**: Multiple end-client accounts under one billing relationship
+
+```
+Customer Account: "ACME Agency" 
+├── Brand Agent: "Nike Global"
+│   ├── Campaigns: Holiday Sale, Summer Launch
+│   └── Creatives: Video ads, display banners
+├── Brand Agent: "Coca-Cola US"  
+│   ├── Campaigns: New Product, Seasonal
+│   └── Creatives: Social content, CTV spots
+└── Brand Agent: "Ford Motors"
+    ├── Campaigns: F-150 Launch, Dealer Network
+    └── Creatives: Vehicle showcases, lifestyle
+```
+
+All API operations are automatically scoped to your customer account for security and data isolation.
+
 ## Security & Authentication
 
 <Tabs>
   <Tab title="API Keys">
-    - Authenticate via `x-scope3-api-key` header
+    - Authenticate via `Authorization: Bearer` header (or legacy `x-scope3-api-key`)
     - Keys are scoped to specific organizations
     - Rate limited to 1000 requests/hour per key
     - No server-side storage - provide in each request
