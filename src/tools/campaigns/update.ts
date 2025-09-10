@@ -204,9 +204,18 @@ export const updateCampaignTool = (client: Scope3ApiClient) => ({
           updatedTactics.forEach((tactic, index) => {
             summary += `### ${index + 1}. **${tactic.name}**\n`;
             summary += `**Publisher:** ${tactic.mediaProduct.publisherName} → ${tactic.mediaProduct.name}\n`;
-            summary += `**Signal:** ${tactic.targeting.signalType.replace(/_/g, " ")}`;
-            if (tactic.targeting.signalProvider) {
-              summary += ` (${tactic.targeting.signalProvider})`;
+            if (tactic.targeting) {
+              summary += `**Signal:** ${tactic.targeting.signalType.replace(/_/g, " ")}`;
+              if (tactic.targeting.signalProvider) {
+                summary += ` (${tactic.targeting.signalProvider})`;
+              }
+            } else if (tactic.brandStoryId) {
+              summary += `**Brand Story:** ${tactic.brandStoryId}`;
+              if (tactic.signalId) {
+                summary += ` + Signal: ${tactic.signalId}`;
+              }
+            } else {
+              summary += `**Targeting:** Basic targeting`;
             }
             summary += `\n`;
 

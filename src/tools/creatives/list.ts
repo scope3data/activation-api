@@ -19,7 +19,7 @@ export const creativeListTool = (client: Scope3ApiClient) => ({
     dangerLevel: "low",
     openWorldHint: true,
     readOnlyHint: true,
-    title: "List Creatives for Buyer Agent",
+    title: "List Creatives",
   },
 
   description:

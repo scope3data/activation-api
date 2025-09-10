@@ -13,17 +13,17 @@ import {
   createMCPResponse,
 } from "../../utils/error-handling.js";
 
-export const exportCampaignDataTool = (client: Scope3ApiClient) => ({
+export const exportDataTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "Campaigns",
+    category: "Reporting & Analytics",
     dangerLevel: "low",
     openWorldHint: true,
     readOnlyHint: true,
-    title: "Export Campaign Data",
+    title: "Export Data",
   },
 
   description:
-    "Export raw campaign data for BI/analytics systems in structured format. Supports flexible grouping by campaigns, tactics, signals, stories, and other dimensions. Returns structured data suitable for external analysis tools.",
+    "Export raw performance data for BI/analytics systems in structured format. Supports multi-campaign exports with flexible grouping by campaigns, tactics, signals, stories, and other dimensions. Returns structured data suitable for external analysis tools and data warehouses.",
 
   execute: async (
     args: ExportCampaignDataParams,
@@ -90,7 +90,7 @@ export const exportCampaignDataTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "campaign/export-data",
+  name: "reporting/export-data",
   parameters: z.object({
     brandAgentId: z
       .string()

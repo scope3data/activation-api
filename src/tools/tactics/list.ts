@@ -19,7 +19,7 @@ export const listTacticsTool = (client: Scope3ApiClient) => ({
   },
 
   description:
-    "List all tactics for a specific campaign. Shows the complete breakdown of publisher products, targeting strategies, budget allocations, and performance metrics. Use this to get an overview of how campaign budget is distributed across different tactics. Requires authentication.",
+    "List all tactics for a specific campaign with comprehensive details. Shows publisher products, simplified targeting (media product + brand story + signal), budget allocations, performance metrics, and actionable recommendations. Includes budget distribution visualization and performance alerts. Use this to get an overview of how campaign budget is distributed across different tactics. Requires authentication.",
 
   execute: async (
     args: {
@@ -114,16 +114,14 @@ export const listTacticsTool = (client: Scope3ApiClient) => ({
         summary += `• Type: ${tactic.mediaProduct.inventoryType.replace(/_/g, " ")} (${tactic.mediaProduct.deliveryType.replace(/_/g, " ")})\n`;
         summary += `• Formats: ${tactic.mediaProduct.formats.join(", ")}\n`;
 
-        // Targeting strategy
+        // Simplified targeting strategy
         summary += `\n**🎯 Targeting:**\n`;
-        summary += `• Signal: ${tactic.targeting.signalType.replace(/_/g, " ")}`;
-        if (tactic.targeting.signalProvider) {
-          summary += ` (${tactic.targeting.signalProvider})`;
-        }
-        summary += `\n`;
+        summary += `• Brand Story ID: ${tactic.brandStoryId}\n`;
 
-        if (tactic.targeting.signalConfiguration?.audienceIds?.length) {
-          summary += `• Audiences: ${tactic.targeting.signalConfiguration.audienceIds.length} assigned\n`;
+        if (tactic.signalId) {
+          summary += `• Signal ID: ${tactic.signalId}\n`;
+        } else {
+          summary += `• Signal: None (basic targeting)\n`;
         }
 
         // Pricing
@@ -256,9 +254,9 @@ export const listTacticsTool = (client: Scope3ApiClient) => ({
       }
 
       summary += `\n**Available Actions:**\n`;
-      summary += `• Use adjust_tactic_allocation to modify budget distribution\n`;
-      summary += `• Use analyze_tactic_performance for detailed performance analysis\n`;
-      summary += `• Create new tactics with create_tactic`;
+      summary += `• Use campaign/update with tacticAdjustments to modify budget distribution\n`;
+      summary += `• Use reporting/export-data for detailed performance analysis\n`;
+      summary += `• Create new tactics with tactic/create`;
 
       return createMCPResponse({
         message: summary,

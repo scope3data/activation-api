@@ -19,11 +19,11 @@ const mcpClientService = new MCPClientService();
 
 export const getProductsTool = () => ({
   annotations: {
-    category: "System",
+    category: "Tactics",
     dangerLevel: "low",
     openWorldHint: true,
     readOnlyHint: true,
-    title: "Get Products from Sales Agents",
+    title: "Discover Products",
   },
 
   description:

@@ -22,7 +22,7 @@ export const creativeCreateTool = (client: Scope3ApiClient) => ({
     dangerLevel: "medium",
     openWorldHint: true,
     readOnlyHint: false,
-    title: "Create Creative (Orchestration)",
+    title: "Create Creative",
   },
 
   description:

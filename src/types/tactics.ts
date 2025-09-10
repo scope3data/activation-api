@@ -124,6 +124,7 @@ export interface SignalConfiguration {
 
 // Our tactic (product + targeting)
 export interface Tactic {
+  brandStoryId?: string; // Simplified targeting - brand story ID
   // Budget allocation for this tactic
   budgetAllocation: BudgetAllocation;
   campaignId: string;
@@ -142,21 +143,25 @@ export interface Tactic {
   name: string; // e.g., "Hulu Premium + Scope3 Signals"
 
   performance?: TacticPerformance;
+  signalId?: string; // Simplified targeting - optional signal ID
   // Status and performance
   status: "active" | "completed" | "draft" | "paused";
 
-  // Our targeting layer
-  targeting: TargetingStrategy;
+  // Our targeting layer (legacy complex targeting)
+  targeting?: TargetingStrategy;
   updatedAt: Date;
 }
 
 export interface TacticInput {
+  brandStoryId?: string; // Simplified targeting approach
   budgetAllocation: BudgetAllocation;
   campaignId: string;
+  cpm?: number; // Direct CPM specification
   description?: string;
   mediaProductId: string; // Reference to existing publisher product
   name: string;
-  targeting: TargetingStrategy;
+  signalId?: string; // Optional signal for enhanced targeting
+  targeting?: TargetingStrategy; // Legacy complex targeting (optional for backward compatibility)
 }
 
 // Campaign tactic management configuration

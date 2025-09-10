@@ -9,14 +9,14 @@ import {
   createMCPResponse,
 } from "../../utils/error-handling.js";
 
-export const updateBrandAgentPMPTool = (client: Scope3ApiClient) =>
+export const updatePMPTool = (client: Scope3ApiClient) =>
   ({
     annotations: {
-      category: "System",
+      category: "PMPs",
       dangerLevel: "medium",
       openWorldHint: true,
       readOnlyHint: false,
-      title: "Update Brand Agent PMP",
+      title: "Update PMP",
     },
     description:
       "Update an existing PMP with new requirements. The backend will parse the new prompt and adjust deal IDs accordingly.",
@@ -125,4 +125,4 @@ export const updateBrandAgentPMPTool = (client: Scope3ApiClient) =>
     }),
   }) as const;
 
-export { updateBrandAgentPMPTool as default };
+export { updatePMPTool as default };

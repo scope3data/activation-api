@@ -19,7 +19,7 @@ export const creativeGetTool = (client: Scope3ApiClient) => ({
   },
 
   description:
-    "Get detailed information about a specific creative asset. Shows creative content, format details, assignment status, approval information, and publisher sync status. Useful for reviewing creative assets before assignment or troubleshooting creative issues. Requires creative ID and authentication.",
+    "Get comprehensive information about a creative asset including content details, format specifications, asset validation status, campaign assignments, and publisher approval/sync status. All approval information is included in this single tool. Useful for reviewing creative assets before assignment or troubleshooting creative issues. Requires creative ID and authentication.",
 
   execute: async (
     args: { creativeId: string },
@@ -119,7 +119,7 @@ export const creativeGetTool = (client: Scope3ApiClient) => ({
       summary += `🎯 **Creative Management:**\n`;
       summary += `• Update content: Use creative/update with this creative ID\n`;
       summary += `• Assign to campaigns: Use creative/assign tool\n`;
-      summary += `• Check publisher approval: Use creative/approval_status\n`;
+      summary += `• Approval status: Already shown above in Asset Validation and Publisher Sync sections\n`;
       summary += `• Sync to publishers: Use creative/sync_publishers\n`;
       summary += `• Revise creative: Use creative/revise for modifications`;
 

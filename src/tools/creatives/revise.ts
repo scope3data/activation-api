@@ -11,8 +11,8 @@ import {
 } from "../../utils/error-handling.js";
 
 /**
- * Revise a creative that was rejected or had changes requested by publishers
- * Allows updating specific aspects based on publisher feedback
+ * Update a creative's content, metadata, or assets
+ * Supports both general updates and publisher revision workflows
  */
 export const creativeReviseTool = (client: Scope3ApiClient) => ({
   annotations: {
@@ -20,11 +20,11 @@ export const creativeReviseTool = (client: Scope3ApiClient) => ({
     dangerLevel: "medium",
     openWorldHint: true,
     readOnlyHint: false,
-    title: "Revise Creative for Publisher",
+    title: "Update Creative",
   },
 
   description:
-    "Revise a creative that was rejected or had changes requested by a publisher. Update content, assets, or metadata based on publisher feedback, then automatically re-sync for approval.",
+    "Update a creative's content, assets, or metadata. Can be used for general updates or to address publisher feedback. Optionally re-sync to specified publisher after updates.",
 
   execute: async (
     args: {

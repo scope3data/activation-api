@@ -2,11 +2,7 @@ import type { FastMCP } from "fastmcp";
 
 import type { Scope3ApiClient } from "../client/scope3-client.js";
 
-// Asset Management
-import { assetsAddTool } from "./assets/add.js";
 // Audiences
-import { createSyntheticAudienceTool } from "./audiences/create.js";
-import { listSyntheticAudiencesTool } from "./audiences/list.js";
 // Authentication
 import { checkAuthTool } from "./auth/check.js";
 // Brand Agents (Core)
@@ -29,13 +25,10 @@ import { createCampaignLegacyTool } from "./campaigns/create-legacy.js";
 // Campaigns
 import { createCampaignTool } from "./campaigns/create.js";
 import { deleteCampaignTool } from "./campaigns/delete.js";
-import { exportCampaignDataTool } from "./campaigns/export-data.js";
 import { getCampaignSummaryTool } from "./campaigns/get-summary.js";
-import { campaignListCreativesTool } from "./campaigns/list-creatives.js";
 import { listCampaignsTool } from "./campaigns/list.js";
 import { updateCampaignTool } from "./campaigns/update.js";
 // Creatives
-import { creativeApprovalStatusTool } from "./creatives/approval-status.js";
 import {
   creativeAssignTool,
   creativeUnassignTool,
@@ -49,17 +42,16 @@ import { creativeSyncPublishersTool } from "./creatives/sync-publishers.js";
 import { creativeUpdateTool } from "./creatives/update.js";
 // DSP
 import { getDSPSeatsTool } from "./dsp/get-seats.js";
-import { discoverSalesAgentFormatsTool } from "./formats/discover-sales-agents.js";
 // Formats
 import { listCreativeFormatsTool } from "./formats/list.js";
 // PMPs
-import { createBrandAgentPMPTool } from "./pmps/create.js";
-import { listBrandAgentPMPsTool } from "./pmps/list.js";
-import { updateBrandAgentPMPTool } from "./pmps/update.js";
+import { createPMPTool } from "./pmps/create.js";
+import { listPMPsTool } from "./pmps/list.js";
+import { updatePMPTool } from "./pmps/update.js";
 // Products
 import { getProductsTool } from "./products/list.js";
+import { exportDataTool } from "./reporting/export-data.js";
 // Reporting
-import { analyzeTacticsTool } from "./reporting/analyze-tactics.js";
 import { provideScoringOutcomesTool } from "./reporting/provide-outcomes.js";
 // Signals
 import { createCustomSignalTool } from "./signals/create.js";
@@ -68,9 +60,7 @@ import { getCustomSignalTool } from "./signals/get.js";
 import { listCustomSignalsTool } from "./signals/list.js";
 import { updateCustomSignalTool } from "./signals/update.js";
 // Tactics
-import { analyzeTacticPerformanceTool } from "./tactics/analyze-performance.js";
 import { createTacticTool } from "./tactics/create.js";
-import { discoverPublisherProductsTool } from "./tactics/discover-products.js";
 import { listTacticsTool } from "./tactics/list.js";
 // Webhooks
 import { registerWebhookTool } from "./webhooks/register.js";
@@ -92,8 +82,6 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(listCampaignsTool(client)); // campaign/list
   server.addTool(updateCampaignTool(client)); // campaign/update
   server.addTool(deleteCampaignTool(client)); // campaign/delete
-  server.addTool(exportCampaignDataTool(client)); // campaign/export-data
-  server.addTool(campaignListCreativesTool(client)); // campaign/list-creatives
   server.addTool(createCampaignLegacyTool(client)); // campaign/create-legacy (backward compatibility)
 
   // Creatives
@@ -104,7 +92,6 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(creativeDeleteTool(client)); // creative/delete
   server.addTool(creativeAssignTool(client)); // creative/assign
   server.addTool(creativeUnassignTool(client)); // creative/unassign
-  server.addTool(creativeApprovalStatusTool(client)); // creative/approval_status
   server.addTool(creativeReviseTool(client)); // creative/revise
   server.addTool(creativeSyncPublishersTool(client)); // creative/sync_publishers
 
@@ -121,19 +108,15 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(deleteBrandAgentStandardsTool(client)); // brand-standards/delete
 
   // Audiences
-  server.addTool(createSyntheticAudienceTool(client)); // audience/create
-  server.addTool(listSyntheticAudiencesTool(client)); // audience/list
 
   // Tactics (budget allocation merged into campaign/update)
   server.addTool(createTacticTool(client)); // tactic/create
   server.addTool(listTacticsTool(client)); // tactic/list
-  server.addTool(analyzeTacticPerformanceTool(client)); // tactic/analyze-performance
-  server.addTool(discoverPublisherProductsTool(client)); // tactic/discover-products
 
   // PMPs
-  server.addTool(createBrandAgentPMPTool(client)); // pmp/create
-  server.addTool(listBrandAgentPMPsTool(client)); // pmp/list
-  server.addTool(updateBrandAgentPMPTool(client)); // pmp/update
+  server.addTool(createPMPTool(client)); // pmp/create
+  server.addTool(listPMPsTool(client)); // pmp/list
+  server.addTool(updatePMPTool(client)); // pmp/update
 
   // Signals
   server.addTool(createCustomSignalTool(client)); // signal/create
@@ -143,15 +126,14 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(deleteCustomSignalTool(client)); // signal/delete
 
   // Reporting
-  server.addTool(analyzeTacticsTool(client)); // reporting/analyze-tactics
   server.addTool(provideScoringOutcomesTool(client)); // reporting/provide-outcomes
+  server.addTool(exportDataTool(client)); // reporting/export-data
 
   // Webhooks
   server.addTool(registerWebhookTool(client)); // webhook/register
 
   // Formats
   server.addTool(listCreativeFormatsTool(client)); // format/list
-  server.addTool(discoverSalesAgentFormatsTool(client)); // format/discover-sales-agents
 
   // Products
   server.addTool(getProductsTool()); // product/list
@@ -160,25 +142,16 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(getDSPSeatsTool(client)); // dsp/get-seats
 
   // Assets
-  server.addTool(assetsAddTool(client)); // assets/add
 };
 
 // Export individual tools for testing
 export {
-  // Tactics
-  analyzeTacticPerformanceTool,
-  // Reporting
-  analyzeTacticsTool,
   // Asset Management
-  assetsAddTool,
   // Campaigns
-  campaignListCreativesTool,
   // Authentication
   checkAuthTool,
   // Brand Stories
   createBrandAgentBrandStoryTool,
-  // PMPs
-  createBrandAgentPMPTool,
   // Brand Standards
   createBrandAgentStandardsTool,
   // Brand Agents (Core)
@@ -187,11 +160,11 @@ export {
   createCampaignTool,
   // Signals
   createCustomSignalTool,
+  // PMPs
+  createPMPTool,
   // Audiences
-  createSyntheticAudienceTool,
   createTacticTool,
   // Creatives
-  creativeApprovalStatusTool,
   creativeAssignTool,
   creativeCreateTool,
   creativeDeleteTool,
@@ -207,10 +180,7 @@ export {
   // Campaign CRUD
   deleteCampaignTool,
   deleteCustomSignalTool,
-  discoverPublisherProductsTool,
-  // Formats
-  discoverSalesAgentFormatsTool,
-  exportCampaignDataTool,
+  exportDataTool,
   getBrandAgentTool,
   getCampaignSummaryTool,
   getCustomSignalTool,
@@ -219,21 +189,20 @@ export {
   // Products
   getProductsTool,
   listBrandAgentBrandStoriesTool,
-  listBrandAgentPMPsTool,
   listBrandAgentStandardsTool,
   listBrandAgentsTool,
   listCampaignsTool,
   listCreativeFormatsTool,
   listCustomSignalsTool,
-  listSyntheticAudiencesTool,
+  listPMPsTool,
   listTacticsTool,
   provideScoringOutcomesTool,
   // Webhooks
   registerWebhookTool,
   updateBrandAgentBrandStoryTool,
-  updateBrandAgentPMPTool,
   updateBrandAgentStandardsTool,
   updateBrandAgentTool,
   updateCampaignTool,
   updateCustomSignalTool,
+  updatePMPTool,
 };
