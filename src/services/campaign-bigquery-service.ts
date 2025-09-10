@@ -230,9 +230,15 @@ export class CampaignBigQueryService {
   // ============================================================================
 
   /**
-   * Get campaign with relationships
+   * Get campaign with relationships (customer-scoped)
    */
-  async getCampaign(campaignId: string): Promise<BrandAgentCampaign | null> {
+  async getCampaign(
+    campaignId: string,
+    apiToken?: string,
+  ): Promise<BrandAgentCampaign | null> {
+    // Resolve customer ID for security
+    const customerId = await this.resolveCustomerId(apiToken);
+
     const query = `
       SELECT 
         c.*,
@@ -247,12 +253,13 @@ export class CampaignBigQueryService {
           WHERE cbs.campaign_id = c.id
         ) as audience_ids
       FROM \`${this.projectId}.${this.dataset}.campaigns\` c
-      WHERE c.id = @campaignId
+      INNER JOIN \`${this.agentTableRef}\` a ON c.brand_agent_id = a.id
+      WHERE c.id = @campaignId AND a.customer_id = @customerId
       LIMIT 1
     `;
 
     const [rows] = await this.bigquery.query({
-      params: { campaignId },
+      params: { campaignId, customerId },
       query,
     });
 
@@ -305,21 +312,25 @@ export class CampaignBigQueryService {
   }
 
   /**
-   * Get creative by ID
+   * Get creative by ID (customer-scoped)
    */
   async getCreative(
     creativeId: string,
     apiToken?: string,
   ): Promise<Creative | null> {
+    // Resolve customer ID for security
+    const customerId = await this.resolveCustomerId(apiToken);
+
     const query = `
       SELECT c.*
       FROM \`${this.projectId}.${this.dataset}.creatives\` c
-      WHERE c.id = @creativeId
+      INNER JOIN \`${this.agentTableRef}\` a ON c.brand_agent_id = a.id
+      WHERE c.id = @creativeId AND a.customer_id = @customerId
       LIMIT 1
     `;
 
     const [rows] = await this.bigquery.query({
-      params: { creativeId },
+      params: { creativeId, customerId },
       query,
     });
 
@@ -481,7 +492,11 @@ export class CampaignBigQueryService {
   async listCampaigns(
     brandAgentId: string,
     status?: string,
+    apiToken?: string,
   ): Promise<BrandAgentCampaign[]> {
+    // Resolve customer ID for security
+    const customerId = await this.resolveCustomerId(apiToken);
+
     let query = `
       SELECT 
         c.*,
@@ -496,10 +511,11 @@ export class CampaignBigQueryService {
           WHERE cbs.campaign_id = c.id
         ) as audience_ids
       FROM \`${this.projectId}.${this.dataset}.campaigns\` c
-      WHERE c.brand_agent_id = @brandAgentId
+      INNER JOIN \`${this.agentTableRef}\` a ON c.brand_agent_id = a.id
+      WHERE c.brand_agent_id = @brandAgentId AND a.customer_id = @customerId
     `;
 
-    const params: Record<string, unknown> = { brandAgentId };
+    const params: Record<string, unknown> = { brandAgentId, customerId };
 
     if (status) {
       query += ` AND c.status = @status`;
@@ -569,13 +585,17 @@ export class CampaignBigQueryService {
     status?: string,
     apiToken?: string,
   ): Promise<Creative[]> {
+    // Resolve customer ID for security
+    const customerId = await this.resolveCustomerId(apiToken);
+
     let query = `
       SELECT c.*
       FROM \`${this.projectId}.${this.dataset}.creatives\` c
-      WHERE c.brand_agent_id = @brandAgentId
+      INNER JOIN \`${this.agentTableRef}\` a ON c.brand_agent_id = a.id
+      WHERE c.brand_agent_id = @brandAgentId AND a.customer_id = @customerId
     `;
 
-    const params: Record<string, unknown> = { brandAgentId };
+    const params: Record<string, unknown> = { brandAgentId, customerId };
 
     if (status) {
       query += ` AND c.status = @status`;
@@ -585,7 +605,6 @@ export class CampaignBigQueryService {
     query += ` ORDER BY c.created_at DESC`;
 
     const [rows] = await this.bigquery.query({ params, query });
-    const customerId = await this.resolveCustomerId(apiToken);
 
     return rows.map((row: Record<string, unknown>) => ({
       assemblyMethod: String(row.assembly_method) as

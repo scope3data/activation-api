@@ -4129,7 +4129,7 @@ security:
   - apiKeyAuth: []
 servers:
   - description: Scope3 Agentic API Server
-    url: https://api.agentic.scope3.com
+    url: https://api.agentic.scope3.com/rest/v1
 tags:
   - description: Authentication and account verification
     name: Authentication

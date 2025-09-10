@@ -401,7 +401,7 @@ For detailed guides, see our [documentation](https://docs.scope3.com).
       servers: [
         {
           description: "Scope3 Agentic API Server",
-          url: "https://api.agentic.scope3.com",
+          url: "https://api.agentic.scope3.com/rest/v1",
         },
       ],
       tags: [

@@ -86,7 +86,7 @@ import type {
 
 import { AuthenticationService } from "../services/auth-service.js";
 import { BrandAgentService } from "../services/brand-agent-service.js";
-import { CampaignService } from "../services/campaign-service.js";
+import { CampaignBigQueryService } from "../services/campaign-bigquery-service.js";
 import { CreativeService } from "../services/creative-service.js";
 import { GET_AGENTS_QUERY } from "./queries/agents.js";
 import { GET_API_ACCESS_KEYS_QUERY } from "./queries/auth.js";
@@ -166,7 +166,7 @@ import { ProductDiscoveryService } from "./services/product-discovery.js";
 export class Scope3ApiClient {
   private authService: AuthenticationService;
   private brandAgentService: BrandAgentService;
-  private campaignService: CampaignService;
+  private campaignService: CampaignBigQueryService;
   private creativeService: CreativeService;
   private graphqlUrl: string;
   private productDiscovery: ProductDiscoveryService;
@@ -180,7 +180,7 @@ export class Scope3ApiClient {
 
     // Initialize specialized services
     this.brandAgentService = new BrandAgentService(this.authService);
-    this.campaignService = new CampaignService(this.authService);
+    this.campaignService = new CampaignBigQueryService();
     this.creativeService = new CreativeService(this.authService);
   }
 
@@ -505,15 +505,10 @@ export class Scope3ApiClient {
       // Create campaign in BigQuery
       const campaignId = await this.campaignService.createCampaign({
         brandAgentId: input.brandAgentId,
-        budget: input.budget
-          ? {
-              currency: input.budget.currency,
-              dailyCap: input.budget.dailyCap,
-              pacing: input.budget.pacing,
-              total: input.budget.total,
-            }
-          : undefined,
-        creativeIds: input.creativeIds,
+        budgetCurrency: input.budget?.currency,
+        budgetDailyCap: input.budget?.dailyCap,
+        budgetPacing: input.budget?.pacing,
+        budgetTotal: input.budget?.total,
         endDate: input.endDate,
         name: input.name,
         prompt: input.prompt,
@@ -532,7 +527,10 @@ export class Scope3ApiClient {
       }
 
       // Return the created campaign
-      const campaign = await this.campaignService.getCampaign(campaignId);
+      const campaign = await this.campaignService.getCampaign(
+        campaignId,
+        apiKey,
+      );
       if (!campaign) {
         throw new Error("Failed to retrieve created campaign");
       }
@@ -2218,6 +2216,7 @@ export class Scope3ApiClient {
       const campaigns = await this.campaignService.listCampaigns(
         brandAgentId,
         status,
+        apiKey,
       );
       return campaigns;
     } catch (error) {

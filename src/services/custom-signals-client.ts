@@ -1,7 +1,10 @@
+import { BigQuery } from "@google-cloud/bigquery";
+
 import {
   getBigQueryConfig,
   validateBigQueryConfig,
 } from "../config/bigquery-config.js";
+import { AuthenticationService } from "./auth-service.js";
 import { SignalStorageService } from "./signal-storage-service.js";
 
 /**
@@ -45,11 +48,15 @@ export interface UpdateCustomSignalInput {
 }
 
 export class CustomSignalsClient {
+  private authService: AuthenticationService;
   private initializationError: null | string = null;
   private initialized: boolean = false;
   private storageService: null | SignalStorageService = null;
 
   constructor() {
+    // Initialize authentication service
+    this.authService = new AuthenticationService(new BigQuery());
+
     // Initialize asynchronously - client will be ready when first method is called
     this.initializeBigQuery();
   }
@@ -58,13 +65,19 @@ export class CustomSignalsClient {
    * Create a new custom signal definition
    */
   async createCustomSignal(
-    _apiKey: string, // Not used for BigQuery operations, but kept for interface consistency
+    apiKey: string,
     input: CreateCustomSignalInput,
   ): Promise<CustomSignalDefinition> {
     await this.ensureInitialized();
 
     if (!this.storageService) {
       throw new Error("BigQuery storage service not available");
+    }
+
+    // Resolve customer ID from API key for security
+    const customerId = await this.authService.getCustomerIdFromToken(apiKey);
+    if (!customerId) {
+      throw new Error("Invalid API key or customer not found");
     }
 
     const result = await this.storageService.createSignalDefinition({
@@ -74,6 +87,7 @@ export class CustomSignalsClient {
         region: c.region,
       })),
       created_by: "mcp-api",
+      customer_id: customerId,
       description: input.description,
       key_type: input.key,
       name: input.name,
@@ -98,7 +112,7 @@ export class CustomSignalsClient {
    * Delete a custom signal definition
    */
   async deleteCustomSignal(
-    _apiKey: string,
+    apiKey: string,
     signalId: string,
   ): Promise<{
     deleted: boolean;
@@ -110,7 +124,16 @@ export class CustomSignalsClient {
       throw new Error("BigQuery storage service not available");
     }
 
-    const deleted = await this.storageService.deleteSignalDefinition(signalId);
+    // Resolve customer ID from API key for security
+    const customerId = await this.authService.getCustomerIdFromToken(apiKey);
+    if (!customerId) {
+      throw new Error("Invalid API key or customer not found");
+    }
+
+    const deleted = await this.storageService.deleteSignalDefinition(
+      signalId,
+      customerId,
+    );
     return {
       deleted,
       id: signalId,
@@ -121,7 +144,7 @@ export class CustomSignalsClient {
    * Get a custom signal definition by ID
    */
   async getCustomSignal(
-    _apiKey: string,
+    apiKey: string,
     signalId: string,
   ): Promise<CustomSignalDefinition | null> {
     await this.ensureInitialized();
@@ -130,7 +153,16 @@ export class CustomSignalsClient {
       throw new Error("BigQuery storage service not available");
     }
 
-    const result = await this.storageService.getSignalDefinition(signalId);
+    // Resolve customer ID from API key for security
+    const customerId = await this.authService.getCustomerIdFromToken(apiKey);
+    if (!customerId) {
+      throw new Error("Invalid API key or customer not found");
+    }
+
+    const result = await this.storageService.getSignalDefinition(
+      signalId,
+      customerId,
+    );
     if (!result) {
       return null;
     }
@@ -213,7 +245,7 @@ export class CustomSignalsClient {
    * List custom signal definitions with optional filtering
    */
   async listCustomSignals(
-    _apiKey: string,
+    apiKey: string,
     filters?: {
       channel?: string;
       region?: string;
@@ -228,7 +260,16 @@ export class CustomSignalsClient {
       throw new Error("BigQuery storage service not available");
     }
 
-    const results = await this.storageService.listSignalDefinitions(filters);
+    // Resolve customer ID from API key for security
+    const customerId = await this.authService.getCustomerIdFromToken(apiKey);
+    if (!customerId) {
+      throw new Error("Invalid API key or customer not found");
+    }
+
+    const results = await this.storageService.listSignalDefinitions(
+      customerId,
+      filters,
+    );
 
     const signals = results.map((result) => ({
       clusters: result.clusters.map((c) => ({

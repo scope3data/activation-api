@@ -8,6 +8,7 @@ export interface CreateSignalDefinitionInput {
     region: string;
   }>;
   created_by?: string;
+  customer_id: number;
   description: string;
   key_type: string;
   metadata?: Record<string, unknown>;
@@ -27,6 +28,7 @@ export interface SignalCluster {
 export interface SignalDefinition {
   created_at: string;
   created_by?: string;
+  customer_id: number;
   description: string;
   is_active: boolean;
   key_type: string;
@@ -126,6 +128,7 @@ export class SignalStorageService {
     const definitionRow = {
       created_at: now,
       created_by: input.created_by || null,
+      customer_id: input.customer_id,
       description: input.description.trim(),
       is_active: true,
       key_type: input.key_type.trim(),
@@ -172,6 +175,7 @@ export class SignalStorageService {
         })),
         created_at: now,
         created_by: input.created_by,
+        customer_id: input.customer_id,
         description: input.description,
         is_active: true,
         key_type: input.key_type,
@@ -187,7 +191,10 @@ export class SignalStorageService {
   /**
    * Delete a signal definition (soft delete)
    */
-  async deleteSignalDefinition(signalId: string): Promise<boolean> {
+  async deleteSignalDefinition(
+    signalId: string,
+    customerId?: number,
+  ): Promise<boolean> {
     const now = new Date().toISOString();
 
     try {
@@ -196,6 +203,7 @@ export class SignalStorageService {
         UPDATE ${this.getFullTableId(this.definitionsTableId)}
         SET is_active = false, updated_at = @updated_at
         WHERE signal_id = @signalId AND is_active = true
+        ${customerId ? "AND customer_id = @customerId" : ""}
       `;
 
       // Soft delete associated clusters
@@ -205,8 +213,13 @@ export class SignalStorageService {
         WHERE signal_id = @signalId
       `;
 
+      const params: Record<string, unknown> = { signalId, updated_at: now };
+      if (customerId) {
+        params.customerId = customerId;
+      }
+
       await this.bigquery.query({
-        params: { signalId, updated_at: now },
+        params,
         query: deleteDefQuery,
       });
 
@@ -244,6 +257,7 @@ export class SignalStorageService {
    */
   async getSignalDefinition(
     signalId: string,
+    customerId?: number,
   ): Promise<null | SignalDefinitionWithClusters> {
     const query = `
       SELECT 
@@ -251,6 +265,7 @@ export class SignalStorageService {
         d.name,
         d.description,
         d.key_type,
+        d.customer_id,
         d.created_at,
         d.updated_at,
         d.created_by,
@@ -265,11 +280,17 @@ export class SignalStorageService {
         ON d.signal_id = c.signal_id AND c.is_active = true
       WHERE d.signal_id = @signalId 
         AND d.is_active = true
+        ${customerId ? "AND d.customer_id = @customerId" : ""}
     `;
 
     try {
+      const params: Record<string, unknown> = { signalId };
+      if (customerId) {
+        params.customerId = customerId;
+      }
+
       const [rows] = await this.bigquery.query({
-        params: { signalId },
+        params,
         query,
       });
 
@@ -294,6 +315,7 @@ export class SignalStorageService {
         clusters,
         created_at: definition.created_at,
         created_by: definition.created_by,
+        customer_id: definition.customer_id,
         description: definition.description,
         is_active: definition.is_active,
         key_type: definition.key_type,
@@ -330,13 +352,22 @@ export class SignalStorageService {
   /**
    * List all signal definitions with optional filtering
    */
-  async listSignalDefinitions(filters?: {
-    channel?: string;
-    key_type?: string;
-    region?: string;
-  }): Promise<SignalDefinitionWithClusters[]> {
+  async listSignalDefinitions(
+    customerId?: number,
+    filters?: {
+      channel?: string;
+      key_type?: string;
+      region?: string;
+    },
+  ): Promise<SignalDefinitionWithClusters[]> {
     let whereClause = "WHERE d.is_active = true";
     const params: Record<string, unknown> = {};
+
+    // Add customer filtering if provided
+    if (customerId) {
+      whereClause += " AND d.customer_id = @customerId";
+      params.customerId = customerId;
+    }
 
     if (filters?.region) {
       whereClause += " AND c.region = @region";
@@ -359,6 +390,7 @@ export class SignalStorageService {
         d.name,
         d.description,
         d.key_type,
+        d.customer_id,
         d.created_at,
         d.updated_at,
         d.created_by,
@@ -390,6 +422,7 @@ export class SignalStorageService {
             clusters: [],
             created_at: row.created_at,
             created_by: row.created_by,
+            customer_id: row.customer_id,
             description: row.description,
             is_active: row.is_active,
             key_type: row.key_type,
