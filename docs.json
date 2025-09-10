@@ -18,6 +18,7 @@
             "group": "Overview",
             "icon": "rocket",
             "pages": [
+              "mintlify/quickstart-for-agents",
               "mintlify/quickstart",
               "mintlify/authentication",
               "mintlify/concepts/philosophy",
@@ -73,6 +74,16 @@
         "tab": "API Reference",
         "icon": "code",
         "openapi": "openapi.yaml"
+      },
+      {
+        "tab": "For Partners",
+        "icon": "handshake",
+        "groups": [
+          {
+            "group": "Publisher Integration",
+            "pages": ["mintlify/partners/publisher-prebid-setup"]
+          }
+        ]
       }
     ]
   },
