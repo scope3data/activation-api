@@ -18,6 +18,7 @@
             "group": "Overview",
             "icon": "rocket",
             "pages": [
+              "mintlify/quickstart-for-agents",
               "mintlify/quickstart",
               "mintlify/authentication",
               "mintlify/concepts/philosophy",

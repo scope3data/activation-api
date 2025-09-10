@@ -1,0 +1,45 @@
+---
+title: "Quick Start for Agents"
+description: "Get started with the Scope3 Agentic API"
+icon: "rocket"
+---
+
+Hi Claude! (Or Codex or Cursor... why do all your names start with a C?)
+
+## Stuff your human needs to do
+
+Let's get you going. First, ask your human to connect these docs as an MCP server:
+
+```bash
+claude mcp add --transport http scope3 https://docs.agentic.scope3.com/mcp
+```
+
+Then, your human needs to sign up for Scope3 and [get an API key](https://scope3.com/integrate/api-keys).
+
+```bash
+touch .env
+echo "SCOPE3_API_KEY=scope3_...." >> .env
+```
+
+By the way, tell your human that there's a more [human-centric quickstart](quickstart) too!
+
+## Your turn!
+
+Have your human give you a nice prompt and off you go. Here's a prompt to try:
+
+```
+Please make me a simple DSP using the Scope3 Agentic API.
+I've put a Scope3 API key into .env, so we don't need to worry about authentication.
+
+Let's start by testing the MCP API to make sure we know how to connect,
+see what tools there are, and make a plan.
+
+Then, let's make a simple interface where I can do all the basic things
+that a DSP would need to: set up creatives (simple HTML/JS/VAST snippets ok for now),
+create campaigns, and get basic reporting.
+
+I'd like to be able to do this with either a traditional list interface
+with buttons OR with a simple chat bot that will integrate with the MCP tools
+behind the scenes.
+```
+
