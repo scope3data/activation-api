@@ -24,6 +24,8 @@ export interface BrandAgent {
   id: string;
   name: string;
   nickname?: string; // Customer-scoped friendly name (e.g., "Nike" for "Nike c/o Kinesso")
+  // Opt-in to tactic seed data cooperative for improved new tactic recommendations
+  tacticSeedDataCoop?: boolean;
 
   updatedAt: Date;
 }
@@ -232,6 +234,7 @@ export interface BrandAgentInput {
   externalId?: string; // Customer-scoped external identifier
   name: string;
   nickname?: string; // Customer-scoped friendly name
+  tacticSeedDataCoop?: boolean; // Opt-in to tactic seed data cooperative
 }
 
 // API Response types
@@ -246,6 +249,7 @@ export interface BrandAgentUpdateInput {
   externalId?: string; // Customer-scoped external identifier
   name?: string;
   nickname?: string; // Customer-scoped friendly name
+  tacticSeedDataCoop?: boolean; // Opt-in to tactic seed data cooperative
 }
 
 export interface BrandAgentWhereInput {

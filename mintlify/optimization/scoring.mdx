@@ -144,6 +144,15 @@ await provideScoringOutcomes({
 - Outcome scores remain at 0 until your measurement data arrives
 - Budget allocation uses only Quality + Affinity during window period
 
+<Note>
+**Tactic Seed Data Cooperative**: Brand agents opted into the tactic seed data cooperative (`tacticSeedDataCoop: true`) benefit from better initial tactic selection based on:
+
+1. **Historical delivery data**: Actual CPM and impression volumes for realistic starting budgets
+2. **Performance quintiles**: Category-specific rankings (top 20% vs bottom 20% of tactics) to prioritize proven inventory
+
+This improves the Discovery Phase by starting with higher-confidence tactic selections.
+</Note>
+
 ### Learning Phase
 - As your outcome scores arrive, they're incorporated into the weighted formula
 - Multi-armed bandit adjusts based on complete scoring picture

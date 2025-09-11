@@ -296,6 +296,7 @@ export interface UpdateBrandAgentParams {
   brandAgentId: string;
   description?: string;
   name?: string;
+  tacticSeedDataCoop?: boolean;
 }
 
 export interface UpdateBrandAgentStandardsParams {

@@ -56,6 +56,50 @@ Even winning tactics need throttling:
 - Adjust for audience behavior patterns
 - React to real-time performance shifts
 
+### Tactic Seed Data Cooperative
+
+When your brand agent opts into the **tactic seed data cooperative** (`tacticSeedDataCoop: true`), the platform leverages aggregated data to more effectively seed new tactics:
+
+#### 1. Historical Pricing & Delivery Data
+```
+Product ABC123 delivered 10,000 impressions/day at $1.23 CPM from 9/1/25 to 9/9/25
+Product DEF456 delivered 25,000 impressions/day at $2.45 CPM from 9/1/25 to 9/9/25
+```
+
+This helps seed tactics with:
+- **Realistic CPM starting points** based on actual delivery costs
+- **Expected inventory availability** for initial budget allocation
+- **Delivery rate estimates** for new tactic pacing
+
+#### 2. Performance Quintiles by Campaign Category
+```  
+Product ABC123: Top 20% of tactics for food & beverage campaigns from 9/1/25 to 9/9/25
+Product DEF456: Bottom 20% of tactics for automotive campaigns from 9/1/25 to 9/9/25
+```
+
+This provides:
+- **Category-specific quality rankings** to prioritize high-performing inventory
+- **Avoid poor performers** by learning from aggregated campaign data
+- **Better initial tactic selection** based on proven category performance
+
+**How this improves new tactic seeding:**
+- Skip inventory with consistently poor category performance
+- Start with higher confidence in proven inventory sources
+- Allocate initial test budgets more effectively
+
+Without opting in, new tactics start with:
+- Publisher-provided base rates only
+- No category performance guidance
+- Equal budget allocation across all discovered inventory
+
+Enable via brand agent settings:
+```javascript
+await updateBrandAgent({
+  brandAgentId: "ba_123", 
+  tacticSeedDataCoop: true  // Opt into tactic seeding data cooperative
+});
+```
+
 ## How It Works
 
 ### Inventory Sourcing
