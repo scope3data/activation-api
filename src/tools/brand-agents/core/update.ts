@@ -40,7 +40,11 @@ export const updateBrandAgentTool = (client: Scope3ApiClient) => ({
     }
 
     try {
-      const updateInput: { description?: string; name?: string } = {};
+      const updateInput: {
+        description?: string;
+        name?: string;
+        tacticSeedDataCoop?: boolean;
+      } = {};
 
       if (args.name !== undefined) {
         updateInput.name = args.name;
@@ -48,12 +52,15 @@ export const updateBrandAgentTool = (client: Scope3ApiClient) => ({
       if (args.description !== undefined) {
         updateInput.description = args.description;
       }
+      if (args.tacticSeedDataCoop !== undefined) {
+        updateInput.tacticSeedDataCoop = args.tacticSeedDataCoop;
+      }
 
       // Check if there are actually fields to update
       if (Object.keys(updateInput).length === 0) {
         return createMCPResponse({
           message:
-            "No changes specified. Please provide at least a name or description to update.",
+            "No changes specified. Please provide at least a name, description, or tacticSeedDataCoop setting to update.",
           success: false,
         });
       }
@@ -81,6 +88,10 @@ export const updateBrandAgentTool = (client: Scope3ApiClient) => ({
       if (args.description !== undefined) {
         summary += `• Description updated to: "${args.description}"\n`;
       }
+      if (args.tacticSeedDataCoop !== undefined) {
+        const status = args.tacticSeedDataCoop ? "enabled" : "disabled";
+        summary += `• Tactic Seed Data Cooperative: ${status}\n`;
+      }
 
       summary += `\nℹ️ **Note:** All campaigns, creatives, and other resources associated with this brand agent remain unchanged.`;
 
@@ -101,5 +112,9 @@ export const updateBrandAgentTool = (client: Scope3ApiClient) => ({
       .optional()
       .describe("New description for the brand agent"),
     name: z.string().optional().describe("New name for the brand agent"),
+    tacticSeedDataCoop: z
+      .boolean()
+      .optional()
+      .describe("Enable/disable tactic seed data cooperative participation"),
   }),
 });

@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.brand_agent_extensions` (
   description STRING,
   external_id STRING, -- Customer-scoped external identifier
   nickname STRING, -- Customer-scoped friendly name
+  tactic_seed_data_coop BOOLEAN DEFAULT FALSE, -- Opt-in to tactic seed data cooperative
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
 )
@@ -83,3 +84,8 @@ CLUSTER BY campaign_id, brand_story_id;
 
 -- Primary key constraints are enforced at application level
 -- since BigQuery doesn't support traditional primary keys
+
+-- Migration: Add tactic_seed_data_coop column to existing brand_agent_extensions table
+-- Run this if the table already exists without the new column:
+-- ALTER TABLE `bok-playground.agenticapi.brand_agent_extensions`
+-- ADD COLUMN IF NOT EXISTS tactic_seed_data_coop BOOLEAN DEFAULT FALSE;

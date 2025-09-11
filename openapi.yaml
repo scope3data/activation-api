@@ -3802,6 +3802,9 @@ paths:
                 name:
                   type: string
                   description: New name for the brand agent
+                tacticSeedDataCoop:
+                  type: boolean
+                  description: Enable/disable tactic seed data cooperative participation
               required:
                 - brandAgentId
               type: object

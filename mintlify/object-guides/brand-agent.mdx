@@ -96,6 +96,36 @@ Nike Brand Agent (ba_nike_123)
   </Card>
 </CardGroup>
 
+## Tactic Seed Data Cooperative
+
+Opt into better new tactic seeding through anonymized data sharing:
+
+```javascript
+await updateBrandAgent({
+  brandAgentId: "ba_123",
+  tacticSeedDataCoop: true
+});
+```
+
+**What's shared when you opt in:**
+1. **Your pricing/delivery**: `"Product X delivered Y impressions at $Z CPM from [date] to [date]"`
+2. **Your performance quintiles**: `"Product X: Top 20% of tactics for [your vertical] from [date] to [date]"`
+
+**What you receive:**
+- Aggregated pricing data for realistic tactic starting points
+- Category performance quintiles to avoid poor-performing inventory
+- Better initial budget allocation for new tactic testing
+
+**How it improves tactic seeding:**
+- New campaigns start testing higher-confidence inventory first
+- Initial budgets reflect realistic delivery expectations  
+- Avoid wasting test budget on historically poor performers
+
+**What's never shared:**
+- Specific performance metrics or indexes
+- Creative content or audience targeting
+- Individual advertiser identity or campaign details
+
 ## What's Next?
 
 Now that you understand brand agents, explore the core components:
