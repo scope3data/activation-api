@@ -101,6 +101,81 @@ Once launched, campaigns automatically begin the **AI optimization** process:
   </Card>
 </CardGroup>
 
+### 🔄 Incremental Optimization Requests
+
+**Natural language optimization** - Use the `changeRequest` parameter to make targeted improvements without rebuilding your entire campaign strategy.
+
+<Tabs>
+  <Tab title="Performance Optimization">
+    ```javascript
+    // Boost specific metrics
+    await updateCampaign({
+      campaignId: "camp_123",
+      changeRequest: "increase viewability by 10% and need 20% more scale per day"
+    });
+    ```
+    
+    **Response shows applied changes:**
+    ```
+    ✅ Campaign updated successfully
+    
+    **Change Request:** increase viewability by 10% and need 20% more scale per day
+    
+    **Changes Applied to Campaign Brief:**
+    👁️ **Viewability Target**: Set minimum viewability standard to 10%
+    💎 **Premium Inventory**: Prioritized high-viewability placements and publishers
+    📈 **Scale Increase**: Raised daily spending capacity by 20%
+    🎯 **Targeting Expansion**: Broadened reach parameters to support increased scale
+    
+    ## 🎯 Strategy Updates
+    **Targeting Updated** (2 new profiles):
+      • Premium Inventory: include 15 items
+      • Viewability Standards: exclude 8 items
+    ```
+  </Tab>
+  
+  <Tab title="Scale Adjustments">
+    ```javascript  
+    // Adjust reach and volume
+    await updateCampaign({
+      campaignId: "camp_456", 
+      changeRequest: "Deal needs 30% more scale per day",
+      reason: "Performance opportunity identified"
+    });
+    ```
+    
+    **System interprets and applies:**
+    - Increases daily spending capacity by 30%
+    - Expands targeting reach parameters
+    - Adjusts budget allocation across tactics
+  </Tab>
+  
+  <Tab title="Quality Improvements">
+    ```javascript
+    // Quality-focused optimizations
+    await updateCampaign({
+      campaignId: "camp_789",
+      changeRequest: "viewability is 20% below goal, improve to 85% minimum"
+    });
+    ```
+    
+    **Optimization result:**
+    - Prioritizes high-viewability inventory
+    - Updates placement quality standards
+    - Adjusts inventory mix toward premium sources
+  </Tab>
+</Tabs>
+
+**Common optimization patterns:**
+- **Performance improvements:** "increase CTR by 15%", "improve completion rates to 80%"
+- **Scale adjustments:** "need 30% more reach", "reduce daily spend to $2000"  
+- **Quality changes:** "prioritize viewability over cost", "add stricter brand safety"
+- **Efficiency targets:** "reduce CPM to $25", "improve cost efficiency by 20%"
+
+<Note>
+The `changeRequest` parameter works alongside existing parameters like `prompt`, `reason`, and `tacticAdjustments`. When provided, it automatically generates an optimized strategy prompt that gets processed by the same backend optimization engine.
+</Note>
+
 ## Key Campaign Features
 
 ### 🎯 AI-Driven Optimization Strategy

@@ -10,6 +10,7 @@ import {
   getTargetingDimensionsMap,
   transformTargetingProfiles,
 } from "../../client/transformers/targeting.js";
+import { OptimizationInterpreter } from "../../services/optimization-interpreter.js";
 import {
   createAuthErrorResponse,
   createErrorResponse,
@@ -50,10 +51,33 @@ export const updateCampaignTool = (client: Scope3ApiClient) => ({
         summary += `**Reason for Update:** ${args.reason}\n\n`;
       }
 
-      // Step 1: Handle strategy updates if prompt is provided
-      if (args.prompt) {
+      // Handle change request conversion
+      let effectivePrompt = args.prompt;
+      let briefChanges: string[] = [];
+      if (args.changeRequest) {
+        const interpretation =
+          await OptimizationInterpreter.interpretChangeRequest(
+            args.changeRequest,
+            args.prompt,
+          );
+        effectivePrompt = interpretation.updatedPrompt;
+        briefChanges = interpretation.changes;
+
+        summary += `**Change Request:** ${args.changeRequest}\n\n`;
+
+        if (briefChanges.length > 0) {
+          summary += `**Changes Applied to Campaign Brief:**\n`;
+          briefChanges.forEach((change) => {
+            summary += `${change}\n`;
+          });
+          summary += `\n`;
+        }
+      }
+
+      // Step 1: Handle strategy updates if prompt or changeRequest is provided
+      if (effectivePrompt) {
         const parsedStrategy = await client.parseStrategyPrompt(apiKey, {
-          prompt: args.prompt,
+          prompt: effectivePrompt,
           strategyType: "INTELLIGENT_PMPS",
         });
 
@@ -70,7 +94,7 @@ export const updateCampaignTool = (client: Scope3ApiClient) => ({
           channelCodes: parsedStrategy.channels || undefined,
           countryCodes: parsedStrategy.countries || undefined,
           name: args.name || undefined,
-          prompt: args.prompt,
+          prompt: effectivePrompt,
           strategyId: args.campaignId,
         });
 
@@ -270,6 +294,12 @@ export const updateCampaignTool = (client: Scope3ApiClient) => ({
   name: "campaign/update",
   parameters: z.object({
     campaignId: z.string().describe("ID of the campaign to update"),
+    changeRequest: z
+      .string()
+      .optional()
+      .describe(
+        "Natural language optimization request (e.g., 'increase viewability by 10%', 'need 20% more scale per day'). Alternative to providing a full new prompt.",
+      ),
     name: z
       .string()
       .optional()
@@ -278,7 +308,7 @@ export const updateCampaignTool = (client: Scope3ApiClient) => ({
       .string()
       .optional()
       .describe(
-        "New campaign prompt with updated objectives and strategy (optional if only updating tactics)",
+        "New campaign prompt with updated objectives and strategy (optional if only updating tactics or using changeRequest)",
       ),
     reason: z
       .string()
