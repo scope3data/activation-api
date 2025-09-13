@@ -1,5 +1,11 @@
 // import type { AuthContext } from "./auth.js";
 
+// Signals Agent MCP parameter types
+export interface ActivateSignalParams {
+  agentId: string;
+  signalId: string;
+}
+
 // Measurement Source MCP parameter types (stub)
 export interface AddMeasurementSourceParams {
   brandAgentId: string;
@@ -81,8 +87,6 @@ export interface CreateCampaignParams {
   startDate?: string;
 }
 
-// Tool parameter interfaces (legacy - remove if unused)
-
 // Custom Signal Definition MCP parameter types
 export interface CreateCustomSignalParams {
   clusters: Array<{
@@ -140,6 +144,8 @@ export interface ExportCampaignDataParams {
   >;
 }
 
+// Tool parameter interfaces (legacy - remove if unused)
+
 // FastMCP types compatibility
 export interface FastMCPSessionAuth extends Record<string, unknown> {
   customerId?: number;
@@ -164,6 +170,21 @@ export interface GetCampaignSummaryParams {
 
 export interface GetCustomSignalParams {
   signalId: string;
+}
+
+export interface GetSignalsAgentHistoryParams {
+  agentId: string;
+  limit?: number;
+}
+
+export interface GetSignalsAgentParams {
+  agentId: string;
+}
+
+export interface GetSignalsParams {
+  agentIds?: string[];
+  brandAgentId: string;
+  brief?: string;
 }
 
 export interface ListBrandAgentCampaignsParams {
@@ -195,9 +216,14 @@ export interface ListBrandAgentStoriesParams {
 export interface ListCustomSignalsParams {
   channel?: string;
   region?: string;
+  seatId?: string;
 }
 
 export interface ListMeasurementSourcesParams {
+  brandAgentId: string;
+}
+
+export interface ListSignalsAgentsParams {
   brandAgentId: string;
 }
 
@@ -232,6 +258,14 @@ export interface ProvideScoringOutcomesParams {
   tacticId?: string;
 }
 
+export interface RegisterSignalsAgentParams {
+  brandAgentId: string;
+  config?: Record<string, unknown>;
+  description?: string;
+  endpointUrl: string;
+  name: string;
+}
+
 export interface RegisterWebhookParams {
   brandAgentId: string;
   endpoint: {
@@ -263,6 +297,10 @@ export interface ToolResponse {
   errorCode?: string;
   message: string;
   success: boolean;
+}
+
+export interface UnregisterSignalsAgentParams {
+  agentId: string;
 }
 
 // Legacy interface - use UpdateCampaignParams instead
@@ -344,6 +382,15 @@ export interface UpdateMeasurementSourceParams {
   sourceId: string;
   status?: "active" | "error" | "inactive";
   type?: "analytics" | "brand_study" | "conversion_api" | "mmm";
+}
+
+export interface UpdateSignalsAgentParams {
+  agentId: string;
+  config?: Record<string, unknown>;
+  description?: string;
+  endpointUrl?: string;
+  name?: string;
+  status?: "active" | "inactive" | "suspended";
 }
 
 export interface UpdateSyntheticAudienceParams {

@@ -53,9 +53,19 @@ import { getProductsTool } from "./products/list.js";
 import { exportDataTool } from "./reporting/export-data.js";
 // Reporting
 import { provideScoringOutcomesTool } from "./reporting/provide-outcomes.js";
+// Signals Agents
+import { activateSignalTool } from "./signals-agents/activate.js";
+import { getSignalsTool } from "./signals-agents/get-signals.js";
+import { getSignalsAgentTool } from "./signals-agents/get.js";
+import { getSignalsAgentHistoryTool } from "./signals-agents/history.js";
+import { listSignalsAgentsTool } from "./signals-agents/list.js";
+import { registerSignalsAgentTool } from "./signals-agents/register.js";
+import { unregisterSignalsAgentTool } from "./signals-agents/unregister.js";
+import { updateSignalsAgentTool } from "./signals-agents/update.js";
 // Signals
 import { createCustomSignalTool } from "./signals/create.js";
 import { deleteCustomSignalTool } from "./signals/delete.js";
+import { getPartnerSeatsTool } from "./signals/get-partner-seats.js";
 import { getCustomSignalTool } from "./signals/get.js";
 import { listCustomSignalsTool } from "./signals/list.js";
 import { updateCustomSignalTool } from "./signals/update.js";
@@ -124,6 +134,17 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(listCustomSignalsTool(client)); // signal/list
   server.addTool(updateCustomSignalTool(client)); // signal/update
   server.addTool(deleteCustomSignalTool(client)); // signal/delete
+  server.addTool(getPartnerSeatsTool(client)); // signals/get-partner-seats
+
+  // Signals Agents
+  server.addTool(registerSignalsAgentTool(client)); // signals-agent/register
+  server.addTool(listSignalsAgentsTool(client)); // signals-agent/list
+  server.addTool(getSignalsAgentTool(client)); // signals-agent/get
+  server.addTool(updateSignalsAgentTool(client)); // signals-agent/update
+  server.addTool(unregisterSignalsAgentTool(client)); // signals-agent/unregister
+  server.addTool(getSignalsTool(client)); // signals-agent/get-signals
+  server.addTool(activateSignalTool(client)); // signals-agent/activate
+  server.addTool(getSignalsAgentHistoryTool(client)); // signals-agent/history
 
   // Reporting
   server.addTool(provideScoringOutcomesTool(client)); // reporting/provide-outcomes
@@ -146,6 +167,7 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
 
 // Export individual tools for testing
 export {
+  activateSignalTool,
   // Asset Management
   // Campaigns
   // Authentication
@@ -186,8 +208,12 @@ export {
   getCustomSignalTool,
   // DSP
   getDSPSeatsTool,
+  getPartnerSeatsTool,
   // Products
   getProductsTool,
+  getSignalsAgentHistoryTool,
+  getSignalsAgentTool,
+  getSignalsTool,
   listBrandAgentBrandStoriesTool,
   listBrandAgentStandardsTool,
   listBrandAgentsTool,
@@ -195,14 +221,19 @@ export {
   listCreativeFormatsTool,
   listCustomSignalsTool,
   listPMPsTool,
+  listSignalsAgentsTool,
   listTacticsTool,
   provideScoringOutcomesTool,
+  // Signals Agents
+  registerSignalsAgentTool,
   // Webhooks
   registerWebhookTool,
+  unregisterSignalsAgentTool,
   updateBrandAgentBrandStoryTool,
   updateBrandAgentStandardsTool,
   updateBrandAgentTool,
   updateCampaignTool,
   updateCustomSignalTool,
   updatePMPTool,
+  updateSignalsAgentTool,
 };

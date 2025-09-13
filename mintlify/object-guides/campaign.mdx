@@ -484,12 +484,12 @@ const exportData = await exportCampaignData({
   },
   datasets: ["delivery", "events", "tactics"],
   groupBy: ["date", "campaign", "tactic", "signal"],
-  format: "parquet", // Optimized for analytics
+  format: "csv", // Optimized for analytics
   compression: "gzip"
 });
 
 // Use exported data in your BI pipeline
-// Supports: JSON, CSV, Parquet formats
+// Supports: JSON, CSV formats
 // Integrates with: Snowflake, BigQuery, Databricks, etc.
 ```
 

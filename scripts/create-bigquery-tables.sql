@@ -85,7 +85,45 @@ CLUSTER BY campaign_id, brand_story_id;
 -- Primary key constraints are enforced at application level
 -- since BigQuery doesn't support traditional primary keys
 
+-- 6. Signals Agents (registered agents that can manage segments)
+CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.signals_agents` (
+  id STRING NOT NULL,
+  brand_agent_id STRING NOT NULL,
+  name STRING NOT NULL,
+  description STRING,
+  endpoint_url STRING NOT NULL,
+  api_key STRING,
+  status STRING DEFAULT 'active',
+  config JSON,
+  registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
+  registered_by STRING,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
+)
+PARTITION BY DATE(registered_at)
+CLUSTER BY brand_agent_id, status;
+
+-- 7. Signals Agent Activity (audit log of all agent actions)
+CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.signals_agent_activity` (
+  id STRING NOT NULL,
+  signals_agent_id STRING NOT NULL,
+  brand_agent_id STRING NOT NULL,
+  activity_type STRING NOT NULL,
+  request JSON,
+  response JSON,
+  segment_ids ARRAY<STRING>,
+  status STRING,
+  response_time_ms INT64,
+  error_details STRING,
+  executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
+)
+PARTITION BY DATE(executed_at)
+CLUSTER BY signals_agent_id, activity_type;
+
 -- Migration: Add tactic_seed_data_coop column to existing brand_agent_extensions table
 -- Run this if the table already exists without the new column:
 -- ALTER TABLE `bok-playground.agenticapi.brand_agent_extensions`
 -- ADD COLUMN IF NOT EXISTS tactic_seed_data_coop BOOLEAN DEFAULT FALSE;
+
+-- Migration: Add agent tracking columns to custom signals tables
+-- These will be handled in the custom signals dataset, not here
+-- The signal-storage-service.ts will need to be updated to support agent tracking

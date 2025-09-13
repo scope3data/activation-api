@@ -1,0 +1,156 @@
+---
+title: "Data Attachment"
+description: "Attach audience data to segments via real-time API or CSV upload"
+icon: "upload"
+---
+
+## Overview
+
+After creating segments, populate them with audience data using two methods:
+
+1. **Real-time API** - Live data streaming with immediate updates
+2. **CSV Upload** - Batch processing for larger datasets
+
+Both methods use the same command syntax and operations.
+
+## Data Operations
+
+All data operations use these commands:
+
+- **ADD** - Add segments to a key
+- **REM** - Remove specific segments from a key  
+- **DEL** - Delete all segments from a key
+- **SET** - Overwrite all segments for a key (replaces existing)
+
+## Method 1: Real-time API
+
+### API Endpoint
+
+```
+POST https://api.agentic.scope3.com/rest/v1/signal/attach/[seat]/[keydef]
+```
+
+Where:
+- `[seat]` - Brand agent seat ID  
+- `[keydef]` - Key definition, either simple (`maid`) or composite (`domain,daypart`)
+
+<Info>
+The keydef must match what the segment was configured with during creation.
+</Info>
+
+### Request Format
+
+Send operations in the request body, one per line:
+
+```
+ADD abcd-2832-abcd-238-abcd segment1
+REM aefa-9281-aefa-821-aefa segment2
+DEL aaab-2712-aaab-132-aaab
+SET d82a-1811-d82a-921-d82a segment1 segment3
+```
+
+### Example Requests
+
+**Single Key Type (MAID)**:
+```bash
+curl -X POST https://api.agentic.scope3.com/rest/v1/signal/attach/seat_123/maid \
+  -H "Authorization: Bearer $SCOPE3_API_KEY" \
+  -d "ADD d82a-1811-d82a-921-d82a premium_customers high_value"
+```
+
+**Composite Key Type**:
+```bash  
+curl -X POST https://api.agentic.scope3.com/rest/v1/signal/attach/seat_123/domain,daypart \
+  -H "Authorization: Bearer $SCOPE3_API_KEY" \
+  -d "SET example.com,morning premium_content morning_audience"
+```
+
+## Method 2: CSV Upload
+
+### CSV File Format
+
+CSV files use the same operation syntax:
+
+```csv
+operation,key,segments
+ADD,abcd-2832-abcd-238-abcd,segment1 segment2
+REM,aefa-9281-aefa-821-aefa,segment2
+DEL,aaab-2712-aaab-132-aaab,
+SET,d82a-1811-d82a-921-d82a,segment1 segment3
+```
+
+### Alternative: Action in Filename
+
+If CSV lacks the operation column, specify action in filename:
+
+**Filenames**:
+- `audience_add_20241201.csv` - ADD operation
+- `audience_rem_20241201.csv` - REM operation  
+- `audience_del_20241201.csv` - DEL operation
+- `audience_set_20241201.csv` - SET operation
+
+**File content** (without operation column):
+```csv
+key,segments
+abcd-2832-abcd-238-abcd,segment1 segment2
+aefa-9281-aefa-821-aefa,segment2
+```
+
+### Upload Process
+
+For CSV file uploads, follow the Scope3 API documentation:
+
+**[Scope3 File Upload Guide](https://docs.scope3.com/docs/integrate-ui-setup#/2-file-upload)**
+
+## Data Retrieval
+
+Check what segments are assigned to a key:
+
+```
+GET https://api.scope3.com/audience/[provider]/maid/d82a-1811-d82a-921-d82a
+```
+
+**Response**:
+```
+TTL: 18321
+segment1
+segment3
+```
+
+<Info>
+All keys have a **30-day TTL**. Keys not accessed within 30 days are automatically removed.
+</Info>
+
+## Best Practices
+
+### Real-time API
+- Batch multiple operations in a single request when possible
+- Use SET operations sparingly - they replace all existing segments
+- Monitor API response codes for processing status
+
+### CSV Upload
+- Use clear filenames indicating operation type and date
+- Include header rows in CSV files
+- Split large datasets into manageable batches
+- Use gzip compression for large files (.csv.gz)
+
+### Data Management
+- Regular cleanup using DEL operations for inactive keys
+- Monitor the 30-day TTL for key retention
+- Track segment record counts for billing purposes
+
+## Error Handling
+
+Common scenarios:
+
+- **Invalid keydef**: Ensure keydef matches segment configuration
+- **Seat not found**: Verify seat ID exists and is accessible
+- **Segment not found**: Check segment exists for the specified seat
+- **Format errors**: Validate operation syntax and CSV structure
+
+## Next Steps
+
+After populating segments:
+- Data is processed and available for targeting within 15 minutes
+- Monitor segment record counts via `signals/list` 
+- Segments become available in campaign targeting options

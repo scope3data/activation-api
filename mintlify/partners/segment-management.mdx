@@ -1,0 +1,229 @@
+---
+title: "Segment Management"
+description: "Create, list, and update audience segments using the Scope3 API"
+icon: "list"
+---
+
+## Overview
+
+Segments are audience definitions that can be referenced in campaign targeting. This guide covers the core segment management operations using our MCP tools.
+
+## Authentication
+
+All segment operations require API authentication. See our [Partner Authentication Guide](/partners/authentication) for setup instructions including seat access discovery.
+
+## List Segments
+
+**MCP Tool**: `signals/list`
+
+View all segments or filter by specific criteria:
+
+```json
+{
+  "tool": "signals/list",
+  "parameters": {}
+}
+
+// Filter by region
+{
+  "tool": "signals/list",
+  "parameters": {
+    "region": "americas"
+  }
+}
+
+// Filter by channel
+{
+  "tool": "signals/list",
+  "parameters": {
+    "channel": "web"
+  }
+}
+
+// Filter by specific seat (for partners managing multiple accounts)
+{
+  "tool": "signals/list",
+  "parameters": {
+    "seatId": "seat_abc123"
+  }
+}
+```
+
+**Response includes:**
+- Segment ID and name
+- Description and key type
+- Regional clusters and GDPR compliance
+- Seat information (for multi-seat access)
+- **Record count** for each segment/seat (billable data point)
+
+## Create Segment
+
+**MCP Tool**: `signals/create`
+
+Create a new audience segment:
+
+```json
+{
+  "tool": "signals/create",
+  "parameters": {
+    "name": "High Value Customers",
+    "description": "Customers with >$1000 lifetime value",
+    "keyType": "maid",
+    "clusters": [
+      {"region": "americas", "channel": "web"},
+      {"region": "eu", "channel": "web"}
+    ]
+  }
+}
+```
+
+**Required Parameters:**
+- `name` - Human-readable segment name
+- `description` - Segment definition and criteria
+- `keyType` - Identifier type (see Key Types section below)
+- `clusters` - Regional deployment configuration
+
+## Key Types
+
+Segments can be defined using various targeting keys:
+
+### Core Targeting Keys
+- Basic targeting parameters
+
+### Temporal Keys
+- `hour` - Hour-based targeting
+- `half_hour` - Half-hour time segments
+- `day` - Day-based targeting
+
+### Content & Media Keys
+- `property` - Media property targeting
+- `publisher` - Publisher-specific targeting
+- `seller` - Seller identification
+- `content_channel` - Content channel classification
+- `content_network` - Network-based content targeting
+- `content_show` - Specific show targeting
+- `content_language` - Content language targeting
+- `content_livestream` - Live streaming content
+- `content_genre` - Content genre classification
+- `content_rating` - Content rating targeting
+- `content_series` - Series-based targeting
+- `content_length_min` - Minimum content length
+- `content_length_max` - Maximum content length
+
+### Geographic Keys
+- `dma` - Designated Market Area
+- `city` - City-level targeting
+- `country` - Country-level targeting
+- `region` - Regional targeting
+- `postal_code` - Postal/ZIP code targeting
+
+### Provider & Device Keys
+- `provider.category` - Provider category classifications
+- `provider.segment` - Provider-specific segment identifiers
+- `device_type` - Device type targeting
+- `device_model` - Specific device model
+- `device_make` - Device manufacturer
+- `operating_system` - OS-based targeting
+
+### Performance Metrics (Decile-based)
+- `co2e_decile` - Carbon footprint performance deciles
+- `viewability_decile` - Viewability performance deciles
+- `attention_potential_decile` - Attention potential deciles
+- `completion_rate_decile` - Completion rate performance deciles
+
+### Audience Keys
+- `maid` - Mobile Advertising ID
+- `liveramp` - LiveRamp authenticated identifiers
+- `lat_lng_radius` - Geographic coordinates with radius targeting
+- `id5` - ID5 universal identifiers
+- `coreid` - CoreID identifiers
+- `yahoo_connect` - Yahoo Connect IDs
+
+<Note>
+Composite keys may have additional fees and provide more granular audience segmentation capabilities.
+</Note>
+
+## Get Segment Details
+
+**MCP Tool**: `signals/get`
+
+Retrieve specific segment information:
+
+```json
+{
+  "tool": "signals/get",
+  "parameters": {
+    "signalId": "signal_123"
+  }
+}
+```
+
+Returns complete segment configuration including metadata, cluster settings, and record counts.
+
+## Update Segment
+
+**MCP Tool**: `signals/update`
+
+Modify existing segment properties:
+
+```json
+{
+  "tool": "signals/update",
+  "parameters": {
+    "signalId": "signal_123",
+    "name": "Premium Customers",
+    "description": "Updated criteria for premium tier",
+    "clusters": [
+      {"region": "americas", "channel": "web"},
+      {"region": "apac-ex-china", "channel": "mobile"}
+    ]
+  }
+}
+```
+
+## Delete Segment
+
+**MCP Tool**: `signals/delete`
+
+Remove a segment (this will also remove associated data):
+
+```json
+{
+  "tool": "signals/delete",
+  "parameters": {
+    "signalId": "signal_123"
+  }
+}
+```
+
+<Warning>
+Deleting a segment permanently removes all associated audience data. This action cannot be undone.
+</Warning>
+
+## Multi-Seat Management
+
+**MCP Tool**: `signals/get-partner-seats`
+
+For partners managing multiple brand agent seats:
+
+```json
+// List accessible seats
+{
+  "tool": "signals/get-partner-seats",
+  "parameters": {}
+}
+
+// View segments for specific seat
+{
+  "tool": "signals/list",
+  "parameters": {
+    "seatId": "seat_abc123"
+  }
+}
+```
+
+## Next Steps
+
+After creating segments, you'll need to populate them with audience data:
+
+- [Data Attachment Guide](/partners/data-attachment) - Real-time API and CSV upload methods

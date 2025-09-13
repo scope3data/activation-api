@@ -35,6 +35,22 @@ Third-party signals are **coming soon**. Contact support@scope3.com for early ac
 
 Upload and manage your first-party data through the [Custom Signals Platform](../integrations/custom-signals-platform).
 
+### 3. Agent-Managed Signals
+
+**Intelligent data retrieval** - powered by external signals agents:
+
+Signals agents act as a RAG (Retrieval-Augmented Generation) process, intelligently surfacing the most relevant segments from proprietary data catalogs:
+
+- **LiveRamp Integration**: Access your LiveRamp audience segments with RampID resolution
+- **Optable Integration**: Privacy-first data clean room segments (coming soon)  
+- **Custom Agents**: Your own algorithms and data sources via ADCP protocol
+
+**Ownership Model**: Agents manage segments they create, with complete audit trails of all actions.
+
+**Multi-Seat Support**: Partners can manage segments across multiple brand agent seats with proper access controls.
+
+Learn more about [Signals Agents](../integrations/signals/overview) and building [Custom Agents](../integrations/signals/custom).
+
 ## How Signal RAG Works
 
 **Signal Retrieval-Augmented Generation (RAG)** is how the platform combines multiple signal types to create optimized targeting tactics:
@@ -81,6 +97,37 @@ const campaign = await createCampaign({
 // - Built-in: premium_inventory, high_completion_rate targeting
 // - Creates optimized tactics combining these signals
 ```
+
+### Managing Signals Across Seats
+
+**For Partners & Multi-Seat Users**: Signals can be filtered and managed across multiple brand agent seats:
+
+```javascript
+// Discover which seats you can access
+await getPartnerSeats();
+
+// List all signals across accessible seats 
+await listSignals();
+// Each signal includes seat information (seatId, seatName)
+
+// Filter signals by specific seat
+await listSignals({ 
+  seatId: "seat_abc123" 
+});
+
+// Combine seat and regional filtering
+await listSignals({ 
+  seatId: "seat_abc123",
+  region: "americas" 
+});
+```
+
+**Seat Information**: When listing signals, each signal shows:
+- **Seat ID**: Brand agent identifier that owns the signal
+- **Seat Name**: Human-readable brand agent name  
+- **Standard Metadata**: Signal name, description, key type, regions, etc.
+
+This enables partners to understand signal deployment across their client accounts and manage targeting at the seat level.
 
 ### Performance Analysis
 

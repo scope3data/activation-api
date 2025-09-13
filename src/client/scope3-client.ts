@@ -1911,8 +1911,6 @@ export class Scope3ApiClient {
     return mockSeats;
   }
 
-  // Inventory Option Management Methods
-
   // Get optimization recommendations
   async getOptimizationRecommendations(
     apiKey: string,
@@ -1979,6 +1977,8 @@ export class Scope3ApiClient {
   }> {
     return this.productDiscovery.getRecommendedProducts(apiKey, params);
   }
+
+  // Inventory Option Management Methods
 
   /**
    * Get list of registered sales agents for format discovery
@@ -2345,10 +2345,6 @@ export class Scope3ApiClient {
     return [];
   }
 
-  // ========================================
-  // CREATIVE MANAGEMENT METHODS (MCP Orchestration + REST)
-  // ========================================
-
   async listBrandAgents(
     apiKey: string,
     where?: BrandAgentWhereInput,
@@ -2388,6 +2384,10 @@ export class Scope3ApiClient {
 
     return result.data.brandAgents;
   }
+
+  // ========================================
+  // CREATIVE MANAGEMENT METHODS (MCP Orchestration + REST)
+  // ========================================
 
   // Brand Standards Agent methods
   async listBrandAgentStandards(
@@ -3152,10 +3152,6 @@ export class Scope3ApiClient {
     return result.data.updateBrandAgent;
   }
 
-  // ========================================
-  // PMP (PRIVATE MARKETPLACE) METHODS
-  // ========================================
-
   async updateBrandAgentCampaign(
     apiKey: string,
     id: string,
@@ -3198,6 +3194,10 @@ export class Scope3ApiClient {
 
     return result.data.updateBrandAgentCampaign;
   }
+
+  // ========================================
+  // PMP (PRIVATE MARKETPLACE) METHODS
+  // ========================================
 
   async updateBrandAgentCreative(
     apiKey: string,
@@ -3334,11 +3334,6 @@ export class Scope3ApiClient {
     return result.data.createAgentModel;
   }
 
-  // Removed parseCreativePrompt - AI generation handled by creative agents
-  // Removed detectFileFormat - handled by REST upload layer
-
-  // Custom Signal Definition Management Methods
-
   async updateBrandAgentSyntheticAudience(
     apiKey: string,
     previousModelId: string,
@@ -3394,6 +3389,11 @@ export class Scope3ApiClient {
 
     return result.data.updateBrandStory;
   }
+
+  // Removed parseCreativePrompt - AI generation handled by creative agents
+  // Removed detectFileFormat - handled by REST upload layer
+
+  // Custom Signal Definition Management Methods
 
   /**
    * Update existing creative

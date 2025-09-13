@@ -1,5 +1,7 @@
 import { BigQuery } from "@google-cloud/bigquery";
 
+import type { Scope3ApiClient } from "../client/scope3-client.js";
+
 import {
   getBigQueryConfig,
   validateBigQueryConfig,
@@ -183,6 +185,25 @@ export class CustomSignalsClient {
   }
 
   /**
+   * Get partner visibility - list brand agents (seats) accessible to an API key
+   */
+  async getPartnerSeats(
+    scope3Client: Scope3ApiClient,
+    apiKey: string,
+  ): Promise<Array<{ customerId: number; id: string; name: string; }>> {
+    await this.ensureInitialized();
+
+    // Use the provided scope3 client to get brand agents
+    const brandAgents = await scope3Client.listBrandAgents(apiKey);
+
+    return brandAgents.map((agent) => ({
+      customerId: agent.customerId,
+      id: agent.id,
+      name: agent.name,
+    }));
+  }
+
+  /**
    * Get signal statistics and health information
    */
   async getSignalStatistics(_apiKey: string): Promise<{
@@ -289,6 +310,105 @@ export class CustomSignalsClient {
       signals,
       total: signals.length,
     };
+  }
+
+  /**
+   * List custom signal definitions with seat filtering (for partner visibility)
+   */
+  async listCustomSignalsWithSeatFilter(
+    scope3Client: Scope3ApiClient,
+    apiKey: string,
+    filters?: {
+      channel?: string;
+      region?: string;
+      seatId?: string;
+    },
+  ): Promise<{
+    signals: ({ seatId: string; seatName: string } & CustomSignalDefinition)[];
+    total: number;
+  }> {
+    await this.ensureInitialized();
+
+    if (filters?.seatId) {
+      // Filter by specific seat
+      const brandAgents = await scope3Client.listBrandAgents(apiKey);
+      const seat = brandAgents.find((agent) => agent.id === filters.seatId);
+
+      if (!seat) {
+        throw new Error(`Seat ${filters.seatId} not found or not accessible`);
+      }
+
+      if (!this.storageService) {
+        throw new Error("BigQuery storage service not available");
+      }
+
+      const results = await this.storageService.listSignalDefinitions(
+        seat.customerId,
+        { channel: filters.channel, region: filters.region },
+      );
+
+      const signals = results.map((result) => ({
+        clusters: result.clusters.map((c) => ({
+          channel: c.channel,
+          gdpr: c.gdpr_compliant,
+          region: c.region,
+        })),
+        createdAt: result.created_at,
+        description: result.description,
+        id: result.signal_id,
+        key: result.key_type,
+        name: result.name,
+        seatId: seat.id,
+        seatName: seat.name,
+        updatedAt: result.updated_at,
+      }));
+
+      return {
+        signals,
+        total: signals.length,
+      };
+    } else {
+      // List across all accessible seats
+      const brandAgents = await scope3Client.listBrandAgents(apiKey);
+      const allSignals: ({
+        seatId: string;
+        seatName: string;
+      } & CustomSignalDefinition)[] = [];
+
+      if (!this.storageService) {
+        throw new Error("BigQuery storage service not available");
+      }
+
+      for (const seat of brandAgents) {
+        const results = await this.storageService.listSignalDefinitions(
+          seat.customerId,
+          { channel: filters?.channel, region: filters?.region },
+        );
+
+        const seatSignals = results.map((result) => ({
+          clusters: result.clusters.map((c) => ({
+            channel: c.channel,
+            gdpr: c.gdpr_compliant,
+            region: c.region,
+          })),
+          createdAt: result.created_at,
+          description: result.description,
+          id: result.signal_id,
+          key: result.key_type,
+          name: result.name,
+          seatId: seat.id,
+          seatName: seat.name,
+          updatedAt: result.updated_at,
+        }));
+
+        allSignals.push(...seatSignals);
+      }
+
+      return {
+        signals: allSignals,
+        total: allSignals.length,
+      };
+    }
   }
 
   /**

@@ -1,0 +1,153 @@
+---
+title: "Partner Authentication"
+description: "Authentication setup for partners managing multiple seats"
+icon: "key"
+---
+
+## Overview
+
+Partners managing multiple brand agent seats require authentication to access resources across seats. This guide covers setup and seat access discovery.
+
+## API Key Setup
+
+All API requests require an API key in the `Authorization` header:
+
+```bash
+Authorization: Bearer YOUR_API_KEY
+```
+
+<Warning>
+**API Key Security:**
+- Contact api-support@scope3.com to obtain your API key
+- Use HTTPS only - never send keys over HTTP
+- Store keys securely and rotate regularly
+- Each API key provides access to specific seats based on your partner configuration
+</Warning>
+
+## Discovering Accessible Seats
+
+### Check Seat Access
+
+**MCP Tool**: `signals/get-partner-seats`
+
+Use this tool to discover which brand agent seats your API key can access:
+
+```json
+{
+  "tool": "signals/get-partner-seats",
+  "parameters": {}
+}
+```
+
+**Response includes:**
+- Seat ID and display name
+- Brand agent information
+- Access permissions and scope
+- Last activity date
+
+### Using Seat Information
+
+Once you know which seats you can access, you can:
+
+**Filter operations by seat:**
+```json
+{
+  "tool": "signals/list",
+  "parameters": {
+    "seatId": "seat_abc123"
+  }
+}
+```
+
+**Access seat-specific resources:**
+- Signals and segments
+- Campaign data
+- Performance metrics
+- Configuration settings
+
+## Authentication Scopes
+
+Partner API keys provide different access levels:
+
+### Read Access
+- List accessible seats
+- View segments and signals
+- Read campaign performance data
+- Access reporting APIs
+
+### Write Access  
+- Create and update segments
+- Attach data to segments
+- Register signals agents
+- Modify campaign configurations
+
+### Administrative Access
+- Manage API key permissions
+- Configure seat access controls
+- Set up webhook endpoints
+- Access audit logs
+
+## Multi-Seat Operations
+
+When working across multiple seats, operations automatically scope to your accessible seats:
+
+**List all segments across seats:**
+```json
+{
+  "tool": "signals/list",
+  "parameters": {}
+}
+```
+
+**Results include seat information:**
+- `seatId` - Unique seat identifier
+- `seatName` - Human-readable seat name  
+- Standard resource metadata
+
+This enables you to understand which seat owns each resource and manage targeting at the seat level.
+
+## Error Handling
+
+**Common authentication errors:**
+
+### Invalid API Key
+```json
+{
+  "error": "unauthorized",
+  "message": "Invalid or expired API key"
+}
+```
+
+### Insufficient Permissions
+```json
+{
+  "error": "forbidden", 
+  "message": "API key does not have access to requested seat"
+}
+```
+
+### Seat Not Found
+```json
+{
+  "error": "seat_not_found",
+  "message": "Seat 'seat_xyz' not found or not accessible"
+}
+```
+
+## Next Steps
+
+After authentication setup:
+
+<CardGroup cols={2}>
+  <Card title="Segment Management" href="/partners/segment-management" icon="list">
+    **Manage Segments**
+    
+    Create, list, and update audience segments across your accessible seats.
+  </Card>
+  
+  <Card title="Data Attachment" href="/partners/data-attachment" icon="database">
+    **Attach Data**
+    
+    Upload audience data using real-time APIs or CSV file uploads.
+  </Card>
+</CardGroup>

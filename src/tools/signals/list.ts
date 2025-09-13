@@ -6,6 +6,7 @@ import type {
   MCPToolExecuteContext,
 } from "../../types/mcp.js";
 
+import { CustomSignalsClient } from "../../services/custom-signals-client.js";
 import {
   createAuthErrorResponse,
   createErrorResponse,
@@ -22,7 +23,7 @@ export const listCustomSignalsTool = (client: Scope3ApiClient) => ({
   },
 
   description:
-    "List all custom signal definitions in the Custom Signals Platform. Optionally filter by region or channel. Shows signal metadata, key types, and cluster configurations. Requires authentication.",
+    "List all custom signal definitions in the Custom Signals Platform. Optionally filter by region, channel, or specific brand agent seat. Shows signal metadata, key types, cluster configurations, and seat information for partner visibility. Requires authentication.",
 
   execute: async (
     args: ListCustomSignalsParams,
@@ -40,10 +41,44 @@ export const listCustomSignalsTool = (client: Scope3ApiClient) => ({
     }
 
     try {
-      const result = await client.listCustomSignals(apiKey, {
-        channel: args.channel,
-        region: args.region,
-      });
+      // Use seat-aware filtering if seatId is provided or if we need multi-seat view
+      let result;
+      if (args.seatId !== undefined) {
+        // Use the new method that supports seat filtering
+        const customSignalsClient = new CustomSignalsClient();
+        const seatResult =
+          await customSignalsClient.listCustomSignalsWithSeatFilter(
+            client,
+            apiKey,
+            {
+              channel: args.channel,
+              region: args.region,
+              seatId: args.seatId,
+            },
+          );
+
+        // Convert to the expected format
+        result = {
+          signals: seatResult.signals.map((signal) => ({
+            // Add seat info for display
+            _seatInfo: { seatId: signal.seatId, seatName: signal.seatName },
+            clusters: signal.clusters,
+            createdAt: signal.createdAt,
+            description: signal.description,
+            id: signal.id,
+            key: signal.key,
+            name: signal.name,
+            updatedAt: signal.updatedAt,
+          })),
+          total: seatResult.total,
+        };
+      } else {
+        // Use the original method for backwards compatibility
+        result = await client.listCustomSignals(apiKey, {
+          channel: args.channel,
+          region: args.region,
+        });
+      }
 
       if (result.signals.length === 0) {
         let message = `📭 **No Custom Signals Found**\n\n`;
@@ -67,8 +102,9 @@ export const listCustomSignalsTool = (client: Scope3ApiClient) => ({
       let summary = `📊 **Custom Signals Overview**\n\n`;
       summary += `**Total Signals:** ${result.total}\n`;
 
-      if (args.region || args.channel) {
+      if (args.region || args.channel || args.seatId) {
         summary += `**Applied Filters:**\n`;
+        if (args.seatId) summary += `• **Seat:** ${args.seatId}\n`;
         if (args.region) summary += `• **Region:** ${args.region}\n`;
         if (args.channel) summary += `• **Channel:** ${args.channel}\n`;
       }
@@ -95,6 +131,12 @@ export const listCustomSignalsTool = (client: Scope3ApiClient) => ({
           summary += `• **ID:** ${signal.id}\n`;
           summary += `• **Key Type:** ${signal.key}\n`;
           summary += `• **Description:** ${signal.description}\n`;
+
+          // Show seat information if available
+          if ((signal as Record<string, unknown>)._seatInfo) {
+            const seatInfo = (signal as Record<string, unknown>)._seatInfo;
+            summary += `• **Seat:** ${seatInfo.seatName} (${seatInfo.seatId})\n`;
+          }
 
           // Cluster information
           const regions = [...new Set(signal.clusters.map((c) => c.region))];
