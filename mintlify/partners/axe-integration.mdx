@@ -1,0 +1,83 @@
+---
+title: "AXE Integration"
+description: "Technical integration guide for Scope3 AXE with various ad server combinations"
+icon: "code"
+---
+
+# AXE Integration
+
+AXE (Agentic eXchange Engine) is Scope3's real-time data and optimization platform that enables AI buyer agents to make intelligent bidding decisions. This guide covers technical integration for various ad server combinations.
+
+## Overview
+
+Scope3 expects an OpenRTB-compatible request and returns a list of segments for inclusion, exclusion, and macros. These segments should be passed into the ad server for targeting.
+
+This integration can happen client-side (typically through Prebid) or server-side (which requires development work). For server-side integration, please contact Scope3 to discuss technical requirements.
+
+### Decide on AXE Key Names
+
+Scope3 will use these default key names:
+
+- `axei` - Inclusion segments (1P audience matching)
+- `axex` - Exclusion segments (brand safety blocks)
+- `axem` - Creative macros
+
+If you want Scope3 to return different key names, please change them at Settings->AXE once you log into your Scope3.com account.
+
+### Prebid.js Implementation
+
+#### Install Scope3 AXE Module in Prebid
+
+If building Prebid.js from source, include the Scope3 RTD module:
+
+```bash
+gulp build --modules=scope3RtdProvider,bidAdapter1,bidAdapter2,...
+```
+
+If you're using the pre-built package from prebid.org, make sure the Scope3 module is included in your build.
+
+#### Configuration
+
+Go to Settings-AXE in your Scope3.com account. Select "Prebid.js" and get the config snippet.
+
+Add the Scope3 RTD provider to your Prebid configuration using this config snippet:
+
+```javascript
+pbjs.setConfig({
+  realTimeData: {
+    auctionDelay: 100,
+    dataProviders: [{
+      name: "scope3",
+      waitForIt: true,
+      params: {
+        // Configuration provided by Scope3 team
+        publisherId: "YOUR_PUBLISHER_ID",
+        // Additional parameters provided during setup
+      }
+    }]
+  }
+});
+```
+
+### Prebid Server Implementation
+
+Go to Settings-AXE in your Scope3.com account. Select "Prebid Server" and get the config snippet.
+
+Add the Scope3 Prebid Server module to your Prebid Server setup and add the config snippet to your configuration file.
+
+(Scope3 todo: add a full example here)
+
+### Server-to-server Implementation
+
+See [Scope3 RTD Documentation](https://docs.scope3.com/docs/signals-integrations#/)
+
+### Testing and Validation
+
+For testing purposes, Scope3 will send a test segment until live segments are available (should be `test-dnu` or something similar)
+
+### Check that AXE Segments are flowing into Prebid
+
+1. Open your browser's developer tools
+2. Navigate to a page with ads
+3. Look for Scope3 RTD activity in the console
+4. Verify segments are being passed through Prebid into the ad server

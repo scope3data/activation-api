@@ -1,0 +1,100 @@
+---
+title: "Publisher Setup"
+description: "Overview of setting up as a Scope3 publisher partner for agentic advertising"
+icon: "building"
+---
+
+# Publisher Setup
+
+Connect your inventory to the agentic advertising ecosystem and unlock demand from AI-powered buyers.
+
+## Overview
+
+**The agentic advertising ecosystem connects AI buyers with publisher inventory.** Scope3 is an agentic buyer platform - we have buying agents that represent our clients and make real-time purchasing decisions.
+
+Here's how it works for publishers:
+
+**You need a sales agent.** Sales agents are how agentic buyers get information about your inventory and place orders. Think of them as the interface between your ad server and the agentic buyers.
+
+**For Scope3 specifically, you also need AXE.** AXE (Agentic eXchange Engine) is our real-time decisioning service that connects into your ad server. It provides the targeting data and signals that enable our buying agents to make intelligent decisions about your inventory.
+
+**Your sales agent might handle AXE for you.** Some sales agent partners already integrate AXE as part of their service, so you might not need to do any additional technical setup.
+
+## Why Connect to Agentic Buyers?
+
+Connecting to the agentic ecosystem unlocks efficiency and control that aren't possible in either direct sales or programmatic independently - it's the best of both worlds:
+
+- **Direct access to demand**: No need for layers of intermediaries: Buying agents send demand directly
+- **No fancy tech**: Demand is trafficked as line items in your ad server
+- **Feedback loop**: No guessing why an advertiser didn't bid
+- **Accelerate operations**: Let AI take the manual steps out of operations
+- **Control**: You decide how campaigns are trafficked
+
+## Integration Steps
+
+Here's your path to connecting with brand agents hosted on Scope3:
+
+### Step 1: Set Up Your Scope3 Account
+
+**Get access to the Scope3 platform with the Activation package.**
+
+<Steps>
+  <Step title="Create or Access Account">
+    [Sign up](https://scope3.com/?authType=sign-up) for a Scope3.com account
+  </Step>
+  
+  <Step title="Enable Activation Package">
+    1. Navigate to **Settings** → **My Plan** in your Scope3 account
+    2. Confirm "Activation" package is enabled
+    3. If not enabled, contact your Scope3 account manager to upgrade/switch
+  </Step>
+</Steps>
+
+### Step 2: Choose Your Sales Agent
+
+**Select how you want to connect to agentic buyers.**
+
+This is the main decision point. Your sales agent choice determines what technical setup (if any) you'll need to do:
+
+<CardGroup cols={4}>
+  <Card title="Integrated" icon="plug">
+    **Built into your ad server**
+
+    [Triton Digital](https://tritondigital.com) and [Kevel](https://kevel.com) coming soon
+  </Card>
+
+  <Card title="GAM + Prebid" href="/partners/publisher-prebid-setup" icon="google">
+    **Scope3-hosted sales agent for GAM + Prebid**
+
+    Scope3 hosts an open-source sales agent for GAM customers, with integrations into Optable for proprietary data access
+  </Card>
+
+  <Card title="Partner solutions" href="/partners/sales-agents" icon="handshake">
+    **Third-party sales agent**
+    
+    Specialists in helping publishers train sales agents to maximize revenue and drive operational efficiencies
+  </Card>
+  
+  <Card title="Build your own" href="https://adcontextprotocol.org/docs/media-buy/" icon="server">
+    **Build your own agent**
+    
+    Implement the AdCP protocol to connect your ad stack to the agentic world.
+  </Card>
+</CardGroup>
+
+### Step 3: Integrate AXE with your ad stack
+
+Whether you need to integrate AXE depends on your sales agent choice:
+
+- **Some sales agents handle everything** - AXE integration is already included in their service
+- **Other setups require additional work** - You'll need to integrate AXE with your ad server
+
+**👉 If your sales agent requires additional AXE setup, see the [AXE Integration guide](/partners/axe-integration).**
+
+## Frequently Asked Questions
+
+**Q: How long does publisher integration typically take?**
+A: It depends on the sales agent and your ad stack, but generally a few hours to set up.
+
+**Q: Is there a minimum inventory requirement?**
+A: Agents will struggle to allocate campaigns to small publishers except in endemic situations. It may make sense to work with a sales house or aggregator to get started, then add a direct agent if there is significant demand.
