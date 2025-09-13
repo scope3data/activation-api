@@ -80,6 +80,12 @@
         "icon": "handshake",
         "groups": [
           {
+            "group": "Getting Started",
+            "pages": [
+              "mintlify/partners/authentication"
+            ]
+          },
+          {
             "group": "Publisher Integration",
             "pages": [
               "mintlify/partners/publisher-setup",
@@ -91,7 +97,6 @@
             "group": "Signals Management", 
             "icon": "database",
             "pages": [
-              "mintlify/partners/authentication",
               "mintlify/partners/segment-management",
               "mintlify/partners/data-attachment"
             ]
