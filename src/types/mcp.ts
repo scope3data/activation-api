@@ -351,6 +351,7 @@ export interface UpdateBrandAgentStoryParams {
 
 export interface UpdateCampaignParams {
   campaignId: string;
+  changeRequest?: string;
   name?: string;
   prompt?: string;
   reason?: string;

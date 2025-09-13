@@ -4449,13 +4449,17 @@ paths:
                 campaignId:
                   type: string
                   description: ID of the campaign to update
+                changeRequest:
+                  type: string
+                  description: Natural language optimization request (e.g., 'increase viewability by 10%', 'need 20%
+                    more scale per day'). Alternative to providing a full new prompt.
                 name:
                   type: string
                   description: New name for the campaign (optional)
                 prompt:
                   type: string
                   description: New campaign prompt with updated objectives and strategy (optional if only updating
-                    tactics)
+                    tactics or using changeRequest)
                 reason:
                   type: string
                   description: Optional reason for the update/adjustment (for documentation)
@@ -4640,6 +4644,10 @@ paths:
                 value: {}
             schema:
               properties:
+                changeRequest:
+                  type: string
+                  description: Natural language optimization request (e.g., 'increase viewability by 15%', 'add more
+                    premium CTV inventory'). Alternative to providing a full new prompt.
                 name:
                   type: string
                   description: New name for the PMP
@@ -4649,7 +4657,7 @@ paths:
                 prompt:
                   type: string
                   description: New requirements in natural language (e.g., 'Add Netflix CTV inventory and increase
-                    budget by 20%')
+                    budget by 20%'). Optional if using changeRequest.
                 status:
                   type: string
                   description: Update the PMP status

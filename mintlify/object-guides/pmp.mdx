@@ -77,22 +77,88 @@ pmps.forEach(pmp => {
 
 ### Updating PMP Terms
 
+<Tabs>
+  <Tab title="Traditional Updates">
+    ```javascript
+    // Update PMP deal terms
+    const updatedPMP = await updatePMP({
+      pmpId: "pmp_123",
+      prompt: "Add Netflix CTV inventory and increase budget allocation by 20%",
+      dealDetails: {
+        floorPrice: 9.00, // Increased floor
+        minimumSpend: 15000, // Higher commitment
+        endDate: "2024-06-30" // Extended term
+      },
+      targeting: {
+        // Expanded targeting
+        geoTargeting: ["US", "CA", "GB", "AU"],
+        ageGroups: ["25-34", "35-44", "45-54"]
+      }
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Natural Language Optimization">
+    ```javascript
+    // Use changeRequest for quick optimizations
+    const optimizedPMP = await updatePMP({
+      pmpId: "pmp_456",
+      changeRequest: "increase viewability by 15% and add more premium CTV inventory"
+    });
+    ```
+    
+    **Response shows applied changes:**
+    ```
+    🟢 PMP Updated Successfully!
+    
+    **Change Request:** increase viewability by 15% and add more premium CTV inventory
+    
+    **Changes Applied to PMP Brief:**
+    👁️ **Viewability Target**: Set minimum viewability standard to 15%
+    💎 **Premium Inventory**: Prioritized high-viewability placements and publishers
+    📺 **CTV Focus**: Added premium Connected TV inventory sources
+    
+    **PMP ID:** pmp_456
+    **Status:** Active
+    **Updated:** requirements
+    
+    **Current Deal IDs:**
+    • Netflix: DEAL_CTV_001 🟢 active
+    • Hulu: DEAL_CTV_002 🟢 active
+    • Samsung TV+: DEAL_CTV_003 🟡 pending
+    ```
+  </Tab>
+</Tabs>
+
+### 🎯 Natural Language PMP Optimization
+
+**Incremental optimization requests** make it easy to adjust PMP parameters without recreating deal structures:
+
 ```javascript
-// Update PMP deal terms
-const updatedPMP = await updatePMP({
-  pmpId: "pmp_123",
-  dealDetails: {
-    floorPrice: 9.00, // Increased floor
-    minimumSpend: 15000, // Higher commitment
-    endDate: "2024-06-30" // Extended term
-  },
-  targeting: {
-    // Expanded targeting
-    geoTargeting: ["US", "CA", "GB", "AU"],
-    ageGroups: ["25-34", "35-44", "45-54"]
-  }
+// Quality improvements
+await updatePMP({
+  pmpId: "pmp_789",
+  changeRequest: "improve completion rates to 80% minimum"
+});
+
+// Inventory expansion  
+await updatePMP({
+  pmpId: "pmp_abc", 
+  changeRequest: "add DOOH inventory and reduce open marketplace exposure"
+});
+
+// Budget adjustments
+await updatePMP({
+  pmpId: "pmp_def",
+  changeRequest: "increase daily spend capacity by 25%"
 });
 ```
+
+**Common PMP optimization patterns:**
+- **Inventory adjustments:** "add more CTV inventory", "focus on premium publishers"
+- **Quality standards:** "improve viewability to 90%", "stricter brand safety filtering" 
+- **Budget changes:** "increase spend by 30%", "reduce floor prices by $2"
+- **Performance targets:** "improve completion rates", "target lower CPMs"
 
 ## DSP Integration
 
