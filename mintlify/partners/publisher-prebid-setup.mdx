@@ -1,47 +1,31 @@
 ---
-title: "Publisher Setup with Prebid and GAM"
-description: "Complete guide to setting up a publisher as a Scope3 agentic destination using Prebid"
+title: "Scope3-hosted for GAM + Prebid"
+description: "Complete guide to setting up a publisher using the Scope3-hosted GAM sales agent"
 icon: "handshake"
 ---
 
-# Publisher Setup with Prebid and GAM
+# Publisher Setup with Hosted Sales Agent
 
 Complete guide to setting up a publisher as a Scope3 agentic destination using Prebid
 
-## Overview
+<Steps>
 
-This guide provides step-by-step instructions for publishers to set up their integration with Scope3 using Prebid, enabling access to Green Media Products (GMP/GMP+) and sustainable advertising signals.
-
-Scope3's agentic publisher integration allows buyer agents to make real-time decisions on agentic direct buys in GAM.
-
-## Prerequisites
-
+<Step title="Prerequisites">
 Before starting this integration, ensure you have:
 
 - **Google Ad Manager (GAM)** account with administrative access
 - **Scope3 account** with the Activation package enabled
 - **Prebid.js 8.50.0+** or **Prebid Server (Go version)** implementation
 - Access to modify your Prebid configuration files
+</Step>
 
-**Quick Check**: Verify your Scope3 package by navigating to Settings > My Plan in your Scope3 account and confirming "Activation" is enabled.
+<Step title="AXE Integration">
 
-## Step 1: Decide on GAM Key Names (Optional Customization)
+[Set up AXE integration](/partners/axe-integration)
 
-Scope3 will use these default key names in GAM:
+</Step>
 
-- `axei` - Inclusion segments (GMP, GMP+, custom segments)
-- `axex` - Exclusion segments (brand safety blocks)
-- `axem` - Emissions classification
-
-**If you want to customize these key names:**
-
-1. Decide on your preferred key names now
-2. Document them for use in Steps 2 and 3
-3. Use your custom names consistently throughout the setup
-
-**Example**: You might prefer `scope3_include`, `scope3_exclude`, `scope3_emissions` instead of the defaults.
-
-## Step 2: Google Ad Manager Setup
+<Step title="Google Ad Manager Setup">
 
 ### Create Scope3 Advertiser
 
@@ -55,34 +39,26 @@ Scope3 will use these default key names in GAM:
 ### Set Up Key-Value Targeting
 
 1. Navigate to **Inventory** → **Key-values** in GAM
-2. Create three new key-values (or use your custom names from Step 1):
+2. Create three new key-values using the names you chose in the AXE integration:
 
 #### Inclusion Segments Key (`axei`)
 - **Key name**: `axei` (or your custom name)
 - **Values**: Dynamic (will be populated by Scope3)
 - **Value type**: Freeform
-- **Expected creatives**: All sizes
 
 #### Exclusion Segments Key (`axex`)
 - **Key name**: `axex` (or your custom name)  
 - **Values**: Dynamic (will be populated by Scope3)
 - **Value type**: Freeform
-- **Expected creatives**: All sizes
 
-#### Emissions Classification Key (`axem`)
+#### Macros Key (`axem`)
 - **Key name**: `axem` (or your custom name)
-- **Values**: `high`, `medium`, `low`, `verified_low`
-- **Value type**: Predefined list
-- **Expected creatives**: All sizes
+- **Values**: Dynamic (will be populated by Scope3)
+- **Value type**: Freeform
 
-## Step 3: Scope3 Account Configuration
+</Step>
 
-### Verify Activation Package
-
-1. Log in to your Scope3 account
-2. Navigate to **Settings** → **My Plan**
-3. Confirm "Activation" package is enabled
-4. If not enabled, contact your Scope3 account manager
+<Step title="Scope3 Account Configuration">
 
 ### Connect GAM Account
 
@@ -92,153 +68,33 @@ Scope3 will use these default key names in GAM:
 4. Complete OAuth authorization process
 5. Grant necessary permissions when prompted
 
-## Step 4: Prebid Implementation
+### Configure GAM integration
+Once you connect GAM, Scope3 will load the advertisers from the GAM API.
+* Select the Scope3 advertiser you selected from the list
 
-Scope3 supports both Prebid.js and Prebid Server implementations.
+You will now see the URL for your sales agent! It will show up as "Not authorized" until you do the next step (Authorize your sales agent).
 
-### Option A: Prebid.js Implementation
+### Add a custom domain (recommended)
 
-#### Install Scope3 Module
+See the instructions on the GAM integration page to set up a custom domain (for instance, ad-sales.your-domain.com) and to configure the landing page.
 
-If building Prebid.js from source, include the Scope3 RTD module:
+</Step>
 
-```bash
-gulp build --modules=scope3RtdProvider,bidAdapter1,bidAdapter2,...
-```
+<Step title="Authorize the sales agent">
 
-#### Configuration
+Much like `ads.txt` for the programmatic world, agentic buyers look at `adgents.json` to see if a sales agent is authorized for a particular publisher.
 
-Add the Scope3 RTD provider to your Prebid configuration:
+(todo: add snippet once AdCP spec is finalized)
 
-```javascript
-pbjs.setConfig({
-  realTimeData: {
-    auctionDelay: 100,
-    dataProviders: [{
-      name: "scope3",
-      waitForIt: true,
-      params: {
-        // Configuration provided by Scope3 team
-        publisherId: "YOUR_PUBLISHER_ID",
-        // Additional parameters provided during setup
-      }
-    }]
-  }
-});
-```
+You should now see your sales agent show up as "Authorized".
 
-### Option B: Prebid Server Implementation
+</Step>
 
-Contact your Scope3 technical account manager for server-side configuration details.
+</Steps>
 
-## Step 5: Testing & Validation
+## Next Steps
 
-### Browser Console Verification
-
-1. Open your browser's developer tools
-2. Navigate to a page with ads
-3. Look for Scope3 RTD activity in the console
-4. Verify segments are being applied
-
-### GAM Targeting Check
-
-1. In GAM, navigate to a line item
-2. Add targeting for your Scope3 key-values
-3. Preview and verify segments are available
-
-### Network Request Inspection
-
-Monitor network requests to ensure:
-- Scope3 RTD calls are being made
-- Segment data is being passed to bid requests
-- GAM is receiving the targeting parameters
-
-## Step 6: Advanced Configuration
-
-### Bidder-Specific Destinations
-
-Configure specific destinations for different bidders:
-
-```javascript
-pbjs.setConfig({
-  realTimeData: {
-    dataProviders: [{
-      name: "scope3",
-      params: {
-        bidders: ['bidderA', 'bidderB'],
-        customSegmentHandling: true
-      }
-    }]
-  }
-});
-```
-
-### Custom Segment Handling
-
-Implement custom logic for segment processing if needed:
-
-```javascript
-// Custom segment processing example
-pbjs.onEvent('auctionEnd', function(args) {
-  // Process Scope3 segments
-  // Custom analytics or reporting
-});
-```
-
-## Step 7: Monitoring & Optimization
-
-### Key Metrics to Track
-
-- **Segment Match Rate**: Percentage of requests with Scope3 segments
-- **Revenue Impact**: Performance of GMP/GMP+ inventory
-- **Latency**: Impact on page load times
-- **Fill Rate**: Availability of sustainable inventory
-
-### Performance Monitoring
-
-1. Set up monitoring dashboards in GAM
-2. Track key performance indicators
-3. Monitor console for any errors
-4. Regular performance reviews with Scope3 team
-
-## Step 8: Best Practices
-
-### Privacy Compliance
-
-- Ensure GDPR/CCPA compliance
-- Implement proper consent management
-- Regular privacy impact assessments
-
-### Performance Optimization
-
-- Monitor auction delays
-- Optimize timeout settings
-- Regular performance testing
-
-### Maintenance
-
-- Keep Prebid.js updated
-- Monitor for deprecated features
-- Regular configuration reviews
-
-## Troubleshooting
-
-### Common Issues
-
-**Segments not appearing in GAM:**
-- Verify key-value setup
-- Check OAuth connection
-- Confirm Prebid configuration
-
-**High latency:**
-- Adjust `auctionDelay` settings
-- Consider server-side implementation
-- Optimize network requests
-
-**Console errors:**
-- Check Prebid.js version compatibility
-- Verify configuration syntax
-- Review module inclusion
+The technical integration is now complete! The next step is to set up your first media product.
 
 ## Support
 
@@ -247,16 +103,3 @@ For technical support and questions:
 - **Scope3 Technical Account Manager**: Primary contact for configuration
 - **Prebid Documentation**: [prebid.org](https://prebid.org)
 - **Community Support**: Prebid Slack channel
-
-## Next Steps
-
-After successful integration:
-
-1. **Campaign Setup**: Work with buyers to create GMP campaigns
-2. **Reporting**: Set up regular performance reporting
-3. **Optimization**: Ongoing performance optimization
-4. **Expansion**: Consider additional Scope3 features
-
-<Note>
-This integration enables your inventory to participate in Scope3's sustainable advertising ecosystem, providing buyers with verified Green Media Products and emissions data.
-</Note>
