@@ -1819,6 +1819,15 @@ export class Scope3ApiClient {
     return result.data.getAPIAccessKeys.tokens[0].customerId;
   }
 
+  async validateApiKey(apiKey: string): Promise<{customerId?: number; isValid: boolean}> {
+    try {
+      const customerId = await this.getCustomerId(apiKey);
+      return { customerId, isValid: true };
+    } catch (_error) {
+      return { isValid: false };
+    }
+  }
+
   async getCustomSignal(
     apiKey: string,
     signalId: string,
