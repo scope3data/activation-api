@@ -190,7 +190,7 @@ export class CustomSignalsClient {
   async getPartnerSeats(
     scope3Client: Scope3ApiClient,
     apiKey: string,
-  ): Promise<Array<{ customerId: number; id: string; name: string; }>> {
+  ): Promise<Array<{ customerId: number; id: string; name: string }>> {
     await this.ensureInitialized();
 
     // Use the provided scope3 client to get brand agents

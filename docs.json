@@ -81,9 +81,7 @@
         "groups": [
           {
             "group": "Getting Started",
-            "pages": [
-              "mintlify/partners/authentication"
-            ]
+            "pages": ["mintlify/partners/authentication"]
           },
           {
             "group": "Publisher Integration",
@@ -94,7 +92,7 @@
             ]
           },
           {
-            "group": "Signals Management", 
+            "group": "Signals Management",
             "icon": "database",
             "pages": [
               "mintlify/partners/segment-management",
