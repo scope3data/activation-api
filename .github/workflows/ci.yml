@@ -87,3 +87,29 @@ jobs:
 
       - name: Validate OpenAPI spec
         run: npm run validate:openapi
+
+  documentation:
+    runs-on: ubuntu-latest
+    name: Documentation Validation
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check documentation links
+        run: |
+          if npm run docs:validate:links | grep -q "found.*broken links"; then
+            echo "❌ Broken links detected in documentation!"
+            echo "Please fix all broken links before merging."
+            exit 1
+          fi
+          echo "✅ Documentation links validated successfully"

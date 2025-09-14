@@ -45,6 +45,15 @@ jobs:
             echo "✅ No TODO/FIXME comments found"
           fi
 
+      - name: Check documentation links
+        run: |
+          if npm run docs:validate:links | grep -q "found.*broken links"; then
+            echo "❌ Broken links detected in documentation!"
+            echo "Please fix all broken links before merging."
+            exit 1
+          fi
+          echo "✅ Documentation links validated successfully"
+
   dependency-check:
     runs-on: ubuntu-latest
 
