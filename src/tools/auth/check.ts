@@ -9,7 +9,7 @@ import {
   createMCPResponse,
 } from "../../utils/error-handling.js";
 
-export const checkAuthTool = (client: Scope3ApiClient) => ({
+export const checkAuthTool = (_client: Scope3ApiClient) => ({
   annotations: {
     category: "System",
     dangerLevel: "low",
@@ -37,10 +37,16 @@ export const checkAuthTool = (client: Scope3ApiClient) => ({
         return createAuthErrorResponse();
       }
 
-      const customerId = await client.getCustomerId(apiKey);
+      // Authentication has already been validated by FastMCP authenticate function
+      // If we have a session with an API key, authentication is successful
+      const maskedKey = `${apiKey.substring(0, 6)}...${apiKey.substring(apiKey.length - 4)}`;
 
       return createMCPResponse({
-        message: `Authentication successful. Customer ID: ${customerId}`,
+        details: {
+          keyPrefix: apiKey.substring(0, 6),
+          source: context.session?.scope3ApiKey ? "session" : "environment",
+        },
+        message: `Authentication successful. API key: ${maskedKey}`,
         success: true,
       });
     } catch (error) {

@@ -1793,20 +1793,37 @@ export class Scope3ApiClient {
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[GraphQL] getCustomerId API request failed:`, {
+        apiKeyPrefix: apiKey.substring(0, 10),
+        error: errorText,
+        status: response.status,
+        statusText: response.statusText,
+        url: this.graphqlUrl,
+      });
+
       if (response.status === 401 || response.status === 403) {
         throw new Error("Authentication failed");
       }
       if (response.status >= 500) {
         throw new Error("External service temporarily unavailable");
       }
-      throw new Error("Request failed");
+      throw new Error(
+        `Request failed with status ${response.status}: ${response.statusText}`,
+      );
     }
 
     const result =
       (await response.json()) as GraphQLResponse<GetAPIAccessKeysData>;
 
     if (result.errors && result.errors.length > 0) {
-      throw new Error("Unable to get customer information");
+      console.error(`[GraphQL] getCustomerId GraphQL errors:`, {
+        apiKeyPrefix: apiKey.substring(0, 10),
+        errors: result.errors,
+      });
+      throw new Error(
+        `Unable to get customer information: ${result.errors[0].message}`,
+      );
     }
 
     if (
