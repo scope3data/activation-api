@@ -306,19 +306,19 @@ The platform automatically optimizes creative delivery based on performance:
 ### Core Creative Operations
 
 <CardGroup cols={2}>
-  <Card title="Create Creative" href="/api-reference/create_creative" icon="plus">
+  <Card title="Create Creative" href="/api-reference/creative/create" icon="plus">
     `POST /creatives` - Add new creative to brand agent library
   </Card>
   
-  <Card title="List Creatives" href="/api-reference/list_creatives" icon="list">
+  <Card title="List Creatives" href="/api-reference/creative/list" icon="list">
     `GET /creatives` - View all creatives for a brand agent
   </Card>
   
-  <Card title="Update Creative" href="/api-reference/update_creative" icon="edit">
+  <Card title="Update Creative" href="/api-reference/creative/update" icon="edit">
     `PUT /creatives/{id}` - Modify creative properties
   </Card>
   
-  <Card title="Assign to Campaign" href="/api-reference/update_campaign" icon="link">
+  <Card title="Assign to Campaign" href="/api-reference/campaign/update" icon="link">
     `PUT /campaigns/{id}` - Assign creatives via campaign update
   </Card>
 </CardGroup>
@@ -326,7 +326,7 @@ The platform automatically optimizes creative delivery based on performance:
 ### Advanced Creative Tools
 
 <CardGroup cols={2}>
-  <Card title="Format Discovery" href="/api-reference/list_creative_formats" icon="shapes">
+  <Card title="Format Discovery" href="/api-reference/format/list" icon="shapes">
     `GET /creative-formats` - Discover available formats and specs
   </Card>
   
@@ -334,7 +334,7 @@ The platform automatically optimizes creative delivery based on performance:
     `POST /assets` - Manage reusable asset library
   </Card>
   
-  <Card title="Publisher Sync" href="/api-reference/creative_sync_publishers" icon="sync">
+  <Card title="Publisher Sync" href="/api-reference/creative/sync-publishers" icon="sync">
     `POST /creative/sync` - Sync to publisher platforms
   </Card>
   
