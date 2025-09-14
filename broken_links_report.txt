@@ -1,0 +1,140 @@
+
+> scope3-campaign-api-mcp@1.0.0 docs:validate:links
+> npx mintlify broken-links
+
+found 90 broken links in 22 files
+
+docs/README.md
+ ⎿  creative-management-guide.md
+ ⎿  creative-agents-integration.md
+ ⎿  creative-management-guide.md#quick-start
+ ⎿  creative-management-guide.md#understanding-the-creative-hierarchy
+ ⎿  creative-agents-integration.md#creative-agents-integration
+ ⎿  creative-management-guide.md#advanced-features
+ ⎿  creative-management-guide.md#core-workflows
+ ⎿  creative-agents-integration.md#integration-architecture
+ ⎿  creative-agents-integration.md#integration-points
+ ⎿  creative-agents-integration.md#overview
+ ⎿  creative-agents-integration.md#integration-architecture
+ ⎿  creative-management-guide.md#understanding-the-creative-hierarchy
+ ⎿  creative-management-guide.md#common-questions
+ ⎿  creative-agents-integration.md#integration-architecture
+ ⎿  creative-management-guide.md#core-workflows
+ ⎿  creative-management-guide.md#best-practices
+ ⎿  creative-management-guide.md
+
+mintlify/authentication.mdx
+ ⎿  /api-reference/authentication/auth-check
+
+mintlify/concepts.mdx
+ ⎿  /quickstart
+ ⎿  /reporting-overview
+ ⎿  /api-reference/brand-agents/create-brand-agent
+
+mintlify/features/built-for-agents.mdx
+ ⎿  /api-reference
+ ⎿  /quickstart
+ ⎿  /api-reference
+
+mintlify/features/media-quality.mdx
+ ⎿  /object-guides/signal
+ ⎿  /object-guides/campaign
+ ⎿  /features/publisher-integration
+
+mintlify/features/publisher-integration.mdx
+ ⎿  /features/media-quality
+ ⎿  /object-guides/campaign
+ ⎿  /optimization/scope3-algorithms
+
+mintlify/integrations/custom-signals-platform.mdx
+ ⎿  /object-guides/signal
+
+mintlify/object-guides/brand-agent.mdx
+ ⎿  /api-reference/brand-agents/create-brand-agent
+ ⎿  /api-reference/brand-agents/list-brand-agents
+ ⎿  /api-reference/brand-agents/get-brand-agent
+ ⎿  /api-reference/brand-agents/update-brand-agent
+ ⎿  /quickstart
+ ⎿  /reporting-overview
+
+mintlify/object-guides/campaign.mdx
+ ⎿  /api-reference/reporting/get-campaign-summary
+ ⎿  /api-reference/reporting/export-campaign-data
+ ⎿  /api-reference/reporting/analyze-tactics
+ ⎿  tactic
+ ⎿  tactic
+ ⎿  signal
+ ⎿  tactic
+ ⎿  /reporting-overview
+
+mintlify/object-guides/creative.mdx
+ ⎿  /api-reference/create_creative
+ ⎿  /api-reference/list_creatives
+ ⎿  /api-reference/update_creative
+ ⎿  /api-reference/update_campaign
+ ⎿  /api-reference/list_creative_formats
+ ⎿  /api-reference/assets_add
+ ⎿  /api-reference/creative_sync_publishers
+ ⎿  /api-reference/creative_approval_status
+ ⎿  /reporting-overview
+
+mintlify/object-guides/format.mdx
+ ⎿  /api-reference/list_creative_formats
+ ⎿  /api-reference/create_creative
+
+mintlify/object-guides/pmp.mdx
+ ⎿  /api-reference/create_brand_agent_pmp
+ ⎿  /api-reference/list_brand_agent_pmps
+ ⎿  /api-reference/update_brand_agent_pmp
+ ⎿  /api-reference/get_dsp_seats
+
+mintlify/object-guides/signal.mdx
+ ⎿  /integrations/custom-signals
+ ⎿  /object-guides/tactic
+ ⎿  /object-guides/campaign
+
+mintlify/object-guides/tactic.mdx
+ ⎿  /optimization/campaigns
+ ⎿  /object-guides/signal
+
+mintlify/optimization/custom-algorithms.mdx
+ ⎿  /optimization/measurement
+ ⎿  /optimization/scope3-algorithms
+ ⎿  /api-reference
+
+mintlify/optimization/scope3-algorithms.mdx
+ ⎿  /optimization/measurement
+ ⎿  /optimization/custom-algorithms
+ ⎿  /object-guides/signal
+
+mintlify/partners/publisher-prebid-setup.mdx
+ ⎿  /partners/axe-integration
+
+mintlify/partners/publisher-setup.mdx
+ ⎿  /partners/sales-agents
+ ⎿  /partners/axe-integration
+
+mintlify/partners/sales-agents.mdx
+ ⎿  /partners/axe-integration
+
+mintlify/quickstart-for-agents.mdx
+ ⎿  quickstart
+
+mintlify/quickstart.mdx
+ ⎿  integration/creative-agents
+ ⎿  object-guides/format
+ ⎿  integrations/creative-agents
+ ⎿  optimization/scoring
+ ⎿  object-guides/brand-standards-agent
+ ⎿  object-guides/property-list
+
+mintlify/reporting-overview.mdx
+ ⎿  /api-reference/reporting/get-campaign-summary
+ ⎿  /api-reference/reporting/export-campaign-data
+ ⎿  /api-reference/reporting/analyze-tactics
+ ⎿  /api-reference/reporting/get-campaign-summary
+ ⎿  /api-reference/reporting/export-campaign-data
+ ⎿  /api-reference/reporting/analyze-tactics
+ ⎿  quickstart
+ ⎿  /api-reference/reporting/get-campaign-summary
+

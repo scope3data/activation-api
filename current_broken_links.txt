@@ -1,0 +1,85 @@
+
+> scope3-campaign-api-mcp@1.0.0 docs:validate:links
+> npx mintlify broken-links
+
+found 49 broken links in 15 files
+
+mintlify/authentication.mdx
+ ⎿  /api-reference/authentication/auth-check
+
+mintlify/concepts.mdx
+ ⎿  /api-reference/brand-agents/create-brand-agent
+
+mintlify/features/built-for-agents.mdx
+ ⎿  /api-reference
+ ⎿  /api-reference
+
+mintlify/object-guides/brand-agent.mdx
+ ⎿  /api-reference/brand-agents/create-brand-agent
+ ⎿  /api-reference/brand-agents/list-brand-agents
+ ⎿  /api-reference/brand-agents/get-brand-agent
+ ⎿  /api-reference/brand-agents/update-brand-agent
+
+mintlify/object-guides/campaign.mdx
+ ⎿  /api-reference/reporting/get-campaign-summary
+ ⎿  /api-reference/reporting/export-campaign-data
+ ⎿  /api-reference/reporting/analyze-tactics
+ ⎿  tactic
+ ⎿  tactic
+ ⎿  signal
+ ⎿  tactic
+
+mintlify/object-guides/creative.mdx
+ ⎿  /api-reference/create_creative
+ ⎿  /api-reference/list_creatives
+ ⎿  /api-reference/update_creative
+ ⎿  /api-reference/update_campaign
+ ⎿  /api-reference/list_creative_formats
+ ⎿  /api-reference/assets_add
+ ⎿  /api-reference/creative_sync_publishers
+ ⎿  /api-reference/creative_approval_status
+
+mintlify/object-guides/format.mdx
+ ⎿  /api-reference/list_creative_formats
+ ⎿  /api-reference/create_creative
+
+mintlify/object-guides/pmp.mdx
+ ⎿  /api-reference/create_brand_agent_pmp
+ ⎿  /api-reference/list_brand_agent_pmps
+ ⎿  /api-reference/update_brand_agent_pmp
+ ⎿  /api-reference/get_dsp_seats
+
+mintlify/object-guides/signal.mdx
+ ⎿  /mintlify/integrations/custom-signals
+
+mintlify/object-guides/tactic.mdx
+ ⎿  /mintlify/optimization/campaigns
+
+mintlify/optimization/custom-algorithms.mdx
+ ⎿  /mintlify/optimization/measurement
+ ⎿  /api-reference
+
+mintlify/optimization/scope3-algorithms.mdx
+ ⎿  /mintlify/optimization/measurement
+
+mintlify/quickstart-for-agents.mdx
+ ⎿  quickstart
+
+mintlify/quickstart.mdx
+ ⎿  integration/creative-agents
+ ⎿  object-guides/format
+ ⎿  integrations/creative-agents
+ ⎿  optimization/scoring
+ ⎿  object-guides/brand-standards-agent
+ ⎿  object-guides/property-list
+
+mintlify/reporting-overview.mdx
+ ⎿  /api-reference/reporting/get-campaign-summary
+ ⎿  /api-reference/reporting/export-campaign-data
+ ⎿  /api-reference/reporting/analyze-tactics
+ ⎿  /api-reference/reporting/get-campaign-summary
+ ⎿  /api-reference/reporting/export-campaign-data
+ ⎿  /api-reference/reporting/analyze-tactics
+ ⎿  quickstart
+ ⎿  /api-reference/reporting/get-campaign-summary
+
