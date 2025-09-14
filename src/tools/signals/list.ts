@@ -135,8 +135,8 @@ export const listCustomSignalsTool = (client: Scope3ApiClient) => ({
           // Show seat information if available
           if ((signal as Record<string, unknown>)._seatInfo) {
             const seatInfo = (signal as Record<string, unknown>)._seatInfo as {
-              seatName: string;
               seatId: string;
+              seatName: string;
             };
             summary += `• **Seat:** ${seatInfo.seatName} (${seatInfo.seatId})\n`;
           }

@@ -1819,17 +1819,6 @@ export class Scope3ApiClient {
     return result.data.getAPIAccessKeys.tokens[0].customerId;
   }
 
-  async validateApiKey(
-    apiKey: string,
-  ): Promise<{ customerId?: number; isValid: boolean }> {
-    try {
-      const customerId = await this.getCustomerId(apiKey);
-      return { customerId, isValid: true };
-    } catch (_error) {
-      return { isValid: false };
-    }
-  }
-
   async getCustomSignal(
     apiKey: string,
     signalId: string,
@@ -1966,8 +1955,6 @@ export class Scope3ApiClient {
     return result.data.optimizationRecommendations;
   }
 
-  // Inventory Option Management Methods
-
   // Get product recommendations
   async getProductRecommendations(
     apiKey: string,
@@ -2009,6 +1996,8 @@ export class Scope3ApiClient {
       { name: "Scope3 Platform", url: "https://api.scope3.com/mcp" },
     ];
   }
+
+  // Inventory Option Management Methods
 
   async getScoringOutcomes(
     apiKey: string,
@@ -2396,10 +2385,6 @@ export class Scope3ApiClient {
     return result.data.brandAgents;
   }
 
-  // ========================================
-  // CREATIVE MANAGEMENT METHODS (MCP Orchestration + REST)
-  // ========================================
-
   // Brand Standards Agent methods
   async listBrandAgentStandards(
     apiKey: string,
@@ -2437,6 +2422,10 @@ export class Scope3ApiClient {
 
     return result.data?.brandStandardsAgents || [];
   }
+
+  // ========================================
+  // CREATIVE MANAGEMENT METHODS (MCP Orchestration + REST)
+  // ========================================
 
   // Synthetic Audience Agent methods
   async listBrandAgentSyntheticAudiences(
@@ -3206,10 +3195,6 @@ export class Scope3ApiClient {
     return result.data.updateBrandAgentCampaign;
   }
 
-  // ========================================
-  // PMP (PRIVATE MARKETPLACE) METHODS
-  // ========================================
-
   async updateBrandAgentCreative(
     apiKey: string,
     id: string,
@@ -3252,6 +3237,10 @@ export class Scope3ApiClient {
 
     return result.data.updateBrandAgentCreative;
   }
+
+  // ========================================
+  // PMP (PRIVATE MARKETPLACE) METHODS
+  // ========================================
 
   // Update Brand Agent PMP (stubbed until backend ready)
   async updateBrandAgentPMP(
@@ -3401,11 +3390,6 @@ export class Scope3ApiClient {
     return result.data.updateBrandStory;
   }
 
-  // Removed parseCreativePrompt - AI generation handled by creative agents
-  // Removed detectFileFormat - handled by REST upload layer
-
-  // Custom Signal Definition Management Methods
-
   /**
    * Update existing creative
    */
@@ -3491,6 +3475,11 @@ export class Scope3ApiClient {
       return mockCreative;
     }
   }
+
+  // Removed parseCreativePrompt - AI generation handled by creative agents
+  // Removed detectFileFormat - handled by REST upload layer
+
+  // Custom Signal Definition Management Methods
 
   async updateCustomSignal(
     apiKey: string,
