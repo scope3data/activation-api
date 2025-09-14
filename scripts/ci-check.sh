@@ -38,15 +38,14 @@ npm run lint
 echo "🧪 Running tests..."
 npm test
 
-# Check documentation links (requires Mintlify CLI)
+# Check documentation links (using local Mintlify)
 echo "📖 Checking documentation links..."
-if command -v mintlify >/dev/null 2>&1; then
-  npm run docs:validate:links
-  echo "✅ Documentation links checked"
-else
-  echo "⚠️  Mintlify CLI not found - skipping documentation link check"
-  echo "   Install with: npm install -g mintlify"
+if npm run docs:validate:links | grep -q "found.*broken links"; then
+  echo "❌ Broken links detected in documentation!"
+  echo "Please fix all broken links before pushing."
+  exit 1
 fi
+echo "✅ Documentation links checked - no broken links found"
 
 # Check for OpenAPI drift
 echo "📋 Checking OpenAPI consistency..."
