@@ -40,12 +40,12 @@ npm test
 
 # Check documentation links (using local Mintlify)
 echo "📖 Checking documentation links..."
-if npm run docs:validate:links | grep -q "/partners/publisher-prebid-setup"; then
-  echo "❌ Critical broken link detected: publisher-prebid-setup page not accessible!"
-  echo "Please fix the missing navigation entry in docs.json"
+if npm run docs:validate:links | grep -q "found.*broken links"; then
+  echo "❌ Broken links detected in documentation!"
+  echo "Please fix all broken links before pushing."
   exit 1
 fi
-echo "✅ Documentation links checked - critical links working"
+echo "✅ Documentation links checked - no broken links found"
 
 # Check for OpenAPI drift
 echo "📋 Checking OpenAPI consistency..."
