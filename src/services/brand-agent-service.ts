@@ -25,7 +25,7 @@ export class BrandAgentService extends BigQueryBaseService {
         COALESCE(ext.updated_at, a.updated_at, a.created_at) as updated_at
       FROM \`${this.agentTableRef}\` a
       LEFT JOIN ${this.getTableRef("brand_agent_extensions")} ext
-        ON a.id = ext.agent_id
+        ON CAST(a.id AS STRING) = ext.agent_id
       WHERE a.id = @agentId
       LIMIT 1
     `;
@@ -82,7 +82,7 @@ export class BrandAgentService extends BigQueryBaseService {
         COALESCE(ext.updated_at, a.updated_at, a.created_at) as updated_at
       FROM \`${this.agentTableRef}\` a
       LEFT JOIN ${this.getTableRef("brand_agent_extensions")} ext
-        ON a.id = ext.agent_id
+        ON CAST(a.id AS STRING) = ext.agent_id
       ${whereClause}
       ORDER BY a.created_at DESC
     `;
@@ -161,7 +161,7 @@ export class BrandAgentService extends BigQueryBaseService {
       SELECT a.id
       FROM \`${this.agentTableRef}\` a
       INNER JOIN ${this.getTableRef("brand_agent_extensions")} ext
-        ON a.id = ext.agent_id
+        ON CAST(a.id AS STRING) = ext.agent_id
       WHERE a.customer_id = @customerId AND (${conditions.join(" OR ")})
       LIMIT 1
     `;

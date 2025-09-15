@@ -22,15 +22,26 @@ This is the Scope3 Campaign API MCP server with comprehensive brand agent manage
 
 ### Backend Architecture
 
-The server uses a **hybrid backend approach**:
+The server uses a **GraphQL-primary with BigQuery enhancement approach**:
 
-- **BigQuery** (`bok-playground.agenticapi`): Core entities (campaigns, creatives, brand agent extensions)
-- **GraphQL** (`https://api.scope3.com/graphql`): Brand stories, brand standards, PMPs, measurement sources
-- **Automatic Fallback**: BigQuery methods fall back to GraphQL where available
+- **GraphQL** (`https://api.scope3.com/graphql`): Primary data source for all core entities
+  - Brand agents (`public_agent` table) - base brand agent data
+  - Brand stories, brand standards, PMPs, measurement sources
+  - Reliable, always-available API with authentication
+- **BigQuery** (`bok-playground.agenticapi`): Customer-scoped extensions and advanced features
+  - `brand_agent_extensions` - Extends `public_agent` with customer-scoped fields
+  - `campaigns` - Campaign management with budget tracking  
+  - `creatives` - Creative assets with format/content metadata
+  - Assignment mappings and relationships
+
+**Architecture Pattern**: 
+1. **GraphQL First**: Query GraphQL for core entity data (reliable, authenticated)
+2. **BigQuery Enhancement**: Add customer-scoped fields and advanced features when available
+3. **No Fallbacks**: Each backend serves its specific architectural purpose - don't treat as backups
 
 #### BigQuery Tables
 
-- `brand_agent_extensions` - Extends existing `public_agent` table
+- `brand_agent_extensions` - Extends GraphQL `public_agent` with customer-scoped fields
 - `campaigns` - Campaign management with budget tracking
 - `creatives` - Creative assets with format/content metadata
 - `campaign_creatives` - Campaign-creative assignment mapping
@@ -39,7 +50,8 @@ The server uses a **hybrid backend approach**:
 #### Key Services
 
 - **CampaignBigQueryService** (`src/services/campaign-bigquery-service.ts`) - CRUD operations for BigQuery entities
-- **Scope3ApiClient** (`src/client/scope3-client.ts`) - Hybrid routing with transparent fallbacks
+- **BrandAgentService** (`src/services/brand-agent-service.ts`) - BigQuery extensions for brand agents
+- **Scope3ApiClient** (`src/client/scope3-client.ts`) - GraphQL-primary with BigQuery enhancement
 
 ## Development Standards
 
@@ -198,12 +210,50 @@ BrandAgent (Advertiser Account)
 
 ## Testing & Validation
 
+### Testing Strategy
+
+**Service-Level Testing (Recommended)**
+- Mock at the `Scope3ApiClient` service boundary, not implementation details
+- Tests remain valid when switching from GraphQL → REST or BigQuery → PostgreSQL
+- Focus on business logic and user outcomes, not technical implementation
+- Enables safe refactoring of underlying technologies
+
+**Test Levels:**
+1. **Tool-Level Tests** (`*-tool-level.test.ts`) - Highest level, tests complete MCP tool execution
+2. **Service-Level Tests** (`*-service-level.test.ts`) - Tests service contract and business logic
+3. **Implementation Tests** (`*-client-*.test.ts`) - Only when testing specific technical requirements
+
+**Example Service-Level Test:**
+```typescript
+// ✅ Good - Tests business logic, survives infrastructure changes
+it("should return brand agents when service is available", async () => {
+  mockClient.listBrandAgents.mockResolvedValue([testAgent]);
+  const result = await realClient.listBrandAgents(apiKey);
+  expect(result).toHaveLength(1);
+});
+
+// ❌ Avoid - Tests implementation details
+it("should call GraphQL then BigQuery", async () => {
+  // This breaks when you change from GraphQL to REST
+});
+```
+
 ### Before Committing
 
 - Run linters and formatters
 - Ensure all TypeScript compiles
+- Run service-level tests: `npm test -- service-level`
 - Test any code examples in documentation
 - Validate docs.json structure if modified
+
+### Test Commands
+
+```bash
+npm test                                    # Run all tests
+npm test -- service-level                  # Service-level tests only
+npm test -- tool-level                     # Tool-level integration tests
+npm test -- --coverage                     # With coverage report
+```
 
 ### Documentation Testing
 
