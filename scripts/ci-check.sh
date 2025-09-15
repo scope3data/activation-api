@@ -38,27 +38,32 @@ npm run lint
 echo "🧪 Running tests..."
 npm test
 
-# Check documentation links (using local Mintlify)
+# Check documentation links (using local Mintlify + smart API validation)
 echo "📖 Checking documentation links..."
 BROKEN_LINKS_OUTPUT=$(npm run docs:validate:links 2>&1)
 
-# Filter out API reference false positives (Mintlify tool issue)
+# Filter out API reference links for separate validation
 NON_API_BROKEN_LINKS=$(echo "$BROKEN_LINKS_OUTPUT" | grep -v "/api-reference/" || true)
 
+# Check non-API broken links
 if echo "$NON_API_BROKEN_LINKS" | grep -q " ⎿ "; then
   echo "❌ Non-API reference broken links detected!"
-  echo "Please fix these broken links (excluding known API reference false positives):"
+  echo "Please fix these broken links:"
   echo "$NON_API_BROKEN_LINKS"
   exit 1
 fi
 
-# Count total API reference false positives for informational purposes
-API_FALSE_POSITIVES=$(echo "$BROKEN_LINKS_OUTPUT" | grep -c "/api-reference/" || echo "0")
-if [ "$API_FALSE_POSITIVES" -gt 0 ]; then
-  echo "ℹ️  Note: $API_FALSE_POSITIVES API reference links flagged as broken (likely false positives)"
+# Smart validation of API reference links
+echo "🔗 Validating API reference links..."
+if ! npm run docs:validate:api-links; then
+  echo "⚠️  Some API reference links are broken, but not blocking CI yet"
+  echo "   These need to be fixed: see the report above"
+  echo "   Future versions may block CI on these issues"
+else
+  echo "✅ All API reference links working"
 fi
 
-echo "✅ Documentation links checked - no non-API broken links found"
+echo "✅ Documentation links checked - core navigation working"
 
 # Check for OpenAPI drift
 echo "📋 Checking OpenAPI consistency..."
