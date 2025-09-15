@@ -24,7 +24,7 @@
     "updated": 0,
     "didUpdate": false
   },
-  "startTime": 1757968636017,
+  "startTime": 1757970089944,
   "success": true,
   "testResults": [
     {
@@ -37,7 +37,7 @@
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Listing should return brand agents when service is available",
           "status": "passed",
           "title": "should return brand agents when service is available",
-          "duration": 1.7273330000000442,
+          "duration": 1.683458000000087,
           "failureMessages": [],
           "meta": {}
         },
@@ -49,7 +49,7 @@
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Listing should handle authentication errors gracefully",
           "status": "passed",
           "title": "should handle authentication errors gracefully",
-          "duration": 0.6989169999999376,
+          "duration": 0.7445829999999205,
           "failureMessages": [],
           "meta": {}
         },
@@ -61,7 +61,7 @@
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Listing should support filtering by criteria",
           "status": "passed",
           "title": "should support filtering by criteria",
-          "duration": 0.3577909999999065,
+          "duration": 0.3424159999999574,
           "failureMessages": [],
           "meta": {}
         },
@@ -73,7 +73,7 @@
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Listing should handle mixed enhancement states gracefully",
           "status": "passed",
           "title": "should handle mixed enhancement states gracefully",
-          "duration": 0.3440419999999449,
+          "duration": 0.365291999999954,
           "failureMessages": [],
           "meta": {}
         },
@@ -85,7 +85,7 @@
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Retrieval should return brand agent when found",
           "status": "passed",
           "title": "should return brand agent when found",
-          "duration": 0.26224999999999454,
+          "duration": 0.2912499999999909,
           "failureMessages": [],
           "meta": {}
         },
@@ -97,7 +97,7 @@
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Retrieval should handle not found errors",
           "status": "passed",
           "title": "should handle not found errors",
-          "duration": 0.17887499999994816,
+          "duration": 0.16429200000004585,
           "failureMessages": [],
           "meta": {}
         },
@@ -109,7 +109,7 @@
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Retrieval should work with GraphQL-only data when enhancement unavailable",
           "status": "passed",
           "title": "should work with GraphQL-only data when enhancement unavailable",
-          "duration": 0.22149999999999181,
+          "duration": 0.22450000000003456,
           "failureMessages": [],
           "meta": {}
         },
@@ -121,7 +121,7 @@
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Creation should create brand agent with provided data",
           "status": "passed",
           "title": "should create brand agent with provided data",
-          "duration": 0.2401670000000422,
+          "duration": 0.24454100000002654,
           "failureMessages": [],
           "meta": {}
         },
@@ -133,7 +133,7 @@
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Creation should handle validation errors",
           "status": "passed",
           "title": "should handle validation errors",
-          "duration": 0.2612500000000182,
+          "duration": 0.26224999999999454,
           "failureMessages": [],
           "meta": {}
         },
@@ -145,7 +145,7 @@
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Updates should update brand agent with provided changes",
           "status": "passed",
           "title": "should update brand agent with provided changes",
-          "duration": 0.201958999999988,
+          "duration": 0.20670800000004874,
           "failureMessages": [],
           "meta": {}
         },
@@ -157,7 +157,7 @@
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Updates should handle partial updates",
           "status": "passed",
           "title": "should handle partial updates",
-          "duration": 0.10754099999996924,
+          "duration": 0.11758300000008148,
           "failureMessages": [],
           "meta": {}
         },
@@ -169,7 +169,7 @@
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Deletion should delete brand agent successfully",
           "status": "passed",
           "title": "should delete brand agent successfully",
-          "duration": 0.10633400000006077,
+          "duration": 0.11383299999999963,
           "failureMessages": [],
           "meta": {}
         },
@@ -181,7 +181,7 @@
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Deletion should handle deletion of non-existent agent",
           "status": "passed",
           "title": "should handle deletion of non-existent agent",
-          "duration": 0.13279099999999744,
+          "duration": 0.14475000000004457,
           "failureMessages": [],
           "meta": {}
         },
@@ -193,7 +193,7 @@
           "fullName": "Scope3ApiClient - Service Level Contract Performance Requirements should complete single agent retrieval within time limit",
           "status": "passed",
           "title": "should complete single agent retrieval within time limit",
-          "duration": 0.11087499999996453,
+          "duration": 0.14383299999997234,
           "failureMessages": [],
           "meta": {}
         },
@@ -205,7 +205,7 @@
           "fullName": "Scope3ApiClient - Service Level Contract Performance Requirements should handle slow backend gracefully",
           "status": "passed",
           "title": "should handle slow backend gracefully",
-          "duration": 101.37462499999992,
+          "duration": 100.65600000000006,
           "failureMessages": [],
           "meta": {}
         },
@@ -217,7 +217,7 @@
           "fullName": "Scope3ApiClient - Service Level Contract Error Recovery should provide clear error messages for common failures",
           "status": "passed",
           "title": "should provide clear error messages for common failures",
-          "duration": 0.5530830000000151,
+          "duration": 0.5903749999999945,
           "failureMessages": [],
           "meta": {}
         },
@@ -229,7 +229,7 @@
           "fullName": "Scope3ApiClient - Service Level Contract Architectural Pattern Validation should maintain consistent response structure across all operations",
           "status": "passed",
           "title": "should maintain consistent response structure across all operations",
-          "duration": 0.39583300000003874,
+          "duration": 0.5707919999999831,
           "failureMessages": [],
           "meta": {}
         },
@@ -241,13 +241,13 @@
           "fullName": "Scope3ApiClient - Service Level Contract Architectural Pattern Validation should handle concurrent operations safely",
           "status": "passed",
           "title": "should handle concurrent operations safely",
-          "duration": 0.5775409999999965,
+          "duration": 0.7313750000000709,
           "failureMessages": [],
           "meta": {}
         }
       ],
-      "startTime": 1757968636235,
-      "endTime": 1757968636342.5776,
+      "startTime": 1757970090191,
+      "endTime": 1757970090298.7314,
       "status": "passed",
       "message": "",
       "name": "/Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts"
