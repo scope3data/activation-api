@@ -30,11 +30,12 @@ The server uses a **GraphQL-primary with BigQuery enhancement approach**:
   - Reliable, always-available API with authentication
 - **BigQuery** (`bok-playground.agenticapi`): Customer-scoped extensions and advanced features
   - `brand_agent_extensions` - Extends `public_agent` with customer-scoped fields
-  - `campaigns` - Campaign management with budget tracking  
+  - `campaigns` - Campaign management with budget tracking
   - `creatives` - Creative assets with format/content metadata
   - Assignment mappings and relationships
 
-**Architecture Pattern**: 
+**Architecture Pattern**:
+
 1. **GraphQL First**: Query GraphQL for core entity data (reliable, authenticated)
 2. **BigQuery Enhancement**: Add customer-scoped fields and advanced features when available
 3. **No Fallbacks**: Each backend serves its specific architectural purpose - don't treat as backups
@@ -213,17 +214,20 @@ BrandAgent (Advertiser Account)
 ### Testing Strategy
 
 **Service-Level Testing (Recommended)**
+
 - Mock at the `Scope3ApiClient` service boundary, not implementation details
 - Tests remain valid when switching from GraphQL → REST or BigQuery → PostgreSQL
 - Focus on business logic and user outcomes, not technical implementation
 - Enables safe refactoring of underlying technologies
 
 **Test Levels:**
+
 1. **Tool-Level Tests** (`*-tool-level.test.ts`) - Highest level, tests complete MCP tool execution
 2. **Service-Level Tests** (`*-service-level.test.ts`) - Tests service contract and business logic
 3. **Implementation Tests** (`*-client-*.test.ts`) - Only when testing specific technical requirements
 
 **Example Service-Level Test:**
+
 ```typescript
 // ✅ Good - Tests business logic, survives infrastructure changes
 it("should return brand agents when service is available", async () => {
