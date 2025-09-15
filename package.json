@@ -15,7 +15,7 @@
     "docs:dev": "npx mintlify dev",
     "docs:validate": "npx mintlify broken-links && npx mintlify openapi-check openapi.yaml",
     "docs:validate:links": "npx mintlify broken-links",
-    "docs:validate:api-links": "node scripts/validate-api-links.js",
+    "docs:validate:api-links": "node scripts/validate-api-links-local.js",
     "docs:validate:openapi": "npx mintlify openapi-check openapi.yaml",
     "setup:bigquery": "tsx scripts/setup-bigquery-signals.ts",
     "prebuild": "npm run generate:openapi",
