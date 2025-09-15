@@ -1,13 +1,14 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { Scope3ApiClient } from "./scope3-client.js";
-import { server, testConfig } from "../__tests__/setup/test-setup.js";
-import { setupGraphQLMocks } from "../__tests__/setup/graphql-mocks-simple.js";
-import {
-  setupBigQueryMocks,
-  bigQueryTestScenarios,
-  bigQueryAssertions,
-} from "../__tests__/setup/bigquery-mocks.js";
+
 import { brandAgentFactory } from "../__tests__/fixtures/brand-agent-fixtures.js";
+import {
+  bigQueryAssertions,
+  bigQueryTestScenarios,
+  setupBigQueryMocks,
+} from "../__tests__/setup/bigquery-mocks.js";
+import { setupGraphQLMocks } from "../__tests__/setup/graphql-mocks-simple.js";
+import { server, testConfig } from "../__tests__/setup/test-setup.js";
+import { Scope3ApiClient } from "./scope3-client.js";
 
 /**
  * Simplified Brand Agent CRUD Integration Tests

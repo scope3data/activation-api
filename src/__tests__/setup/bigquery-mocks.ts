@@ -1,23 +1,19 @@
+// Import the mocked BigQuery instance
+import { BigQuery } from "@google-cloud/bigquery";
 import { vi } from "vitest";
-import { createBigQueryRows } from "./test-setup.js";
-import {
-  brandAgentFixtures,
-  brandAgentErrors,
-} from "../fixtures/brand-agent-fixtures.js";
 
+import { brandAgentFixtures } from "../fixtures/brand-agent-fixtures.js";
 /**
  * BigQuery mock utilities for testing the enhancement layer
  * Provides realistic BigQuery service mocking with proper error simulation
  */
-
-// Import the mocked BigQuery instance
-import { BigQuery } from "@google-cloud/bigquery";
+import { createBigQueryRows } from "./test-setup.js";
 
 // Get the mocked BigQuery methods
 const mockBigQueryInstance = new BigQuery();
 export const mockBigQueryMethods = {
-  query: mockBigQueryInstance.query,
   dataset: mockBigQueryInstance.dataset,
+  query: mockBigQueryInstance.query,
   table: vi.fn(),
 };
 
@@ -25,36 +21,19 @@ export const mockBigQueryMethods = {
  * BigQuery mock response builders
  */
 export const bigQueryMockResponses = {
-  // Single brand agent with extensions
-  singleAgent: () =>
-    createBigQueryRows([brandAgentFixtures.bigQueryJoinedRow()]),
-
-  // Multiple brand agents
-  multipleAgents: () =>
-    createBigQueryRows([
-      brandAgentFixtures.bigQueryJoinedRow(),
-      {
-        ...brandAgentFixtures.bigQueryJoinedRow(),
-        id: "ba_enhanced_456",
-        name: "Second Enhanced Brand",
-        external_id: "external_456",
-        nickname: "SecondBrand",
-      },
-    ]),
-
   // Agent without extensions (GraphQL-only data)
   agentWithoutExtensions: () =>
     createBigQueryRows([
       {
+        advertiser_domains: null,
+        created_at: new Date("2024-01-01T00:00:00Z"),
+        customer_id: 12345,
+        description: null,
+        dsp_seats: null,
+        external_id: null,
         id: "ba_graphql_only",
         name: "GraphQL Only Brand",
-        customer_id: 12345,
-        advertiser_domains: null,
-        dsp_seats: null,
-        description: null,
-        external_id: null,
         nickname: null,
-        created_at: new Date("2024-01-01T00:00:00Z"),
         updated_at: new Date("2024-01-01T00:00:00Z"),
       },
     ]),
@@ -67,24 +46,34 @@ export const bigQueryMockResponses = {
     createBigQueryRows(
       Array.from({ length: count }, (_, index) => ({
         ...brandAgentFixtures.bigQueryJoinedRow(),
+        external_id: `perf_${index}`,
         id: `ba_perf_${index}`,
         name: `Performance Brand ${index}`,
-        external_id: `perf_${index}`,
       })),
     ),
+
+  // Multiple brand agents
+  multipleAgents: () =>
+    createBigQueryRows([
+      brandAgentFixtures.bigQueryJoinedRow(),
+      {
+        ...brandAgentFixtures.bigQueryJoinedRow(),
+        external_id: "external_456",
+        id: "ba_enhanced_456",
+        name: "Second Enhanced Brand",
+        nickname: "SecondBrand",
+      },
+    ]),
+
+  // Single brand agent with extensions
+  singleAgent: () =>
+    createBigQueryRows([brandAgentFixtures.bigQueryJoinedRow()]),
 };
 
 /**
  * BigQuery error simulations
  */
 export const bigQueryErrorResponses = {
-  // Table not found
-  tableNotFound: () => {
-    const error = new Error("Table not found");
-    Object.assign(error, { code: 404, name: "BigQueryError" });
-    throw error;
-  },
-
   // Authentication failure
   authenticationFailed: () => {
     const error = new Error("Authentication failed");
@@ -92,24 +81,10 @@ export const bigQueryErrorResponses = {
     throw error;
   },
 
-  // Query timeout
-  queryTimeout: () => {
-    const error = new Error("Query timeout");
-    Object.assign(error, { code: 408, name: "BigQueryError" });
-    throw error;
-  },
-
-  // Rate limit exceeded
-  rateLimitExceeded: () => {
-    const error = new Error("Rate limit exceeded");
-    Object.assign(error, { code: 429, name: "BigQueryError" });
-    throw error;
-  },
-
-  // Quota exceeded
-  quotaExceeded: () => {
-    const error = new Error("Quota exceeded");
-    Object.assign(error, { code: 403, name: "BigQueryError" });
+  // Invalid query syntax
+  invalidQuery: () => {
+    const error = new Error("Invalid query syntax");
+    Object.assign(error, { code: 400, name: "BigQueryError" });
     throw error;
   },
 
@@ -120,10 +95,31 @@ export const bigQueryErrorResponses = {
     throw error;
   },
 
-  // Invalid query syntax
-  invalidQuery: () => {
-    const error = new Error("Invalid query syntax");
-    Object.assign(error, { code: 400, name: "BigQueryError" });
+  // Query timeout
+  queryTimeout: () => {
+    const error = new Error("Query timeout");
+    Object.assign(error, { code: 408, name: "BigQueryError" });
+    throw error;
+  },
+
+  // Quota exceeded
+  quotaExceeded: () => {
+    const error = new Error("Quota exceeded");
+    Object.assign(error, { code: 403, name: "BigQueryError" });
+    throw error;
+  },
+
+  // Rate limit exceeded
+  rateLimitExceeded: () => {
+    const error = new Error("Rate limit exceeded");
+    Object.assign(error, { code: 429, name: "BigQueryError" });
+    throw error;
+  },
+
+  // Table not found
+  tableNotFound: () => {
+    const error = new Error("Table not found");
+    Object.assign(error, { code: 404, name: "BigQueryError" });
     throw error;
   },
 };
@@ -132,16 +128,14 @@ export const bigQueryErrorResponses = {
  * BigQuery mock setup utilities
  */
 export const setupBigQueryMocks = {
-  // Setup successful query responses
-  withSuccessfulQuery: (response: ReturnType<typeof createBigQueryRows>) => {
-    mockBigQueryMethods.query.mockResolvedValueOnce(response);
+  // Clear all mocks
+  clear: () => {
+    Object.values(mockBigQueryMethods).forEach((mock) => mock.mockClear());
   },
 
-  // Setup query error
-  withQueryError: (errorType: keyof typeof bigQueryErrorResponses) => {
-    mockBigQueryMethods.query.mockImplementationOnce(() => {
-      return bigQueryErrorResponses[errorType]();
-    });
+  // Reset all mocks
+  reset: () => {
+    Object.values(mockBigQueryMethods).forEach((mock) => mock.mockReset());
   },
 
   // Setup delayed response for timeout testing
@@ -177,19 +171,21 @@ export const setupBigQueryMocks = {
   withPartialResults: (
     results: Array<ReturnType<typeof createBigQueryRows>>,
   ) => {
-    results.forEach((result, index) => {
+    results.forEach((result) => {
       mockBigQueryMethods.query.mockResolvedValueOnce(result);
     });
   },
 
-  // Reset all mocks
-  reset: () => {
-    Object.values(mockBigQueryMethods).forEach((mock) => mock.mockReset());
+  // Setup query error
+  withQueryError: (errorType: keyof typeof bigQueryErrorResponses) => {
+    mockBigQueryMethods.query.mockImplementationOnce(() => {
+      return bigQueryErrorResponses[errorType]();
+    });
   },
 
-  // Clear all mocks
-  clear: () => {
-    Object.values(mockBigQueryMethods).forEach((mock) => mock.mockClear());
+  // Setup successful query responses
+  withSuccessfulQuery: (response: ReturnType<typeof createBigQueryRows>) => {
+    mockBigQueryMethods.query.mockResolvedValueOnce(response);
   },
 };
 
@@ -197,6 +193,16 @@ export const setupBigQueryMocks = {
  * Specific test scenario setups
  */
 export const bigQueryTestScenarios = {
+  // BigQuery authentication issues
+  bigQueryAuthFailure: () => {
+    setupBigQueryMocks.withQueryError("authenticationFailed");
+  },
+
+  // BigQuery unavailable (should not fail the operation)
+  bigQueryUnavailable: () => {
+    setupBigQueryMocks.withQueryError("networkError");
+  },
+
   // Brand agent exists in both GraphQL and BigQuery
   fullyEnhanced: () => {
     setupBigQueryMocks.withSuccessfulQuery(bigQueryMockResponses.singleAgent());
@@ -205,34 +211,6 @@ export const bigQueryTestScenarios = {
   // Brand agent exists in GraphQL only (no BigQuery extension)
   graphqlOnly: () => {
     setupBigQueryMocks.withSuccessfulQuery(bigQueryMockResponses.empty());
-  },
-
-  // BigQuery unavailable (should not fail the operation)
-  bigQueryUnavailable: () => {
-    setupBigQueryMocks.withQueryError("networkError");
-  },
-
-  // BigQuery slow response (performance testing)
-  slowBigQuery: (delayMs = 2000) => {
-    setupBigQueryMocks.withDelayedQuery(
-      bigQueryMockResponses.singleAgent(),
-      delayMs,
-    );
-  },
-
-  // BigQuery authentication issues
-  bigQueryAuthFailure: () => {
-    setupBigQueryMocks.withQueryError("authenticationFailed");
-  },
-
-  // List scenario with mixed enhancement states
-  mixedEnhancementList: () => {
-    // First agent: fully enhanced
-    setupBigQueryMocks.withSuccessfulQuery(bigQueryMockResponses.singleAgent());
-    // Second agent: GraphQL only
-    setupBigQueryMocks.withSuccessfulQuery(bigQueryMockResponses.empty());
-    // Third agent: BigQuery error (should not fail)
-    setupBigQueryMocks.withQueryError("networkError");
   },
 
   // Performance testing with large datasets
@@ -253,12 +231,35 @@ export const bigQueryTestScenarios = {
       }
     }
   },
+
+  // List scenario with mixed enhancement states
+  mixedEnhancementList: () => {
+    // First agent: fully enhanced
+    setupBigQueryMocks.withSuccessfulQuery(bigQueryMockResponses.singleAgent());
+    // Second agent: GraphQL only
+    setupBigQueryMocks.withSuccessfulQuery(bigQueryMockResponses.empty());
+    // Third agent: BigQuery error (should not fail)
+    setupBigQueryMocks.withQueryError("networkError");
+  },
+
+  // BigQuery slow response (performance testing)
+  slowBigQuery: (delayMs = 2000) => {
+    setupBigQueryMocks.withDelayedQuery(
+      bigQueryMockResponses.singleAgent(),
+      delayMs,
+    );
+  },
 };
 
 /**
  * Assertion helpers for BigQuery interactions
  */
 export const bigQueryAssertions = {
+  // Verify query call count
+  expectQueryCallCount: (count: number) => {
+    expect(mockBigQueryMethods.query).toHaveBeenCalledTimes(count);
+  },
+
   // Verify query was called with specific parameters
   expectQueryCalled: (
     expectedQuery: string,
@@ -275,11 +276,6 @@ export const bigQueryAssertions = {
   // Verify query was not called (for error scenarios)
   expectQueryNotCalled: () => {
     expect(mockBigQueryMethods.query).not.toHaveBeenCalled();
-  },
-
-  // Verify query call count
-  expectQueryCallCount: (count: number) => {
-    expect(mockBigQueryMethods.query).toHaveBeenCalledTimes(count);
   },
 
   // Verify specific table was queried

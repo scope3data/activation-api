@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { listBrandAgentsTool } from "../../tools/brand-agents/core/list.js";
-import { getBrandAgentTool } from "../../tools/brand-agents/core/get.js";
-import { createBrandAgentTool } from "../../tools/brand-agents/core/create.js";
-import { updateBrandAgentTool } from "../../tools/brand-agents/core/update.js";
-import { deleteBrandAgentTool } from "../../tools/brand-agents/core/delete.js";
-import { brandAgentFixtures } from "../fixtures/brand-agent-fixtures.js";
+
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
+
+import { createBrandAgentTool } from "../../tools/brand-agents/core/create.js";
+import { deleteBrandAgentTool } from "../../tools/brand-agents/core/delete.js";
+import { getBrandAgentTool } from "../../tools/brand-agents/core/get.js";
+import { listBrandAgentsTool } from "../../tools/brand-agents/core/list.js";
+import { updateBrandAgentTool } from "../../tools/brand-agents/core/update.js";
+import { brandAgentFixtures } from "../fixtures/brand-agent-fixtures.js";
 
 /**
  * Tool-Level Integration Tests
@@ -24,16 +26,16 @@ import type { MCPToolExecuteContext } from "../../types/mcp.js";
 // Mock the entire Scope3ApiClient at the module level
 vi.mock("../client/scope3-client.js", () => {
   const mockClient = {
-    listBrandAgents: vi.fn(),
-    getBrandAgent: vi.fn(),
     createBrandAgent: vi.fn(),
-    updateBrandAgent: vi.fn(),
     deleteBrandAgent: vi.fn(),
+    getBrandAgent: vi.fn(),
+    listBrandAgents: vi.fn(),
+    updateBrandAgent: vi.fn(),
   };
 
   return {
-    Scope3ApiClient: vi.fn(() => mockClient),
     __mockClient: mockClient, // Expose for test access
+    Scope3ApiClient: vi.fn(() => mockClient),
   };
 });
 
@@ -261,10 +263,10 @@ describe("Brand Agent MCP Tools - Complete Integration", () => {
       mockClient.createBrandAgent.mockResolvedValue(createdAgent);
 
       const createParams = {
-        name: "New Test Brand",
-        description: "A test brand agent",
         advertiserDomains: ["test.com"],
+        description: "A test brand agent",
         externalId: "ext_123",
+        name: "New Test Brand",
         nickname: "TestBrand",
       };
 
@@ -315,9 +317,9 @@ describe("Brand Agent MCP Tools - Complete Integration", () => {
       mockClient.updateBrandAgent.mockResolvedValue(updatedAgent);
 
       const updateParams = {
+        description: "Updated description",
         id: "ba_test_123",
         name: "Updated Brand Name",
-        description: "Updated description",
       };
 
       // Act
@@ -329,7 +331,7 @@ describe("Brand Agent MCP Tools - Complete Integration", () => {
       expect(mockClient.updateBrandAgent).toHaveBeenCalledWith(
         "test_api_key_123",
         "ba_test_123",
-        { name: "Updated Brand Name", description: "Updated description" },
+        { description: "Updated description", name: "Updated Brand Name" },
       );
     });
   });

@@ -1,12 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { Scope3ApiClient } from "./scope3-client.js";
+
 import {
-  createMockScope3ApiClient,
-  serviceLevelScenarios,
   architecturalAssertions,
-  serviceTestData,
+  createMockScope3ApiClient,
   type MockScope3ApiClient,
+  serviceLevelScenarios,
+  serviceTestData,
 } from "../__tests__/setup/service-level-mocks.js";
+import { Scope3ApiClient } from "./scope3-client.js";
 
 /**
  * Service-Level Brand Agent Tests
@@ -305,16 +306,16 @@ describe("Scope3ApiClient - Service Level Contract", () => {
       // Test different error scenarios
       const errorScenarios = [
         {
-          setup: () => serviceLevelScenarios.authenticationError(mockClient),
           expectedMessage: "Authentication failed",
+          setup: () => serviceLevelScenarios.authenticationError(mockClient),
         },
         {
-          setup: () => serviceLevelScenarios.serviceUnavailable(mockClient),
           expectedMessage: "External service temporarily unavailable",
+          setup: () => serviceLevelScenarios.serviceUnavailable(mockClient),
         },
         {
-          setup: () => serviceLevelScenarios.notFound(mockClient),
           expectedMessage: "Brand agent not found",
+          setup: () => serviceLevelScenarios.notFound(mockClient),
         },
       ];
 

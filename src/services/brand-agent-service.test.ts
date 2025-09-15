@@ -1,17 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { BrandAgentService } from "./brand-agent-service.js";
+
 import {
-  setupBigQueryMocks,
+  brandAgentFactory,
+  brandAgentFixtures,
+} from "../__tests__/fixtures/brand-agent-fixtures.js";
+import {
+  bigQueryAssertions,
   bigQueryMockResponses,
   bigQueryTestScenarios,
-  bigQueryAssertions,
   mockBigQueryMethods,
+  setupBigQueryMocks,
 } from "../__tests__/setup/bigquery-mocks.js";
-import {
-  brandAgentFixtures,
-  brandAgentFactory,
-} from "../__tests__/fixtures/brand-agent-fixtures.js";
-
+import { BrandAgentService } from "./brand-agent-service.js";
 // Import test setup to initialize global mocks
 import "../__tests__/setup/test-setup.js";
 
@@ -343,8 +343,8 @@ describe("BrandAgentService", () => {
         // Assert
         expect(result).toBe("ba_enhanced_123");
         bigQueryAssertions.expectQueryCalled("ext.external_id = @externalId", {
-          externalId: "external_123",
           customerId,
+          externalId: "external_123",
         });
       });
 
@@ -383,8 +383,8 @@ describe("BrandAgentService", () => {
         // Assert
         expect(result).toBe("ba_enhanced_123");
         bigQueryAssertions.expectQueryCalled("ext.nickname = @nickname", {
-          nickname: "TestBrand",
           customerId,
+          nickname: "TestBrand",
         });
       });
     });
@@ -458,11 +458,11 @@ describe("BrandAgentService", () => {
         // Arrange
         const agentId = "ba_new_extension";
         const extensionData = {
+          advertiserDomains: ["new.com"],
+          description: "New description",
+          dspSeats: ["DSP_NEW"],
           externalId: "ext_new",
           nickname: "NewNickname",
-          description: "New description",
-          advertiserDomains: ["new.com"],
-          dspSeats: ["DSP_NEW"],
         };
         setupBigQueryMocks.withSuccessfulQuery(bigQueryMockResponses.empty());
 
@@ -471,12 +471,12 @@ describe("BrandAgentService", () => {
 
         // Assert
         bigQueryAssertions.expectQueryCalled("MERGE", {
+          advertiserDomains: extensionData.advertiserDomains,
           agentId,
+          description: extensionData.description,
+          dspSeats: extensionData.dspSeats,
           externalId: extensionData.externalId,
           nickname: extensionData.nickname,
-          description: extensionData.description,
-          advertiserDomains: extensionData.advertiserDomains,
-          dspSeats: extensionData.dspSeats,
         });
       });
 
@@ -484,8 +484,8 @@ describe("BrandAgentService", () => {
         // Arrange
         const agentId = "ba_existing_extension";
         const updateData = {
-          nickname: "UpdatedNickname",
           description: "Updated description",
+          nickname: "UpdatedNickname",
         };
         setupBigQueryMocks.withSuccessfulQuery(bigQueryMockResponses.empty());
 
@@ -509,12 +509,12 @@ describe("BrandAgentService", () => {
 
         // Assert
         bigQueryAssertions.expectQueryCalled("MERGE", {
-          agentId,
-          nickname: "PartialUpdate",
           advertiserDomains: null,
+          agentId,
           description: null,
           dspSeats: null,
           externalId: null,
+          nickname: "PartialUpdate",
         });
       });
 
@@ -575,8 +575,8 @@ describe("BrandAgentService", () => {
 
         // Assert
         bigQueryAssertions.expectQueryCalled("MERGE", {
-          agentId,
           advertiserDomains: [],
+          agentId,
           dspSeats: [],
         });
       });

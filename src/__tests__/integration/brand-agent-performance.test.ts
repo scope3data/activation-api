@@ -1,13 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { Scope3ApiClient } from "../../client/scope3-client.js";
-import { server, testConfig } from "../setup/test-setup.js";
-import { setupGraphQLMocks } from "../setup/graphql-mocks.js";
-import {
-  setupBigQueryMocks,
-  bigQueryTestScenarios,
-  bigQueryAssertions,
-} from "../setup/bigquery-mocks.js";
 import { brandAgentFactory } from "../fixtures/brand-agent-fixtures.js";
+import {
+  bigQueryAssertions,
+  bigQueryTestScenarios,
+  setupBigQueryMocks,
+} from "../setup/bigquery-mocks.js";
+import { setupGraphQLMocks } from "../setup/graphql-mocks.js";
+import { server, testConfig } from "../setup/test-setup.js";
 
 /**
  * Performance and Resilience Tests for Brand Agent Enhancement Pattern
@@ -394,8 +395,8 @@ describe("Brand Agent Enhancement - Performance & Resilience", () => {
           client.createBrandAgent(
             testConfig.validApiKey,
             brandAgentFactory.createInput({
-              name: `Concurrent Brand ${i}`,
               externalId: `concurrent_${i}`,
+              name: `Concurrent Brand ${i}`,
             }),
           ),
         );

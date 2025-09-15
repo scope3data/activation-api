@@ -1,13 +1,14 @@
 import { beforeEach, describe, expect, it } from "vitest";
+
 import { Scope3ApiClient } from "../../client/scope3-client.js";
-import { server, testConfig } from "../setup/test-setup.js";
-import { setupGraphQLMocks } from "../setup/graphql-mocks.js";
-import {
-  setupBigQueryMocks,
-  bigQueryTestScenarios,
-  bigQueryAssertions,
-} from "../setup/bigquery-mocks.js";
 import { brandAgentFactory } from "../fixtures/brand-agent-fixtures.js";
+import {
+  bigQueryAssertions,
+  bigQueryTestScenarios,
+  setupBigQueryMocks,
+} from "../setup/bigquery-mocks.js";
+import { setupGraphQLMocks } from "../setup/graphql-mocks.js";
+import { server, testConfig } from "../setup/test-setup.js";
 
 /**
  * End-to-End Integration Tests for Brand Agent Enhancement Pattern
@@ -29,10 +30,10 @@ describe("Brand Agent Enhancement - End-to-End Integration", () => {
       server.use(...setupGraphQLMocks.success);
 
       const createInput = brandAgentFactory.createInput({
-        name: "Lifecycle Test Brand",
-        externalId: "lifecycle_123",
-        nickname: "LifecycleBrand",
         description: "Full lifecycle test",
+        externalId: "lifecycle_123",
+        name: "Lifecycle Test Brand",
+        nickname: "LifecycleBrand",
       });
 
       // 1. CREATE - Setup mocks for creation
@@ -71,9 +72,9 @@ describe("Brand Agent Enhancement - End-to-End Integration", () => {
       // 3. UPDATE - Setup mocks for update
       setupBigQueryMocks.reset();
       const updateInput = brandAgentFactory.updateInput({
+        description: "Updated description",
         name: "Updated Lifecycle Brand",
         nickname: "UpdatedLifecycleBrand",
-        description: "Updated description",
       });
 
       setupBigQueryMocks.withSuccessfulQuery(bigQueryTestScenarios.empty()); // Update
@@ -114,8 +115,8 @@ describe("Brand Agent Enhancement - End-to-End Integration", () => {
 
       // 1. Create GraphQL-only agent
       const graphqlOnlyInput = brandAgentFactory.createInput({
-        name: "GraphQL Only Brand",
         customerId: testConfig.testCustomerId,
+        name: "GraphQL Only Brand",
         // No externalId or nickname
       });
 
@@ -132,8 +133,8 @@ describe("Brand Agent Enhancement - End-to-End Integration", () => {
       // 2. Create fully enhanced agent
       setupBigQueryMocks.reset();
       const enhancedInput = brandAgentFactory.createInput({
-        name: "Enhanced Brand",
         externalId: "enhanced_123",
+        name: "Enhanced Brand",
         nickname: "EnhancedBrand",
       });
 
@@ -179,12 +180,12 @@ describe("Brand Agent Enhancement - End-to-End Integration", () => {
       server.use(...setupGraphQLMocks.success);
 
       const brandDetails = {
-        name: "Acme Corporation",
-        externalId: "acme_corp_2024",
-        nickname: "AcmeCorp",
-        description: "Global technology company",
         advertiserDomains: ["acme.com", "acmecorp.com"],
+        description: "Global technology company",
         dspSeats: ["DV360_ACME", "TTD_ACME", "AMAZON_DSP_ACME"],
+        externalId: "acme_corp_2024",
+        name: "Acme Corporation",
+        nickname: "AcmeCorp",
       };
 
       // 1. Initial brand creation
@@ -255,22 +256,22 @@ describe("Brand Agent Enhancement - End-to-End Integration", () => {
 
       const brands = [
         {
-          name: "Enterprise Brand A",
-          externalId: "ent_brand_a",
-          nickname: "BrandA",
           advertiserDomains: ["brand-a.com"],
+          externalId: "ent_brand_a",
+          name: "Enterprise Brand A",
+          nickname: "BrandA",
         },
         {
-          name: "Enterprise Brand B",
-          externalId: "ent_brand_b",
-          nickname: "BrandB",
           advertiserDomains: ["brand-b.com"],
+          externalId: "ent_brand_b",
+          name: "Enterprise Brand B",
+          nickname: "BrandB",
         },
         {
-          name: "Enterprise Brand C",
-          externalId: "ent_brand_c",
-          nickname: "BrandC",
           advertiserDomains: ["brand-c.com"],
+          externalId: "ent_brand_c",
+          name: "Enterprise Brand C",
+          nickname: "BrandC",
         },
       ];
 
@@ -321,8 +322,8 @@ describe("Brand Agent Enhancement - End-to-End Integration", () => {
 
       // 1. Create brand in GraphQL only (simulating initial migration)
       const legacyBrand = brandAgentFactory.createInput({
-        name: "Legacy Migrated Brand",
         customerId: testConfig.testCustomerId,
+        name: "Legacy Migrated Brand",
         // No BigQuery fields initially
       });
 
@@ -340,11 +341,11 @@ describe("Brand Agent Enhancement - End-to-End Integration", () => {
       // 2. Add BigQuery enhancements after migration
       setupBigQueryMocks.reset();
       const enhancementData = {
+        advertiserDomains: ["legacy-brand.com"],
+        description: "Migrated from legacy system",
+        dspSeats: ["LEGACY_DSP_SEAT"],
         externalId: "legacy_migrated_123",
         nickname: "LegacyBrand",
-        description: "Migrated from legacy system",
-        advertiserDomains: ["legacy-brand.com"],
-        dspSeats: ["LEGACY_DSP_SEAT"],
       };
 
       setupBigQueryMocks.withSuccessfulQuery(bigQueryTestScenarios.empty()); // Update

@@ -1,9 +1,10 @@
 import { http, HttpResponse } from "msw";
-import { createGraphQLResponse, testConfig } from "./test-setup.js";
+
 import {
-  brandAgentFixtures,
   brandAgentErrors,
+  brandAgentFixtures,
 } from "../fixtures/brand-agent-fixtures.js";
+import { createGraphQLResponse, testConfig } from "./test-setup.js";
 
 /**
  * GraphQL mock handlers for MSW
@@ -11,7 +12,7 @@ import {
  */
 
 // Helper to extract GraphQL operation name from request
-function getOperationName(body: string): string | null {
+function getOperationName(body: string): null | string {
   try {
     const parsed = JSON.parse(body);
     const query = parsed.query as string;
@@ -33,6 +34,101 @@ function getVariables(body: string): Record<string, unknown> {
 }
 
 export const graphqlMockHandlers = {
+  // Error scenarios
+  errors: {
+    // Authentication failure
+    authError: rest.post(testConfig.graphqlUrl, (req, res, ctx) => {
+      return res(
+        ctx.status(401),
+        ctx.json({ message: "Authentication failed" }),
+      );
+    }),
+
+    // GraphQL errors in response
+    graphqlError: rest.post(testConfig.graphqlUrl, (req, res, ctx) => {
+      return res(
+        ctx.json(createGraphQLResponse(null, [brandAgentErrors.graphqlError])),
+      );
+    }),
+
+    // Malformed response
+    malformedResponse: rest.post(testConfig.graphqlUrl, (req, res, ctx) => {
+      return res(ctx.text("Invalid JSON response"));
+    }),
+
+    // Network timeout simulation
+    networkTimeout: rest.post(testConfig.graphqlUrl, (req, res, ctx) => {
+      return res(ctx.delay("infinite"));
+    }),
+
+    // Rate limiting
+    rateLimitError: rest.post(testConfig.graphqlUrl, (req, res, ctx) => {
+      return res(ctx.status(429), ctx.json({ message: "Rate limit exceeded" }));
+    }),
+
+    // Server error
+    serverError: rest.post(testConfig.graphqlUrl, (req, res, ctx) => {
+      return res(
+        ctx.status(500),
+        ctx.json({ message: "Internal server error" }),
+      );
+    }),
+  },
+
+  // Specific operation mocks
+  operations: {
+    // Empty results
+    emptyResults: rest.post(testConfig.graphqlUrl, (req, res, ctx) => {
+      return res(
+        ctx.json(
+          createGraphQLResponse({
+            agents: [],
+          }),
+        ),
+      );
+    }),
+
+    // Get brand agent by ID
+    getBrandAgent: (
+      agentId: string,
+      agent?: Partial<typeof brandAgentFixtures.graphqlBrandAgent>,
+    ) =>
+      rest.post(testConfig.graphqlUrl, async (req, res, ctx) => {
+        const body = await req.text();
+        if (body.includes("GetBrandAgent") && body.includes(agentId)) {
+          return res(
+            ctx.json(
+              createGraphQLResponse({
+                agent: {
+                  ...brandAgentFixtures.graphqlBrandAgent(),
+                  id: agentId,
+                  ...agent,
+                },
+              }),
+            ),
+          );
+        }
+        return req.passthrough();
+      }),
+
+    // Large result set for performance testing
+    largeResultSet: rest.post(testConfig.graphqlUrl, (req, res, ctx) => {
+      const largeAgentList = Array.from({ length: 100 }, (_, index) => ({
+        ...brandAgentFixtures.graphqlBrandAgent(),
+        id: `ba_perf_${index}`,
+        name: `Performance Test Brand ${index}`,
+      }));
+
+      return res(
+        ctx.json(
+          createGraphQLResponse({
+            agents: largeAgentList,
+          }),
+        ),
+      );
+    }),
+  },
+
   // Successful operations
   success: [
     // Default successful handler
@@ -42,6 +138,7 @@ export const graphqlMockHandlers = {
       // Return a generic successful response for any GraphQL operation
       return HttpResponse.json(
         createGraphQLResponse({
+          agent: brandAgentFixtures.graphqlBrandAgent(),
           agents: [
             brandAgentFixtures.graphqlBrandAgent(),
             {
@@ -50,7 +147,6 @@ export const graphqlMockHandlers = {
               name: "Second GraphQL Brand",
             },
           ],
-          agent: brandAgentFixtures.graphqlBrandAgent(),
           createBrandAgent: {
             ...brandAgentFixtures.graphqlBrandAgent(),
             id: "ba_created_123",
@@ -97,9 +193,9 @@ export const graphqlMockHandlers = {
             createGraphQLResponse({
               createBrandAgent: {
                 ...brandAgentFixtures.graphqlBrandAgent(),
+                customerId: input.customerId,
                 id: "ba_created_123",
                 name: input.name,
-                customerId: input.customerId,
               },
             }),
           ),
@@ -134,101 +230,6 @@ export const graphqlMockHandlers = {
       return req.passthrough();
     }),
   ],
-
-  // Error scenarios
-  errors: {
-    // GraphQL errors in response
-    graphqlError: rest.post(testConfig.graphqlUrl, (req, res, ctx) => {
-      return res(
-        ctx.json(createGraphQLResponse(null, [brandAgentErrors.graphqlError])),
-      );
-    }),
-
-    // Authentication failure
-    authError: rest.post(testConfig.graphqlUrl, (req, res, ctx) => {
-      return res(
-        ctx.status(401),
-        ctx.json({ message: "Authentication failed" }),
-      );
-    }),
-
-    // Server error
-    serverError: rest.post(testConfig.graphqlUrl, (req, res, ctx) => {
-      return res(
-        ctx.status(500),
-        ctx.json({ message: "Internal server error" }),
-      );
-    }),
-
-    // Rate limiting
-    rateLimitError: rest.post(testConfig.graphqlUrl, (req, res, ctx) => {
-      return res(ctx.status(429), ctx.json({ message: "Rate limit exceeded" }));
-    }),
-
-    // Network timeout simulation
-    networkTimeout: rest.post(testConfig.graphqlUrl, (req, res, ctx) => {
-      return res(ctx.delay("infinite"));
-    }),
-
-    // Malformed response
-    malformedResponse: rest.post(testConfig.graphqlUrl, (req, res, ctx) => {
-      return res(ctx.text("Invalid JSON response"));
-    }),
-  },
-
-  // Specific operation mocks
-  operations: {
-    // Get brand agent by ID
-    getBrandAgent: (
-      agentId: string,
-      agent?: Partial<typeof brandAgentFixtures.graphqlBrandAgent>,
-    ) =>
-      rest.post(testConfig.graphqlUrl, async (req, res, ctx) => {
-        const body = await req.text();
-        if (body.includes("GetBrandAgent") && body.includes(agentId)) {
-          return res(
-            ctx.json(
-              createGraphQLResponse({
-                agent: {
-                  ...brandAgentFixtures.graphqlBrandAgent(),
-                  id: agentId,
-                  ...agent,
-                },
-              }),
-            ),
-          );
-        }
-        return req.passthrough();
-      }),
-
-    // Empty results
-    emptyResults: rest.post(testConfig.graphqlUrl, (req, res, ctx) => {
-      return res(
-        ctx.json(
-          createGraphQLResponse({
-            agents: [],
-          }),
-        ),
-      );
-    }),
-
-    // Large result set for performance testing
-    largeResultSet: rest.post(testConfig.graphqlUrl, (req, res, ctx) => {
-      const largeAgentList = Array.from({ length: 100 }, (_, index) => ({
-        ...brandAgentFixtures.graphqlBrandAgent(),
-        id: `ba_perf_${index}`,
-        name: `Performance Test Brand ${index}`,
-      }));
-
-      return res(
-        ctx.json(
-          createGraphQLResponse({
-            agents: largeAgentList,
-          }),
-        ),
-      );
-    }),
-  },
 };
 
 /**
@@ -237,6 +238,20 @@ export const graphqlMockHandlers = {
 export const setupGraphQLMocks = {
   // Setup successful operations
   success: () => graphqlMockHandlers.success,
+
+  // Setup delayed response for timeout testing
+  withDelay: (delayMs: number) => [
+    rest.post(testConfig.graphqlUrl, (req, res, ctx) => {
+      return res(
+        ctx.delay(delayMs),
+        ctx.json(
+          createGraphQLResponse({
+            agents: [brandAgentFixtures.graphqlBrandAgent()],
+          }),
+        ),
+      );
+    }),
+  ],
 
   // Setup specific error scenario
   withError: (errorType: keyof typeof graphqlMockHandlers.errors) => [
@@ -254,20 +269,6 @@ export const setupGraphQLMocks = {
       }
 
       return req.passthrough();
-    }),
-  ],
-
-  // Setup delayed response for timeout testing
-  withDelay: (delayMs: number) => [
-    rest.post(testConfig.graphqlUrl, (req, res, ctx) => {
-      return res(
-        ctx.delay(delayMs),
-        ctx.json(
-          createGraphQLResponse({
-            agents: [brandAgentFixtures.graphqlBrandAgent()],
-          }),
-        ),
-      );
     }),
   ],
 };

@@ -1,6 +1,7 @@
 import { http, HttpResponse } from "msw";
-import { createGraphQLResponse, testConfig } from "./test-setup.js";
+
 import { brandAgentFixtures } from "../fixtures/brand-agent-fixtures.js";
+import { createGraphQLResponse, testConfig } from "./test-setup.js";
 
 /**
  * Simplified GraphQL mock handlers for MSW v2
@@ -8,54 +9,8 @@ import { brandAgentFixtures } from "../fixtures/brand-agent-fixtures.js";
  */
 
 export const graphqlMockHandlers = {
-  // Successful operations
-  success: [
-    http.post(testConfig.graphqlUrl, async ({ request }) => {
-      // Return a generic successful response for any GraphQL operation
-      return HttpResponse.json(
-        createGraphQLResponse({
-          // List operations
-          brandAgents: [
-            brandAgentFixtures.graphqlBrandAgent(),
-            {
-              ...brandAgentFixtures.graphqlBrandAgent(),
-              id: "ba_graphql_456",
-              name: "Second GraphQL Brand",
-            },
-          ],
-          agents: [
-            brandAgentFixtures.graphqlBrandAgent(),
-            {
-              ...brandAgentFixtures.graphqlBrandAgent(),
-              id: "ba_graphql_456",
-              name: "Second GraphQL Brand",
-            },
-          ],
-          // Single operations
-          brandAgent: brandAgentFixtures.graphqlBrandAgent(),
-          agent: brandAgentFixtures.graphqlBrandAgent(),
-          // Mutations
-          createBrandAgent: {
-            ...brandAgentFixtures.graphqlBrandAgent(),
-            id: "ba_created_123",
-          },
-          updateBrandAgent: brandAgentFixtures.graphqlBrandAgent(),
-        }),
-      );
-    }),
-  ],
-
   // Error scenarios
   errors: {
-    // GraphQL errors in response
-    graphqlError: http.post(testConfig.graphqlUrl, () => {
-      return HttpResponse.json(
-        createGraphQLResponse(null, [
-          { message: "Invalid request parameters or query" },
-        ]),
-      );
-    }),
-
     // Authentication failure
     authError: http.post(testConfig.graphqlUrl, () => {
       return new HttpResponse(
@@ -63,6 +18,15 @@ export const graphqlMockHandlers = {
         {
           status: 401,
         },
+      );
+    }),
+
+    // GraphQL errors in response
+    graphqlError: http.post(testConfig.graphqlUrl, () => {
+      return HttpResponse.json(
+        createGraphQLResponse(null, [
+          { message: "Invalid request parameters or query" },
+        ]),
       );
     }),
 
@@ -76,6 +40,43 @@ export const graphqlMockHandlers = {
       );
     }),
   },
+
+  // Successful operations
+  success: [
+    http.post(testConfig.graphqlUrl, async () => {
+      // Return a generic successful response for any GraphQL operation
+      return HttpResponse.json(
+        createGraphQLResponse({
+          agent: brandAgentFixtures.graphqlBrandAgent(),
+          agents: [
+            brandAgentFixtures.graphqlBrandAgent(),
+            {
+              ...brandAgentFixtures.graphqlBrandAgent(),
+              id: "ba_graphql_456",
+              name: "Second GraphQL Brand",
+            },
+          ],
+          // Single operations
+          brandAgent: brandAgentFixtures.graphqlBrandAgent(),
+          // List operations
+          brandAgents: [
+            brandAgentFixtures.graphqlBrandAgent(),
+            {
+              ...brandAgentFixtures.graphqlBrandAgent(),
+              id: "ba_graphql_456",
+              name: "Second GraphQL Brand",
+            },
+          ],
+          // Mutations
+          createBrandAgent: {
+            ...brandAgentFixtures.graphqlBrandAgent(),
+            id: "ba_created_123",
+          },
+          updateBrandAgent: brandAgentFixtures.graphqlBrandAgent(),
+        }),
+      );
+    }),
+  ],
 };
 
 /**
@@ -84,11 +85,6 @@ export const graphqlMockHandlers = {
 export const setupGraphQLMocks = {
   // Setup successful operations - return the array directly
   success: graphqlMockHandlers.success,
-
-  // Setup specific error scenario
-  withError: (errorType: keyof typeof graphqlMockHandlers.errors) => [
-    graphqlMockHandlers.errors[errorType],
-  ],
 
   // Setup delayed response for timeout testing
   withDelay: (delayMs: number) => [
@@ -100,5 +96,10 @@ export const setupGraphQLMocks = {
         }),
       );
     }),
+  ],
+
+  // Setup specific error scenario
+  withError: (errorType: keyof typeof graphqlMockHandlers.errors) => [
+    graphqlMockHandlers.errors[errorType],
   ],
 };

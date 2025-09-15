@@ -1,17 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { Scope3ApiClient } from "./scope3-client.js";
-import { server, testConfig } from "../__tests__/setup/test-setup.js";
-import { setupGraphQLMocks } from "../__tests__/setup/graphql-mocks-simple.js";
+
 import {
-  setupBigQueryMocks,
-  bigQueryTestScenarios,
-  bigQueryAssertions,
-  mockBigQueryMethods,
-} from "../__tests__/setup/bigquery-mocks.js";
-import {
-  brandAgentFixtures,
   brandAgentFactory,
+  brandAgentFixtures,
 } from "../__tests__/fixtures/brand-agent-fixtures.js";
+import {
+  bigQueryAssertions,
+  bigQueryTestScenarios,
+  mockBigQueryMethods,
+  setupBigQueryMocks,
+} from "../__tests__/setup/bigquery-mocks.js";
+import { setupGraphQLMocks } from "../__tests__/setup/graphql-mocks-simple.js";
+import { server, testConfig } from "../__tests__/setup/test-setup.js";
+import { Scope3ApiClient } from "./scope3-client.js";
 
 /**
  * Brand Agent CRUD Integration Tests
@@ -377,8 +378,8 @@ describe("Scope3ApiClient - Brand Agent Operations", () => {
       it("should not create BigQuery extension for GraphQL-only input", async () => {
         // Arrange
         const input = brandAgentFactory.createInput({
-          name: "GraphQL Only Brand",
           customerId: testConfig.testCustomerId,
+          name: "GraphQL Only Brand",
           // No externalId or nickname
         });
         server.use(...setupGraphQLMocks.success);
