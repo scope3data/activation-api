@@ -31,7 +31,8 @@ describe("signals/get-partner-seats", () => {
       getPartnerSeats: vi.fn(),
     };
     vi.mocked(CustomSignalsClient).mockImplementation(
-      () => mockCustomSignalsClient as unknown,
+      () =>
+        mockCustomSignalsClient as Partial<CustomSignalsClient> as CustomSignalsClient,
     );
 
     tool = getPartnerSeatsTool(mockScope3Client);

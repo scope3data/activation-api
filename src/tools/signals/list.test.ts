@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { Scope3ApiClient } from "../../client/scope3-client.js";
 import { CustomSignalsClient } from "../../services/custom-signals-client.js";
 import { listCustomSignalsTool } from "./list.js";
 
@@ -34,10 +35,13 @@ describe("signals/list", () => {
       listCustomSignalsWithSeatFilter: vi.fn(),
     };
     vi.mocked(CustomSignalsClient).mockImplementation(
-      () => mockCustomSignalsClient as unknown,
+      () =>
+        mockCustomSignalsClient as Partial<CustomSignalsClient> as CustomSignalsClient,
     );
 
-    tool = listCustomSignalsTool(mockScope3Client as unknown);
+    tool = listCustomSignalsTool(
+      mockScope3Client as Partial<Scope3ApiClient> as Scope3ApiClient,
+    );
   });
 
   it("should list signals successfully without filters", async () => {
