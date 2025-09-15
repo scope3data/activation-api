@@ -35,3 +35,8 @@ pnpm-debug.log*
 # Temporary files
 *.tmp
 *.temp
+
+# Documentation validation temporary files
+broken_links_report.txt
+current_broken_links.txt
+*.backup
