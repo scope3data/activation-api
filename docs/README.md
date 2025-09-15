@@ -2,70 +2,59 @@
 
 Complete documentation for creative management in the Scope3 Campaign API MCP Server.
 
-## 📚 Documentation Index
+## 📚 Live Documentation
+
+For the most up-to-date creative management documentation, visit our live docs:
 
 ### 🚀 Getting Started
 
-- **[Creative Management Guide](creative-management-guide.md)** - Complete walkthrough from basics to advanced features
-  - Quick start (5 minutes)
-  - Understanding Creative → Assets hierarchy
-  - Core workflows with examples
-  - Best practices and optimization tips
-  - Common questions and troubleshooting
+- **[Creative Object Guide](https://docs.agentic.scope3.com/mintlify/object-guides/creative)** - Complete creative management reference
+- **[Quick Start Guide](https://docs.agentic.scope3.com/mintlify/quickstart)** - Get started with the API
+- **[Format Guide](https://docs.agentic.scope3.com/mintlify/object-guides/format)** - Creative format specifications
 
 ### 🤖 AI Integration
 
-- **[Creative Agents Integration](creative-agents-integration.md)** - AI-powered creative generation
-  - AdCP Creative Agents overview (PR #23)
-  - Integration architecture and workflows
-  - Manifest mode vs. Code mode
-  - Technical implementation plan
-  - Migration path and success metrics
+- **[Creative Agents Integration](https://docs.agentic.scope3.com/mintlify/integrations/creative-agents)** - AI-powered creative generation
+- **[Built for Agents](https://docs.agentic.scope3.com/mintlify/features/built-for-agents)** - AI-first API design
 
-### 📖 Reference
+### 📖 API Reference
 
-- **[Main Documentation](../CLAUDE.md)** - Complete MCP server documentation
-  - All available tools and parameters
-  - Authentication and configuration
-  - Brand agent management
-  - Campaign management
-  - Creative management tools
+- **[API Reference](https://docs.agentic.scope3.com/api-reference)** - Complete API documentation
+- **[Brand Agent Management](https://docs.agentic.scope3.com/mintlify/object-guides/brand-agent)** - Brand agent documentation
+- **[Campaign Management](https://docs.agentic.scope3.com/mintlify/object-guides/campaign)** - Campaign documentation
 
 ## 🎯 Quick Navigation
 
 ### I want to...
 
 **Create my first creative**
-→ [Creative Management Guide - Quick Start](creative-management-guide.md#quick-start)
+→ [Creative Guide](https://docs.agentic.scope3.com/mintlify/object-guides/creative)
 
-**Understand how creatives work**  
-→ [Creative Management Guide - Understanding the Hierarchy](creative-management-guide.md#understanding-the-creative-hierarchy)
+**Understand how campaigns work**
+→ [Campaign Guide](https://docs.agentic.scope3.com/mintlify/object-guides/campaign)
 
-**See all creative tools**
-→ [Main Documentation](../CLAUDE.md)
+**See all available tools**
+→ [API Reference](https://docs.agentic.scope3.com/api-reference)
 
-**Use AI to generate creatives**
-→ [Creative Agents Integration](creative-agents-integration.md#creative-agents-integration)
+**Set up authentication**
+→ [Authentication Guide](https://docs.agentic.scope3.com/mintlify/authentication)
 
-**Manage creative performance**
-→ [Creative Management Guide - Advanced Features](creative-management-guide.md#advanced-features)
-
-**Set up creative workflows**
-→ [Creative Management Guide - Core Workflows](creative-management-guide.md#core-workflows)
+**Get started quickly**
+→ [Quick Start](https://docs.agentic.scope3.com/mintlify/quickstart)
 
 ## 🛠️ For Developers
 
 ### Implementation Guides
 
-- [Integration architecture](creative-agents-integration.md#integration-architecture)
-- [Integration points](creative-agents-integration.md#integration-points)
-- [Creative agent overview](creative-agents-integration.md#overview)
+- [Creative Agents Integration](https://docs.agentic.scope3.com/mintlify/integrations/creative-agents)
+- [Custom Signals Platform](https://docs.agentic.scope3.com/mintlify/integrations/custom-signals-platform)
+- [Webhooks](https://docs.agentic.scope3.com/mintlify/integrations/webhooks)
 
 ### Architecture
 
-- [Creative agents integration architecture](creative-agents-integration.md#integration-architecture)
-- [AdCP pass-through design](creative-management-guide.md#understanding-the-creative-hierarchy)
-- [Creative/Asset hierarchy](../CLAUDE.md)
+- [API Philosophy](https://docs.agentic.scope3.com/mintlify/concepts/philosophy)
+- [Core Concepts](https://docs.agentic.scope3.com/mintlify/concepts)
+- [Built for Agents](https://docs.agentic.scope3.com/mintlify/features/built-for-agents)
 
 ## 🎨 Creative Management Features
 
@@ -91,16 +80,16 @@ Complete documentation for creative management in the Scope3 Campaign API MCP Se
 ### Getting Help
 
 - **General Questions**: Use the creative management tools conversationally with Claude
-- **Technical Issues**: Check the [troubleshooting section](creative-management-guide.md#common-questions)
+- **Technical Issues**: Check the [API Reference](https://docs.agentic.scope3.com/api-reference) for detailed examples
 - **Feature Requests**: Submit via GitHub issues
-- **Integration Support**: Reference the [integration guides](creative-agents-integration.md#integration-architecture)
+- **Integration Support**: Reference the [integration guides](https://docs.agentic.scope3.com/mintlify/integrations/creative-agents)
 
 ### Community Resources
 
-- **Examples**: See [workflow examples](creative-management-guide.md#core-workflows) in the guides
-- **Best Practices**: Follow the [optimization tips](creative-management-guide.md#best-practices)
+- **Examples**: See [workflow examples](https://docs.agentic.scope3.com/mintlify/quickstart) in the guides
+- **Best Practices**: Follow the [optimization tips](https://docs.agentic.scope3.com/mintlify/optimization/scope3-algorithms)
 - **Updates**: Watch for creative agents integration progress
 
 ---
 
-**🚀 Ready to get started?** Begin with the [Creative Management Guide](creative-management-guide.md) for a complete walkthrough!
+**🚀 Ready to get started?** Begin with the [Quick Start Guide](https://docs.agentic.scope3.com/mintlify/quickstart) for a complete walkthrough!
