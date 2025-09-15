@@ -17,11 +17,6 @@ import type {
   TopTactic,
 } from "../../types/reporting.js";
 
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-} from "../../utils/error-handling.js";
-
 export const getCampaignSummaryTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "Reporting & Analytics",
@@ -46,7 +41,9 @@ export const getCampaignSummaryTool = (client: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
@@ -57,10 +54,7 @@ export const getCampaignSummaryTool = (client: Scope3ApiClient) => ({
       );
 
       if (!campaign) {
-        return createErrorResponse(
-          "Campaign not found. Please check the campaign ID.",
-          new Error("Campaign not found"),
-        );
+        throw new Error("Campaign not found. Please check the campaign ID.");
       }
 
       // Get brand agent name for context
@@ -103,7 +97,9 @@ export const getCampaignSummaryTool = (client: Scope3ApiClient) => ({
 
       return JSON.stringify(summary);
     } catch (error) {
-      return createErrorResponse("Failed to generate campaign summary", error);
+      throw new Error(
+        `Failed to generate campaign summary: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   },
 

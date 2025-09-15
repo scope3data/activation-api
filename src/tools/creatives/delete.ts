@@ -3,12 +3,6 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
-
 export const creativeDeleteTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "Creatives",
@@ -33,7 +27,9 @@ export const creativeDeleteTool = (client: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
@@ -41,9 +37,8 @@ export const creativeDeleteTool = (client: Scope3ApiClient) => ({
       const creative = await client.getCreative(apiKey, args.creativeId);
 
       if (!creative) {
-        return createErrorResponse(
-          "Creative not found",
-          new Error(`Creative with ID ${args.creativeId} not found`),
+        throw new Error(
+          `Creative not found: Creative with ID ${args.creativeId} not found`,
         );
       }
 
@@ -67,10 +62,7 @@ export const creativeDeleteTool = (client: Scope3ApiClient) => ({
         warning += `• Wait for campaigns to complete before deleting\n\n`;
         warning += `**Note:** Force deletion will remove the creative from active campaigns, which may impact campaign performance.`;
 
-        return createMCPResponse({
-          message: warning,
-          success: false,
-        });
+        throw new Error(warning);
       }
 
       // Perform the deletion (stub - implement actual deletion logic)
@@ -113,12 +105,11 @@ export const creativeDeleteTool = (client: Scope3ApiClient) => ({
       summary += `• Consider uploading replacement creatives if needed\n`;
       summary += `• Update campaign creative assignments as necessary`;
 
-      return createMCPResponse({
-        message: summary,
-        success: true,
-      });
+      return summary;
     } catch (error) {
-      return createErrorResponse("Failed to delete creative", error);
+      throw new Error(
+        `Failed to delete creative: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   },
 

@@ -7,11 +7,6 @@ import type {
 } from "../../types/mcp.js";
 
 import { CustomSignalsClient } from "../../services/custom-signals-client.js";
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
 
 export const createCustomSignalTool = (_client?: Scope3ApiClient) => ({
   annotations: {
@@ -37,7 +32,9 @@ export const createCustomSignalTool = (_client?: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
@@ -60,18 +57,14 @@ export const createCustomSignalTool = (_client?: Scope3ApiClient) => ({
       const invalidKeys = keyParts.filter((k) => !validKeyTypes.includes(k));
 
       if (invalidKeys.length > 0) {
-        return createErrorResponse(
+        throw new Error(
           `Invalid key type(s): ${invalidKeys.join(", ")}. Valid types: ${validKeyTypes.join(", ")}`,
-          null,
         );
       }
 
       // Validate clusters have required region
       if (!args.clusters || args.clusters.length === 0) {
-        return createErrorResponse(
-          "At least one cluster configuration is required",
-          null,
-        );
+        throw new Error("At least one cluster configuration is required");
       }
 
       const customSignalsClient = new CustomSignalsClient();
@@ -161,12 +154,11 @@ export const createCustomSignalTool = (_client?: Scope3ApiClient) => ({
 
       summary += `The custom signal definition is ready for data ingestion!`;
 
-      return createMCPResponse({
-        message: summary,
-        success: true,
-      });
+      return summary;
     } catch (error) {
-      return createErrorResponse("Failed to create custom signal", error);
+      throw new Error(
+        `Failed to create custom signal: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   },
 

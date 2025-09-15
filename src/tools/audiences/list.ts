@@ -6,11 +6,7 @@ import type {
   MCPToolExecuteContext,
 } from "../../types/mcp.js";
 
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
+import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const listSyntheticAudiencesTool = (client: Scope3ApiClient) => ({
   annotations: {
@@ -36,7 +32,9 @@ export const listSyntheticAudiencesTool = (client: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
@@ -49,9 +47,8 @@ export const listSyntheticAudiencesTool = (client: Scope3ApiClient) => ({
         );
         brandAgentName = brandAgent.name;
       } catch (fetchError) {
-        return createErrorResponse(
-          "Brand agent not found. Please check the brand agent ID.",
-          fetchError,
+        throw new Error(
+          `Brand agent not found. Please check the brand agent ID: ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`,
         );
       }
 
@@ -115,7 +112,9 @@ export const listSyntheticAudiencesTool = (client: Scope3ApiClient) => ({
         success: true,
       });
     } catch (error) {
-      return createErrorResponse("Failed to fetch synthetic audiences", error);
+      throw new Error(
+        `Failed to fetch synthetic audiences: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   },
 

@@ -4,12 +4,6 @@ import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { PublisherSyncResult } from "../../types/creative.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
-
 /**
  * Update a creative's content, metadata, or assets
  * Supports both general updates and publisher revision workflows
@@ -51,7 +45,9 @@ export const creativeReviseTool = (client: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
@@ -59,9 +55,8 @@ export const creativeReviseTool = (client: Scope3ApiClient) => ({
       const creative = await client.getCreative(apiKey, args.creativeId);
 
       if (!creative) {
-        return createErrorResponse(
-          "Creative not found",
-          new Error(`Creative ${args.creativeId} does not exist`),
+        throw new Error(
+          `Creative not found: Creative ${args.creativeId} does not exist`,
         );
       }
 
@@ -71,11 +66,8 @@ export const creativeReviseTool = (client: Scope3ApiClient) => ({
       );
 
       if (!publisherApproval) {
-        return createErrorResponse(
-          "Creative not synced to this publisher",
-          new Error(
-            `Creative ${args.creativeId} has not been synced to publisher ${args.publisherId}`,
-          ),
+        throw new Error(
+          `Creative not synced to this publisher: Creative ${args.creativeId} has not been synced to publisher ${args.publisherId}`,
         );
       }
 
@@ -83,10 +75,7 @@ export const creativeReviseTool = (client: Scope3ApiClient) => ({
         publisherApproval.approvalStatus === "approved" ||
         publisherApproval.approvalStatus === "auto_approved"
       ) {
-        return createMCPResponse({
-          message: `ℹ️ Creative already approved by ${publisherApproval.publisherName}. No revision needed.`,
-          success: true,
-        });
+        return `ℹ️ Creative already approved by ${publisherApproval.publisherName}. No revision needed.`;
       }
 
       // Apply revisions
@@ -230,9 +219,11 @@ Creative revised but not re-synced. Use creative/sync_publishers to submit revis
 3. Monitor approval status with creative/approval_status`;
       }
 
-      return createMCPResponse({ message: response, success: true });
+      return response;
     } catch (error) {
-      return createErrorResponse("Failed to revise creative", error);
+      throw new Error(
+        `Failed to revise creative: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   },
 

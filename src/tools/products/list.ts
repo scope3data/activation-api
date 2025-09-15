@@ -8,10 +8,6 @@ import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
 import { BigQueryService } from "../../services/bigquery-service.js";
 import { MCPClientService } from "../../services/mcp-client-service.js";
-import {
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
 
 // Initialize services (these could be injected via dependency injection in a more sophisticated setup)
 const bigQueryService = new BigQueryService();
@@ -51,9 +47,8 @@ export const getProductsTool = () => ({
     try {
       // Validate required parameters
       if (!args.promoted_offering || args.promoted_offering.trim() === "") {
-        return createErrorResponse(
-          "Missing required parameter 'promoted_offering'",
-          new Error("promoted_offering must be provided and non-empty"),
+        throw new Error(
+          "Missing required parameter 'promoted_offering': promoted_offering must be provided and non-empty",
         );
       }
 
@@ -90,9 +85,8 @@ export const getProductsTool = () => ({
           salesAgents = await bigQueryService.getMCPSalesAgents();
         }
       } catch (error) {
-        return createErrorResponse(
-          "Failed to query sales agents from BigQuery",
-          error,
+        throw new Error(
+          `Failed to query sales agents from BigQuery: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
 
@@ -101,10 +95,7 @@ export const getProductsTool = () => ({
           ? `🔍 **No Sales Agents Found for Customer ${args.customer_id}**\n\nNo MCP-enabled sales agents found for the specified customer.`
           : `🔍 **No Sales Agents Found**\n\nNo MCP-enabled sales agents are currently available.`;
 
-        return createMCPResponse({
-          message,
-          success: true,
-        });
+        return message;
       }
 
       // Call get_products on all sales agents concurrently
@@ -276,14 +267,10 @@ export const getProductsTool = () => ({
       summary += `• Contact specific sales agents for detailed proposals\n`;
       summary += `• Consider using create_inventory_option to set up targeting strategies`;
 
-      return createMCPResponse({
-        message: summary,
-        success: true,
-      });
+      return summary;
     } catch (error) {
-      return createErrorResponse(
-        "Failed to discover products from sales agents",
-        error,
+      throw new Error(
+        `Failed to discover products from sales agents: ${error instanceof Error ? error.message : String(error)}`,
       );
     } finally {
       // Clean up MCP connections (optional, could be done on process exit)

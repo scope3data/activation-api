@@ -7,12 +7,6 @@ import type {
   ProvideScoringOutcomesParams,
 } from "../../types/mcp.js";
 
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
-
 export const provideScoringOutcomesTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "Reporting & Analytics",
@@ -37,7 +31,9 @@ export const provideScoringOutcomesTool = (client: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
@@ -46,17 +42,13 @@ export const provideScoringOutcomesTool = (client: Scope3ApiClient) => ({
       const endDate = new Date(args.exposureRange.end);
 
       if (startDate >= endDate) {
-        return createErrorResponse(
-          "Exposure range start date must be before end date",
-          new Error("Invalid exposure range"),
-        );
+        throw new Error("Exposure range start date must be before end date");
       }
 
       // Validate performance index
       if (args.performanceIndex < 0) {
-        return createErrorResponse(
+        throw new Error(
           "Performance index must be non-negative (0 = no value, 100 = expected, 1000 = 10x)",
-          new Error("Invalid performance index"),
         );
       }
 
@@ -79,12 +71,11 @@ export const provideScoringOutcomesTool = (client: Scope3ApiClient) => ({
       // Format response
       const response = formatOutcomeResponse(outcome, args);
 
-      return createMCPResponse({
-        message: response,
-        success: true,
-      });
+      return response;
     } catch (error) {
-      return createErrorResponse("Failed to provide scoring outcome", error);
+      throw new Error(
+        `Failed to provide scoring outcome: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   },
 

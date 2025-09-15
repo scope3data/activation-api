@@ -1793,13 +1793,27 @@ export class Scope3ApiClient {
     });
 
     if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        throw new Error("Authentication failed");
+      if (response.status === 401) {
+        throw new Error("Invalid API key - authentication failed");
+      }
+      if (response.status === 403) {
+        throw new Error(
+          "Access forbidden - insufficient permissions for API key",
+        );
+      }
+      if (response.status === 404) {
+        throw new Error(
+          "Invalid API key - API key not found or does not exist",
+        );
       }
       if (response.status >= 500) {
-        throw new Error("External service temporarily unavailable");
+        throw new Error(
+          "External service temporarily unavailable - please try again later",
+        );
       }
-      throw new Error("Request failed");
+      throw new Error(
+        `Request failed with status ${response.status}: ${response.statusText}`,
+      );
     }
 
     const result =

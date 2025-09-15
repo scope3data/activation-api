@@ -3,12 +3,6 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
-
 export const updateBrandAgentBrandStoryTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "Brand Stories",
@@ -37,7 +31,9 @@ export const updateBrandAgentBrandStoryTool = (client: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
@@ -93,12 +89,11 @@ export const updateBrandAgentBrandStoryTool = (client: Scope3ApiClient) => ({
       summary += `• Monitor campaign performance for any targeting improvements\n`;
       summary += `• Create additional updates as your brand story understanding evolves`;
 
-      return createMCPResponse({
-        message: summary,
-        success: true,
-      });
+      return summary;
     } catch (error) {
-      return createErrorResponse("Failed to update brand story", error);
+      throw new Error(
+        `Failed to update brand story: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   },
 

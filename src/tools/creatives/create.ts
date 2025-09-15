@@ -4,11 +4,7 @@ import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { Creative } from "../../types/creative.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
+import { createMCPResponse } from "../../utils/error-handling.js";
 
 /**
  * Create creatives via MCP orchestration (no file uploads)
@@ -73,15 +69,16 @@ export const creativeCreateTool = (client: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
       // Validate we have creatives to process
       if (!args.creatives || args.creatives.length === 0) {
-        return createErrorResponse(
+        throw new Error(
           "At least one creative is required in the creatives array",
-          new Error("Empty creatives array"),
         );
       }
 
@@ -96,10 +93,7 @@ export const creativeCreateTool = (client: Scope3ApiClient) => ({
           if (!creativeSpec.format?.type || !creativeSpec.format?.formatId) {
             const error = `Creative "${creativeSpec.creativeName}": Format specification required (format.type and format.formatId)`;
             if (processingMode === "fail_fast") {
-              return createErrorResponse(
-                error,
-                new Error("Missing format specification"),
-              );
+              throw new Error(error);
             }
             errors.push({ creativeName: creativeSpec.creativeName, error });
             continue;
@@ -127,10 +121,7 @@ export const creativeCreateTool = (client: Scope3ApiClient) => ({
           if (!hasContent) {
             const error = `Creative "${creativeSpec.creativeName}": At least one content source required (htmlSnippet, javascriptTag, vastTag, assetIds, productUrl, or snippet)`;
             if (processingMode === "fail_fast") {
-              return createErrorResponse(
-                error,
-                new Error("Missing content source"),
-              );
+              throw new Error(error);
             }
             errors.push({ creativeName: creativeSpec.creativeName, error });
             continue;
@@ -140,10 +131,7 @@ export const creativeCreateTool = (client: Scope3ApiClient) => ({
           if (snippet && !snippetType) {
             const error = `Creative "${creativeSpec.creativeName}": snippetType required when snippet is provided`;
             if (processingMode === "fail_fast") {
-              return createErrorResponse(
-                error,
-                new Error("Missing snippet type"),
-              );
+              throw new Error(error);
             }
             errors.push({ creativeName: creativeSpec.creativeName, error });
             continue;
@@ -180,7 +168,7 @@ export const creativeCreateTool = (client: Scope3ApiClient) => ({
           const fullError = `Creative "${creativeSpec.creativeName}": ${errorMessage}`;
 
           if (processingMode === "fail_fast") {
-            return createErrorResponse(fullError, error);
+            throw new Error(fullError);
           }
           errors.push({
             creativeName: creativeSpec.creativeName,
@@ -273,15 +261,13 @@ export const creativeCreateTool = (client: Scope3ApiClient) => ({
           success: true,
         });
       } else {
-        return createErrorResponse(
+        throw new Error(
           `Failed to create any creatives. ${errorCount} errors occurred.`,
-          new Error("All creative creations failed"),
         );
       }
     } catch (error) {
-      return createErrorResponse(
-        "Failed to process creative creation request",
-        error,
+      throw new Error(
+        `Failed to process creative creation request: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   },

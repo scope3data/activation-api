@@ -3,12 +3,6 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
-
 export const creativeGetTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "Creatives",
@@ -33,16 +27,17 @@ export const creativeGetTool = (client: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
       const creative = await client.getCreative(apiKey, args.creativeId);
 
       if (!creative) {
-        return createErrorResponse(
-          "Creative not found",
-          new Error(`Creative with ID ${args.creativeId} not found`),
+        throw new Error(
+          `Creative not found: Creative with ID ${args.creativeId} not found`,
         );
       }
 
@@ -123,12 +118,11 @@ export const creativeGetTool = (client: Scope3ApiClient) => ({
       summary += `• Sync to publishers: Use creative/sync_publishers\n`;
       summary += `• Revise creative: Use creative/revise for modifications`;
 
-      return createMCPResponse({
-        message: summary,
-        success: true,
-      });
+      return summary;
     } catch (error) {
-      return createErrorResponse("Failed to get creative details", error);
+      throw new Error(
+        `Failed to get creative details: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   },
 

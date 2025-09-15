@@ -3,12 +3,6 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
-
 export const deleteBrandAgentBrandStoryTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "Brand Stories",
@@ -33,7 +27,9 @@ export const deleteBrandAgentBrandStoryTool = (client: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
@@ -78,12 +74,11 @@ export const deleteBrandAgentBrandStoryTool = (client: Scope3ApiClient) => ({
 
       summary += `💡 **Recovery:** If you need to restore similar functionality, use \`create_brand_agent_brand_story\` with the same or updated brand story definition.`;
 
-      return createMCPResponse({
-        message: summary,
-        success: true,
-      });
+      return summary;
     } catch (error) {
-      return createErrorResponse("Failed to archive brand story", error);
+      throw new Error(
+        `Failed to archive brand story: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   },
 

@@ -3,12 +3,6 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
-
 /**
  * Update existing creative properties
  * Orchestration tool for modifying creative metadata and content
@@ -57,16 +51,17 @@ export const creativeUpdateTool = (client: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
       // Validate that at least one update is provided
       const { advertiserDomains, content, name, status } = args.updates;
       if (!name && !status && !content && !advertiserDomains) {
-        return createErrorResponse(
+        throw new Error(
           "At least one update field must be provided: name, status, content, or advertiserDomains",
-          new Error("No updates provided"),
         );
       }
 
@@ -155,9 +150,11 @@ ${statusIcon} ${assignment.campaignName} (${assignment.campaignId})`;
 • Campaign assignments preserved across update
 • Changes processed through appropriate ${updatedCreative.format.type} provider`;
 
-      return createMCPResponse({ message: response, success: true });
+      return response;
     } catch (error) {
-      return createErrorResponse("Failed to update creative", error);
+      throw new Error(
+        `Failed to update creative: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   },
 

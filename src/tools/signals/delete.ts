@@ -6,12 +6,6 @@ import type {
   MCPToolExecuteContext,
 } from "../../types/mcp.js";
 
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
-
 export const deleteCustomSignalTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "Signals",
@@ -36,7 +30,9 @@ export const deleteCustomSignalTool = (client: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
@@ -45,9 +41,8 @@ export const deleteCustomSignalTool = (client: Scope3ApiClient) => ({
       try {
         signalDetails = await client.getCustomSignal(apiKey, args.signalId);
       } catch (error) {
-        return createErrorResponse(
-          "Signal not found. Please check the signal ID.",
-          error,
+        throw new Error(
+          `Signal not found. Please check the signal ID.: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
 
@@ -55,9 +50,8 @@ export const deleteCustomSignalTool = (client: Scope3ApiClient) => ({
       const result = await client.deleteCustomSignal(apiKey, args.signalId);
 
       if (!result.deleted) {
-        return createErrorResponse(
+        throw new Error(
           "Signal deletion failed. The signal may be in use by active campaigns.",
-          null,
         );
       }
 
@@ -146,12 +140,11 @@ export const deleteCustomSignalTool = (client: Scope3ApiClient) => ({
 
       summary += `The custom signal has been permanently removed from the platform.`;
 
-      return createMCPResponse({
-        message: summary,
-        success: true,
-      });
+      return summary;
     } catch (error) {
-      return createErrorResponse("Failed to delete custom signal", error);
+      throw new Error(
+        `Failed to delete custom signal: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   },
 

@@ -6,11 +6,7 @@ import type {
   UpdateBrandAgentParams,
 } from "../../../types/mcp.js";
 
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../../utils/error-handling.js";
+import { createMCPResponse } from "../../../utils/error-handling.js";
 
 export const updateBrandAgentTool = (client: Scope3ApiClient) => ({
   annotations: {
@@ -36,7 +32,9 @@ export const updateBrandAgentTool = (client: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
@@ -100,7 +98,9 @@ export const updateBrandAgentTool = (client: Scope3ApiClient) => ({
         success: true,
       });
     } catch (error) {
-      return createErrorResponse("Failed to update brand agent", error);
+      throw new Error(
+        `Failed to update brand agent: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   },
 

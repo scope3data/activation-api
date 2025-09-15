@@ -3,12 +3,6 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
-
 export const createBrandAgentStandardsTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "Brand Standards",
@@ -41,7 +35,9 @@ export const createBrandAgentStandardsTool = (client: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
@@ -54,9 +50,8 @@ export const createBrandAgentStandardsTool = (client: Scope3ApiClient) => ({
         );
         brandAgentName = brandAgent.name;
       } catch (fetchError) {
-        return createErrorResponse(
-          "Brand agent not found. Please check the brand agent ID.",
-          fetchError,
+        throw new Error(
+          `Brand agent not found. Please check the brand agent ID.: ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`,
         );
       }
 
@@ -103,14 +98,10 @@ export const createBrandAgentStandardsTool = (client: Scope3ApiClient) => ({
 
       summary += `💡 **Pro Tip:** You can create multiple standards agents for different markets, channels, or safety levels within the same brand agent.`;
 
-      return createMCPResponse({
-        message: summary,
-        success: true,
-      });
+      return summary;
     } catch (error) {
-      return createErrorResponse(
-        "Failed to create brand standards agent",
-        error,
+      throw new Error(
+        `Failed to create brand standards agent: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   },
