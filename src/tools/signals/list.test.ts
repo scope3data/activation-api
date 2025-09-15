@@ -238,10 +238,9 @@ describe("signals/list", () => {
   });
 
   it("should handle missing API key", async () => {
-    const result = await tool.execute({}, {});
-
-    expect(result).toContain("Authentication required");
-    expect(result).toContain("SCOPE3_API_KEY");
+    await expect(tool.execute({}, {})).rejects.toThrow(
+      "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+    );
     expect(mockScope3Client.listCustomSignals).not.toHaveBeenCalled();
   });
 
@@ -250,15 +249,16 @@ describe("signals/list", () => {
       new Error("External service temporarily unavailable"),
     );
 
-    const result = await tool.execute(
-      {},
-      {
-        session: { scope3ApiKey: "test_api_key" },
-      },
+    await expect(
+      tool.execute(
+        {},
+        {
+          session: { scope3ApiKey: "test_api_key" },
+        },
+      ),
+    ).rejects.toThrow(
+      "Failed to list custom signals: External service temporarily unavailable",
     );
-
-    expect(result).toContain("Failed to list custom signals");
-    expect(result).toContain("Service temporarily unavailable");
   });
 
   it("should use environment variable when no session API key", async () => {
