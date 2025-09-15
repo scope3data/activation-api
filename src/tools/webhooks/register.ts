@@ -7,11 +7,7 @@ import type {
 } from "../../types/mcp.js";
 import type { WebhookSubscription } from "../../types/webhooks.js";
 
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
+import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const registerWebhookTool = (client: Scope3ApiClient) => ({
   annotations: {
@@ -37,17 +33,16 @@ export const registerWebhookTool = (client: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
       // Validate webhook endpoint
       const validationResult = await validateWebhookEndpoint(args.endpoint);
       if (!validationResult.valid) {
-        return createErrorResponse(
-          `Invalid webhook endpoint: ${validationResult.reason}`,
-          new Error("Invalid webhook endpoint"),
-        );
+        throw new Error(`Invalid webhook endpoint: ${validationResult.reason}`);
       }
 
       // Verify brand agent exists
@@ -57,15 +52,13 @@ export const registerWebhookTool = (client: Scope3ApiClient) => ({
           args.brandAgentId,
         );
         if (!brandAgent) {
-          return createErrorResponse(
+          throw new Error(
             "Brand agent not found. Please check the brand agent ID.",
-            new Error("Brand agent not found"),
           );
         }
       } catch (error) {
-        return createErrorResponse(
-          "Brand agent not found. Please check the brand agent ID.",
-          error,
+        throw new Error(
+          `Brand agent not found. Please check the brand agent ID: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
 
@@ -100,7 +93,9 @@ export const registerWebhookTool = (client: Scope3ApiClient) => ({
         success: true,
       });
     } catch (error) {
-      return createErrorResponse("Failed to register webhook", error);
+      throw new Error(
+        `Failed to register webhook: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   },
 

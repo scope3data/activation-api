@@ -6,12 +6,6 @@ import type {
   UpdateCustomSignalParams,
 } from "../../types/mcp.js";
 
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
-
 export const updateCustomSignalTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "Signals",
@@ -36,7 +30,9 @@ export const updateCustomSignalTool = (client: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
@@ -45,18 +41,14 @@ export const updateCustomSignalTool = (client: Scope3ApiClient) => ({
       try {
         currentSignal = await client.getCustomSignal(apiKey, args.signalId);
       } catch (error) {
-        return createErrorResponse(
-          "Signal not found. Please check the signal ID.",
-          error,
+        throw new Error(
+          `Signal not found. Please check the signal ID.: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
 
       // Validate clusters if provided
       if (args.clusters && args.clusters.length === 0) {
-        return createErrorResponse(
-          "At least one cluster configuration is required",
-          null,
-        );
+        throw new Error("At least one cluster configuration is required");
       }
 
       const updateData: Record<string, unknown> = {};
@@ -66,9 +58,8 @@ export const updateCustomSignalTool = (client: Scope3ApiClient) => ({
       if (args.clusters !== undefined) updateData.clusters = args.clusters;
 
       if (Object.keys(updateData).length === 0) {
-        return createErrorResponse(
+        throw new Error(
           "At least one field must be provided for update (name, description, or clusters)",
-          null,
         );
       }
 
@@ -179,12 +170,11 @@ export const updateCustomSignalTool = (client: Scope3ApiClient) => ({
       summary += `• **Created:** ${new Date(signal.createdAt).toLocaleString()}\n`;
       summary += `• **Updated:** ${new Date(signal.updatedAt).toLocaleString()}\n`;
 
-      return createMCPResponse({
-        message: summary,
-        success: true,
-      });
+      return summary;
     } catch (error) {
-      return createErrorResponse("Failed to update custom signal", error);
+      throw new Error(
+        `Failed to update custom signal: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   },
 

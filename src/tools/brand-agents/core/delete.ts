@@ -6,11 +6,7 @@ import type {
   MCPToolExecuteContext,
 } from "../../../types/mcp.js";
 
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../../utils/error-handling.js";
+import { createMCPResponse } from "../../../utils/error-handling.js";
 
 export const deleteBrandAgentTool = (client: Scope3ApiClient) => ({
   annotations: {
@@ -36,7 +32,9 @@ export const deleteBrandAgentTool = (client: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
@@ -50,9 +48,8 @@ export const deleteBrandAgentTool = (client: Scope3ApiClient) => ({
         brandAgentName = brandAgent.name;
       } catch (fetchError) {
         // If we can't fetch the brand agent, it might not exist
-        return createErrorResponse(
-          "Brand agent not found or inaccessible",
-          fetchError,
+        throw new Error(
+          `Brand agent not found or inaccessible: ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`,
         );
       }
 
@@ -88,7 +85,9 @@ export const deleteBrandAgentTool = (client: Scope3ApiClient) => ({
         success: true,
       });
     } catch (error) {
-      return createErrorResponse("Failed to delete brand agent", error);
+      throw new Error(
+        `Failed to delete brand agent: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   },
 

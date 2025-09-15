@@ -3,12 +3,6 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
-
 export const discoverPublisherProductsTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "Tactics",
@@ -43,7 +37,9 @@ export const discoverPublisherProductsTool = (client: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
@@ -106,11 +102,7 @@ export const discoverPublisherProductsTool = (client: Scope3ApiClient) => ({
       );
 
       if (products.length === 0) {
-        return createMCPResponse({
-          message:
-            "🔍 **No Publisher Products Found**\n\nNo publisher products match your current criteria. Try adjusting your filters or requirements.",
-          success: true,
-        });
+        return "🔍 **No Publisher Products Found**\n\nNo publisher products match your current criteria. Try adjusting your filters or requirements.";
       }
 
       let summary = `📦 **Found ${products.length} Publisher Products**\n\n`;
@@ -265,14 +257,10 @@ export const discoverPublisherProductsTool = (client: Scope3ApiClient) => ({
       summary += `• Consider different signal types for the same publisher product\n`;
       summary += `• Review pricing and delivery guarantees for budget planning`;
 
-      return createMCPResponse({
-        message: summary,
-        success: true,
-      });
+      return summary;
     } catch (error) {
-      return createErrorResponse(
-        "Failed to discover publisher products",
-        error,
+      throw new Error(
+        `Failed to discover publisher products: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   },

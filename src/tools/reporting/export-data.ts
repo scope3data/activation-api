@@ -7,11 +7,7 @@ import type {
 } from "../../types/mcp.js";
 import type { DataExportResponse } from "../../types/reporting.js";
 
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
+import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const exportDataTool = (client: Scope3ApiClient) => ({
   annotations: {
@@ -37,7 +33,9 @@ export const exportDataTool = (client: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
@@ -46,10 +44,7 @@ export const exportDataTool = (client: Scope3ApiClient) => ({
       const endDate = new Date(args.dateRange.end);
 
       if (startDate >= endDate) {
-        return createErrorResponse(
-          "Start date must be before end date",
-          new Error("Invalid date range"),
-        );
+        throw new Error("Start date must be before end date");
       }
 
       // Get campaign IDs (either from args or by brand agent)
@@ -64,10 +59,7 @@ export const exportDataTool = (client: Scope3ApiClient) => ({
       }
 
       if (!campaignIds.length) {
-        return createErrorResponse(
-          "No campaigns found for the specified criteria",
-          new Error("No campaigns found"),
-        );
+        throw new Error("No campaigns found for the specified criteria");
       }
 
       // Generate export based on requested datasets
@@ -86,7 +78,9 @@ export const exportDataTool = (client: Scope3ApiClient) => ({
         success: true,
       });
     } catch (error) {
-      return createErrorResponse("Failed to export campaign data", error);
+      throw new Error(
+        `Failed to export campaign data: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   },
 

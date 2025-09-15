@@ -51,7 +51,7 @@ describe("MCP Server Integration", () => {
 
       mockGetAgents.mockResolvedValueOnce(mockAgents);
 
-      const client = new Scope3ApiClient("https://api.scope3.com/graphql");
+      const client = new Scope3ApiClient("https://api.scope3.com/api/graphql");
       const result = await client.getAgents("test_api_key", {});
 
       expect(result).toEqual(mockAgents);
@@ -61,7 +61,7 @@ describe("MCP Server Integration", () => {
     it("should handle authentication failures", async () => {
       mockGetAgents.mockRejectedValueOnce(new Error("Authentication failed"));
 
-      const client = new Scope3ApiClient("https://api.scope3.com/graphql");
+      const client = new Scope3ApiClient("https://api.scope3.com/api/graphql");
 
       await expect(client.getAgents("invalid_key")).rejects.toThrow(
         "Authentication failed",
@@ -73,7 +73,7 @@ describe("MCP Server Integration", () => {
         new Error("External service temporarily unavailable"),
       );
 
-      const client = new Scope3ApiClient("https://api.scope3.com/graphql");
+      const client = new Scope3ApiClient("https://api.scope3.com/api/graphql");
 
       await expect(client.getAgents("test_key")).rejects.toThrow(
         "External service temporarily unavailable",
@@ -85,7 +85,7 @@ describe("MCP Server Integration", () => {
         new Error("Invalid request parameters or query"),
       );
 
-      const client = new Scope3ApiClient("https://api.scope3.com/graphql");
+      const client = new Scope3ApiClient("https://api.scope3.com/api/graphql");
 
       await expect(client.getAgents("test_key")).rejects.toThrow(
         "Invalid request parameters or query",
@@ -98,7 +98,7 @@ describe("MCP Server Integration", () => {
 
       mockGetAgents.mockResolvedValueOnce(mockAgents);
 
-      const client = new Scope3ApiClient("https://api.scope3.com/graphql");
+      const client = new Scope3ApiClient("https://api.scope3.com/api/graphql");
       await client.getAgents("test_key", whereClause);
 
       expect(mockGetAgents).toHaveBeenCalledWith("test_key", whereClause);
@@ -109,7 +109,7 @@ describe("MCP Server Integration", () => {
 
       mockGetAgents.mockResolvedValueOnce(mockAgents);
 
-      const client = new Scope3ApiClient("https://api.scope3.com/graphql");
+      const client = new Scope3ApiClient("https://api.scope3.com/api/graphql");
       await client.getAgents("test_key");
 
       expect(mockGetAgents).toHaveBeenCalledWith("test_key");

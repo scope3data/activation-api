@@ -3,11 +3,7 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
+import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const getDSPSeatsTool = (client: Scope3ApiClient) =>
   ({
@@ -32,7 +28,9 @@ export const getDSPSeatsTool = (client: Scope3ApiClient) =>
       }
 
       if (!apiKey) {
-        return createAuthErrorResponse();
+        throw new Error(
+          "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+        );
       }
 
       try {
@@ -64,7 +62,9 @@ export const getDSPSeatsTool = (client: Scope3ApiClient) =>
           success: true,
         });
       } catch (error) {
-        return createErrorResponse("Error searching DSP seats", error);
+        throw new Error(
+          `Error searching DSP seats: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     },
     name: "dsp/get-seats",

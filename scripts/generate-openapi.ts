@@ -322,7 +322,7 @@ async function generateOpenAPISpec(): Promise<void> {
 
   try {
     // Get all tools from MCP server
-    const client = new Scope3ApiClient("https://api.scope3.com/graphql"); // Dummy client for tools
+    const client = new Scope3ApiClient("https://api.scope3.com/api/graphql"); // Dummy client for tools
     const tools = getAllTools(client);
 
     console.log(`📋 Found ${Object.keys(tools).length} MCP tools`);
