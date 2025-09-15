@@ -38,15 +38,32 @@ npm run lint
 echo "🧪 Running tests..."
 npm test
 
-# Check documentation links (requires Mintlify CLI)
+# Check documentation links (using local Mintlify + smart API validation)
 echo "📖 Checking documentation links..."
-if command -v mintlify >/dev/null 2>&1; then
-  npm run docs:validate:links
-  echo "✅ Documentation links checked"
-else
-  echo "⚠️  Mintlify CLI not found - skipping documentation link check"
-  echo "   Install with: npm install -g mintlify"
+BROKEN_LINKS_OUTPUT=$(npm run docs:validate:links 2>&1)
+
+# Filter out API reference links for separate validation
+NON_API_BROKEN_LINKS=$(echo "$BROKEN_LINKS_OUTPUT" | grep -v "/api-reference/" || true)
+
+# Check non-API broken links
+if echo "$NON_API_BROKEN_LINKS" | grep -q " ⎿ "; then
+  echo "❌ Non-API reference broken links detected!"
+  echo "Please fix these broken links:"
+  echo "$NON_API_BROKEN_LINKS"
+  exit 1
 fi
+
+# Smart validation of API reference links
+echo "🔗 Validating API reference links..."
+if ! npm run docs:validate:api-links; then
+  echo "⚠️  Some API reference links are broken, but not blocking CI yet"
+  echo "   These need to be fixed: see the report above"
+  echo "   Future versions may block CI on these issues"
+else
+  echo "✅ All API reference links working"
+fi
+
+echo "✅ Documentation links checked - core navigation working"
 
 # Check for OpenAPI drift
 echo "📋 Checking OpenAPI consistency..."

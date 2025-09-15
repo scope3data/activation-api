@@ -6,12 +6,6 @@ import type {
   MCPToolExecuteContext,
 } from "../../types/mcp.js";
 
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
-
 export const getCustomSignalTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "Signals",
@@ -36,7 +30,9 @@ export const getCustomSignalTool = (client: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
@@ -201,12 +197,11 @@ export const getCustomSignalTool = (client: Scope3ApiClient) => ({
         summary += `• **Channel Targeting:** ${[...new Set(channels)].join(", ")}\n`;
       }
 
-      return createMCPResponse({
-        message: summary,
-        success: true,
-      });
+      return summary;
     } catch (error) {
-      return createErrorResponse("Failed to get custom signal", error);
+      throw new Error(
+        `Failed to get custom signal: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   },
 

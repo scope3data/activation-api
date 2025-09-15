@@ -3,12 +3,6 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
-
 /**
  * List all available creative formats from AdCP, publishers, and creative agents
  * Discovery tool for understanding what creative formats can be created
@@ -42,7 +36,9 @@ export const listCreativeFormatsTool = (client: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
@@ -237,9 +233,11 @@ creative/create format.type="creative_agent" format.formatId="dynamic_product"
 • Use format IDs exactly as shown in creative/create calls
 • Check capabilities before choosing assembly methods`;
 
-      return createMCPResponse({ message: response, success: true });
+      return response;
     } catch (error) {
-      return createErrorResponse("Failed to list creative formats", error);
+      throw new Error(
+        `Failed to list creative formats: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   },
 

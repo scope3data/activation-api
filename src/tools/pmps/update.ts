@@ -4,11 +4,7 @@ import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
 import { OptimizationInterpreter } from "../../services/optimization-interpreter.js";
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
+import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const updatePMPTool = (client: Scope3ApiClient) =>
   ({
@@ -45,13 +41,14 @@ export const updatePMPTool = (client: Scope3ApiClient) =>
       }
 
       if (!apiKey) {
-        return createAuthErrorResponse();
+        throw new Error(
+          "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+        );
       }
 
       if (!prompt && !name && !status && !changeRequest) {
-        return createErrorResponse(
+        throw new Error(
           "At least one of prompt, changeRequest, name, or status must be provided to update the PMP.",
-          new Error("Missing required parameters"),
         );
       }
 
@@ -135,7 +132,9 @@ export const updatePMPTool = (client: Scope3ApiClient) =>
           success: true,
         });
       } catch (error) {
-        return createErrorResponse("Error updating PMP", error);
+        throw new Error(
+          `Error updating PMP: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     },
     name: "pmp/update",

@@ -3,12 +3,6 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
-
 /**
  * Add assets via reference management (URLs, upload IDs, CDN URLs)
  * MCP orchestration layer - NO file uploads
@@ -54,7 +48,9 @@ export const assetsAddTool = (client: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
@@ -62,9 +58,8 @@ export const assetsAddTool = (client: Scope3ApiClient) => ({
       for (const asset of args.assets) {
         const { cdnUrl, uploadId, url } = asset.source;
         if (!url && !uploadId && !cdnUrl) {
-          return createErrorResponse(
+          throw new Error(
             `Asset "${asset.name}" must have at least one source: url, uploadId, or cdnUrl`,
-            new Error("Missing asset source"),
           );
         }
       }
@@ -123,9 +118,11 @@ ${status} **${assetResult.assetId || "Failed"}**`;
 • CDN URLs are linked directly for immediate use`;
       }
 
-      return createMCPResponse({ message: response, success: true });
+      return response;
     } catch (error) {
-      return createErrorResponse("Failed to add assets", error);
+      throw new Error(
+        `Failed to add assets: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   },
 

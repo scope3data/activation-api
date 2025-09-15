@@ -7,11 +7,6 @@ import type {
 } from "../../types/mcp.js";
 
 import { CustomSignalsClient } from "../../services/custom-signals-client.js";
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
 
 export const listCustomSignalsTool = (client: Scope3ApiClient) => ({
   annotations: {
@@ -37,7 +32,9 @@ export const listCustomSignalsTool = (client: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
@@ -93,10 +90,7 @@ export const listCustomSignalsTool = (client: Scope3ApiClient) => ({
         message += `• Upload signal data via the Custom Signals data API\n`;
         message += `• Reference signals in campaign prompts for enhanced targeting\n\n`;
 
-        return createMCPResponse({
-          message,
-          success: true,
-        });
+        return message;
       }
 
       let summary = `📊 **Custom Signals Overview**\n\n`;
@@ -193,12 +187,11 @@ export const listCustomSignalsTool = (client: Scope3ApiClient) => ({
       summary += `• Reference signals in campaign prompts for targeting\n`;
       summary += `• Upload signal data via the Custom Signals data API\n`;
 
-      return createMCPResponse({
-        message: summary,
-        success: true,
-      });
+      return summary;
     } catch (error) {
-      return createErrorResponse("Failed to list custom signals", error);
+      throw new Error(
+        `Failed to list custom signals: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   },
 

@@ -3,12 +3,6 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
-
 /**
  * List all creatives assigned to a campaign
  * Campaign-centric view of creative assignments with performance data
@@ -41,7 +35,9 @@ export const campaignListCreativesTool = (client: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
@@ -51,8 +47,7 @@ export const campaignListCreativesTool = (client: Scope3ApiClient) => ({
       );
 
       if (!creatives.length) {
-        return createMCPResponse({
-          message: `📊 **Campaign ${args.campaignId}** - No creatives assigned
+        return `📊 **Campaign ${args.campaignId}** - No creatives assigned
 
 🎯 **Get Started with Campaign Creatives:**
 • Use \`campaign/attach_creative\` to assign existing creatives
@@ -64,9 +59,7 @@ export const campaignListCreativesTool = (client: Scope3ApiClient) => ({
 • Track creative performance within campaign context  
 • Optimize creative mix based on campaign goals
 
-🔄 **[STUB]** This will query AdCP publishers for campaign-creative assignments.`,
-          success: true,
-        });
+🔄 **[STUB]** This will query AdCP publishers for campaign-creative assignments.`;
       }
 
       let response = `📊 **Campaign Creatives**
@@ -145,9 +138,11 @@ export const campaignListCreativesTool = (client: Scope3ApiClient) => ({
 
       response += `🔄 **[STUB]** This will query AdCP publishers for real campaign-creative performance data.`;
 
-      return createMCPResponse({ message: response, success: true });
+      return response;
     } catch (error) {
-      return createErrorResponse("Failed to list campaign creatives", error);
+      throw new Error(
+        `Failed to list campaign creatives: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   },
 

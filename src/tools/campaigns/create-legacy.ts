@@ -7,11 +7,6 @@ import {
   getTargetingDimensionsMap,
   transformTargetingProfiles,
 } from "../../client/transformers/targeting.js";
-import {
-  createAuthErrorResponse,
-  createErrorResponse,
-  createMCPResponse,
-} from "../../utils/error-handling.js";
 
 export const createCampaignLegacyTool = (client: Scope3ApiClient) => ({
   annotations: {
@@ -37,7 +32,9 @@ export const createCampaignLegacyTool = (client: Scope3ApiClient) => ({
     }
 
     if (!apiKey) {
-      return createAuthErrorResponse();
+      throw new Error(
+        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+      );
     }
 
     try {
@@ -145,12 +142,11 @@ export const createCampaignLegacyTool = (client: Scope3ApiClient) => ({
       }
 
       summary += `\nCampaign is ready for activation!`;
-      return createMCPResponse({
-        message: summary,
-        success: true,
-      });
+      return summary;
     } catch (error) {
-      return createErrorResponse("Campaign creation failed", error);
+      throw new Error(
+        `Campaign creation failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   },
 
