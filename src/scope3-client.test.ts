@@ -140,4 +140,92 @@ describe("Scope3ApiClient", () => {
       expect(body.variables.where).toEqual(whereClause);
     });
   });
+
+  describe("validateApiKey", () => {
+    it("should return valid with customerId on successful validation", async () => {
+      const mockCustomerId = 12345;
+
+      mockFetch.mockResolvedValueOnce({
+        json: async () => ({
+          data: {
+            getAPIAccessKeys: {
+              tokens: [
+                {
+                  customerId: mockCustomerId,
+                  id: "token_123",
+                  name: "Test Token",
+                },
+              ],
+            },
+          },
+        }),
+        ok: true,
+      } as Response);
+
+      const result = await client.validateApiKey(validApiKey);
+
+      expect(result).toEqual({ customerId: mockCustomerId, isValid: true });
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://api.scope3.com/api/graphql",
+        expect.objectContaining({
+          body: expect.stringContaining("GetAPIAccessKeys"),
+          headers: {
+            Authorization: `Bearer ${validApiKey}`,
+            "Content-Type": "application/json",
+            "User-Agent": "MCP-Server/1.0",
+          },
+          method: "POST",
+        }),
+      );
+    });
+
+    it("should return invalid on authentication failure", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+      } as Response);
+
+      const result = await client.validateApiKey("invalid_key");
+
+      expect(result).toEqual({ isValid: false });
+    });
+
+    it("should return invalid on GraphQL errors", async () => {
+      mockFetch.mockResolvedValueOnce({
+        json: async () => ({
+          errors: [{ message: "Invalid API key" }],
+        }),
+        ok: true,
+      } as Response);
+
+      const result = await client.validateApiKey(validApiKey);
+
+      expect(result).toEqual({ isValid: false });
+    });
+
+    it("should return invalid when no customer data is returned", async () => {
+      mockFetch.mockResolvedValueOnce({
+        json: async () => ({
+          data: {
+            getAPIAccessKeys: {
+              tokens: [],
+            },
+          },
+        }),
+        ok: true,
+      } as Response);
+
+      const result = await client.validateApiKey(validApiKey);
+
+      expect(result).toEqual({ isValid: false });
+    });
+
+    it("should return invalid on network errors", async () => {
+      mockFetch.mockRejectedValueOnce(new Error("Network error"));
+
+      const result = await client.validateApiKey(validApiKey);
+
+      expect(result).toEqual({ isValid: false });
+    });
+  });
 });
