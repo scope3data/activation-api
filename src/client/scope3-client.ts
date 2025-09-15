@@ -1871,6 +1871,15 @@ export class Scope3ApiClient {
     };
   }
 
+  async validateApiKey(apiKey: string): Promise<{customerId?: number; isValid: boolean}> {
+    try {
+      const customerId = await this.getCustomerId(apiKey);
+      return { customerId, isValid: true };
+    } catch (_error) {
+      return { isValid: false };
+    }
+  }
+
   // Get DSP seats (stubbed until backend ready)
   async getDSPSeats(
     apiKey: string,
