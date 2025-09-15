@@ -64,9 +64,7 @@ export const brandAgentFixtures = {
   // Brand agent input for creation
   createInput: (): BrandAgentInput => ({
     advertiserDomains: ["newbrand.com"],
-    customerId: 12345,
     description: "New brand for testing",
-    dspSeats: ["DV360_NEW"],
     externalId: "ext_new_123",
     name: "New Test Brand",
     nickname: "NewBrand",
@@ -74,7 +72,7 @@ export const brandAgentFixtures = {
 
   // Brand agent input without BigQuery fields
   createInputGraphQLOnly: (): BrandAgentInput => ({
-    customerId: 12345,
+    advertiserDomains: ["graphql-only.com"],
     name: "GraphQL Only Brand",
   }),
 

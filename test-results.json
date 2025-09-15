@@ -1,11 +1,11 @@
 {
   "numTotalTestSuites": 10,
-  "numPassedTestSuites": 2,
-  "numFailedTestSuites": 8,
+  "numPassedTestSuites": 10,
+  "numFailedTestSuites": 0,
   "numPendingTestSuites": 0,
   "numTotalTests": 18,
-  "numPassedTests": 6,
-  "numFailedTests": 12,
+  "numPassedTests": 18,
+  "numFailedTests": 0,
   "numPendingTests": 0,
   "numTodoTests": 0,
   "snapshot": {
@@ -24,8 +24,8 @@
     "updated": 0,
     "didUpdate": false
   },
-  "startTime": 1757967252154,
-  "success": false,
+  "startTime": 1757968636017,
+  "success": true,
   "testResults": [
     {
       "assertionResults": [
@@ -35,13 +35,10 @@
             "Brand Agent Listing"
           ],
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Listing should return brand agents when service is available",
-          "status": "failed",
+          "status": "passed",
           "title": "should return brand agents when service is available",
-          "duration": 3.9320000000000164,
-          "failureMessages": [
-            "TypeError: brandAgentFixtures.fullyEnhancedBrandAgent is not a function\n    at Object.successfulList (/Users/brianokelley/conductor/activation-api/.conductor/list/src/__tests__/setup/service-level-mocks.ts:45:26)\n    at /Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts:39:29\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)\n    at runTest (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)",
-            "TypeError: brandAgentFixtures.fullyEnhancedBrandAgent is not a function\n    at Object.successfulList (/Users/brianokelley/conductor/activation-api/.conductor/list/src/__tests__/setup/service-level-mocks.ts:45:26)\n    at /Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts:39:29\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)\n    at runTest (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)"
-          ],
+          "duration": 1.7273330000000442,
+          "failureMessages": [],
           "meta": {}
         },
         {
@@ -52,7 +49,7 @@
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Listing should handle authentication errors gracefully",
           "status": "passed",
           "title": "should handle authentication errors gracefully",
-          "duration": 0.7414999999999736,
+          "duration": 0.6989169999999376,
           "failureMessages": [],
           "meta": {}
         },
@@ -62,13 +59,10 @@
             "Brand Agent Listing"
           ],
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Listing should support filtering by criteria",
-          "status": "failed",
+          "status": "passed",
           "title": "should support filtering by criteria",
-          "duration": 0.43841699999995853,
-          "failureMessages": [
-            "TypeError: brandAgentFixtures.fullyEnhancedBrandAgent is not a function\n    at Object.successfulList (/Users/brianokelley/conductor/activation-api/.conductor/list/src/__tests__/setup/service-level-mocks.ts:45:26)\n    at /Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts:62:29\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)\n    at runTest (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)",
-            "TypeError: brandAgentFixtures.fullyEnhancedBrandAgent is not a function\n    at Object.successfulList (/Users/brianokelley/conductor/activation-api/.conductor/list/src/__tests__/setup/service-level-mocks.ts:45:26)\n    at /Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts:62:29\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)\n    at runTest (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)"
-          ],
+          "duration": 0.3577909999999065,
+          "failureMessages": [],
           "meta": {}
         },
         {
@@ -77,13 +71,10 @@
             "Brand Agent Listing"
           ],
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Listing should handle mixed enhancement states gracefully",
-          "status": "failed",
+          "status": "passed",
           "title": "should handle mixed enhancement states gracefully",
-          "duration": 0.4545420000000604,
-          "failureMessages": [
-            "TypeError: brandAgentFixtures.fullyEnhancedBrandAgent is not a function\n    at Object.mixedEnhancement (/Users/brianokelley/conductor/activation-api/.conductor/list/src/__tests__/setup/service-level-mocks.ts:118:26)\n    at /Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts:77:29\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)\n    at runTest (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)",
-            "TypeError: brandAgentFixtures.fullyEnhancedBrandAgent is not a function\n    at Object.mixedEnhancement (/Users/brianokelley/conductor/activation-api/.conductor/list/src/__tests__/setup/service-level-mocks.ts:118:26)\n    at /Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts:77:29\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)\n    at runTest (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)"
-          ],
+          "duration": 0.3440419999999449,
+          "failureMessages": [],
           "meta": {}
         },
         {
@@ -92,13 +83,10 @@
             "Brand Agent Retrieval"
           ],
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Retrieval should return brand agent when found",
-          "status": "failed",
+          "status": "passed",
           "title": "should return brand agent when found",
-          "duration": 0.43600000000003547,
-          "failureMessages": [
-            "TypeError: brandAgentFixtures.fullyEnhancedBrandAgent is not a function\n    at Object.successfulGet (/Users/brianokelley/conductor/activation-api/.conductor/list/src/__tests__/setup/service-level-mocks.ts:52:26)\n    at /Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts:100:29\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)\n    at runTest (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)",
-            "TypeError: brandAgentFixtures.fullyEnhancedBrandAgent is not a function\n    at Object.successfulGet (/Users/brianokelley/conductor/activation-api/.conductor/list/src/__tests__/setup/service-level-mocks.ts:52:26)\n    at /Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts:100:29\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)\n    at runTest (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)"
-          ],
+          "duration": 0.26224999999999454,
+          "failureMessages": [],
           "meta": {}
         },
         {
@@ -109,7 +97,7 @@
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Retrieval should handle not found errors",
           "status": "passed",
           "title": "should handle not found errors",
-          "duration": 0.19012499999996635,
+          "duration": 0.17887499999994816,
           "failureMessages": [],
           "meta": {}
         },
@@ -119,13 +107,10 @@
             "Brand Agent Retrieval"
           ],
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Retrieval should work with GraphQL-only data when enhancement unavailable",
-          "status": "failed",
+          "status": "passed",
           "title": "should work with GraphQL-only data when enhancement unavailable",
-          "duration": 0.27787499999999454,
-          "failureMessages": [
-            "TypeError: brandAgentFixtures.graphqlOnlyBrandAgent is not a function\n    at Object.graphqlOnlyData (/Users/brianokelley/conductor/activation-api/.conductor/list/src/__tests__/setup/service-level-mocks.ts:110:26)\n    at /Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts:126:29\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)\n    at runTest (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)",
-            "TypeError: brandAgentFixtures.graphqlOnlyBrandAgent is not a function\n    at Object.graphqlOnlyData (/Users/brianokelley/conductor/activation-api/.conductor/list/src/__tests__/setup/service-level-mocks.ts:110:26)\n    at /Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts:126:29\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)\n    at runTest (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)"
-          ],
+          "duration": 0.22149999999999181,
+          "failureMessages": [],
           "meta": {}
         },
         {
@@ -134,13 +119,10 @@
             "Brand Agent Creation"
           ],
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Creation should create brand agent with provided data",
-          "status": "failed",
+          "status": "passed",
           "title": "should create brand agent with provided data",
-          "duration": 0.3299580000000333,
-          "failureMessages": [
-            "TypeError: brandAgentFixtures.fullyEnhancedBrandAgent is not a function\n    at Object.successfulCreate (/Users/brianokelley/conductor/activation-api/.conductor/list/src/__tests__/setup/service-level-mocks.ts:58:26)\n    at /Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts:144:29\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)\n    at runTest (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)",
-            "TypeError: brandAgentFixtures.fullyEnhancedBrandAgent is not a function\n    at Object.successfulCreate (/Users/brianokelley/conductor/activation-api/.conductor/list/src/__tests__/setup/service-level-mocks.ts:58:26)\n    at /Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts:144:29\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)\n    at runTest (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)"
-          ],
+          "duration": 0.2401670000000422,
+          "failureMessages": [],
           "meta": {}
         },
         {
@@ -151,7 +133,7 @@
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Creation should handle validation errors",
           "status": "passed",
           "title": "should handle validation errors",
-          "duration": 0.12316699999996672,
+          "duration": 0.2612500000000182,
           "failureMessages": [],
           "meta": {}
         },
@@ -161,13 +143,10 @@
             "Brand Agent Updates"
           ],
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Updates should update brand agent with provided changes",
-          "status": "failed",
+          "status": "passed",
           "title": "should update brand agent with provided changes",
-          "duration": 0.24687500000004547,
-          "failureMessages": [
-            "TypeError: brandAgentFixtures.fullyEnhancedBrandAgent is not a function\n    at Object.successfulUpdate (/Users/brianokelley/conductor/activation-api/.conductor/list/src/__tests__/setup/service-level-mocks.ts:64:26)\n    at /Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts:176:29\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)\n    at runTest (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)",
-            "TypeError: brandAgentFixtures.fullyEnhancedBrandAgent is not a function\n    at Object.successfulUpdate (/Users/brianokelley/conductor/activation-api/.conductor/list/src/__tests__/setup/service-level-mocks.ts:64:26)\n    at /Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts:176:29\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)\n    at runTest (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)"
-          ],
+          "duration": 0.201958999999988,
+          "failureMessages": [],
           "meta": {}
         },
         {
@@ -176,13 +155,10 @@
             "Brand Agent Updates"
           ],
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Updates should handle partial updates",
-          "status": "failed",
+          "status": "passed",
           "title": "should handle partial updates",
-          "duration": 0.2716250000000855,
-          "failureMessages": [
-            "TypeError: brandAgentFixtures.fullyEnhancedBrandAgent is not a function\n    at Object.successfulUpdate (/Users/brianokelley/conductor/activation-api/.conductor/list/src/__tests__/setup/service-level-mocks.ts:64:26)\n    at /Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts:198:29\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)\n    at runTest (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)",
-            "TypeError: brandAgentFixtures.fullyEnhancedBrandAgent is not a function\n    at Object.successfulUpdate (/Users/brianokelley/conductor/activation-api/.conductor/list/src/__tests__/setup/service-level-mocks.ts:64:26)\n    at /Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts:198:29\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)\n    at runTest (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)"
-          ],
+          "duration": 0.10754099999996924,
+          "failureMessages": [],
           "meta": {}
         },
         {
@@ -193,7 +169,7 @@
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Deletion should delete brand agent successfully",
           "status": "passed",
           "title": "should delete brand agent successfully",
-          "duration": 0.6399589999999762,
+          "duration": 0.10633400000006077,
           "failureMessages": [],
           "meta": {}
         },
@@ -205,7 +181,7 @@
           "fullName": "Scope3ApiClient - Service Level Contract Brand Agent Deletion should handle deletion of non-existent agent",
           "status": "passed",
           "title": "should handle deletion of non-existent agent",
-          "duration": 0.2888340000000653,
+          "duration": 0.13279099999999744,
           "failureMessages": [],
           "meta": {}
         },
@@ -215,13 +191,10 @@
             "Performance Requirements"
           ],
           "fullName": "Scope3ApiClient - Service Level Contract Performance Requirements should complete single agent retrieval within time limit",
-          "status": "failed",
+          "status": "passed",
           "title": "should complete single agent retrieval within time limit",
-          "duration": 0.4913340000000517,
-          "failureMessages": [
-            "TypeError: brandAgentFixtures.fullyEnhancedBrandAgent is not a function\n    at Object.successfulGet (/Users/brianokelley/conductor/activation-api/.conductor/list/src/__tests__/setup/service-level-mocks.ts:52:26)\n    at /Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts:245:29\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)\n    at runTest (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)",
-            "TypeError: brandAgentFixtures.fullyEnhancedBrandAgent is not a function\n    at Object.successfulGet (/Users/brianokelley/conductor/activation-api/.conductor/list/src/__tests__/setup/service-level-mocks.ts:52:26)\n    at /Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts:245:29\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)\n    at runTest (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)"
-          ],
+          "duration": 0.11087499999996453,
+          "failureMessages": [],
           "meta": {}
         },
         {
@@ -230,13 +203,10 @@
             "Performance Requirements"
           ],
           "fullName": "Scope3ApiClient - Service Level Contract Performance Requirements should handle slow backend gracefully",
-          "status": "failed",
+          "status": "passed",
           "title": "should handle slow backend gracefully",
-          "duration": 20004.07375,
-          "failureMessages": [
-            "Error: STACK_TRACE_ERROR\n    at task (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:638:27)\n    at Object.<anonymous> (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:662:16)\n    at Object.<anonymous> (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:458:28)\n    at chain (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:369:14)\n    at /Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts:255:5\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:734:40\n    at runWithSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1849:8)\n    at Object.collect (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:734:10)\n    at Object.collect (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:738:54)\n    at Object.collect (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:738:46)\n    at collectTests (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1179:25)\n    at startTests (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1817:17)\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/vitest/dist/chunks/runBaseTests.9Ij9_de-.js:117:26\n    at withEnv (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/vitest/dist/chunks/runBaseTests.9Ij9_de-.js:84:3)\n    at run (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/vitest/dist/chunks/runBaseTests.9Ij9_de-.js:109:2)",
-            "Error: STACK_TRACE_ERROR\n    at task (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:638:27)\n    at Object.<anonymous> (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:662:16)\n    at Object.<anonymous> (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:458:28)\n    at chain (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:369:14)\n    at /Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts:255:5\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:734:40\n    at runWithSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1849:8)\n    at Object.collect (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:734:10)\n    at Object.collect (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:738:54)\n    at Object.collect (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:738:46)\n    at collectTests (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1179:25)\n    at startTests (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1817:17)\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/vitest/dist/chunks/runBaseTests.9Ij9_de-.js:117:26\n    at withEnv (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/vitest/dist/chunks/runBaseTests.9Ij9_de-.js:84:3)\n    at run (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/vitest/dist/chunks/runBaseTests.9Ij9_de-.js:109:2)"
-          ],
+          "duration": 101.37462499999992,
+          "failureMessages": [],
           "meta": {}
         },
         {
@@ -247,7 +217,7 @@
           "fullName": "Scope3ApiClient - Service Level Contract Error Recovery should provide clear error messages for common failures",
           "status": "passed",
           "title": "should provide clear error messages for common failures",
-          "duration": 0.6535420000000158,
+          "duration": 0.5530830000000151,
           "failureMessages": [],
           "meta": {}
         },
@@ -257,13 +227,10 @@
             "Architectural Pattern Validation"
           ],
           "fullName": "Scope3ApiClient - Service Level Contract Architectural Pattern Validation should maintain consistent response structure across all operations",
-          "status": "failed",
+          "status": "passed",
           "title": "should maintain consistent response structure across all operations",
-          "duration": 0.4362089999995078,
-          "failureMessages": [
-            "TypeError: brandAgentFixtures.fullyEnhancedBrandAgent is not a function\n    at Object.successfulGet (/Users/brianokelley/conductor/activation-api/.conductor/list/src/__tests__/setup/service-level-mocks.ts:52:26)\n    at /Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts:302:29\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)\n    at runTest (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)",
-            "TypeError: brandAgentFixtures.fullyEnhancedBrandAgent is not a function\n    at Object.successfulGet (/Users/brianokelley/conductor/activation-api/.conductor/list/src/__tests__/setup/service-level-mocks.ts:52:26)\n    at /Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts:302:29\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)\n    at runTest (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)"
-          ],
+          "duration": 0.39583300000003874,
+          "failureMessages": [],
           "meta": {}
         },
         {
@@ -272,19 +239,16 @@
             "Architectural Pattern Validation"
           ],
           "fullName": "Scope3ApiClient - Service Level Contract Architectural Pattern Validation should handle concurrent operations safely",
-          "status": "failed",
+          "status": "passed",
           "title": "should handle concurrent operations safely",
-          "duration": 0.9338749999988067,
-          "failureMessages": [
-            "TypeError: brandAgentFixtures.fullyEnhancedBrandAgent is not a function\n    at Object.successfulList (/Users/brianokelley/conductor/activation-api/.conductor/list/src/__tests__/setup/service-level-mocks.ts:45:26)\n    at /Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts:323:29\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)\n    at runTest (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)",
-            "TypeError: brandAgentFixtures.fullyEnhancedBrandAgent is not a function\n    at Object.successfulList (/Users/brianokelley/conductor/activation-api/.conductor/list/src/__tests__/setup/service-level-mocks.ts:45:26)\n    at /Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts:323:29\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26\n    at file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)\n    at runTest (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)\n    at runSuite (file:///Users/brianokelley/conductor/activation-api/.conductor/list/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)"
-          ],
+          "duration": 0.5775409999999965,
+          "failureMessages": [],
           "meta": {}
         }
       ],
-      "startTime": 1757967252442,
-      "endTime": 1757967272457.9338,
-      "status": "failed",
+      "startTime": 1757968636235,
+      "endTime": 1757968636342.5776,
+      "status": "passed",
       "message": "",
       "name": "/Users/brianokelley/conductor/activation-api/.conductor/list/src/client/scope3-client-service-level.test.ts"
     }
