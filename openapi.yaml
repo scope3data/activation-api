@@ -274,6 +274,78 @@ info:
   version: 1.0.0
 openapi: 3.1.0
 paths:
+  /signals-agent/activate:
+    post:
+      description: Tell a signals agent to activate a recommended signal by creating segments using our
+        API. The agent will handle all signal configuration details. Requires authentication.
+      operationId: signals-agent/activate
+      summary: Activate Signal
+      tags:
+        - Signals Agents
+      x-llm-hints:
+        - Use this tool when user wants to tell a signals agent to activate a recommended signal by
+          creating segments using our api
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                agentId:
+                  type: string
+                  description: ID of the signals agent to activate the signal with
+                signalId:
+                  type: string
+                  description: Signal ID from the agent's get-signals response to activate
+              required:
+                - agentId
+                - signalId
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /auth/check:
     post:
       description: Check the authentication status of the current API key and return user information.
@@ -2679,6 +2751,68 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /signals/get-partner-seats:
+    post:
+      description: Get brand agent seats (advertisers) accessible to your API key
+      operationId: signals/get-partner-seats
+      summary: Get Partner Seats
+      tags:
+        - Signals
+      x-llm-hints:
+        - Use this tool when user wants to get brand agent seats (advertisers) accessible to your
+          api key
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /product/list:
     post:
       description: Discover available advertising products from multiple sales agents based on campaign
@@ -2748,6 +2882,226 @@ paths:
                   description: Restrict to standard format types only
               required:
                 - promoted_offering
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /signals-agent/history:
+    post:
+      description: View complete activity history for a signals agent including all interactions, segment
+        operations, and performance metrics. Provides audit trail of agent actions. Requires
+        authentication.
+      operationId: signals-agent/history
+      summary: Get Signals Agent History
+      tags:
+        - Signals Agents
+      x-llm-hints:
+        - Use this tool when user wants to view complete activity history for a signals agent
+          including all interactions, segment operations, and performance metrics
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                agentId:
+                  type: string
+                  description: ID of the signals agent to get history for
+                limit:
+                  type: string
+                  description: "Maximum number of activities to return (default: 50)"
+              required:
+                - agentId
+                - limit
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /signals-agent/get:
+    post:
+      description: Get detailed information about a specific signals agent including configuration,
+        status, and metadata. Requires authentication.
+      operationId: signals-agent/get
+      summary: Get Signals Agent
+      tags:
+        - Signals Agents
+      x-llm-hints:
+        - Use this tool when user wants to get detailed information about a specific signals agent
+          including configuration, status, and metadata
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                agentId:
+                  type: string
+                  description: ID of the signals agent to retrieve
+              required:
+                - agentId
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /signals-agent/get-signals:
+    post:
+      description: Query signals agents for targeting recommendations and signal insights. Can query
+        specific agents or all active agents for a brand agent. Stateless operation that can be
+        called anytime. Requires authentication.
+      operationId: signals-agent/get-signals
+      summary: Get Signals from Agents
+      tags:
+        - Signals Agents
+      x-llm-hints:
+        - Use this tool when user wants to query signals agents for targeting recommendations and
+          signal insights
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                agentIds:
+                  items:
+                    type: string
+                  type: array
+                  description: Optional array of specific agent IDs to query. If not provided, queries all active
+                    agents.
+                brandAgentId:
+                  type: string
+                  description: ID of the brand agent to get signals for
+                brief:
+                  type: string
+                  description: Optional campaign brief or targeting description to get tailored recommendations
+              required:
+                - brandAgentId
               type: object
         required: true
       responses:
@@ -3182,8 +3536,8 @@ paths:
   /signal/list:
     post:
       description: List all custom signal definitions in the Custom Signals Platform. Optionally filter by
-        region or channel. Shows signal metadata, key types, and cluster configurations. Requires
-        authentication.
+        region, channel, or specific brand agent seat. Shows signal metadata, key types, cluster
+        configurations, and seat information for partner visibility. Requires authentication.
       operationId: signal/list
       summary: List Custom Signals
       tags:
@@ -3273,6 +3627,73 @@ paths:
                   description: Brand agent ID to list PMPs for
               required:
                 - brand_agent_id
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /signals-agent/list:
+    post:
+      description: List all registered signals agents for a brand agent. Shows agent status, endpoints,
+        and registration details. Requires authentication.
+      operationId: signals-agent/list
+      summary: List Signals Agents
+      tags:
+        - Signals Agents
+      x-llm-hints:
+        - Use this tool when user wants to list all registered signals agents for a brand agent
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                brandAgentId:
+                  type: string
+                  description: ID of the brand agent to list signals agents for
+              required:
+                - brandAgentId
               type: object
         required: true
       responses:
@@ -3480,6 +3901,88 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /signals-agent/register:
+    post:
+      description: Register a new signals agent to your seat. The agent will receive permissions to manage
+        segments in your account using our API. Supports ADCP (Advertising Data Control Protocol)
+        compliant agents. Requires authentication.
+      operationId: signals-agent/register
+      summary: Register Signals Agent
+      tags:
+        - Signals Agents
+      x-llm-hints:
+        - Use this tool when user wants to register a new signals agent to your seat
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                brandAgentId:
+                  type: string
+                  description: ID of the brand agent this signals agent will work with
+                config:
+                  type: string
+                  description: Optional configuration parameters for the agent
+                description:
+                  type: string
+                  description: Optional description of what this agent does
+                endpointUrl:
+                  type: string
+                  description: ADCP-compliant endpoint URL where the agent receives requests
+                name:
+                  type: string
+                  description: Human-readable name for the signals agent
+              required:
+                - brandAgentId
+                - endpointUrl
+                - name
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /webhook/register:
     post:
       description: Register a webhook endpoint to receive real-time campaign event notifications. Supports
@@ -3568,6 +4071,74 @@ paths:
                 - brandAgentId
                 - endpoint
                 - eventTypes
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /signals-agent/unregister:
+    post:
+      description: Unregister a signals agent from your seat. This revokes the agent's API access and sets
+        its status to inactive. The agent will no longer be able to manage segments. Requires
+        authentication.
+      operationId: signals-agent/unregister
+      summary: Unregister Signals Agent
+      tags:
+        - Signals Agents
+      x-llm-hints:
+        - Use this tool when user wants to unregister a signals agent from your seat
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                agentId:
+                  type: string
+                  description: ID of the signals agent to unregister
+              required:
+                - agentId
               type: object
         required: true
       responses:
@@ -4092,6 +4663,89 @@ paths:
                   description: Update the PMP status
               required:
                 - pmp_id
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /signals-agent/update:
+    post:
+      description: Update configuration and settings for a registered signals agent. Can modify name,
+        description, endpoint, status, and configuration parameters. Requires authentication.
+      operationId: signals-agent/update
+      summary: Update Signals Agent
+      tags:
+        - Signals Agents
+      x-llm-hints:
+        - Use this tool when user wants to update configuration and settings for a registered
+          signals agent
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                agentId:
+                  type: string
+                  description: ID of the signals agent to update
+                config:
+                  type: string
+                  description: Optional configuration parameters to update
+                description:
+                  type: string
+                  description: Optional new description for the agent
+                endpointUrl:
+                  type: string
+                  description: Optional new ADCP endpoint URL
+                name:
+                  type: string
+                  description: Optional new name for the agent
+                status:
+                  type: string
+                  description: Optional new status for the agent
+              required:
+                - agentId
               type: object
         required: true
       responses:

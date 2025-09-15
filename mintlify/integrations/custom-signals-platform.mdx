@@ -76,8 +76,8 @@ await createCustomSignal({
   key: "maid",
   description: "Sports fans identified via mobile advertising IDs",
   clusters: [
-    {"region": "us-east-1"},
-    {"region": "eu-west-1", "gdpr": true}
+    {"region": "americas"},
+    {"region": "eu"}
   ]
 });
 ```
@@ -406,7 +406,7 @@ The Campaign API MCP server provides dedicated tools for managing custom signal 
       name: "Updated Signal Name",
       description: "Updated description",
       clusters: [
-        {"region": "eu-west-1", "gdpr": true}
+        {"region": "eu"}
       ]
     });
     ```
@@ -459,8 +459,8 @@ Invalid key types will be rejected with helpful error messages listing valid opt
 ```json
 {
   "clusters": [
-    {"region": "eu-west-1", "gdpr": true},
-    {"region": "eu-central-1", "gdpr": true}
+    {"region": "eu"},
+    {"region": "eu"}
   ]
 }
 ```

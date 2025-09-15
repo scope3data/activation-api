@@ -8,9 +8,11 @@ export interface CreateSignalDefinitionInput {
     region: string;
   }>;
   created_by?: string;
+  created_by_agent_id?: string; // Which signals agent created this
   customer_id: number;
   description: string;
   key_type: string;
+  managed_by_agent_id?: string; // Which signals agent manages this
   metadata?: Record<string, unknown>;
   name: string;
 }
@@ -28,10 +30,12 @@ export interface SignalCluster {
 export interface SignalDefinition {
   created_at: string;
   created_by?: string;
+  created_by_agent_id?: string;
   customer_id: number;
   description: string;
   is_active: boolean;
   key_type: string;
+  managed_by_agent_id?: string;
   metadata?: Record<string, unknown>;
   name: string;
   signal_id: string;
@@ -128,10 +132,12 @@ export class SignalStorageService {
     const definitionRow = {
       created_at: now,
       created_by: input.created_by || null,
+      created_by_agent_id: input.created_by_agent_id || null,
       customer_id: input.customer_id,
       description: input.description.trim(),
       is_active: true,
       key_type: input.key_type.trim(),
+      managed_by_agent_id: input.managed_by_agent_id || null,
       metadata: input.metadata ? JSON.stringify(input.metadata) : null,
       name: input.name.trim(),
       signal_id: signalId,
@@ -175,10 +181,12 @@ export class SignalStorageService {
         })),
         created_at: now,
         created_by: input.created_by,
+        created_by_agent_id: input.created_by_agent_id,
         customer_id: input.customer_id,
         description: input.description,
         is_active: true,
         key_type: input.key_type,
+        managed_by_agent_id: input.managed_by_agent_id,
         metadata: input.metadata,
         name: input.name,
         signal_id: signalId,
@@ -269,6 +277,8 @@ export class SignalStorageService {
         d.created_at,
         d.updated_at,
         d.created_by,
+        d.created_by_agent_id,
+        d.managed_by_agent_id,
         d.is_active,
         d.metadata,
         c.cluster_id,
@@ -315,10 +325,12 @@ export class SignalStorageService {
         clusters,
         created_at: definition.created_at,
         created_by: definition.created_by,
+        created_by_agent_id: definition.created_by_agent_id,
         customer_id: definition.customer_id,
         description: definition.description,
         is_active: definition.is_active,
         key_type: definition.key_type,
+        managed_by_agent_id: definition.managed_by_agent_id,
         metadata: definition.metadata
           ? JSON.parse(definition.metadata)
           : undefined,
@@ -357,6 +369,7 @@ export class SignalStorageService {
     filters?: {
       channel?: string;
       key_type?: string;
+      managed_by_agent_id?: string;
       region?: string;
     },
   ): Promise<SignalDefinitionWithClusters[]> {
@@ -384,6 +397,11 @@ export class SignalStorageService {
       params.key_type = filters.key_type;
     }
 
+    if (filters?.managed_by_agent_id) {
+      whereClause += " AND d.managed_by_agent_id = @managed_by_agent_id";
+      params.managed_by_agent_id = filters.managed_by_agent_id;
+    }
+
     const query = `
       SELECT 
         d.signal_id,
@@ -394,6 +412,8 @@ export class SignalStorageService {
         d.created_at,
         d.updated_at,
         d.created_by,
+        d.created_by_agent_id,
+        d.managed_by_agent_id,
         d.is_active,
         d.metadata,
         c.cluster_id,
@@ -422,10 +442,12 @@ export class SignalStorageService {
             clusters: [],
             created_at: row.created_at,
             created_by: row.created_by,
+            created_by_agent_id: row.created_by_agent_id,
             customer_id: row.customer_id,
             description: row.description,
             is_active: row.is_active,
             key_type: row.key_type,
+            managed_by_agent_id: row.managed_by_agent_id,
             metadata: row.metadata ? JSON.parse(row.metadata) : undefined,
             name: row.name,
             signal_id: row.signal_id,

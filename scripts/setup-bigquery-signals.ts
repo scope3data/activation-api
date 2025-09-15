@@ -167,12 +167,12 @@ async function setupBigQuerySignals() {
               c.gdpr_compliant
             )
           ) as clusters,
-          d.metadata
+          ANY_VALUE(d.metadata) as metadata
         FROM \`${PROJECT_ID}.${DATASET_ID}.signal_definitions\` d
         LEFT JOIN \`${PROJECT_ID}.${DATASET_ID}.signal_clusters\` c
           ON d.signal_id = c.signal_id AND c.is_active = true
         WHERE d.is_active = true
-        GROUP BY d.signal_id, d.name, d.description, d.key_type, d.created_at, d.updated_at, d.created_by, d.metadata
+        GROUP BY d.signal_id, d.name, d.description, d.key_type, d.created_at, d.updated_at, d.created_by
         ORDER BY d.created_at DESC
       `;
 
@@ -227,7 +227,7 @@ async function setupBigQuerySignals() {
 }
 
 // Run the setup
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   setupBigQuerySignals().catch((error) => {
     console.error("Setup failed:", error);
     process.exit(1);

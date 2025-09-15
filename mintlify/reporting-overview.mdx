@@ -16,7 +16,7 @@ Unlike basic campaign platforms, Scope3 provides enterprise-grade analytics with
     Ask questions like "How's my campaign doing?" and get rich, contextual answers
   </Card>
   <Card title="Enterprise Data Export" icon="database" color="#0D9373">
-    Export to CSV, Parquet, JSON for BI tools with flexible grouping and filtering
+    Export to CSV, JSON for BI tools with flexible grouping and filtering
   </Card>
   <Card title="ML-Powered Optimization" icon="brain" color="#0D9373">
     Statistical significance testing and AI-driven optimization recommendations
@@ -98,7 +98,7 @@ const exportResult = await exportCampaignData({
   datasets: ["delivery", "events", "tactics"],
   groupBy: ["date", "campaign", "signal", "story"],
   dateRange: { start: "2024-01-01", end: "2024-01-31" },
-  format: "parquet",
+  format: "csv",
   compression: "gzip"
 });
 
@@ -109,7 +109,7 @@ console.log(`${exportResult.totalRecords} records ready`);
 ```sql BigQuery Integration
 -- Import exported data into BigQuery
 LOAD DATA INTO campaign_performance
-FROM FILES ('gs://your-bucket/scope3_export_*.parquet.gz')
+FROM FILES ('gs://your-bucket/scope3_export_*.csv.gz')
 WITH PARTITION COLUMNS;
 
 -- Analyze signal performance
@@ -236,7 +236,7 @@ def daily_campaign_export():
         date_range={"start": yesterday, "end": yesterday},
         datasets=["delivery", "events", "tactics"],
         group_by=["date", "campaign", "signal", "story"],
-        format="parquet"
+        format="csv"
     )
     
     # Load into data warehouse

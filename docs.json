@@ -61,7 +61,7 @@
             "pages": [
               "mintlify/integrations/webhooks",
               "mintlify/integrations/creative-agents",
-              "mintlify/integrations/custom-signals-platform"
+              "mintlify/integrations/signals-agents"
             ]
           },
           {
@@ -80,12 +80,24 @@
         "icon": "handshake",
         "groups": [
           {
+            "group": "Getting Started",
+            "pages": ["mintlify/partners/authentication"]
+          },
+          {
             "group": "Publisher Integration",
             "pages": [
               "mintlify/partners/publisher-setup",
               "mintlify/partners/publisher-prebid-setup",
               "mintlify/partners/sales-agents",
               "mintlify/partners/axe-integration"
+            ]
+          },
+          {
+            "group": "Signals Management",
+            "icon": "database",
+            "pages": [
+              "mintlify/partners/segment-management",
+              "mintlify/partners/data-attachment"
             ]
           }
         ]
