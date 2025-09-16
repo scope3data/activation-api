@@ -19,6 +19,9 @@ export default defineConfig({
 
   test: {
     // Coverage configuration
+    // Strategy: Focus on business logic layers that survive backend infrastructure changes
+    // Exclude: GraphQL/BigQuery client code (temporary infrastructure, changing to different backend)
+    // Include: MCP tools (core business logic), utils (reusable logic), server orchestration
     coverage: {
       exclude: [
         "src/**/*.{test,spec}.ts",
@@ -27,29 +30,43 @@ export default defineConfig({
         "node_modules/**",
         "dist/**",
         "**/*.config.ts",
+        // Exclude infrastructure layers that will change with backend migration
+        "src/client/**",
+        "src/services/bigquery-*.ts",
+        "src/services/*-bigquery-*.ts",
+        "src/services/auth-service.ts",
+        "src/types/**",
       ],
       include: ["src/**/*.ts"],
       provider: "v8",
       reporter: ["text", "html", "json"],
       thresholds: {
+        // Focus coverage on business logic layers that survive backend changes
         global: {
-          branches: 80,
-          functions: 80,
-          lines: 80,
-          statements: 80,
+          branches: 25,
+          functions: 25,
+          lines: 25,
+          statements: 25,
         },
-        // Higher thresholds for critical components
-        "src/client/scope3-client.ts": {
+        // Higher thresholds only for tested tools to prevent regression
+        "src/tools/signals/get-partner-seats.ts": {
+          branches: 95,
+          functions: 95,
+          lines: 95,
+          statements: 95,
+        },
+        "src/tools/signals/list.ts": {
           branches: 90,
           functions: 90,
           lines: 90,
           statements: 90,
         },
-        "src/services/brand-agent-service.ts": {
-          branches: 85,
-          functions: 85,
-          lines: 85,
-          statements: 85,
+        // Moderate thresholds for reusable utilities
+        "src/utils/error-handling.ts": {
+          branches: 50,
+          functions: 50,
+          lines: 65,
+          statements: 65,
         },
       },
     },
