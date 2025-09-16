@@ -1,8 +1,8 @@
 // GraphQL queries for brand agent operations
 
 export const CREATE_BRAND_AGENT_MUTATION = `
-  mutation CreateBrandAgent($input: BrandAgentInput!) {
-    createBrandAgent(input: $input) {
+  mutation CreateBrandAgent($name: String!, $description: String) {
+    createBrandAgent(name: $name, description: $description) {
       id
       name
       description
@@ -14,8 +14,8 @@ export const CREATE_BRAND_AGENT_MUTATION = `
 `;
 
 export const UPDATE_BRAND_AGENT_MUTATION = `
-  mutation UpdateBrandAgent($id: ID!, $input: BrandAgentUpdateInput!) {
-    updateBrandAgent(id: $id, input: $input) {
+  mutation UpdateBrandAgent($id: BigInt!, $name: String, $description: String) {
+    updateBrandAgent(id: $id, name: $name, description: $description) {
       id
       name
       description
@@ -26,17 +26,12 @@ export const UPDATE_BRAND_AGENT_MUTATION = `
   }
 `;
 
-export const DELETE_BRAND_AGENT_MUTATION = `
-  mutation DeleteBrandAgent($id: ID!) {
-    deleteBrandAgent(id: $id) {
-      success
-    }
-  }
-`;
+// Note: DELETE mutation not available in GraphQL API
+// export const DELETE_BRAND_AGENT_MUTATION = ...;
 
 export const GET_BRAND_AGENT_QUERY = `
-  query GetBrandAgent($id: ID!) {
-    brandAgent(id: $id) {
+  query GetBrandAgent($id: BigInt!) {
+    agent(id: $id) {
       id
       name
       description
@@ -49,7 +44,7 @@ export const GET_BRAND_AGENT_QUERY = `
 
 export const LIST_BRAND_AGENTS_QUERY = `
   query ListBrandAgents($where: AgentWhereInput) {
-    brandAgents(where: $where) {
+    agents(where: $where) {
       id
       name
       description

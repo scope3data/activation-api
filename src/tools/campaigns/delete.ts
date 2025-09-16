@@ -60,6 +60,13 @@ export const deleteCampaignTool = (client: Scope3ApiClient) => ({
         return createMCPResponse({
           message: warning,
           success: false,
+          error: "CAMPAIGN_ACTIVE",
+          data: {
+            campaignId: args.campaignId,
+            status: campaign.status,
+            reason: "Cannot delete active campaign",
+            force: args.force,
+          },
         });
       }
 
@@ -176,6 +183,25 @@ export const deleteCampaignTool = (client: Scope3ApiClient) => ({
       return createMCPResponse({
         message: summary,
         success: true,
+        data: {
+          deletedCampaign: {
+            id: campaign.id,
+            name: campaign.name,
+            status: campaign.status,
+            brandAgentId: campaign.brandAgentId,
+          },
+          removed: {
+            tactics: campaignTactics ? campaignTactics.length : 0,
+            creatives: assignedCreatives ? assignedCreatives.length : 0,
+          },
+          configuration: {
+            campaignId: args.campaignId,
+            force: args.force,
+            preserveCreatives: args.preserveCreatives,
+          },
+          tacticsData: campaignTactics || [],
+          creativesData: assignedCreatives || [],
+        },
       });
     } catch (error) {
       throw new Error(

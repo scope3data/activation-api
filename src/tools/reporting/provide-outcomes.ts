@@ -6,6 +6,7 @@ import type {
   MCPToolExecuteContext,
   ProvideScoringOutcomesParams,
 } from "../../types/mcp.js";
+import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const provideScoringOutcomesTool = (client: Scope3ApiClient) => ({
   annotations: {
@@ -71,7 +72,49 @@ export const provideScoringOutcomesTool = (client: Scope3ApiClient) => ({
       // Format response
       const response = formatOutcomeResponse(outcome, args);
 
-      return response;
+      return createMCPResponse({
+        message: response,
+        success: true,
+        data: {
+          outcome,
+          configuration: {
+            campaignId: args.campaignId,
+            tacticId: args.tacticId,
+            creativeId: args.creativeId,
+            exposureRange: args.exposureRange,
+            performanceIndex: args.performanceIndex,
+            submissionTime: new Date().toISOString()
+          },
+          exposureAnalysis: {
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString(),
+            durationDays: Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+          },
+          performanceAnalysis: {
+            performanceIndex: args.performanceIndex,
+            isExpectedPerformance: args.performanceIndex === 100,
+            isHighPerformance: args.performanceIndex >= 150,
+            isLowPerformance: args.performanceIndex < 50,
+            multiplier: args.performanceIndex / 100,
+            percentageOfExpected: args.performanceIndex
+          },
+          scoring: {
+            outcomeId: outcome.id,
+            source: "scope3",
+            timestamp: outcome.timestamp,
+            willInfluenceBudgetAllocation: true,
+            algorithmComponents: ["Quality Score (Scope3)", "Story Affinity Score", "Performance Index"]
+          },
+          metadata: {
+            action: "provide-scoring-outcomes",
+            outcomeType: "performance-measurement",
+            scoringAlgorithm: "3-component",
+            budgetOptimizationEnabled: true,
+            recommendsReview: args.performanceIndex < 50,
+            recommendsIncreasedBudget: args.performanceIndex >= 150
+          }
+        }
+      });
     } catch (error) {
       throw new Error(
         `Failed to provide scoring outcome: ${error instanceof Error ? error.message : String(error)}`,

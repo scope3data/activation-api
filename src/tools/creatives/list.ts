@@ -83,6 +83,17 @@ ${
 
 🔄 **[STUB]** This will query AdCP publishers when backend is implemented.`,
           success: true,
+          data: {
+            creatives: [],
+            count: 0,
+            filters: args.filter || {},
+            pagination: {
+              limit: args.limit || 20,
+              offset: args.offset || 0,
+              total: 0,
+            },
+            buyerAgentId: args.buyerAgentId,
+          },
         });
       }
 
@@ -153,7 +164,26 @@ ${
 
       output += `🔄 **[STUB]** This will query AdCP publishers when backend is implemented.`;
 
-      return createMCPResponse({ message: output, success: true });
+      return createMCPResponse({
+        message: output,
+        success: true,
+        data: {
+          creatives: response.creatives,
+          count: response.creatives.length,
+          totalCount: response.totalCount,
+          filters: args.filter || {},
+          pagination: {
+            limit: args.limit || 20,
+            offset: args.offset || 0,
+            hasMore: response.hasMore,
+            nextOffset: response.nextOffset,
+          },
+          summary: response.summary,
+          buyerAgentId: args.buyerAgentId,
+          includeAssets: args.includeAssets,
+          includeCampaigns: args.includeCampaigns,
+        },
+      });
     } catch (error) {
       throw new Error(
         `Failed to list creatives: ${error instanceof Error ? error.message : String(error)}`,

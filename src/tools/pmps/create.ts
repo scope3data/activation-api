@@ -68,6 +68,24 @@ export const createPMPTool = (client: Scope3ApiClient) =>
         return createMCPResponse({
           message: response,
           success: true,
+          data: {
+            pmp,
+            configuration: {
+              brandAgentId: brand_agent_id,
+              name,
+              prompt,
+            },
+            dealIds: pmp.dealIds,
+            summary: {
+              pmpId: pmp.id,
+              pmpName: pmp.name,
+              status: pmp.status,
+              totalDeals: pmp.dealIds.length,
+              activeDeals: pmp.dealIds.filter(d => d.status === "active").length,
+              pendingDeals: pmp.dealIds.filter(d => d.status === "pending").length,
+              sspList: [...new Set(pmp.dealIds.map(d => d.ssp))],
+            },
+          },
         });
       } catch (error) {
         throw new Error(

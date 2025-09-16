@@ -130,6 +130,40 @@ export const updatePMPTool = (client: Scope3ApiClient) =>
         return createMCPResponse({
           message: response,
           success: true,
+          data: {
+            pmp: updatedPMP,
+            configuration: {
+              pmpId: pmp_id,
+              name,
+              prompt: effectivePrompt,
+              status,
+              changeRequest,
+            },
+            changes: {
+              fieldsUpdated: updateSummary,
+              changeRequestApplied: !!changeRequest,
+              briefChanges,
+              effectivePrompt,
+            },
+            dealIds: updatedPMP.dealIds,
+            summary: {
+              pmpId: updatedPMP.id,
+              pmpName: updatedPMP.name,
+              status: updatedPMP.status,
+              totalDeals: updatedPMP.dealIds.length,
+              activeDeals: updatedPMP.dealIds.filter(d => d.status === "active").length,
+              pendingDeals: updatedPMP.dealIds.filter(d => d.status === "pending").length,
+              pausedDeals: updatedPMP.dealIds.filter(d => d.status === "paused").length,
+              sspList: [...new Set(updatedPMP.dealIds.map(d => d.ssp))],
+            },
+            optimization: {
+              changeRequestUsed: !!changeRequest,
+              promptModified: !!prompt || !!changeRequest,
+              statusChanged: !!status,
+              nameChanged: !!name,
+            },
+            updatedAt: updatedPMP.updatedAt,
+          },
         });
       } catch (error) {
         throw new Error(

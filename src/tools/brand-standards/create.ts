@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
+import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const createBrandAgentStandardsTool = (client: Scope3ApiClient) => ({
   annotations: {
@@ -98,7 +99,45 @@ export const createBrandAgentStandardsTool = (client: Scope3ApiClient) => ({
 
       summary += `💡 **Pro Tip:** You can create multiple standards agents for different markets, channels, or safety levels within the same brand agent.`;
 
-      return summary;
+      return createMCPResponse({
+        message: summary,
+        success: true,
+        data: {
+          standardsAgent,
+          configuration: {
+            brandAgentId: args.brandAgentId,
+            brandAgentName,
+            name: args.name,
+            prompt: args.prompt,
+            targeting: {
+              brands: args.brands || [],
+              channels: args.channels || [],
+              countries: args.countries || [],
+              languages: args.languages || []
+            }
+          },
+          targeting: {
+            countries: standardsAgent.countries,
+            channels: standardsAgent.channels,
+            languages: standardsAgent.languages,
+            brands: standardsAgent.brands,
+            isGlobal: {
+              countries: standardsAgent.countries.length === 0,
+              channels: standardsAgent.channels.length === 0,
+              languages: standardsAgent.languages.length === 0,
+              brands: standardsAgent.brands.length === 0
+            }
+          },
+          metadata: {
+            standardsId: standardsAgent.id,
+            createdAt: standardsAgent.createdAt,
+            agentType: "brand-standards",
+            status: "active",
+            automaticApplication: true,
+            inheritedByNewCampaigns: true
+          }
+        }
+      });
     } catch (error) {
       throw new Error(
         `Failed to create brand standards agent: ${error instanceof Error ? error.message : String(error)}`,

@@ -127,6 +127,36 @@ export const activateSignalTool = (client: Scope3ApiClient) => ({
       return createMCPResponse({
         message: summary,
         success: true,
+        data: {
+          agent,
+          activationResult: result,
+          configuration: {
+            agentId: args.agentId,
+            signalId: args.signalId,
+            activationTime: new Date().toISOString()
+          },
+          segments: {
+            primarySegmentId: result.segmentId,
+            allSegmentIds: result.segmentIds || [result.segmentId],
+            totalSegments: result.segmentIds?.length || 1,
+            managedByAgent: true
+          },
+          workflow: {
+            requestSent: true,
+            agentProcessed: true,
+            segmentsCreated: true,
+            auditLogged: true
+          },
+          metadata: {
+            agentId: args.agentId,
+            agentName: agent.name,
+            brandAgentId: agent.brandAgentId,
+            action: "activate-signal",
+            status: "completed",
+            segmentOwnership: "agent-managed",
+            readyForCampaigns: true
+          }
+        }
       });
     } catch (error) {
       return createErrorResponse("Failed to activate signal", error);

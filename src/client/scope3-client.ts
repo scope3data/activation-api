@@ -14,6 +14,7 @@ import type {
   BrandAgentsData,
   BrandAgentUpdateInput,
   AgentWhereInput as BrandAgentWhereInput,
+  BrandAgentData,
   BrandStandardsAgent,
   BrandStandardsAgentInput,
   BrandStandardsAgentsData,
@@ -98,7 +99,6 @@ import {
   CREATE_BRAND_AGENT_STANDARDS_MUTATION,
   CREATE_BRAND_AGENT_SYNTHETIC_AUDIENCE_MUTATION,
   CREATE_SYNTHETIC_AUDIENCE_MUTATION,
-  DELETE_BRAND_AGENT_MUTATION,
   DELETE_BRAND_AGENT_STANDARDS_MUTATION,
   DELETE_BRAND_AGENT_SYNTHETIC_AUDIENCE_MUTATION,
   GET_BRAND_AGENT_QUERY,
@@ -434,11 +434,8 @@ export class Scope3ApiClient {
       body: JSON.stringify({
         query: CREATE_BRAND_AGENT_MUTATION,
         variables: {
-          input: {
-            advertiserDomains: input.advertiserDomains,
-            description: input.description,
-            name: input.name,
-          },
+          name: input.name,
+          description: input.description,
         },
       }),
       headers: {
@@ -1102,43 +1099,9 @@ export class Scope3ApiClient {
     return result.data.createWebhookSubscription;
   }
 
-  async deleteBrandAgent(apiKey: string, id: string): Promise<boolean> {
-    const response = await fetch(this.graphqlUrl, {
-      body: JSON.stringify({
-        query: DELETE_BRAND_AGENT_MUTATION,
-        variables: { id },
-      }),
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "User-Agent": "MCP-Server/1.0",
-      },
-      method: "POST",
-    });
-
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        throw new Error("Authentication failed");
-      }
-      if (response.status >= 500) {
-        throw new Error("External service temporarily unavailable");
-      }
-      throw new Error("Request failed");
-    }
-
-    const result = (await response.json()) as GraphQLResponse<{
-      deleteBrandAgent: { success: boolean };
-    }>;
-
-    if (result.errors && result.errors.length > 0) {
-      throw new Error("Invalid request parameters or query");
-    }
-
-    if (!result.data?.deleteBrandAgent) {
-      throw new Error("No data received");
-    }
-
-    return result.data.deleteBrandAgent.success;
+  async deleteBrandAgent(_apiKey: string, _id: string): Promise<boolean> {
+    // Note: DELETE mutation not available in GraphQL API
+    throw new Error("Delete operation not supported by the GraphQL API");
   }
 
   async deleteBrandAgentStandards(
@@ -1541,19 +1504,17 @@ export class Scope3ApiClient {
       throw new Error("Request failed");
     }
 
-    const result = (await response.json()) as GraphQLResponse<{
-      brandAgent: BrandAgent;
-    }>;
+    const result = (await response.json()) as GraphQLResponse<BrandAgentData>;
 
     if (result.errors && result.errors.length > 0) {
       throw new Error("Invalid request parameters or query");
     }
 
-    if (!result.data?.brandAgent) {
+    if (!result.data?.agent) {
       throw new Error("No data received");
     }
 
-    const graphqlAgent = result.data.brandAgent;
+    const graphqlAgent = result.data.agent;
 
     // BigQuery enhancement - add customer-scoped fields when available
     try {
@@ -2423,34 +2384,35 @@ export class Scope3ApiClient {
       );
     }
 
-    if (!result.data?.brandAgents) {
+    if (!result.data?.agents) {
       console.error(`[listBrandAgents] No brand agents data received`, result);
       throw new Error("No data received");
     }
 
-    const graphqlAgents = result.data.brandAgents;
+    const graphqlAgents = result.data.agents;
 
     // BigQuery enhancement - add customer-scoped fields when available
     try {
-      const enhancedAgents: BrandAgent[] = [];
+      // Get customer ID from the first agent (all agents should have same customerId)
+      const customerId = graphqlAgents.length > 0 ? Number(graphqlAgents[0].customerId) : 1;
+      
+      // Bulk query: Get all extensions for this customer in one query
+      const extensionsMap = await this.brandAgentService.getBrandAgentExtensionsByCustomer(customerId);
+      
+      // In-memory join: Enhance each GraphQL agent with BigQuery extensions
+      const enhancedAgents: BrandAgent[] = graphqlAgents.map((agent) => {
+        const extension = extensionsMap.get(String(agent.id));
+        return this.brandAgentService.enhanceAgentWithExtensions(agent as unknown as Record<string, unknown>, extension);
+      });
 
-      for (const agent of graphqlAgents) {
-        const enhancedAgent = await this.brandAgentService.getBrandAgent(
-          agent.id,
-        );
-        if (enhancedAgent) {
-          // Use enhanced version with customer-scoped fields
-          enhancedAgents.push(enhancedAgent);
-        } else {
-          // Use base GraphQL data
-          enhancedAgents.push(agent);
-        }
-      }
+      console.log(
+        `[listBrandAgents] Enhanced ${enhancedAgents.length} agents with BigQuery data using 1 bulk query (instead of ${graphqlAgents.length} individual queries)`
+      );
 
       return enhancedAgents;
     } catch (error) {
       console.log(
-        "BigQuery enhancement failed, using GraphQL data only:",
+        "BigQuery bulk enhancement failed, using GraphQL data only:",
         error,
       );
       // Return GraphQL data without enhancement
@@ -3192,12 +3154,9 @@ export class Scope3ApiClient {
       body: JSON.stringify({
         query: UPDATE_BRAND_AGENT_MUTATION,
         variables: {
-          id,
-          input: {
-            advertiserDomains: input.advertiserDomains,
-            description: input.description,
-            name: input.name,
-          },
+          id: parseInt(id),
+          name: input.name,
+          description: input.description,
         },
       }),
       headers: {

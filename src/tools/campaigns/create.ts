@@ -106,6 +106,20 @@ export const createCampaignTool = (client: Scope3ApiClient) => ({
       return createMCPResponse({
         message: summary,
         success: true,
+        data: {
+          campaign,
+          configuration: {
+            brandAgentId: args.brandAgentId,
+            budget: {
+              ...args.budget,
+              currency: args.budget.currency || "USD",
+            },
+            creativeIds: args.creativeIds || [],
+            startDate: args.startDate,
+            endDate: args.endDate,
+            prompt: args.prompt,
+          },
+        },
       });
     } catch (error) {
       throw new Error(

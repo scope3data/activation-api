@@ -93,7 +93,26 @@ export const listCustomSignalsTool = (client: Scope3ApiClient) => ({
         message += `• Upload signal data via the Custom Signals data API\n`;
         message += `• Reference signals in campaign prompts for enhanced targeting\n\n`;
 
-        return message;
+        return createMCPResponse({
+          message,
+          success: true,
+          data: {
+            signals: [],
+            count: 0,
+            filters: {
+              region: args.region,
+              channel: args.channel,
+              seatId: args.seatId,
+            },
+            statistics: {
+              totalRegions: 0,
+              totalChannels: 0,
+              gdprCompliantSignals: 0,
+              compositeSignals: 0,
+              singleKeySignals: 0,
+            },
+          },
+        });
       }
 
       let summary = `📊 **Custom Signals Overview**\n\n`;
@@ -193,6 +212,22 @@ export const listCustomSignalsTool = (client: Scope3ApiClient) => ({
       return createMCPResponse({
         message: summary,
         success: true,
+        data: {
+          signals: result.signals,
+          count: result.total,
+          filters: {
+            region: args.region,
+            channel: args.channel,
+            seatId: args.seatId,
+          },
+          statistics: {
+            totalRegions,
+            totalChannels,
+            gdprCompliantSignals,
+            compositeSignals,
+            singleKeySignals: result.total - compositeSignals,
+          },
+        },
       });
     } catch (error) {
       return createErrorResponse("Failed to list custom signals", error);

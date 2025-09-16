@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
+import { createMCPResponse } from "../../utils/error-handling.js";
 
 /**
  * Sync creative to publishers for pre-approval or campaign deployment
@@ -140,7 +141,40 @@ ${args.preApproval ? "✅ **Pre-Approval Request**" : ""}
 • Ensure creative meets publisher specifications`;
       }
 
-      return response;
+      return createMCPResponse({
+        message: response,
+        success: true,
+        data: {
+          syncResults,
+          configuration: {
+            creativeId: args.creativeId,
+            campaignId: args.campaignId,
+            preApproval: args.preApproval || false,
+            publisherIds: args.publisherIds,
+            syncDate: new Date().toISOString()
+          },
+          summary: {
+            publishersTargeted: args.publisherIds.length,
+            successfulSyncs: syncResults.filter((r) => r.syncStatus === "success").length,
+            failedSyncs: syncResults.filter((r) => r.syncStatus === "failed").length,
+            pendingSyncs: syncResults.filter((r) => r.syncStatus === "pending").length,
+            autoApproved: autoApproved.length,
+            pendingReview: pendingReview.length,
+            failed: failed.length
+          },
+          publisherBreakdown: {
+            autoApproved: autoApproved.map(r => ({ publisherId: r.publisherId, publisherName: r.publisherName })),
+            pendingReview: pendingReview.map(r => ({ publisherId: r.publisherId, publisherName: r.publisherName, estimatedReviewTime: r.estimatedReviewTime })),
+            failed: failed.map(r => ({ publisherId: r.publisherId, publisherName: r.publisherName, error: r.error }))
+          },
+          metadata: {
+            action: "sync-publishers",
+            creativeType: "creative",
+            requiresFollowUp: pendingReview.length > 0 || failed.length > 0,
+            readyForCampaigns: autoApproved.length > 0
+          }
+        }
+      });
     } catch (error) {
       throw new Error(
         `Failed to sync creative to publishers: ${error instanceof Error ? error.message : String(error)}`,

@@ -68,6 +68,12 @@ export const listSyntheticAudiencesTool = (client: Scope3ApiClient) => ({
             `• Cross-publisher audience matching\n\n` +
             `Create your first synthetic audience to get started with advanced targeting!`,
           success: true,
+          data: {
+            brandAgentId: args.brandAgentId,
+            brandAgentName,
+            audiences: [],
+            count: 0,
+          },
         });
       }
 
@@ -110,6 +116,21 @@ export const listSyntheticAudiencesTool = (client: Scope3ApiClient) => ({
       return createMCPResponse({
         message: summary,
         success: true,
+        data: {
+          brandAgentId: args.brandAgentId,
+          brandAgentName,
+          audiences,
+          count: audiences.length,
+          summary: {
+            totalAudiences: audiences.length,
+            oldestAudience: audiences.length > 0 ? 
+              new Date(Math.min(...audiences.map(a => new Date(a.createdAt).getTime()))).toISOString() : 
+              undefined,
+            newestAudience: audiences.length > 0 ? 
+              new Date(Math.max(...audiences.map(a => new Date(a.createdAt).getTime()))).toISOString() : 
+              undefined,
+          },
+        },
       });
     } catch (error) {
       throw new Error(

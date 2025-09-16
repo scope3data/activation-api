@@ -45,6 +45,21 @@ export const listPMPsTool = (client: Scope3ApiClient) =>
           return createMCPResponse({
             message,
             success: true,
+            data: {
+              brandAgentId: brand_agent_id,
+              pmps: [],
+              count: 0,
+              summary: {
+                totalPmps: 0,
+                activePmps: 0,
+                pausedPmps: 0,
+                draftPmps: 0,
+                totalDealIds: 0,
+                activeDealIds: 0,
+                pendingDealIds: 0,
+                sspList: [],
+              },
+            },
           });
         }
 
@@ -100,9 +115,41 @@ export const listPMPsTool = (client: Scope3ApiClient) =>
           `${pmpsFormatted}\n\n` +
           `*Use \`update_brand_agent_pmp\` to modify existing PMPs or \`create_brand_agent_pmp\` to create new ones.*`;
 
+        const activeDealIds = pmps.reduce(
+          (sum, pmp) => sum + pmp.dealIds.filter(d => d.status === "active").length,
+          0,
+        );
+        const pendingDealIds = pmps.reduce(
+          (sum, pmp) => sum + pmp.dealIds.filter(d => d.status === "pending").length,
+          0,
+        );
+        const allSsps = [...new Set(pmps.flatMap(pmp => pmp.dealIds.map(d => d.ssp)))];
+        const pausedPmps = pmps.filter(p => p.status === "paused").length;
+        const draftPmps = pmps.filter(p => p.status === "draft").length;
+
         return createMCPResponse({
           message: response,
           success: true,
+          data: {
+            brandAgentId: brand_agent_id,
+            pmps,
+            count: pmps.length,
+            summary: {
+              totalPmps: pmps.length,
+              activePmps: totalActive,
+              pausedPmps,
+              draftPmps,
+              totalDealIds,
+              activeDealIds,
+              pendingDealIds,
+              sspList: allSsps,
+            },
+            groupedByStatus: {
+              active: pmps.filter(p => p.status === "active"),
+              paused: pmps.filter(p => p.status === "paused"),
+              draft: pmps.filter(p => p.status === "draft"),
+            },
+          },
         });
       } catch (error) {
         throw new Error(

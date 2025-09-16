@@ -60,6 +60,11 @@ export const updateBrandAgentTool = (client: Scope3ApiClient) => ({
           message:
             "No changes specified. Please provide at least a name, description, or tacticSeedDataCoop setting to update.",
           success: false,
+          error: "INVALID_REQUEST",
+          data: {
+            brandAgentId: args.brandAgentId,
+            changes: {},
+          },
         });
       }
 
@@ -96,6 +101,14 @@ export const updateBrandAgentTool = (client: Scope3ApiClient) => ({
       return createMCPResponse({
         message: summary,
         success: true,
+        data: {
+          brandAgent: updatedBrandAgent,
+          changes: {
+            name: args.name,
+            description: args.description,
+            tacticSeedDataCoop: args.tacticSeedDataCoop,
+          },
+        },
       });
     } catch (error) {
       throw new Error(

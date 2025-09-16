@@ -44,6 +44,8 @@ export const updateCampaignTool = (client: Scope3ApiClient) => ({
 
     try {
       let summary = `✅ Campaign ${args.name ? `"${args.name}"` : args.campaignId} updated successfully\n\n`;
+      const updatedTactics: Record<string, unknown>[] = [];
+      const errors: Record<string, unknown>[] = [];
 
       if (args.reason) {
         summary += `**Reason for Update:** ${args.reason}\n\n`;
@@ -176,8 +178,6 @@ export const updateCampaignTool = (client: Scope3ApiClient) => ({
 
       // Step 2: Handle tactic adjustments if provided
       if (args.tacticAdjustments && args.tacticAdjustments.length > 0) {
-        const updatedTactics = [];
-        const errors = [];
 
         for (const adjustment of args.tacticAdjustments) {
           try {
@@ -283,6 +283,22 @@ export const updateCampaignTool = (client: Scope3ApiClient) => ({
       return createMCPResponse({
         message: summary,
         success: true,
+        data: {
+          campaignId: args.campaignId,
+          updates: {
+            name: args.name,
+            prompt: effectivePrompt,
+            changeRequest: args.changeRequest,
+            reason: args.reason,
+            briefChanges,
+          },
+          tactics: {
+            updated: updatedTactics,
+            errors: errors,
+            totalUpdated: updatedTactics.length,
+            totalErrors: errors.length,
+          },
+        },
       });
     } catch (error) {
       throw new Error(

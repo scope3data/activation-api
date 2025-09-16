@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
+import { createMCPResponse } from "../../utils/error-handling.js";
 
 /**
  * Update existing creative properties
@@ -150,7 +151,44 @@ ${statusIcon} ${assignment.campaignName} (${assignment.campaignId})`;
 • Campaign assignments preserved across update
 • Changes processed through appropriate ${updatedCreative.format.type} provider`;
 
-      return response;
+      return createMCPResponse({
+        message: response,
+        success: true,
+        data: {
+          updatedCreative,
+          configuration: {
+            creativeId: args.creativeId,
+            updates: args.updates,
+            updateDate: new Date().toISOString()
+          },
+          updateSummary: {
+            nameChanged: !!name,
+            statusChanged: !!status,
+            contentChanged: !!content,
+            domainsChanged: !!advertiserDomains,
+            versionBumped: true
+          },
+          currentState: {
+            creativeId: updatedCreative.creativeId,
+            creativeName: updatedCreative.creativeName,
+            version: updatedCreative.version,
+            status: updatedCreative.status,
+            buyerAgentId: updatedCreative.buyerAgentId,
+            format: updatedCreative.format,
+            assemblyMethod: updatedCreative.assemblyMethod,
+            assetIds: updatedCreative.assetIds || [],
+            campaignAssignments: updatedCreative.campaignAssignments || []
+          },
+          metadata: {
+            action: "update",
+            creativeType: "creative",
+            preservesCampaignAssignments: true,
+            safeForActiveCampaigns: true,
+            lastModifiedBy: updatedCreative.lastModifiedBy,
+            orchestrationComplete: true
+          }
+        }
+      });
     } catch (error) {
       throw new Error(
         `Failed to update creative: ${error instanceof Error ? error.message : String(error)}`,

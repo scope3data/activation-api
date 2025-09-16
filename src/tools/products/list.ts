@@ -8,6 +8,7 @@ import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
 import { BigQueryService } from "../../services/bigquery-service.js";
 import { MCPClientService } from "../../services/mcp-client-service.js";
+import { createMCPResponse } from "../../utils/error-handling.js";
 
 // Initialize services (these could be injected via dependency injection in a more sophisticated setup)
 const bigQueryService = new BigQueryService();
@@ -95,7 +96,19 @@ export const getProductsTool = () => ({
           ? `🔍 **No Sales Agents Found for Customer ${args.customer_id}**\n\nNo MCP-enabled sales agents found for the specified customer.`
           : `🔍 **No Sales Agents Found**\n\nNo MCP-enabled sales agents are currently available.`;
 
-        return message;
+        return createMCPResponse({
+          message,
+          success: true,
+          data: {
+            products: [],
+            totalProducts: 0,
+            agentsQueried: 0,
+            successfulAgents: 0,
+            failedAgents: 0,
+            customerId: args.customer_id,
+            query: args.promoted_offering,
+          },
+        });
       }
 
       // Call get_products on all sales agents concurrently
@@ -267,7 +280,45 @@ export const getProductsTool = () => ({
       summary += `• Contact specific sales agents for detailed proposals\n`;
       summary += `• Consider using create_inventory_option to set up targeting strategies`;
 
-      return summary;
+      return createMCPResponse({
+        message: summary,
+        success: true,
+        data: {
+          products: allProducts,
+          totalProducts: allProducts.length,
+          agentsQueried: salesAgents.length,
+          successfulAgents: successful.length,
+          failedAgents: failed.length,
+          query: args.promoted_offering,
+          brief: args.brief,
+          duration,
+          summary: {
+            guaranteedProducts,
+            nonGuaranteedProducts,
+            uniquePublishers,
+            availableFormats,
+            priceRange,
+          },
+          filters: {
+            delivery_type: args.delivery_type,
+            format_ids: args.format_ids,
+            format_types: args.format_types,
+            formats: args.formats,
+            is_fixed_price: args.is_fixed_price,
+            max_cpm: args.max_cpm,
+            min_cpm: args.min_cpm,
+            publisher_ids: args.publisher_ids,
+            standard_formats_only: args.standard_formats_only,
+            customer_id: args.customer_id,
+          },
+          agentResponses: successful,
+          failures: failed.map((f) => ({
+            agentName: f.agent.name,
+            principalId: f.agent.principal_id,
+            error: f.error,
+          })),
+        },
+      });
     } catch (error) {
       throw new Error(
         `Failed to discover products from sales agents: ${error instanceof Error ? error.message : String(error)}`,

@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
+import { createMCPResponse } from "../../utils/error-handling.js";
 import type {
   GetCampaignSummaryParams,
   MCPToolExecuteContext,
@@ -95,7 +96,20 @@ export const getCampaignSummaryTool = (client: Scope3ApiClient) => ({
         args.includeCharts || true,
       );
 
-      return JSON.stringify(summary);
+      return createMCPResponse({
+        message: summary.textSummary,
+        success: true,
+        data: {
+          campaignId: args.campaignId,
+          summary,
+          campaign,
+          brandAgent,
+          deliveryData,
+          tacticBreakdown,
+          verbosity: args.verbosity || "detailed",
+          includeCharts: args.includeCharts || true,
+        },
+      });
     } catch (error) {
       throw new Error(
         `Failed to generate campaign summary: ${error instanceof Error ? error.message : String(error)}`,

@@ -57,6 +57,80 @@ export class BrandAgentService extends BigQueryBaseService {
   }
 
   /**
+   * Get brand agent extensions in bulk for a customer
+   * Returns a map of agent_id -> extension data for efficient joining
+   */
+  async getBrandAgentExtensionsByCustomer(customerId: number): Promise<Map<string, Record<string, unknown>>> {
+    const query = `
+      SELECT 
+        ext.agent_id,
+        ext.advertiser_domains,
+        ext.dsp_seats,
+        ext.description,
+        ext.external_id,
+        ext.nickname,
+        ext.tactic_seed_data_coop,
+        ext.created_at,
+        ext.updated_at
+      FROM ${this.getTableRef("brand_agent_extensions")} ext
+      INNER JOIN \`${this.agentTableRef}\` a
+        ON CAST(a.id AS STRING) = ext.agent_id
+      WHERE a.customer_id = @customerId
+    `;
+
+    const rows = await this.executeQuery(query, { customerId });
+    
+    const extensionsMap = new Map<string, Record<string, unknown>>();
+    for (const row of rows) {
+      const typedRow = row as Record<string, unknown>;
+      const agentId = String(typedRow.agent_id);
+      extensionsMap.set(agentId, typedRow);
+    }
+    
+    return extensionsMap;
+  }
+
+  /**
+   * Enhance GraphQL agent with BigQuery extension data
+   */
+  enhanceAgentWithExtensions(
+    graphqlAgent: Record<string, unknown>, 
+    extension?: Record<string, unknown>
+  ): BrandAgent {
+    return {
+      advertiserDomains: extension && Array.isArray(extension.advertiser_domains)
+        ? (extension.advertiser_domains as string[])
+        : [],
+      createdAt: extension?.created_at 
+        ? new Date(extension.created_at as Date | number | string)
+        : new Date(graphqlAgent.createdAt as Date | number | string),
+      customerId: Number(graphqlAgent.customerId),
+      description: extension?.description
+        ? String(extension.description)
+        : graphqlAgent.description
+        ? String(graphqlAgent.description)
+        : undefined,
+      dspSeats: extension && Array.isArray(extension.dsp_seats)
+        ? (extension.dsp_seats as string[])
+        : [],
+      externalId: extension?.external_id
+        ? String(extension.external_id)
+        : undefined,
+      id: String(graphqlAgent.id),
+      name: String(graphqlAgent.name),
+      nickname: extension?.nickname ? String(extension.nickname) : undefined,
+      tacticSeedDataCoop: extension?.tactic_seed_data_coop 
+        ? Boolean(extension.tactic_seed_data_coop)
+        : false,
+      updatedAt: extension?.updated_at
+        ? new Date(extension.updated_at as Date | number | string)
+        : graphqlAgent.updatedAt
+        ? new Date(graphqlAgent.updatedAt as Date | number | string)
+        : new Date(graphqlAgent.createdAt as Date | number | string),
+    };
+  }
+
+  /**
    * List brand agents for a customer
    */
   async listBrandAgents(customerId?: number): Promise<BrandAgent[]> {

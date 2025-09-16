@@ -62,6 +62,9 @@ export const getBrandAgentTool = (client: Scope3ApiClient) => ({
       return createMCPResponse({
         message: summary,
         success: true,
+        data: {
+          brandAgent,
+        },
       });
     } catch (error) {
       throw new Error(

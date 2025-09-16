@@ -91,6 +91,30 @@ export const registerWebhookTool = (client: Scope3ApiClient) => ({
       return createMCPResponse({
         message: response,
         success: true,
+        data: {
+          subscription,
+          testResult,
+          configuration: {
+            brandAgentId: args.brandAgentId,
+            endpoint: args.endpoint,
+            eventTypes: args.eventTypes,
+            filters: args.filters,
+            retryPolicy: args.retryPolicy,
+          },
+          metadata: {
+            subscriptionId: subscription.id,
+            webhookUrl: subscription.endpoint.url,
+            httpMethod: subscription.endpoint.method,
+            authenticationEnabled: !!subscription.endpoint.authentication,
+            authType: subscription.endpoint.authentication?.type,
+            testPassed: testResult.success,
+            eventTypeCount: subscription.eventTypes.length,
+            hasFilters: !!subscription.filters,
+            campaignFiltered: (subscription.filters?.campaigns?.length || 0) > 0,
+            metricFiltered: (subscription.filters?.metrics?.length || 0) > 0,
+            minSeveritySet: !!subscription.filters?.minSeverity,
+          },
+        },
       });
     } catch (error) {
       throw new Error(

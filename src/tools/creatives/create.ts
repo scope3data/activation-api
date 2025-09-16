@@ -252,6 +252,19 @@ export const creativeCreateTool = (client: Scope3ApiClient) => ({
         return createMCPResponse({
           message,
           success: true,
+          data: {
+            creatives: createdCreatives,
+            count: createdCreatives.length,
+            totalRequested,
+            results: {
+              successful: successCount,
+              failed: errorCount,
+            },
+            configuration: {
+              buyerAgentId: args.buyerAgentId,
+              assignToCampaignIds: args.sharedDefaults?.assignToCampaignIds || [],
+            },
+          },
         });
       } else if (successCount > 0) {
         return createMCPResponse({
@@ -259,6 +272,19 @@ export const creativeCreateTool = (client: Scope3ApiClient) => ({
             message +
             `\n⚠️ **Partial Success**: ${successCount} created, ${errorCount} failed`,
           success: true,
+          data: {
+            creatives: createdCreatives,
+            count: createdCreatives.length,
+            totalRequested,
+            results: {
+              successful: successCount,
+              failed: errorCount,
+            },
+            configuration: {
+              buyerAgentId: args.buyerAgentId,
+              assignToCampaignIds: args.sharedDefaults?.assignToCampaignIds || [],
+            },
+          },
         });
       } else {
         throw new Error(

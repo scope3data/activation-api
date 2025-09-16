@@ -3,6 +3,8 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
+import { createMCPResponse } from "../../utils/error-handling.js";
+
 /**
  * List all available creative formats from AdCP, publishers, and creative agents
  * Discovery tool for understanding what creative formats can be created
@@ -233,7 +235,35 @@ creative/create format.type="creative_agent" format.formatId="dynamic_product"
 • Use format IDs exactly as shown in creative/create calls
 • Check capabilities before choosing assembly methods`;
 
-      return response;
+      return createMCPResponse({
+        message: response,
+        success: true,
+        data: {
+          formats,
+          summary: {
+            totalFormats: formats.adcp_formats.length + formats.publisher_formats.length + formats.creative_agent_formats.length,
+            adcpFormats: formats.adcp_formats.length,
+            publisherFormats: formats.publisher_formats.length,
+            creativeAgentFormats: formats.creative_agent_formats.length,
+            assemblyCapable: [
+              ...formats.adcp_formats.filter(f => f.requirements.assemblyCapable),
+              ...formats.publisher_formats.filter(f => f.requirements.assemblyCapable),
+              ...formats.creative_agent_formats.filter(f => f.requirements.assemblyCapable)
+            ].length,
+            thirdPartyTagCapable: [
+              ...formats.adcp_formats.filter(f => f.requirements.acceptsThirdPartyTags),
+              ...formats.publisher_formats.filter(f => f.requirements.acceptsThirdPartyTags),
+              ...formats.creative_agent_formats.filter(f => f.requirements.acceptsThirdPartyTags)
+            ].length,
+          },
+          filters: {
+            acceptsThirdPartyTags: args.acceptsThirdPartyTags,
+            assemblyCapable: args.assemblyCapable,
+            search: args.search,
+            type: args.type,
+          },
+        },
+      });
     } catch (error) {
       throw new Error(
         `Failed to list creative formats: ${error instanceof Error ? error.message : String(error)}`,

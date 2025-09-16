@@ -109,6 +109,18 @@ export const createBrandAgentBrandStoryTool = (client: Scope3ApiClient) => ({
       return createMCPResponse({
         message: summary,
         success: true,
+        data: {
+          brandStory,
+          configuration: {
+            brandAgentId: args.brandAgentId,
+            name: args.name,
+            prompt: args.prompt,
+            countries: args.countries || [],
+            channels: args.channels || [],
+            languages: args.languages || [],
+            brands: args.brands || [],
+          },
+        },
       });
     } catch (error) {
       throw new Error(

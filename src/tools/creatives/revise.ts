@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { PublisherSyncResult } from "../../types/creative.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
+import { createMCPResponse } from "../../utils/error-handling.js";
 
 /**
  * Update a creative's content, metadata, or assets
@@ -219,7 +220,44 @@ Creative revised but not re-synced. Use creative/sync_publishers to submit revis
 3. Monitor approval status with creative/approval_status`;
       }
 
-      return response;
+      return createMCPResponse({
+        message: response,
+        success: true,
+        data: {
+          creative,
+          publisherApproval,
+          configuration: {
+            creativeId: args.creativeId,
+            publisherId: args.publisherId,
+            autoResync: args.autoResync !== false,
+            revisionNotes: args.revisionNotes,
+            revisions: args.revisions,
+            revisionDate: new Date().toISOString()
+          },
+          revisionSummary: {
+            changes,
+            previousStatus: publisherApproval.approvalStatus,
+            rejectionReason: publisherApproval.rejectionReason,
+            requestedChanges: publisherApproval.requestedChanges || []
+          },
+          resyncResults: resyncResults ? {
+            attempted: args.autoResync !== false,
+            results: resyncResults,
+            successful: resyncResults.length > 0 && resyncResults[0].syncStatus === "success",
+            newApprovalStatus: resyncResults.length > 0 ? resyncResults[0].approvalStatus : null
+          } : {
+            attempted: false,
+            manualSyncRequired: true
+          },
+          metadata: {
+            action: "revise",
+            creativeType: "creative",
+            publisherName: publisherApproval.publisherName,
+            wasAlreadyApproved: publisherApproval.approvalStatus === "approved" || publisherApproval.approvalStatus === "auto_approved",
+            requiresFollowUp: args.autoResync === false || (resyncResults && resyncResults.length > 0 && resyncResults[0].approvalStatus === "pending")
+          }
+        }
+      });
     } catch (error) {
       throw new Error(
         `Failed to revise creative: ${error instanceof Error ? error.message : String(error)}`,

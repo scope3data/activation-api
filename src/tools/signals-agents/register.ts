@@ -103,6 +103,39 @@ export const registerSignalsAgentTool = (client: Scope3ApiClient) => ({
       return createMCPResponse({
         message: summary,
         success: true,
+        data: {
+          agent,
+          configuration: {
+            brandAgentId: args.brandAgentId,
+            name: args.name,
+            description: args.description,
+            endpointUrl: args.endpointUrl,
+            config: args.config,
+          },
+          permissions: {
+            segmentManagement: true,
+            apiAccess: true,
+            accountId: authResult.customerId,
+          },
+          metadata: {
+            agentId: agent.id,
+            registrationDate: agent.createdAt,
+            protocol: "ADCP",
+            status: "active",
+            isReadyForUse: true,
+          },
+          integration: {
+            apiEndpoints: [
+              `getSignals("${agent.id}", query)`,
+              `activateSignal("${agent.id}", signalId)`,
+              `signals-agent/history for monitoring`,
+            ],
+            exampleUsage: {
+              getSignals: `getSignals("${agent.id}", "Target millennials interested in sustainable fashion")`,
+              activateSignal: `activateSignal("${agent.id}", "recommended_signal_id")`,
+            },
+          },
+        },
       });
     } catch (error) {
       return createErrorResponse("Failed to register signals agent", error);

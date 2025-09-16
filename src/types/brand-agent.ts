@@ -245,8 +245,12 @@ export interface BrandAgentInput {
 }
 
 // API Response types
+export interface BrandAgentData {
+  agent: BrandAgent | null;
+}
+
 export interface BrandAgentsData {
-  brandAgents: BrandAgent[];
+  agents: BrandAgent[];
 }
 
 export interface BrandAgentUpdateInput {

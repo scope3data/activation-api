@@ -177,6 +177,28 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
       return createMCPResponse({
         message: summary,
         success: true,
+        data: {
+          tactic,
+          configuration: {
+            brandStoryId: args.brandStoryId,
+            budgetAllocation: args.budgetAllocation,
+            campaignId: args.campaignId,
+            cpm: args.cpm,
+            description: args.description,
+            mediaProductId: args.mediaProductId,
+            name: args.name,
+            signalId: args.signalId,
+          },
+          mediaProduct: product,
+          effectivePricing: tactic.effectivePricing,
+          projectedMetrics: {
+            impressions: Math.floor(
+              (tactic.budgetAllocation.amount / tactic.effectivePricing.totalCpm) * 1000,
+            ),
+            totalBudget: tactic.budgetAllocation.amount,
+            effectiveCpm: tactic.effectivePricing.totalCpm,
+          },
+        },
       });
     } catch (error) {
       throw new Error(

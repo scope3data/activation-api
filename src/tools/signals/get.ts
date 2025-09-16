@@ -6,6 +6,8 @@ import type {
   MCPToolExecuteContext,
 } from "../../types/mcp.js";
 
+import { createMCPResponse } from "../../utils/error-handling.js";
+
 export const getCustomSignalTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "Signals",
@@ -197,7 +199,46 @@ export const getCustomSignalTool = (client: Scope3ApiClient) => ({
         summary += `• **Channel Targeting:** ${[...new Set(channels)].join(", ")}\n`;
       }
 
-      return summary;
+      return createMCPResponse({
+        message: summary,
+        success: true,
+        data: {
+          signal,
+          metadata: {
+            signalId: args.signalId,
+            isComposite: signal.key.includes(","),
+            keyTypes: signal.key.split(",").map(k => k.trim()),
+            totalClusters: signal.clusters.length,
+            regions,
+            gdprCompliantClusters: gdprClusters,
+            channelSpecificClusters: channels.length,
+            uniqueChannels: [...new Set(channels)],
+          },
+          configuration: {
+            keyFormat: signal.key,
+            clusters: signal.clusters,
+            regionalCoverage: regions,
+            complianceSettings: {
+              gdprEnabled: gdprClusters > 0,
+              gdprClusters: gdprClusters,
+              totalCompliantRegions: gdprClusters,
+            },
+          },
+          usageExamples: {
+            apiEndpoint: `/signals/${signal.key}`,
+            exampleKey: signal.key.includes(",") 
+              ? signal.key.split(",").map(k => {
+                  switch (k.trim()) {
+                    case "domain": return "cnn.com";
+                    case "maid": return "abcd-1234";
+                    case "postal_code": return "90210";
+                    default: return `${k.trim()}_value`;
+                  }
+                }).join(",")
+              : signal.key === "postal_code" ? "90210" : signal.key === "domain" ? "cnn.com" : `${signal.key}_example`,
+          },
+        },
+      });
     } catch (error) {
       throw new Error(
         `Failed to get custom signal: ${error instanceof Error ? error.message : String(error)}`,

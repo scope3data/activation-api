@@ -6,6 +6,8 @@ import type {
   MCPToolExecuteContext,
 } from "../../types/mcp.js";
 
+import { createMCPResponse } from "../../utils/error-handling.js";
+
 export const deleteCustomSignalTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "Signals",
@@ -140,7 +142,43 @@ export const deleteCustomSignalTool = (client: Scope3ApiClient) => ({
 
       summary += `The custom signal has been permanently removed from the platform.`;
 
-      return summary;
+      return createMCPResponse({
+        message: summary,
+        success: true,
+        data: {
+          deletedSignal: {
+            id: result.id,
+            name: signalDetails.name,
+            key: signalDetails.key,
+            description: signalDetails.description,
+            clusters: signalDetails.clusters,
+          },
+          deletionResult: result,
+          configuration: {
+            signalId: args.signalId,
+          },
+          impact: {
+            isComposite: signalDetails.key.includes(","),
+            keyTypes: signalDetails.key.split(",").map(k => k.trim()),
+            clustersRemoved: signalDetails.clusters.length,
+            regionsAffected: [...new Set(signalDetails.clusters.map(c => c.region))],
+            gdprClustersRemoved: signalDetails.clusters.filter(c => c.gdpr).length,
+            channelSpecificClustersRemoved: signalDetails.clusters.filter(c => c.channel).length,
+            apiEndpointsRemoved: [
+              `/signals/${signalDetails.key}`,
+              `/signals/${signalDetails.key}/{identifier}`,
+            ],
+          },
+          recoveryData: {
+            previousConfiguration: {
+              name: signalDetails.name,
+              key: signalDetails.key,
+              description: signalDetails.description,
+              clusters: signalDetails.clusters,
+            },
+          },
+        },
+      });
     } catch (error) {
       throw new Error(
         `Failed to delete custom signal: ${error instanceof Error ? error.message : String(error)}`,
