@@ -1517,20 +1517,7 @@ export class Scope3ApiClient {
   }
 
   async getBrandAgent(apiKey: string, id: string): Promise<BrandAgent> {
-    try {
-      // Try BigQuery first
-      const agent = await this.brandAgentService.getBrandAgent(id);
-      if (agent) {
-        return agent;
-      }
-    } catch (error) {
-      console.log(
-        "BigQuery getBrandAgent failed, falling back to GraphQL:",
-        error,
-      );
-    }
-
-    // Fallback to GraphQL
+    // GraphQL first - get core brand agent data
     const response = await fetch(this.graphqlUrl, {
       body: JSON.stringify({
         query: GET_BRAND_AGENT_QUERY,
@@ -1566,7 +1553,24 @@ export class Scope3ApiClient {
       throw new Error("No data received");
     }
 
-    return result.data.brandAgent;
+    const graphqlAgent = result.data.brandAgent;
+
+    // BigQuery enhancement - add customer-scoped fields when available
+    try {
+      const enhancedAgent = await this.brandAgentService.getBrandAgent(id);
+      if (enhancedAgent) {
+        // Use enhanced version with customer-scoped fields
+        return enhancedAgent;
+      }
+    } catch (error) {
+      console.log(
+        "BigQuery enhancement failed, using GraphQL data only:",
+        error,
+      );
+    }
+
+    // Return GraphQL data without enhancement
+    return graphqlAgent;
   }
 
   // Reporting methods
@@ -2363,6 +2367,7 @@ export class Scope3ApiClient {
     apiKey: string,
     where?: BrandAgentWhereInput,
   ): Promise<BrandAgent[]> {
+    // GraphQL first - get core brand agent data
     const response = await fetch(this.graphqlUrl, {
       body: JSON.stringify({
         query: LIST_BRAND_AGENTS_QUERY,
@@ -2396,7 +2401,34 @@ export class Scope3ApiClient {
       throw new Error("No data received");
     }
 
-    return result.data.brandAgents;
+    const graphqlAgents = result.data.brandAgents;
+
+    // BigQuery enhancement - add customer-scoped fields when available
+    try {
+      const enhancedAgents: BrandAgent[] = [];
+
+      for (const agent of graphqlAgents) {
+        const enhancedAgent = await this.brandAgentService.getBrandAgent(
+          agent.id,
+        );
+        if (enhancedAgent) {
+          // Use enhanced version with customer-scoped fields
+          enhancedAgents.push(enhancedAgent);
+        } else {
+          // Use base GraphQL data
+          enhancedAgents.push(agent);
+        }
+      }
+
+      return enhancedAgents;
+    } catch (error) {
+      console.log(
+        "BigQuery enhancement failed, using GraphQL data only:",
+        error,
+      );
+      // Return GraphQL data without enhancement
+      return graphqlAgents;
+    }
   }
 
   // Brand Standards Agent methods
@@ -3128,10 +3160,18 @@ export class Scope3ApiClient {
     id: string,
     input: BrandAgentUpdateInput,
   ): Promise<BrandAgent> {
+    // Update core brand agent via GraphQL (without customer-scoped fields)
     const response = await fetch(this.graphqlUrl, {
       body: JSON.stringify({
         query: UPDATE_BRAND_AGENT_MUTATION,
-        variables: { id, input },
+        variables: {
+          id,
+          input: {
+            advertiserDomains: input.advertiserDomains,
+            description: input.description,
+            name: input.name,
+          },
+        },
       }),
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -3163,7 +3203,40 @@ export class Scope3ApiClient {
       throw new Error("No data received");
     }
 
-    return result.data.updateBrandAgent;
+    const brandAgent = result.data.updateBrandAgent;
+
+    // Update BigQuery extensions if customer-scoped fields present
+    if (
+      input.externalId !== undefined ||
+      input.nickname !== undefined ||
+      input.dspSeats !== undefined
+    ) {
+      try {
+        await this.brandAgentService.upsertBrandAgentExtension(id, {
+          advertiserDomains: input.advertiserDomains,
+          description: input.description,
+          dspSeats: input.dspSeats,
+          externalId: input.externalId,
+          nickname: input.nickname,
+        });
+      } catch (error) {
+        console.warn("Failed to update brand agent extension:", error);
+        // Don't fail the entire operation - the core brand agent was updated successfully
+      }
+    }
+
+    // Return the enhanced brand agent (get fresh data with extensions)
+    try {
+      const enhancedAgent = await this.brandAgentService.getBrandAgent(id);
+      if (enhancedAgent) {
+        return enhancedAgent;
+      }
+    } catch (error) {
+      console.log("Failed to get enhanced agent data:", error);
+    }
+
+    // Return GraphQL data if enhancement fails
+    return brandAgent;
   }
 
   async updateBrandAgentCampaign(
