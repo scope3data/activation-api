@@ -22,7 +22,7 @@ describe("brand-agent/create Tool", () => {
   
   beforeEach(() => {
     mockClient = createMockScope3ApiClient();
-    tool = createBrandAgentTool(mockClient );
+    tool = createBrandAgentTool(mockClient as any);
     process.env.SCOPE3_API_KEY = serviceTestData.validApiKey;
   });
 
@@ -315,7 +315,7 @@ describe("brand-agent/create Tool", () => {
     it("should handle concurrent creation requests", async () => {
       // Setup different responses for concurrent requests
       let callCount = 0;
-      mockClient.createBrandAgent.mockImplementation(async (apiKey: string, input: ReturnType<typeof createMockScope3ApiClient>) => {
+      mockClient.createBrandAgent.mockImplementation(async (apiKey: string, input: any) => {
         callCount++;
         return {
           ...brandAgentFixtures.enhancedBrandAgent(),

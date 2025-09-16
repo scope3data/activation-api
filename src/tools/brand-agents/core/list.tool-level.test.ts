@@ -23,7 +23,7 @@ describe("brand-agent/list Tool", () => {
   
   beforeEach(() => {
     mockClient = createMockScope3ApiClient();
-    tool = listBrandAgentsTool(mockClient );
+    tool = listBrandAgentsTool(mockClient as any);
   });
 
   describe("Tool Configuration", () => {
