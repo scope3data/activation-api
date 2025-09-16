@@ -13,6 +13,13 @@ export interface AgentModel {
   updatedAt: Date;
 }
 
+// Renamed to match GraphQL schema
+export interface AgentWhereInput {
+  customerId?: { equals?: number };
+  id?: { equals?: string };
+  name?: { contains?: string };
+}
+
 export interface BrandAgent {
   // Shared marketing configuration
   advertiserDomains: string[]; // Domains where users will be sent from all campaigns/creatives
@@ -252,11 +259,8 @@ export interface BrandAgentUpdateInput {
   tacticSeedDataCoop?: boolean; // Opt-in to tactic seed data cooperative
 }
 
-export interface BrandAgentWhereInput {
-  customerId?: { equals?: number };
-  id?: { equals?: string };
-  name?: { contains?: string };
-}
+// Backward compatibility alias (deprecated)
+export type BrandAgentWhereInput = AgentWhereInput;
 
 // Brand Standards (configuration per brand agent)
 export interface BrandStandards {

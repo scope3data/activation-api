@@ -48,7 +48,7 @@ export const GET_BRAND_AGENT_QUERY = `
 `;
 
 export const LIST_BRAND_AGENTS_QUERY = `
-  query ListBrandAgents($where: BrandAgentWhereInput) {
+  query ListBrandAgents($where: AgentWhereInput) {
     brandAgents(where: $where) {
       id
       name

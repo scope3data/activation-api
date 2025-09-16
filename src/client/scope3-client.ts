@@ -13,7 +13,7 @@ import type {
   BrandAgentInput,
   BrandAgentsData,
   BrandAgentUpdateInput,
-  BrandAgentWhereInput,
+  AgentWhereInput as BrandAgentWhereInput,
   BrandStandardsAgent,
   BrandStandardsAgentInput,
   BrandStandardsAgentsData,
@@ -2382,7 +2382,16 @@ export class Scope3ApiClient {
     });
 
     if (!response.ok) {
-      // Enhanced logging for brand agent list failures
+      // Enhanced logging for brand agent list failures - capture response body for 4xx errors
+      let errorBody = null;
+      try {
+        if (response.status >= 400 && response.status < 500) {
+          errorBody = await response.text();
+        }
+      } catch {
+        // Ignore body parsing errors
+      }
+
       console.error(
         `[listBrandAgents] HTTP ${response.status} ${response.statusText}`,
         {
@@ -2390,6 +2399,7 @@ export class Scope3ApiClient {
           status: response.status,
           statusText: response.statusText,
           url: this.graphqlUrl,
+          ...(errorBody && { responseBody: errorBody }),
         },
       );
 
@@ -2400,7 +2410,7 @@ export class Scope3ApiClient {
         throw new Error("External service temporarily unavailable");
       }
       throw new Error(
-        `Request failed with status ${response.status}: ${response.statusText}`,
+        `Request failed with status ${response.status}: ${response.statusText}${errorBody ? ` - ${errorBody}` : ""}`,
       );
     }
 
