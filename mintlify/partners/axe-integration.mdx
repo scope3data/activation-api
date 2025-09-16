@@ -28,6 +28,8 @@ If you want Scope3 to return different key names, please change them at Settings
 
 #### Install Scope3 AXE Module in Prebid
 
+Scope3 was added to Prebid in [version 10.9.0](https://github.com/prebid/Prebid.js/releases/tag/10.9.0).
+
 If building Prebid.js from source, include the Scope3 RTD module:
 
 ```bash
@@ -38,30 +40,25 @@ If you're using the pre-built package from prebid.org, make sure the Scope3 modu
 
 #### Configuration
 
-Go to Settings-AXE in your Scope3.com account. Select "Prebid.js" and get the config snippet.
-
 Add the Scope3 RTD provider to your Prebid configuration using this config snippet:
 
 ```javascript
 pbjs.setConfig({
-  realTimeData: {
-    auctionDelay: 100,
-    dataProviders: [{
-      name: "scope3",
-      waitForIt: true,
-      params: {
-        // Configuration provided by Scope3 team
-        publisherId: "YOUR_PUBLISHER_ID",
-        // Additional parameters provided during setup
-      }
-    }]
-  }
-});
+    realTimeData: {
+      auctionDelay: 100,
+      dataProviders: [{
+        name: 'scope3',
+        params: {
+          orgId: 'XXXXXX', // put your org ID here
+          timeout: 100, // max time to wait for response
+          debugMode: false // set to true for testing
+        }
+      }]
+    }
+  });
 ```
 
 ### Prebid Server Implementation
-
-Go to Settings-AXE in your Scope3.com account. Select "Prebid Server" and get the config snippet.
 
 Add the Scope3 Prebid Server module to your Prebid Server setup and add the config snippet to your configuration file.
 
