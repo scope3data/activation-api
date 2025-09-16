@@ -101,28 +101,14 @@ export const registerSignalsAgentTool = (client: Scope3ApiClient) => ({
       summary += `The signals agent is ready to manage segments in your account!`;
 
       return createMCPResponse({
-        message: summary,
-        success: true,
         data: {
           agent,
           configuration: {
             brandAgentId: args.brandAgentId,
-            name: args.name,
+            config: args.config,
             description: args.description,
             endpointUrl: args.endpointUrl,
-            config: args.config,
-          },
-          permissions: {
-            segmentManagement: true,
-            apiAccess: true,
-            accountId: authResult.customerId,
-          },
-          metadata: {
-            agentId: agent.id,
-            registrationDate: agent.createdAt,
-            protocol: "ADCP",
-            status: "active",
-            isReadyForUse: true,
+            name: args.name,
           },
           integration: {
             apiEndpoints: [
@@ -131,11 +117,25 @@ export const registerSignalsAgentTool = (client: Scope3ApiClient) => ({
               `signals-agent/history for monitoring`,
             ],
             exampleUsage: {
-              getSignals: `getSignals("${agent.id}", "Target millennials interested in sustainable fashion")`,
               activateSignal: `activateSignal("${agent.id}", "recommended_signal_id")`,
+              getSignals: `getSignals("${agent.id}", "Target millennials interested in sustainable fashion")`,
             },
           },
+          metadata: {
+            agentId: agent.id,
+            isReadyForUse: true,
+            protocol: "ADCP",
+            registrationDate: agent.createdAt,
+            status: "active",
+          },
+          permissions: {
+            accountId: authResult.customerId,
+            apiAccess: true,
+            segmentManagement: true,
+          },
         },
+        message: summary,
+        success: true,
       });
     } catch (error) {
       return createErrorResponse("Failed to register signals agent", error);

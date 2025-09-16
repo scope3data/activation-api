@@ -325,22 +325,26 @@ When refactoring code to match updated documentation terminology:
 When troubleshooting "Request failed" errors that bypass authentication:
 
 **The Problem**: Assumed GraphQL field names matched code concepts
-- **Code**: `brandAgents`, `brandAgent` 
+
+- **Code**: `brandAgents`, `brandAgent`
 - **Actual API**: `agents`, `agent`
 
 **Root Cause**: GraphQL schema field names can differ from conceptual naming
+
 - Authentication works (validates API key exists)
 - Data queries fail (wrong field names = 400 Bad Request)
 
 **Investigation Process**:
+
 1. **Verify endpoint connectivity** - Test basic HTTP requests
 2. **Test authentication separately** - Confirm API key works for simple queries
 3. **Test actual GraphQL queries directly** - Use curl with real API key to test exact queries
 4. **Verify field names with working queries** - Don't assume, test systematically
 
 **Key Fixes Required**:
+
 - **LIST**: `brandAgents` → `agents` (plural field)
-- **GET**: `brandAgent(id)` → `agent(id)` (singular field)  
+- **GET**: `brandAgent(id)` → `agent(id)` (singular field)
 - **CREATE/UPDATE**: Parameter structure (`input` object → direct parameters, `ID!` → `BigInt!`)
 - **Type interfaces**: Update response data structures to match actual API fields
 

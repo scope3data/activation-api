@@ -45,14 +45,14 @@ export const checkAuthTool = (client: Scope3ApiClient) => ({
 🔑 Your API key has the required permissions to access Scope3 services.`;
 
     return createMCPResponse({
-      message,
-      success: true,
       data: {
+        apiKeySource: context.session?.scope3ApiKey ? "session" : "environment",
         authenticated: true,
         customerId,
         timestamp: new Date().toISOString(),
-        apiKeySource: context.session?.scope3ApiKey ? "session" : "environment",
       },
+      message,
+      success: true,
     });
   },
 

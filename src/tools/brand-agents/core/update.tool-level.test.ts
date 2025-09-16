@@ -1,8 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import {
+  BrandAgentValidators,
+  expectErrorResponse,
+} from "../../../__tests__/utils/structured-response-helpers.js";
 import { Scope3ApiClient } from "../../../client/scope3-client.js";
 import { updateBrandAgentTool } from "./update.js";
-import { BrandAgentValidators, expectErrorResponse } from "../../../__tests__/utils/structured-response-helpers.js";
 
 // Mock the client
 vi.mock("../../../client/scope3-client.js", () => ({
@@ -29,20 +32,20 @@ describe("brand-agents/core/update", () => {
 
   it("should update brand agent name with structured data", async () => {
     const mockUpdatedBrandAgent = {
+      createdAt: new Date("2024-01-01T00:00:00Z"),
+      customerId: 456,
+      description: "Original description",
       id: "123",
       name: "Updated Brand Agent",
-      description: "Original description",
-      customerId: 456,
-      createdAt: new Date("2024-01-01T00:00:00Z"),
       updatedAt: new Date("2024-01-02T00:00:00Z"),
     };
 
     mockClient.updateBrandAgent.mockResolvedValueOnce(mockUpdatedBrandAgent);
 
     const result = await tool.execute(
-      { 
+      {
         brandAgentId: "123",
-        name: "Updated Brand Agent"
+        name: "Updated Brand Agent",
       },
       {
         session: { scope3ApiKey: "test_api_key" },
@@ -51,19 +54,19 @@ describe("brand-agents/core/update", () => {
 
     // Validate structured response
     const parsedResponse = BrandAgentValidators.validateGetResponse(result);
-    
+
     // Dates get serialized to strings in JSON responses
     const expectedBrandAgent = {
       ...mockUpdatedBrandAgent,
       createdAt: mockUpdatedBrandAgent.createdAt.toISOString(),
       updatedAt: mockUpdatedBrandAgent.updatedAt.toISOString(),
     };
-    
+
     expect(parsedResponse.data).toEqual({
       brandAgent: expectedBrandAgent,
       changes: {
-        name: "Updated Brand Agent",
         description: undefined,
+        name: "Updated Brand Agent",
         tacticSeedDataCoop: undefined,
       },
     });
@@ -72,20 +75,26 @@ describe("brand-agents/core/update", () => {
     const parsedMessage = JSON.parse(result);
     expect(parsedMessage.message).toContain("Brand Agent Updated Successfully");
     expect(parsedMessage.message).toContain("Updated Brand Agent");
-    expect(parsedMessage.message).toContain("Name updated to: \"Updated Brand Agent\"");
+    expect(parsedMessage.message).toContain(
+      'Name updated to: "Updated Brand Agent"',
+    );
 
-    expect(mockClient.updateBrandAgent).toHaveBeenCalledWith("test_api_key", "123", {
-      name: "Updated Brand Agent",
-    });
+    expect(mockClient.updateBrandAgent).toHaveBeenCalledWith(
+      "test_api_key",
+      "123",
+      {
+        name: "Updated Brand Agent",
+      },
+    );
   });
 
   it("should update multiple fields with structured data", async () => {
     const mockUpdatedBrandAgent = {
+      createdAt: new Date("2024-01-01T00:00:00Z"),
+      customerId: 456,
+      description: "New description",
       id: "123",
       name: "New Name",
-      description: "New description",
-      customerId: 456,
-      createdAt: new Date("2024-01-01T00:00:00Z"),
       updatedAt: new Date("2024-01-02T00:00:00Z"),
     };
 
@@ -94,8 +103,8 @@ describe("brand-agents/core/update", () => {
     const result = await tool.execute(
       {
         brandAgentId: "123",
-        name: "New Name",
         description: "New description",
+        name: "New Name",
         tacticSeedDataCoop: true,
       },
       {
@@ -107,25 +116,34 @@ describe("brand-agents/core/update", () => {
     const parsedResponse = BrandAgentValidators.validateGetResponse(result);
 
     expect(parsedResponse.data).toBeDefined();
-    if (parsedResponse.data && 'changes' in parsedResponse.data) {
+    if (parsedResponse.data && "changes" in parsedResponse.data) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((parsedResponse.data as any).changes).toEqual({
-        name: "New Name",
         description: "New description",
+        name: "New Name",
         tacticSeedDataCoop: true,
       });
     }
 
     // Verify message content (result is JSON string)
     const parsedMessage = JSON.parse(result);
-    expect(parsedMessage.message).toContain("Name updated to: \"New Name\"");
-    expect(parsedMessage.message).toContain("Description updated to: \"New description\"");
-    expect(parsedMessage.message).toContain("Tactic Seed Data Cooperative: enabled");
+    expect(parsedMessage.message).toContain('Name updated to: "New Name"');
+    expect(parsedMessage.message).toContain(
+      'Description updated to: "New description"',
+    );
+    expect(parsedMessage.message).toContain(
+      "Tactic Seed Data Cooperative: enabled",
+    );
 
-    expect(mockClient.updateBrandAgent).toHaveBeenCalledWith("test_api_key", "123", {
-      name: "New Name",
-      description: "New description",
-      tacticSeedDataCoop: true,
-    });
+    expect(mockClient.updateBrandAgent).toHaveBeenCalledWith(
+      "test_api_key",
+      "123",
+      {
+        description: "New description",
+        name: "New Name",
+        tacticSeedDataCoop: true,
+      },
+    );
   });
 
   it("should handle no changes specified", async () => {
@@ -137,7 +155,7 @@ describe("brand-agents/core/update", () => {
     );
 
     expectErrorResponse(result, "No changes specified");
-    
+
     const parsedResponse = JSON.parse(result);
     expect(parsedResponse.data).toEqual({
       brandAgentId: "123",
@@ -167,16 +185,13 @@ describe("brand-agents/core/update", () => {
     expect(mockClient.updateBrandAgent).toHaveBeenCalledWith(
       "test_api_key",
       "nonexistent",
-      { name: "New Name" }
+      { name: "New Name" },
     );
   });
 
   it("should handle missing API key", async () => {
     await expect(
-      tool.execute(
-        { brandAgentId: "123", name: "New Name" },
-        {}
-      )
+      tool.execute({ brandAgentId: "123", name: "New Name" }, {}),
     ).rejects.toThrow("Authentication required");
 
     expect(mockClient.updateBrandAgent).not.toHaveBeenCalled();
@@ -187,11 +202,11 @@ describe("brand-agents/core/update", () => {
     process.env.SCOPE3_API_KEY = "env_api_key";
 
     const mockUpdatedBrandAgent = {
+      createdAt: new Date("2024-01-01T00:00:00Z"),
+      customerId: 456,
+      description: "",
       id: "123",
       name: "Updated Name",
-      description: "",
-      customerId: 456,
-      createdAt: new Date("2024-01-01T00:00:00Z"),
       updatedAt: new Date("2024-01-02T00:00:00Z"),
     };
 
@@ -200,7 +215,7 @@ describe("brand-agents/core/update", () => {
     try {
       const result = await tool.execute(
         { brandAgentId: "123", name: "Updated Name" },
-        {}
+        {},
       );
 
       BrandAgentValidators.validateGetResponse(result);
@@ -208,7 +223,7 @@ describe("brand-agents/core/update", () => {
       expect(mockClient.updateBrandAgent).toHaveBeenCalledWith(
         "env_api_key",
         "123",
-        { name: "Updated Name" }
+        { name: "Updated Name" },
       );
     } finally {
       process.env.SCOPE3_API_KEY = originalEnv;
@@ -217,11 +232,11 @@ describe("brand-agents/core/update", () => {
 
   it("should handle tacticSeedDataCoop disabled", async () => {
     const mockUpdatedBrandAgent = {
+      createdAt: new Date("2024-01-01T00:00:00Z"),
+      customerId: 456,
+      description: "Test description",
       id: "123",
       name: "Test Brand Agent",
-      description: "Test description",
-      customerId: 456,
-      createdAt: new Date("2024-01-01T00:00:00Z"),
       updatedAt: new Date("2024-01-02T00:00:00Z"),
     };
 
@@ -238,10 +253,16 @@ describe("brand-agents/core/update", () => {
     );
 
     const parsedMessage = JSON.parse(result);
-    expect(parsedMessage.message).toContain("Tactic Seed Data Cooperative: disabled");
+    expect(parsedMessage.message).toContain(
+      "Tactic Seed Data Cooperative: disabled",
+    );
 
-    expect(mockClient.updateBrandAgent).toHaveBeenCalledWith("test_api_key", "123", {
-      tacticSeedDataCoop: false,
-    });
+    expect(mockClient.updateBrandAgent).toHaveBeenCalledWith(
+      "test_api_key",
+      "123",
+      {
+        tacticSeedDataCoop: false,
+      },
+    );
   });
 });

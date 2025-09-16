@@ -65,6 +65,17 @@ export const creativeListTool = (client: Scope3ApiClient) => ({
 
       if (response.creatives.length === 0) {
         return createMCPResponse({
+          data: {
+            buyerAgentId: args.buyerAgentId,
+            count: 0,
+            creatives: [],
+            filters: args.filter || {},
+            pagination: {
+              limit: args.limit || 20,
+              offset: args.offset || 0,
+              total: 0,
+            },
+          },
           message: `📦 No creatives found for buyer agent ${args.buyerAgentId}
 
 ${
@@ -83,17 +94,6 @@ ${
 
 🔄 **[STUB]** This will query AdCP publishers when backend is implemented.`,
           success: true,
-          data: {
-            creatives: [],
-            count: 0,
-            filters: args.filter || {},
-            pagination: {
-              limit: args.limit || 20,
-              offset: args.offset || 0,
-              total: 0,
-            },
-            buyerAgentId: args.buyerAgentId,
-          },
         });
       }
 
@@ -165,24 +165,24 @@ ${
       output += `🔄 **[STUB]** This will query AdCP publishers when backend is implemented.`;
 
       return createMCPResponse({
-        message: output,
-        success: true,
         data: {
-          creatives: response.creatives,
-          count: response.creatives.length,
-          totalCount: response.totalCount,
-          filters: args.filter || {},
-          pagination: {
-            limit: args.limit || 20,
-            offset: args.offset || 0,
-            hasMore: response.hasMore,
-            nextOffset: response.nextOffset,
-          },
-          summary: response.summary,
           buyerAgentId: args.buyerAgentId,
+          count: response.creatives.length,
+          creatives: response.creatives,
+          filters: args.filter || {},
           includeAssets: args.includeAssets,
           includeCampaigns: args.includeCampaigns,
+          pagination: {
+            hasMore: response.hasMore,
+            limit: args.limit || 20,
+            nextOffset: response.nextOffset,
+            offset: args.offset || 0,
+          },
+          summary: response.summary,
+          totalCount: response.totalCount,
         },
+        message: output,
+        success: true,
       });
     } catch (error) {
       throw new Error(

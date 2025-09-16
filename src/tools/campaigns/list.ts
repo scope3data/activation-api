@@ -85,26 +85,26 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
         }
 
         return createMCPResponse({
-          message: emptyMessage,
-          success: true,
           data: {
             campaigns: [],
             count: 0,
             filters: {
               brandAgentId: args.brandAgentId,
-              status: args.status,
-              dateRange: args.dateRange,
               budgetRange: args.budgetRange,
+              dateRange: args.dateRange,
               sortBy: args.sortBy || "updated",
               sortOrder: args.sortOrder || "desc",
+              status: args.status,
             },
             summary: {
+              statusCounts: {},
               totalBudget: 0,
               totalSpend: 0,
               utilization: 0,
-              statusCounts: {},
             },
           },
+          message: emptyMessage,
+          success: true,
         });
       }
 
@@ -252,27 +252,27 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
       summary += `• Create new campaign: Use create_campaign tool`;
 
       return createMCPResponse({
-        message: summary,
-        success: true,
         data: {
           campaigns,
           count: campaigns.length,
           filters: {
             brandAgentId: args.brandAgentId,
-            status: args.status,
-            dateRange: args.dateRange,
             budgetRange: args.budgetRange,
+            dateRange: args.dateRange,
+            limit: args.limit,
             sortBy: args.sortBy || "updated",
             sortOrder: args.sortOrder || "desc",
-            limit: args.limit,
+            status: args.status,
           },
           summary: {
+            statusCounts,
             totalBudget,
             totalSpend,
             utilization: totalBudget > 0 ? (totalSpend / totalBudget) * 100 : 0,
-            statusCounts,
           },
         },
+        message: summary,
+        success: true,
       });
     } catch (error) {
       throw new Error(

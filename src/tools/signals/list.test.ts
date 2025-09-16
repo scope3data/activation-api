@@ -1,9 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import {
+  expectErrorResponse,
+  SignalValidators,
+} from "../../__tests__/utils/structured-response-helpers.js";
 import { Scope3ApiClient } from "../../client/scope3-client.js";
 import { CustomSignalsClient } from "../../services/custom-signals-client.js";
 import { listCustomSignalsTool } from "./list.js";
-import { SignalValidators, expectErrorResponse } from "../../__tests__/utils/structured-response-helpers.js";
 
 // Mock the dependencies
 vi.mock("../../client/scope3-client.js", () => ({
@@ -75,12 +79,16 @@ describe("signals/list", () => {
     expect((parsedResponse.data! as any).signals).toHaveLength(1);
     expect((parsedResponse.data! as any).count).toBe(1);
     expect((parsedResponse.data! as any).filters).toEqual({
-      region: undefined,
       channel: undefined,
+      region: undefined,
       seatId: undefined,
     });
-    expect((parsedResponse.data! as any).statistics).toHaveProperty("totalRegions");
-    expect((parsedResponse.data! as any).statistics).toHaveProperty("compositeSignals");
+    expect((parsedResponse.data! as any).statistics).toHaveProperty(
+      "totalRegions",
+    );
+    expect((parsedResponse.data! as any).statistics).toHaveProperty(
+      "compositeSignals",
+    );
 
     // Verify message content
     expect(result).toContain("Custom Signals Overview");

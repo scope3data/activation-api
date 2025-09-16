@@ -1,14 +1,21 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { createMockScope3ApiClient, serviceLevelScenarios, serviceTestData } from "../../../__tests__/setup/service-level-mocks.js";
-import { BrandAgentValidators, expectLegacyCompatibleResponse, ValidatedBrandAgent } from "../../../__tests__/utils/structured-response-helpers.js";
 import { brandAgentFixtures } from "../../../__tests__/fixtures/brand-agent-fixtures.js";
-
+import {
+  createMockScope3ApiClient,
+  serviceLevelScenarios,
+  serviceTestData,
+} from "../../../__tests__/setup/service-level-mocks.js";
+import {
+  BrandAgentValidators,
+  expectLegacyCompatibleResponse,
+  ValidatedBrandAgent,
+} from "../../../__tests__/utils/structured-response-helpers.js";
 import { listBrandAgentsTool } from "./list.js";
 
 /**
  * Tool-Level Tests for brand-agent/list
- * 
+ *
  * These tests validate the complete MCP tool execution including:
  * - Parameter validation
  * - Authentication handling
@@ -20,10 +27,11 @@ import { listBrandAgentsTool } from "./list.js";
 describe("brand-agent/list Tool", () => {
   let mockClient: ReturnType<typeof createMockScope3ApiClient>;
   let tool: ReturnType<typeof listBrandAgentsTool>;
-  
+
   beforeEach(() => {
     mockClient = createMockScope3ApiClient();
-    tool = listBrandAgentsTool(mockClient as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tool = listBrandAgentsTool(mockClient as unknown as any);
   });
 
   describe("Tool Configuration", () => {
@@ -38,13 +46,13 @@ describe("brand-agent/list Tool", () => {
     it("should have proper parameter schema", () => {
       const params = tool.parameters;
       expect(params).toBeDefined();
-      
+
       // Should allow optional where parameter
       const result = params.safeParse({});
       expect(result.success).toBe(true);
-      
-      const resultWithWhere = params.safeParse({ 
-        where: { name: "Test", customerId: 123 } 
+
+      const resultWithWhere = params.safeParse({
+        where: { customerId: 123, name: "Test" },
       });
       expect(resultWithWhere.success).toBe(true);
     });
@@ -57,7 +65,10 @@ describe("brand-agent/list Tool", () => {
 
       await tool.execute({}, context);
 
-      expect(mockClient.listBrandAgents).toHaveBeenCalledWith("session_key", undefined);
+      expect(mockClient.listBrandAgents).toHaveBeenCalledWith(
+        "session_key",
+        undefined,
+      );
     });
 
     it("should fall back to environment API key", async () => {
@@ -67,7 +78,10 @@ describe("brand-agent/list Tool", () => {
 
       try {
         await tool.execute({}, {});
-        expect(mockClient.listBrandAgents).toHaveBeenCalledWith("env_key", undefined);
+        expect(mockClient.listBrandAgents).toHaveBeenCalledWith(
+          "env_key",
+          undefined,
+        );
       } finally {
         if (originalEnv !== undefined) {
           process.env.SCOPE3_API_KEY = originalEnv;
@@ -83,7 +97,7 @@ describe("brand-agent/list Tool", () => {
 
       try {
         await expect(tool.execute({}, {})).rejects.toThrow(
-          "Authentication required. Please set the SCOPE3_API_KEY"
+          "Authentication required. Please set the SCOPE3_API_KEY",
         );
       } finally {
         if (originalEnv !== undefined) {
@@ -102,26 +116,30 @@ describe("brand-agent/list Tool", () => {
       // Setup mock to return multiple agents
       const mockAgents = [
         brandAgentFixtures.enhancedBrandAgent(),
-        { ...brandAgentFixtures.graphqlBrandAgent(), id: "ba_456", name: "Second Brand" }
+        {
+          ...brandAgentFixtures.graphqlBrandAgent(),
+          id: "ba_456",
+          name: "Second Brand",
+        },
       ];
       mockClient.listBrandAgents.mockResolvedValue(mockAgents);
 
       const result = await tool.execute({}, {});
-      
+
       // Validate structured response format
       const response = BrandAgentValidators.validateListResponse(result, 2);
-      
+
       // Verify message contains useful information
       expect(response.message).toContain("Found 2 brand agents");
       expect(response.message).toContain("Enhanced Test Brand");
       expect(response.message).toContain("Second Brand");
       expect(response.message).toContain("💡 **Tip:**");
-      
+
       // Verify data structure
       expect(response.data).toBeDefined();
       expect(response.data!.brandAgents).toHaveLength(2);
       expect(response.data!.count).toBe(2);
-      
+
       // Verify each brand agent in data
       if (Array.isArray(response.data!.brandAgents)) {
         response.data!.brandAgents.forEach((agent) => {
@@ -135,13 +153,13 @@ describe("brand-agent/list Tool", () => {
       mockClient.listBrandAgents.mockResolvedValue(mockAgents);
 
       const result = await tool.execute({}, {});
-      
+
       const response = BrandAgentValidators.validateListResponse(result, 1);
-      
+
       // Message should use singular form
       expect(response.message).toContain("Found 1 brand agent");
       expect(response.message).not.toContain("1 brand agents"); // Should not be plural
-      
+
       expect(response.data!.count).toBe(1);
       expect(response.data!.brandAgents).toHaveLength(1);
     });
@@ -150,9 +168,9 @@ describe("brand-agent/list Tool", () => {
       mockClient.listBrandAgents.mockResolvedValue([]);
 
       const result = await tool.execute({}, {});
-      
+
       const response = BrandAgentValidators.validateListResponse(result, 0);
-      
+
       expect(response.message).toContain("No brand agents found");
       expect(response.message).toContain("Create your first brand agent");
       expect(response.data!.count).toBe(0);
@@ -162,17 +180,17 @@ describe("brand-agent/list Tool", () => {
     it("should include detailed information in messages", async () => {
       const mockAgent = {
         ...brandAgentFixtures.enhancedBrandAgent(),
-        description: "Test brand description",
-        customerId: 12345,
         createdAt: "2024-01-15T10:00:00Z",
-        updatedAt: "2024-02-01T15:30:00Z"
+        customerId: 12345,
+        description: "Test brand description",
+        updatedAt: "2024-02-01T15:30:00Z",
       };
       mockClient.listBrandAgents.mockResolvedValue([mockAgent]);
 
       const result = await tool.execute({}, {});
-      
+
       const response = expectLegacyCompatibleResponse(result);
-      
+
       // Should include key details in human-readable format
       expect(response.message).toContain(mockAgent.name);
       expect(response.message).toContain(mockAgent.id);
@@ -194,7 +212,7 @@ describe("brand-agent/list Tool", () => {
 
       expect(mockClient.listBrandAgents).toHaveBeenCalledWith(
         serviceTestData.validApiKey,
-        { name: { contains: "Test Brand" } }
+        { name: { contains: "Test Brand" } },
       );
     });
 
@@ -203,21 +221,24 @@ describe("brand-agent/list Tool", () => {
 
       expect(mockClient.listBrandAgents).toHaveBeenCalledWith(
         serviceTestData.validApiKey,
-        { customerId: { equals: 12345 } }
+        { customerId: { equals: 12345 } },
       );
     });
 
     it("should apply both filters when provided", async () => {
-      await tool.execute({ 
-        where: { name: "Test", customerId: 12345 } 
-      }, {});
+      await tool.execute(
+        {
+          where: { customerId: 12345, name: "Test" },
+        },
+        {},
+      );
 
       expect(mockClient.listBrandAgents).toHaveBeenCalledWith(
         serviceTestData.validApiKey,
-        { 
+        {
+          customerId: { equals: 12345 },
           name: { contains: "Test" },
-          customerId: { equals: 12345 }
-        }
+        },
       );
     });
 
@@ -226,7 +247,7 @@ describe("brand-agent/list Tool", () => {
 
       expect(mockClient.listBrandAgents).toHaveBeenCalledWith(
         serviceTestData.validApiKey,
-        undefined
+        undefined,
       );
     });
   });
@@ -241,7 +262,7 @@ describe("brand-agent/list Tool", () => {
       mockClient.listBrandAgents.mockRejectedValue(new Error(errorMessage));
 
       await expect(tool.execute({}, {})).rejects.toThrow(
-        "Failed to fetch brand agents: GraphQL error: Service unavailable"
+        "Failed to fetch brand agents: GraphQL error: Service unavailable",
       );
     });
 
@@ -249,7 +270,7 @@ describe("brand-agent/list Tool", () => {
       serviceLevelScenarios.authenticationError(mockClient);
 
       await expect(tool.execute({}, {})).rejects.toThrow(
-        "Failed to fetch brand agents: Authentication failed"
+        "Failed to fetch brand agents: Authentication failed",
       );
     });
 
@@ -258,7 +279,7 @@ describe("brand-agent/list Tool", () => {
       mockClient.listBrandAgents.mockRejectedValue(networkError);
 
       await expect(tool.execute({}, {})).rejects.toThrow(
-        "Failed to fetch brand agents: Network timeout"
+        "Failed to fetch brand agents: Network timeout",
       );
     });
   });
@@ -285,7 +306,7 @@ describe("brand-agent/list Tool", () => {
       // Legacy clients should still work - they'll get message and success
       expect(response.message).toBeDefined();
       expect(response.success).toBeDefined();
-      
+
       // New clients get structured data too
       expect(response.data).toBeDefined();
     });
@@ -302,7 +323,7 @@ describe("brand-agent/list Tool", () => {
       expect(response.data.brandAgents[0].id).toBe(mockAgents[0].id);
       expect(response.data.brandAgents[0].name).toBe(mockAgents[0].name);
       expect(response.data.count).toBe(1);
-      
+
       // While still getting human-readable messages
       expect(response.message).toContain("Found 1 brand agent");
     });
@@ -318,7 +339,7 @@ describe("brand-agent/list Tool", () => {
       const largeAgentList = Array.from({ length: 100 }, (_, i) => ({
         ...brandAgentFixtures.enhancedBrandAgent(),
         id: `ba_large_${i}`,
-        name: `Brand Agent ${i + 1}`
+        name: `Brand Agent ${i + 1}`,
       }));
       mockClient.listBrandAgents.mockResolvedValue(largeAgentList);
 
@@ -327,7 +348,7 @@ describe("brand-agent/list Tool", () => {
       const duration = Date.now() - startTime;
 
       const response = BrandAgentValidators.validateListResponse(result, 100);
-      
+
       // Should complete quickly even with large datasets
       expect(duration).toBeLessThan(1000); // 1 second max
       expect(response.data!.count).toBe(100);

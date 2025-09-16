@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
+
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 /**
@@ -152,42 +153,42 @@ ${statusIcon} ${assignment.campaignName} (${assignment.campaignId})`;
 • Changes processed through appropriate ${updatedCreative.format.type} provider`;
 
       return createMCPResponse({
-        message: response,
-        success: true,
         data: {
-          updatedCreative,
           configuration: {
             creativeId: args.creativeId,
+            updateDate: new Date().toISOString(),
             updates: args.updates,
-            updateDate: new Date().toISOString()
-          },
-          updateSummary: {
-            nameChanged: !!name,
-            statusChanged: !!status,
-            contentChanged: !!content,
-            domainsChanged: !!advertiserDomains,
-            versionBumped: true
           },
           currentState: {
-            creativeId: updatedCreative.creativeId,
-            creativeName: updatedCreative.creativeName,
-            version: updatedCreative.version,
-            status: updatedCreative.status,
-            buyerAgentId: updatedCreative.buyerAgentId,
-            format: updatedCreative.format,
             assemblyMethod: updatedCreative.assemblyMethod,
             assetIds: updatedCreative.assetIds || [],
-            campaignAssignments: updatedCreative.campaignAssignments || []
+            buyerAgentId: updatedCreative.buyerAgentId,
+            campaignAssignments: updatedCreative.campaignAssignments || [],
+            creativeId: updatedCreative.creativeId,
+            creativeName: updatedCreative.creativeName,
+            format: updatedCreative.format,
+            status: updatedCreative.status,
+            version: updatedCreative.version,
           },
           metadata: {
             action: "update",
             creativeType: "creative",
+            lastModifiedBy: updatedCreative.lastModifiedBy,
+            orchestrationComplete: true,
             preservesCampaignAssignments: true,
             safeForActiveCampaigns: true,
-            lastModifiedBy: updatedCreative.lastModifiedBy,
-            orchestrationComplete: true
-          }
-        }
+          },
+          updatedCreative,
+          updateSummary: {
+            contentChanged: !!content,
+            domainsChanged: !!advertiserDomains,
+            nameChanged: !!name,
+            statusChanged: !!status,
+            versionBumped: true,
+          },
+        },
+        message: response,
+        success: true,
       });
     } catch (error) {
       throw new Error(

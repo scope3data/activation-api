@@ -16,12 +16,12 @@ const _mockContext: MCPToolExecuteContext = {
 };
 
 const _sampleBrandStoryResponse = {
-  id: "bs_123",
-  name: "Test Brand Story",
   brandAgentId: "ba_456",
   content: "This is a test brand story content.",
-  status: "active",
   createdAt: "2024-01-15T10:30:00Z",
+  id: "bs_123",
+  name: "Test Brand Story",
+  status: "active",
   updatedAt: "2024-01-15T10:30:00Z",
 };
 

@@ -173,34 +173,37 @@ export const updateCustomSignalTool = (client: Scope3ApiClient) => ({
       summary += `• **Updated:** ${new Date(signal.updatedAt).toLocaleString()}\n`;
 
       return createMCPResponse({
-        message: summary,
-        success: true,
         data: {
-          signal,
-          previousValues: {
-            name: currentSignal.name,
-            description: currentSignal.description,
-            clusters: currentSignal.clusters,
-          },
           changesApplied: {
-            nameChanged: args.name !== undefined && args.name !== currentSignal.name,
-            descriptionChanged: args.description !== undefined && args.description !== currentSignal.description,
             clustersChanged: args.clusters !== undefined,
+            descriptionChanged:
+              args.description !== undefined &&
+              args.description !== currentSignal.description,
+            nameChanged:
+              args.name !== undefined && args.name !== currentSignal.name,
           },
           configuration: {
-            signalId: args.signalId,
-            name: args.name,
-            description: args.description,
             clusters: args.clusters,
+            description: args.description,
+            name: args.name,
+            signalId: args.signalId,
           },
           metadata: {
+            gdprCompliantClusters: signal.clusters.filter((c) => c.gdpr).length,
             isComposite: signal.key.includes(","),
-            keyTypes: signal.key.split(",").map(k => k.trim()),
+            keyTypes: signal.key.split(",").map((k) => k.trim()),
+            regions: [...new Set(signal.clusters.map((c) => c.region))],
             totalClusters: signal.clusters.length,
-            regions: [...new Set(signal.clusters.map(c => c.region))],
-            gdprCompliantClusters: signal.clusters.filter(c => c.gdpr).length,
           },
+          previousValues: {
+            clusters: currentSignal.clusters,
+            description: currentSignal.description,
+            name: currentSignal.name,
+          },
+          signal,
         },
+        message: summary,
+        success: true,
       });
     } catch (error) {
       throw new Error(

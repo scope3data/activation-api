@@ -107,35 +107,35 @@ export const unregisterSignalsAgentTool = (client: Scope3ApiClient) => ({
       summary += `The signals agent has been successfully unregistered and access has been revoked.`;
 
       return createMCPResponse({
-        message: summary,
-        success: true,
         data: {
-          unregisteredAgent: agent,
           configuration: {
             agentId: args.agentId,
-            unregistrationTime: new Date().toISOString()
-          },
-          revokedAccess: {
-            segmentCreation: false,
-            segmentUpdates: false,
-            segmentDeletion: false,
-            apiAccess: false
-          },
-          preservation: {
-            existingSegmentsPreserved: true,
-            activityHistoryPreserved: true,
-            auditTrailAvailable: true
+            unregistrationTime: new Date().toISOString(),
           },
           metadata: {
+            action: "unregister",
             agentId: args.agentId,
             agentName: agent.name,
             brandAgentId: agent.brandAgentId,
             previousStatus: agent.status,
-            action: "unregister",
+            reregistrationPossible: true,
             status: "revoked",
-            reregistrationPossible: true
-          }
-        }
+          },
+          preservation: {
+            activityHistoryPreserved: true,
+            auditTrailAvailable: true,
+            existingSegmentsPreserved: true,
+          },
+          revokedAccess: {
+            apiAccess: false,
+            segmentCreation: false,
+            segmentDeletion: false,
+            segmentUpdates: false,
+          },
+          unregisteredAgent: agent,
+        },
+        message: summary,
+        success: true,
       });
     } catch (error) {
       return createErrorResponse("Failed to unregister signals agent", error);

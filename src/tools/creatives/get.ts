@@ -121,36 +121,45 @@ export const creativeGetTool = (client: Scope3ApiClient) => ({
       summary += `• Revise creative: Use creative/revise for modifications`;
 
       return createMCPResponse({
-        message: summary,
-        success: true,
         data: {
-          creative,
-          metadata: {
-            creativeId: args.creativeId,
-            hasAssets: creative.assetIds.length > 0,
-            assetCount: creative.assetIds.length,
-            hasCampaignAssignments: (creative.campaignAssignments?.length || 0) > 0,
-            campaignAssignmentCount: creative.campaignAssignments?.length || 0,
-            activeCampaignAssignments: creative.campaignAssignments?.filter(a => a.isActive).length || 0,
-            hasValidation: !!creative.assetValidation,
-            allAssetsValid: creative.assetValidation?.allAssetsValid || false,
-            invalidAssetCount: creative.assetValidation?.invalidAssets?.length || 0,
+          assignments: {
+            activeCampaigns:
+              creative.campaignAssignments?.filter((a) => a.isActive) || [],
+            campaigns: creative.campaignAssignments || [],
+            publishersSyncedTo: [
+              ...new Set(
+                creative.campaignAssignments?.flatMap(
+                  (a) => a.publishersSynced || [],
+                ) || [],
+              ),
+            ],
           },
           content: {
-            format: creative.format,
+            assemblyMethod: creative.assemblyMethod,
             assetIds: creative.assetIds,
             content: creative.content,
-            assemblyMethod: creative.assemblyMethod,
+            format: creative.format,
+          },
+          creative,
+          metadata: {
+            activeCampaignAssignments:
+              creative.campaignAssignments?.filter((a) => a.isActive).length ||
+              0,
+            allAssetsValid: creative.assetValidation?.allAssetsValid || false,
+            assetCount: creative.assetIds.length,
+            campaignAssignmentCount: creative.campaignAssignments?.length || 0,
+            creativeId: args.creativeId,
+            hasAssets: creative.assetIds.length > 0,
+            hasCampaignAssignments:
+              (creative.campaignAssignments?.length || 0) > 0,
+            hasValidation: !!creative.assetValidation,
+            invalidAssetCount:
+              creative.assetValidation?.invalidAssets?.length || 0,
           },
           validation: creative.assetValidation,
-          assignments: {
-            campaigns: creative.campaignAssignments || [],
-            activeCampaigns: creative.campaignAssignments?.filter(a => a.isActive) || [],
-            publishersSyncedTo: [...new Set(
-              creative.campaignAssignments?.flatMap(a => a.publishersSynced || []) || []
-            )],
-          },
         },
+        message: summary,
+        success: true,
       });
     } catch (error) {
       throw new Error(

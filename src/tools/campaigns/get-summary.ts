@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
-import { createMCPResponse } from "../../utils/error-handling.js";
 import type {
   GetCampaignSummaryParams,
   MCPToolExecuteContext,
@@ -17,6 +16,8 @@ import type {
   DeliveryData,
   TopTactic,
 } from "../../types/reporting.js";
+
+import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const getCampaignSummaryTool = (client: Scope3ApiClient) => ({
   annotations: {
@@ -97,18 +98,18 @@ export const getCampaignSummaryTool = (client: Scope3ApiClient) => ({
       );
 
       return createMCPResponse({
-        message: summary.textSummary,
-        success: true,
         data: {
-          campaignId: args.campaignId,
-          summary,
-          campaign,
           brandAgent,
+          campaign,
+          campaignId: args.campaignId,
           deliveryData,
+          includeCharts: args.includeCharts || true,
+          summary,
           tacticBreakdown,
           verbosity: args.verbosity || "detailed",
-          includeCharts: args.includeCharts || true,
         },
+        message: summary.textSummary,
+        success: true,
       });
     } catch (error) {
       throw new Error(

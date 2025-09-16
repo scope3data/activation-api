@@ -361,7 +361,7 @@ describe("Scope3ApiClient - Service Level Contract", () => {
         expect(result).toHaveProperty("customerId");
         expect(result).toHaveProperty("createdAt");
         expect(result).toHaveProperty("updatedAt");
-        
+
         // Validate using structured response validators
         BrandAgentValidators.validateBrandAgent(result);
       });

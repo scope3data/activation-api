@@ -10,11 +10,11 @@ import type {
   BrandAgentCreativeInput,
   BrandAgentCreativesData,
   BrandAgentCreativeUpdateInput,
+  BrandAgentData,
   BrandAgentInput,
   BrandAgentsData,
   BrandAgentUpdateInput,
   AgentWhereInput as BrandAgentWhereInput,
-  BrandAgentData,
   BrandStandardsAgent,
   BrandStandardsAgentInput,
   BrandStandardsAgentsData,
@@ -434,8 +434,8 @@ export class Scope3ApiClient {
       body: JSON.stringify({
         query: CREATE_BRAND_AGENT_MUTATION,
         variables: {
-          name: input.name,
           description: input.description,
+          name: input.name,
         },
       }),
       headers: {
@@ -2394,19 +2394,26 @@ export class Scope3ApiClient {
     // BigQuery enhancement - add customer-scoped fields when available
     try {
       // Get customer ID from the first agent (all agents should have same customerId)
-      const customerId = graphqlAgents.length > 0 ? Number(graphqlAgents[0].customerId) : 1;
-      
+      const customerId =
+        graphqlAgents.length > 0 ? Number(graphqlAgents[0].customerId) : 1;
+
       // Bulk query: Get all extensions for this customer in one query
-      const extensionsMap = await this.brandAgentService.getBrandAgentExtensionsByCustomer(customerId);
-      
+      const extensionsMap =
+        await this.brandAgentService.getBrandAgentExtensionsByCustomer(
+          customerId,
+        );
+
       // In-memory join: Enhance each GraphQL agent with BigQuery extensions
       const enhancedAgents: BrandAgent[] = graphqlAgents.map((agent) => {
         const extension = extensionsMap.get(String(agent.id));
-        return this.brandAgentService.enhanceAgentWithExtensions(agent as unknown as Record<string, unknown>, extension);
+        return this.brandAgentService.enhanceAgentWithExtensions(
+          agent as unknown as Record<string, unknown>,
+          extension,
+        );
       });
 
       console.log(
-        `[listBrandAgents] Enhanced ${enhancedAgents.length} agents with BigQuery data using 1 bulk query (instead of ${graphqlAgents.length} individual queries)`
+        `[listBrandAgents] Enhanced ${enhancedAgents.length} agents with BigQuery data using 1 bulk query (instead of ${graphqlAgents.length} individual queries)`,
       );
 
       return enhancedAgents;
@@ -3154,9 +3161,9 @@ export class Scope3ApiClient {
       body: JSON.stringify({
         query: UPDATE_BRAND_AGENT_MUTATION,
         variables: {
+          description: input.description,
           id: parseInt(id),
           name: input.name,
-          description: input.description,
         },
       }),
       headers: {

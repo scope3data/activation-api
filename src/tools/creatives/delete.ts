@@ -108,32 +108,32 @@ export const creativeDeleteTool = (client: Scope3ApiClient) => ({
       summary += `• Update campaign creative assignments as necessary`;
 
       return createMCPResponse({
-        message: summary,
-        success: true,
         data: {
-          deletedCreative: {
-            id: creative.creativeId,
-            name: creative.creativeName,
-            status: creative.status,
-            buyerAgentId: creative.buyerAgentId,
-            assetCount: creative.assetIds.length,
-            campaignAssignments: creative.campaignAssignments || [],
+          affectedCampaigns: {
+            active: activeCampaigns,
+            all: creative.campaignAssignments || [],
           },
           configuration: {
             creativeId: args.creativeId,
             force: args.force,
           },
+          deletedCreative: {
+            assetCount: creative.assetIds.length,
+            buyerAgentId: creative.buyerAgentId,
+            campaignAssignments: creative.campaignAssignments || [],
+            id: creative.creativeId,
+            name: creative.creativeName,
+            status: creative.status,
+          },
           impact: {
             activeCampaignsAffected: activeCampaigns.length,
-            totalCampaignsAffected: creative.campaignAssignments?.length || 0,
             assetsRemoved: creative.assetIds.length,
             forceDeleted: args.force && activeCampaigns.length > 0,
-          },
-          affectedCampaigns: {
-            active: activeCampaigns,
-            all: creative.campaignAssignments || [],
+            totalCampaignsAffected: creative.campaignAssignments?.length || 0,
           },
         },
+        message: summary,
+        success: true,
       });
     } catch (error) {
       throw new Error(

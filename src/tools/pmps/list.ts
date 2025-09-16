@@ -43,23 +43,23 @@ export const listPMPsTool = (client: Scope3ApiClient) =>
         if (pmps.length === 0) {
           const message = `## No PMPs Found\n\nNo Private Marketplace deals found for brand agent \`${brand_agent_id}\`.\n\n💡 **Tip:** Use \`create_brand_agent_pmp\` to create your first PMP deal.`;
           return createMCPResponse({
-            message,
-            success: true,
             data: {
               brandAgentId: brand_agent_id,
-              pmps: [],
               count: 0,
+              pmps: [],
               summary: {
-                totalPmps: 0,
-                activePmps: 0,
-                pausedPmps: 0,
-                draftPmps: 0,
-                totalDealIds: 0,
                 activeDealIds: 0,
+                activePmps: 0,
+                draftPmps: 0,
+                pausedPmps: 0,
                 pendingDealIds: 0,
                 sspList: [],
+                totalDealIds: 0,
+                totalPmps: 0,
               },
             },
+            message,
+            success: true,
           });
         }
 
@@ -116,40 +116,44 @@ export const listPMPsTool = (client: Scope3ApiClient) =>
           `*Use \`update_brand_agent_pmp\` to modify existing PMPs or \`create_brand_agent_pmp\` to create new ones.*`;
 
         const activeDealIds = pmps.reduce(
-          (sum, pmp) => sum + pmp.dealIds.filter(d => d.status === "active").length,
+          (sum, pmp) =>
+            sum + pmp.dealIds.filter((d) => d.status === "active").length,
           0,
         );
         const pendingDealIds = pmps.reduce(
-          (sum, pmp) => sum + pmp.dealIds.filter(d => d.status === "pending").length,
+          (sum, pmp) =>
+            sum + pmp.dealIds.filter((d) => d.status === "pending").length,
           0,
         );
-        const allSsps = [...new Set(pmps.flatMap(pmp => pmp.dealIds.map(d => d.ssp)))];
-        const pausedPmps = pmps.filter(p => p.status === "paused").length;
-        const draftPmps = pmps.filter(p => p.status === "draft").length;
+        const allSsps = [
+          ...new Set(pmps.flatMap((pmp) => pmp.dealIds.map((d) => d.ssp))),
+        ];
+        const pausedPmps = pmps.filter((p) => p.status === "paused").length;
+        const draftPmps = pmps.filter((p) => p.status === "draft").length;
 
         return createMCPResponse({
-          message: response,
-          success: true,
           data: {
             brandAgentId: brand_agent_id,
-            pmps,
             count: pmps.length,
+            groupedByStatus: {
+              active: pmps.filter((p) => p.status === "active"),
+              draft: pmps.filter((p) => p.status === "draft"),
+              paused: pmps.filter((p) => p.status === "paused"),
+            },
+            pmps,
             summary: {
-              totalPmps: pmps.length,
-              activePmps: totalActive,
-              pausedPmps,
-              draftPmps,
-              totalDealIds,
               activeDealIds,
+              activePmps: totalActive,
+              draftPmps,
+              pausedPmps,
               pendingDealIds,
               sspList: allSsps,
-            },
-            groupedByStatus: {
-              active: pmps.filter(p => p.status === "active"),
-              paused: pmps.filter(p => p.status === "paused"),
-              draft: pmps.filter(p => p.status === "draft"),
+              totalDealIds,
+              totalPmps: pmps.length,
             },
           },
+          message: response,
+          success: true,
         });
       } catch (error) {
         throw new Error(

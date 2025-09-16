@@ -175,10 +175,7 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
       summary += `\n✨ **Tactic is ready for campaign activation!**`;
 
       return createMCPResponse({
-        message: summary,
-        success: true,
         data: {
-          tactic,
           configuration: {
             brandStoryId: args.brandStoryId,
             budgetAllocation: args.budgetAllocation,
@@ -189,16 +186,21 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
             name: args.name,
             signalId: args.signalId,
           },
-          mediaProduct: product,
           effectivePricing: tactic.effectivePricing,
+          mediaProduct: product,
           projectedMetrics: {
+            effectiveCpm: tactic.effectivePricing.totalCpm,
             impressions: Math.floor(
-              (tactic.budgetAllocation.amount / tactic.effectivePricing.totalCpm) * 1000,
+              (tactic.budgetAllocation.amount /
+                tactic.effectivePricing.totalCpm) *
+                1000,
             ),
             totalBudget: tactic.budgetAllocation.amount,
-            effectiveCpm: tactic.effectivePricing.totalCpm,
           },
+          tactic,
         },
+        message: summary,
+        success: true,
       });
     } catch (error) {
       throw new Error(

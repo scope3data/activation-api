@@ -97,17 +97,17 @@ export const getProductsTool = () => ({
           : `🔍 **No Sales Agents Found**\n\nNo MCP-enabled sales agents are currently available.`;
 
         return createMCPResponse({
+          data: {
+            agentsQueried: 0,
+            customerId: args.customer_id,
+            failedAgents: 0,
+            products: [],
+            query: args.promoted_offering,
+            successfulAgents: 0,
+            totalProducts: 0,
+          },
           message,
           success: true,
-          data: {
-            products: [],
-            totalProducts: 0,
-            agentsQueried: 0,
-            successfulAgents: 0,
-            failedAgents: 0,
-            customerId: args.customer_id,
-            query: args.promoted_offering,
-          },
         });
       }
 
@@ -281,25 +281,19 @@ export const getProductsTool = () => ({
       summary += `• Consider using create_inventory_option to set up targeting strategies`;
 
       return createMCPResponse({
-        message: summary,
-        success: true,
         data: {
-          products: allProducts,
-          totalProducts: allProducts.length,
+          agentResponses: successful,
           agentsQueried: salesAgents.length,
-          successfulAgents: successful.length,
-          failedAgents: failed.length,
-          query: args.promoted_offering,
           brief: args.brief,
           duration,
-          summary: {
-            guaranteedProducts,
-            nonGuaranteedProducts,
-            uniquePublishers,
-            availableFormats,
-            priceRange,
-          },
+          failedAgents: failed.length,
+          failures: failed.map((f) => ({
+            agentName: f.agent.name,
+            error: f.error,
+            principalId: f.agent.principal_id,
+          })),
           filters: {
+            customer_id: args.customer_id,
             delivery_type: args.delivery_type,
             format_ids: args.format_ids,
             format_types: args.format_types,
@@ -309,15 +303,21 @@ export const getProductsTool = () => ({
             min_cpm: args.min_cpm,
             publisher_ids: args.publisher_ids,
             standard_formats_only: args.standard_formats_only,
-            customer_id: args.customer_id,
           },
-          agentResponses: successful,
-          failures: failed.map((f) => ({
-            agentName: f.agent.name,
-            principalId: f.agent.principal_id,
-            error: f.error,
-          })),
+          products: allProducts,
+          query: args.promoted_offering,
+          successfulAgents: successful.length,
+          summary: {
+            availableFormats,
+            guaranteedProducts,
+            nonGuaranteedProducts,
+            priceRange,
+            uniquePublishers,
+          },
+          totalProducts: allProducts.length,
         },
+        message: summary,
+        success: true,
       });
     } catch (error) {
       throw new Error(

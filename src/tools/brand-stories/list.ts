@@ -104,24 +104,28 @@ export const listBrandAgentBrandStoriesTool = (client: Scope3ApiClient) => ({
       }
 
       return createMCPResponse({
-        message: summary,
-        success: true,
         data: {
           brandAgentId: args.brandAgentId,
           brandAgentName,
           brandStories,
           count: brandStories.length,
           statistics: {
+            totalModels: brandStories.reduce(
+              (sum, story) => sum + story.models.length,
+              0,
+            ),
             totalStories: brandStories.length,
-            withPrimaryModel: brandStories.filter(story => 
-              story.models.some(model => model.status === "PRIMARY")
+            withoutPrimaryModel: brandStories.filter(
+              (story) =>
+                !story.models.some((model) => model.status === "PRIMARY"),
             ).length,
-            withoutPrimaryModel: brandStories.filter(story => 
-              !story.models.some(model => model.status === "PRIMARY")
+            withPrimaryModel: brandStories.filter((story) =>
+              story.models.some((model) => model.status === "PRIMARY"),
             ).length,
-            totalModels: brandStories.reduce((sum, story) => sum + story.models.length, 0),
           },
         },
+        message: summary,
+        success: true,
       });
     } catch (error) {
       throw new Error(

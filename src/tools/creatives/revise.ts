@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { PublisherSyncResult } from "../../types/creative.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
+
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 /**
@@ -221,42 +222,53 @@ Creative revised but not re-synced. Use creative/sync_publishers to submit revis
       }
 
       return createMCPResponse({
-        message: response,
-        success: true,
         data: {
-          creative,
-          publisherApproval,
           configuration: {
+            autoResync: args.autoResync !== false,
             creativeId: args.creativeId,
             publisherId: args.publisherId,
-            autoResync: args.autoResync !== false,
+            revisionDate: new Date().toISOString(),
             revisionNotes: args.revisionNotes,
             revisions: args.revisions,
-            revisionDate: new Date().toISOString()
           },
-          revisionSummary: {
-            changes,
-            previousStatus: publisherApproval.approvalStatus,
-            rejectionReason: publisherApproval.rejectionReason,
-            requestedChanges: publisherApproval.requestedChanges || []
-          },
-          resyncResults: resyncResults ? {
-            attempted: args.autoResync !== false,
-            results: resyncResults,
-            successful: resyncResults.length > 0 && resyncResults[0].syncStatus === "success",
-            newApprovalStatus: resyncResults.length > 0 ? resyncResults[0].approvalStatus : null
-          } : {
-            attempted: false,
-            manualSyncRequired: true
-          },
+          creative,
           metadata: {
             action: "revise",
             creativeType: "creative",
             publisherName: publisherApproval.publisherName,
+            requiresFollowUp:
+              args.autoResync === false ||
+              (resyncResults &&
+                resyncResults.length > 0 &&
+                resyncResults[0].approvalStatus === "pending"),
             wasAlreadyApproved: false, // TODO: Fix approval status type check
-            requiresFollowUp: args.autoResync === false || (resyncResults && resyncResults.length > 0 && resyncResults[0].approvalStatus === "pending")
-          }
-        }
+          },
+          publisherApproval,
+          resyncResults: resyncResults
+            ? {
+                attempted: args.autoResync !== false,
+                newApprovalStatus:
+                  resyncResults.length > 0
+                    ? resyncResults[0].approvalStatus
+                    : null,
+                results: resyncResults,
+                successful:
+                  resyncResults.length > 0 &&
+                  resyncResults[0].syncStatus === "success",
+              }
+            : {
+                attempted: false,
+                manualSyncRequired: true,
+              },
+          revisionSummary: {
+            changes,
+            previousStatus: publisherApproval.approvalStatus,
+            rejectionReason: publisherApproval.rejectionReason,
+            requestedChanges: publisherApproval.requestedChanges || [],
+          },
+        },
+        message: response,
+        success: true,
       });
     } catch (error) {
       throw new Error(

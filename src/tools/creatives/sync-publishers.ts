@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
+
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 /**
@@ -142,38 +143,53 @@ ${args.preApproval ? "✅ **Pre-Approval Request**" : ""}
       }
 
       return createMCPResponse({
-        message: response,
-        success: true,
         data: {
-          syncResults,
           configuration: {
-            creativeId: args.creativeId,
             campaignId: args.campaignId,
+            creativeId: args.creativeId,
             preApproval: args.preApproval || false,
             publisherIds: args.publisherIds,
-            syncDate: new Date().toISOString()
-          },
-          summary: {
-            publishersTargeted: args.publisherIds.length,
-            successfulSyncs: syncResults.filter((r) => r.syncStatus === "success").length,
-            failedSyncs: syncResults.filter((r) => r.syncStatus === "failed").length,
-            pendingSyncs: syncResults.filter((r) => r.syncStatus === "pending").length,
-            autoApproved: autoApproved.length,
-            pendingReview: pendingReview.length,
-            failed: failed.length
-          },
-          publisherBreakdown: {
-            autoApproved: autoApproved.map(r => ({ publisherId: r.publisherId, publisherName: r.publisherName })),
-            pendingReview: pendingReview.map(r => ({ publisherId: r.publisherId, publisherName: r.publisherName, estimatedReviewTime: r.estimatedReviewTime })),
-            failed: failed.map(r => ({ publisherId: r.publisherId, publisherName: r.publisherName, error: r.error }))
+            syncDate: new Date().toISOString(),
           },
           metadata: {
             action: "sync-publishers",
             creativeType: "creative",
+            readyForCampaigns: autoApproved.length > 0,
             requiresFollowUp: pendingReview.length > 0 || failed.length > 0,
-            readyForCampaigns: autoApproved.length > 0
-          }
-        }
+          },
+          publisherBreakdown: {
+            autoApproved: autoApproved.map((r) => ({
+              publisherId: r.publisherId,
+              publisherName: r.publisherName,
+            })),
+            failed: failed.map((r) => ({
+              error: r.error,
+              publisherId: r.publisherId,
+              publisherName: r.publisherName,
+            })),
+            pendingReview: pendingReview.map((r) => ({
+              estimatedReviewTime: r.estimatedReviewTime,
+              publisherId: r.publisherId,
+              publisherName: r.publisherName,
+            })),
+          },
+          summary: {
+            autoApproved: autoApproved.length,
+            failed: failed.length,
+            failedSyncs: syncResults.filter((r) => r.syncStatus === "failed")
+              .length,
+            pendingReview: pendingReview.length,
+            pendingSyncs: syncResults.filter((r) => r.syncStatus === "pending")
+              .length,
+            publishersTargeted: args.publisherIds.length,
+            successfulSyncs: syncResults.filter(
+              (r) => r.syncStatus === "success",
+            ).length,
+          },
+          syncResults,
+        },
+        message: response,
+        success: true,
       });
     } catch (error) {
       throw new Error(

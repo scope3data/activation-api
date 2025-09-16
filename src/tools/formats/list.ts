@@ -236,33 +236,48 @@ creative/create format.type="creative_agent" format.formatId="dynamic_product"
 • Check capabilities before choosing assembly methods`;
 
       return createMCPResponse({
-        message: response,
-        success: true,
         data: {
-          formats,
-          summary: {
-            totalFormats: formats.adcp_formats.length + formats.publisher_formats.length + formats.creative_agent_formats.length,
-            adcpFormats: formats.adcp_formats.length,
-            publisherFormats: formats.publisher_formats.length,
-            creativeAgentFormats: formats.creative_agent_formats.length,
-            assemblyCapable: [
-              ...formats.adcp_formats.filter(f => f.requirements.assemblyCapable),
-              ...formats.publisher_formats.filter(f => f.requirements.assemblyCapable),
-              ...formats.creative_agent_formats.filter(f => f.requirements.assemblyCapable)
-            ].length,
-            thirdPartyTagCapable: [
-              ...formats.adcp_formats.filter(f => f.requirements.acceptsThirdPartyTags),
-              ...formats.publisher_formats.filter(f => f.requirements.acceptsThirdPartyTags),
-              ...formats.creative_agent_formats.filter(f => f.requirements.acceptsThirdPartyTags)
-            ].length,
-          },
           filters: {
             acceptsThirdPartyTags: args.acceptsThirdPartyTags,
             assemblyCapable: args.assemblyCapable,
             search: args.search,
             type: args.type,
           },
+          formats,
+          summary: {
+            adcpFormats: formats.adcp_formats.length,
+            assemblyCapable: [
+              ...formats.adcp_formats.filter(
+                (f) => f.requirements.assemblyCapable,
+              ),
+              ...formats.publisher_formats.filter(
+                (f) => f.requirements.assemblyCapable,
+              ),
+              ...formats.creative_agent_formats.filter(
+                (f) => f.requirements.assemblyCapable,
+              ),
+            ].length,
+            creativeAgentFormats: formats.creative_agent_formats.length,
+            publisherFormats: formats.publisher_formats.length,
+            thirdPartyTagCapable: [
+              ...formats.adcp_formats.filter(
+                (f) => f.requirements.acceptsThirdPartyTags,
+              ),
+              ...formats.publisher_formats.filter(
+                (f) => f.requirements.acceptsThirdPartyTags,
+              ),
+              ...formats.creative_agent_formats.filter(
+                (f) => f.requirements.acceptsThirdPartyTags,
+              ),
+            ].length,
+            totalFormats:
+              formats.adcp_formats.length +
+              formats.publisher_formats.length +
+              formats.creative_agent_formats.length,
+          },
         },
+        message: response,
+        success: true,
       });
     } catch (error) {
       throw new Error(

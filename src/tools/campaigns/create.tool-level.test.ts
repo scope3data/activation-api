@@ -25,19 +25,19 @@ const mockContext: MCPToolExecuteContext = {
 };
 
 const sampleCampaignResponse = {
-  id: "camp_123",
-  name: "Test Campaign",
   brandAgentId: "ba_456",
-  status: "draft",
   budget: {
-    total: 10000,
     currency: "USD",
     dailyCap: 1000,
     pacing: "even",
+    total: 10000,
   },
-  prompt: "Test campaign prompt",
-  creativeIds: [],
   createdAt: "2024-01-15T10:30:00Z",
+  creativeIds: [],
+  id: "camp_123",
+  name: "Test Campaign",
+  prompt: "Test campaign prompt",
+  status: "draft",
   updatedAt: "2024-01-15T10:30:00Z",
 };
 
@@ -60,16 +60,18 @@ describe("createCampaignTool", () => {
 
   describe("authentication", () => {
     it("should use session API key when provided", async () => {
-      mockClient.createBrandAgentCampaign = vi.fn().mockResolvedValue(sampleCampaignResponse);
+      mockClient.createBrandAgentCampaign = vi
+        .fn()
+        .mockResolvedValue(sampleCampaignResponse);
 
       const result = await tool.execute(
         {
           brandAgentId: "ba_456",
-          name: "Test Campaign",
           budget: { total: 10000 },
+          endDate: "2024-01-31",
+          name: "Test Campaign",
           prompt: "Test campaign prompt",
           startDate: "2024-01-01",
-          endDate: "2024-01-31",
         },
         mockContext,
       );
@@ -78,11 +80,11 @@ describe("createCampaignTool", () => {
         "test-api-key",
         expect.objectContaining({
           brandAgentId: "ba_456",
-          name: "Test Campaign",
           budget: expect.objectContaining({
-            total: 10000,
             currency: "USD",
+            total: 10000,
           }),
+          name: "Test Campaign",
           prompt: "Test campaign prompt",
         }),
       );
@@ -98,8 +100,8 @@ describe("createCampaignTool", () => {
         tool.execute(
           {
             brandAgentId: "ba_456",
-            name: "Test Campaign",
             budget: { total: 10000 },
+            name: "Test Campaign",
             prompt: "Test campaign prompt",
           },
           { session: {} },
@@ -110,15 +112,17 @@ describe("createCampaignTool", () => {
 
   describe("structured data response", () => {
     beforeEach(() => {
-      mockClient.createBrandAgentCampaign = vi.fn().mockResolvedValue(sampleCampaignResponse);
+      mockClient.createBrandAgentCampaign = vi
+        .fn()
+        .mockResolvedValue(sampleCampaignResponse);
     });
 
     it("should include structured data with campaign details", async () => {
       const result = await tool.execute(
         {
           brandAgentId: "ba_456",
-          name: "Test Campaign",
           budget: { total: 10000 },
+          name: "Test Campaign",
           prompt: "Test campaign prompt",
         },
         mockContext,
@@ -141,13 +145,15 @@ describe("createCampaignTool", () => {
         tool.execute(
           {
             brandAgentId: "invalid_id",
-            name: "Test Campaign",
             budget: { total: 10000 },
+            name: "Test Campaign",
             prompt: "Test campaign prompt",
           },
           mockContext,
         ),
-      ).rejects.toThrow("Failed to create brand agent campaign: Brand agent not found");
+      ).rejects.toThrow(
+        "Failed to create brand agent campaign: Brand agent not found",
+      );
     });
   });
 });

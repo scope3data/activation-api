@@ -143,41 +143,46 @@ export const deleteCustomSignalTool = (client: Scope3ApiClient) => ({
       summary += `The custom signal has been permanently removed from the platform.`;
 
       return createMCPResponse({
-        message: summary,
-        success: true,
         data: {
-          deletedSignal: {
-            id: result.id,
-            name: signalDetails.name,
-            key: signalDetails.key,
-            description: signalDetails.description,
-            clusters: signalDetails.clusters,
-          },
-          deletionResult: result,
           configuration: {
             signalId: args.signalId,
           },
+          deletedSignal: {
+            clusters: signalDetails.clusters,
+            description: signalDetails.description,
+            id: result.id,
+            key: signalDetails.key,
+            name: signalDetails.name,
+          },
+          deletionResult: result,
           impact: {
-            isComposite: signalDetails.key.includes(","),
-            keyTypes: signalDetails.key.split(",").map(k => k.trim()),
-            clustersRemoved: signalDetails.clusters.length,
-            regionsAffected: [...new Set(signalDetails.clusters.map(c => c.region))],
-            gdprClustersRemoved: signalDetails.clusters.filter(c => c.gdpr).length,
-            channelSpecificClustersRemoved: signalDetails.clusters.filter(c => c.channel).length,
             apiEndpointsRemoved: [
               `/signals/${signalDetails.key}`,
               `/signals/${signalDetails.key}/{identifier}`,
             ],
+            channelSpecificClustersRemoved: signalDetails.clusters.filter(
+              (c) => c.channel,
+            ).length,
+            clustersRemoved: signalDetails.clusters.length,
+            gdprClustersRemoved: signalDetails.clusters.filter((c) => c.gdpr)
+              .length,
+            isComposite: signalDetails.key.includes(","),
+            keyTypes: signalDetails.key.split(",").map((k) => k.trim()),
+            regionsAffected: [
+              ...new Set(signalDetails.clusters.map((c) => c.region)),
+            ],
           },
           recoveryData: {
             previousConfiguration: {
-              name: signalDetails.name,
-              key: signalDetails.key,
-              description: signalDetails.description,
               clusters: signalDetails.clusters,
+              description: signalDetails.description,
+              key: signalDetails.key,
+              name: signalDetails.name,
             },
           },
         },
+        message: summary,
+        success: true,
       });
     } catch (error) {
       throw new Error(

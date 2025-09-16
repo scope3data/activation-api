@@ -59,6 +59,12 @@ export const listSyntheticAudiencesTool = (client: Scope3ApiClient) => ({
 
       if (audiences.length === 0) {
         return createMCPResponse({
+          data: {
+            audiences: [],
+            brandAgentId: args.brandAgentId,
+            brandAgentName,
+            count: 0,
+          },
           message:
             `No synthetic audiences found for brand agent "${brandAgentName}".\n\n` +
             `🎯 **Why Create Synthetic Audiences?**\n` +
@@ -68,12 +74,6 @@ export const listSyntheticAudiencesTool = (client: Scope3ApiClient) => ({
             `• Cross-publisher audience matching\n\n` +
             `Create your first synthetic audience to get started with advanced targeting!`,
           success: true,
-          data: {
-            brandAgentId: args.brandAgentId,
-            brandAgentName,
-            audiences: [],
-            count: 0,
-          },
         });
       }
 
@@ -114,23 +114,33 @@ export const listSyntheticAudiencesTool = (client: Scope3ApiClient) => ({
       summary += `• Performance analytics by audience segment`;
 
       return createMCPResponse({
-        message: summary,
-        success: true,
         data: {
+          audiences,
           brandAgentId: args.brandAgentId,
           brandAgentName,
-          audiences,
           count: audiences.length,
           summary: {
+            newestAudience:
+              audiences.length > 0
+                ? new Date(
+                    Math.max(
+                      ...audiences.map((a) => new Date(a.createdAt).getTime()),
+                    ),
+                  ).toISOString()
+                : undefined,
+            oldestAudience:
+              audiences.length > 0
+                ? new Date(
+                    Math.min(
+                      ...audiences.map((a) => new Date(a.createdAt).getTime()),
+                    ),
+                  ).toISOString()
+                : undefined,
             totalAudiences: audiences.length,
-            oldestAudience: audiences.length > 0 ? 
-              new Date(Math.min(...audiences.map(a => new Date(a.createdAt).getTime()))).toISOString() : 
-              undefined,
-            newestAudience: audiences.length > 0 ? 
-              new Date(Math.max(...audiences.map(a => new Date(a.createdAt).getTime()))).toISOString() : 
-              undefined,
           },
         },
+        message: summary,
+        success: true,
       });
     } catch (error) {
       throw new Error(

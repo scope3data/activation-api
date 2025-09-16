@@ -41,24 +41,24 @@ export const listTacticsTool = (client: Scope3ApiClient) => ({
 
       if (tactics.length === 0) {
         return createMCPResponse({
+          data: {
+            campaignId: args.campaignId,
+            count: 0,
+            summary: {
+              activeTactics: 0,
+              completedTactics: 0,
+              draftTactics: 0,
+              pausedTactics: 0,
+              totalBudget: 0,
+              totalImpressions: 0,
+              totalSpend: 0,
+              totalTactics: 0,
+            },
+            tactics: [],
+          },
           message:
             "📋 **No Tactics Found**\n\nThis campaign doesn't have any tactics configured yet.\n\n**Next Steps:**\n• Use discover_publisher_products to find available inventory\n• Use create_tactic to add tactics to your campaign\n• Or set campaign to 'scope3_managed' mode for automatic tactic management",
           success: true,
-          data: {
-            campaignId: args.campaignId,
-            tactics: [],
-            count: 0,
-            summary: {
-              totalTactics: 0,
-              activeTactics: 0,
-              draftTactics: 0,
-              pausedTactics: 0,
-              completedTactics: 0,
-              totalBudget: 0,
-              totalSpend: 0,
-              totalImpressions: 0,
-            },
-          },
         });
       }
 
@@ -272,38 +272,43 @@ export const listTacticsTool = (client: Scope3ApiClient) => ({
       summary += `• Create new tactics with tactic/create`;
 
       return createMCPResponse({
-        message: summary,
-        success: true,
         data: {
           campaignId: args.campaignId,
-          tactics,
           count: tactics.length,
-          summary: {
-            totalTactics: tactics.length,
-            activeTactics: activeTactics.length,
-            draftTactics: draftTactics.length,
-            pausedTactics: pausedTactics.length,
-            completedTactics: completedTactics.length,
-            totalBudget,
-            totalSpend,
-            totalImpressions,
-            averageCpm: totalImpressions > 0 ? (totalSpend / totalImpressions) * 1000 : 0,
-            budgetUtilization: totalBudget > 0 ? (totalSpend / totalBudget) * 100 : 0,
-          },
           groupedTactics: {
             active: activeTactics,
+            completed: completedTactics,
             draft: draftTactics,
             paused: pausedTactics,
-            completed: completedTactics,
           },
           recommendations: {
             draftTacticsToActivate: draftTactics.length,
-            highCpmTactics: tactics.filter(t => t.effectivePricing.totalCpm > 50).length,
-            performingTactics: tactics.filter(t => 
-              t.performance && t.performance.ctr && t.performance.ctr > 0.002
+            highCpmTactics: tactics.filter(
+              (t) => t.effectivePricing.totalCpm > 50,
+            ).length,
+            performingTactics: tactics.filter(
+              (t) =>
+                t.performance && t.performance.ctr && t.performance.ctr > 0.002,
             ).length,
           },
+          summary: {
+            activeTactics: activeTactics.length,
+            averageCpm:
+              totalImpressions > 0 ? (totalSpend / totalImpressions) * 1000 : 0,
+            budgetUtilization:
+              totalBudget > 0 ? (totalSpend / totalBudget) * 100 : 0,
+            completedTactics: completedTactics.length,
+            draftTactics: draftTactics.length,
+            pausedTactics: pausedTactics.length,
+            totalBudget,
+            totalImpressions,
+            totalSpend,
+            totalTactics: tactics.length,
+          },
+          tactics,
         },
+        message: summary,
+        success: true,
       });
     } catch (error) {
       throw new Error(

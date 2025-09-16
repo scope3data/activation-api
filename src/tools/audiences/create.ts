@@ -97,8 +97,6 @@ export const createSyntheticAudienceTool = (client: Scope3ApiClient) => ({
       summary += `The audience is ready to be assigned to campaigns!`;
 
       return createMCPResponse({
-        message: summary,
-        success: true,
         data: {
           audience,
           brandAgent: {
@@ -107,21 +105,21 @@ export const createSyntheticAudienceTool = (client: Scope3ApiClient) => ({
           },
           configuration: {
             brandAgentId: args.brandAgentId,
-            name: args.name,
             description: args.description,
+            name: args.name,
           },
           metadata: {
-            audienceType: "synthetic",
-            isStubImplementation: true,
-            createdAt: audience.createdAt,
             assignmentCapable: true,
+            audienceType: "synthetic",
             capabilities: {
-              campaignAssignment: true,
-              demographicProfiling: false,
               behavioralTargeting: false,
+              campaignAssignment: true,
               crossPublisherMatching: false,
+              demographicProfiling: false,
               lookalikeGeneration: false,
             },
+            createdAt: audience.createdAt,
+            isStubImplementation: true,
           },
           nextSteps: [
             "Assign this audience to campaigns within the same brand agent",
@@ -130,6 +128,8 @@ export const createSyntheticAudienceTool = (client: Scope3ApiClient) => ({
             "Use audience insights to refine targeting strategies",
           ],
         },
+        message: summary,
+        success: true,
       });
     } catch (error) {
       throw new Error(

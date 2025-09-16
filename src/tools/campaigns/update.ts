@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
@@ -178,7 +179,6 @@ export const updateCampaignTool = (client: Scope3ApiClient) => ({
 
       // Step 2: Handle tactic adjustments if provided
       if (args.tacticAdjustments && args.tacticAdjustments.length > 0) {
-
         for (const adjustment of args.tacticAdjustments) {
           try {
             const updateInput = {
@@ -281,24 +281,24 @@ export const updateCampaignTool = (client: Scope3ApiClient) => ({
       summary += `**Campaign updates have been applied successfully!**`;
 
       return createMCPResponse({
-        message: summary,
-        success: true,
         data: {
           campaignId: args.campaignId,
+          tactics: {
+            errors: errors,
+            totalErrors: errors.length,
+            totalUpdated: updatedTactics.length,
+            updated: updatedTactics,
+          },
           updates: {
+            briefChanges,
+            changeRequest: args.changeRequest,
             name: args.name,
             prompt: effectivePrompt,
-            changeRequest: args.changeRequest,
             reason: args.reason,
-            briefChanges,
-          },
-          tactics: {
-            updated: updatedTactics,
-            errors: errors,
-            totalUpdated: updatedTactics.length,
-            totalErrors: errors.length,
           },
         },
+        message: summary,
+        success: true,
       });
     } catch (error) {
       throw new Error(

@@ -107,20 +107,20 @@ export const createBrandAgentBrandStoryTool = (client: Scope3ApiClient) => ({
       summary += `💡 **Pro Tip:** You can create multiple brand stories for different market segments, demographics, or behavioral profiles within the same brand agent.`;
 
       return createMCPResponse({
-        message: summary,
-        success: true,
         data: {
           brandStory,
           configuration: {
             brandAgentId: args.brandAgentId,
+            brands: args.brands || [],
+            channels: args.channels || [],
+            countries: args.countries || [],
+            languages: args.languages || [],
             name: args.name,
             prompt: args.prompt,
-            countries: args.countries || [],
-            channels: args.channels || [],
-            languages: args.languages || [],
-            brands: args.brands || [],
           },
         },
+        message: summary,
+        success: true,
       });
     } catch (error) {
       throw new Error(

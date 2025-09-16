@@ -250,41 +250,43 @@ export const creativeCreateTool = (client: Scope3ApiClient) => ({
       // Return appropriate response based on results
       if (errorCount === 0) {
         return createMCPResponse({
+          data: {
+            configuration: {
+              assignToCampaignIds:
+                args.sharedDefaults?.assignToCampaignIds || [],
+              buyerAgentId: args.buyerAgentId,
+            },
+            count: createdCreatives.length,
+            creatives: createdCreatives,
+            results: {
+              failed: errorCount,
+              successful: successCount,
+            },
+            totalRequested,
+          },
           message,
           success: true,
-          data: {
-            creatives: createdCreatives,
-            count: createdCreatives.length,
-            totalRequested,
-            results: {
-              successful: successCount,
-              failed: errorCount,
-            },
-            configuration: {
-              buyerAgentId: args.buyerAgentId,
-              assignToCampaignIds: args.sharedDefaults?.assignToCampaignIds || [],
-            },
-          },
         });
       } else if (successCount > 0) {
         return createMCPResponse({
+          data: {
+            configuration: {
+              assignToCampaignIds:
+                args.sharedDefaults?.assignToCampaignIds || [],
+              buyerAgentId: args.buyerAgentId,
+            },
+            count: createdCreatives.length,
+            creatives: createdCreatives,
+            results: {
+              failed: errorCount,
+              successful: successCount,
+            },
+            totalRequested,
+          },
           message:
             message +
             `\n⚠️ **Partial Success**: ${successCount} created, ${errorCount} failed`,
           success: true,
-          data: {
-            creatives: createdCreatives,
-            count: createdCreatives.length,
-            totalRequested,
-            results: {
-              successful: successCount,
-              failed: errorCount,
-            },
-            configuration: {
-              buyerAgentId: args.buyerAgentId,
-              assignToCampaignIds: args.sharedDefaults?.assignToCampaignIds || [],
-            },
-          },
         });
       } else {
         throw new Error(

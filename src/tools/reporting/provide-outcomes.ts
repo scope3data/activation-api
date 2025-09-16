@@ -6,6 +6,7 @@ import type {
   MCPToolExecuteContext,
   ProvideScoringOutcomesParams,
 } from "../../types/mcp.js";
+
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const provideScoringOutcomesTool = (client: Scope3ApiClient) => ({
@@ -73,47 +74,53 @@ export const provideScoringOutcomesTool = (client: Scope3ApiClient) => ({
       const response = formatOutcomeResponse(outcome, args);
 
       return createMCPResponse({
-        message: response,
-        success: true,
         data: {
-          outcome,
           configuration: {
             campaignId: args.campaignId,
-            tacticId: args.tacticId,
             creativeId: args.creativeId,
             exposureRange: args.exposureRange,
             performanceIndex: args.performanceIndex,
-            submissionTime: new Date().toISOString()
+            submissionTime: new Date().toISOString(),
+            tacticId: args.tacticId,
           },
           exposureAnalysis: {
-            startDate: startDate.toISOString(),
+            durationDays: Math.ceil(
+              (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
+            ),
             endDate: endDate.toISOString(),
-            durationDays: Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+            startDate: startDate.toISOString(),
           },
+          metadata: {
+            action: "provide-scoring-outcomes",
+            budgetOptimizationEnabled: true,
+            outcomeType: "performance-measurement",
+            recommendsIncreasedBudget: args.performanceIndex >= 150,
+            recommendsReview: args.performanceIndex < 50,
+            scoringAlgorithm: "3-component",
+          },
+          outcome,
           performanceAnalysis: {
-            performanceIndex: args.performanceIndex,
             isExpectedPerformance: args.performanceIndex === 100,
             isHighPerformance: args.performanceIndex >= 150,
             isLowPerformance: args.performanceIndex < 50,
             multiplier: args.performanceIndex / 100,
-            percentageOfExpected: args.performanceIndex
+            percentageOfExpected: args.performanceIndex,
+            performanceIndex: args.performanceIndex,
           },
           scoring: {
+            algorithmComponents: [
+              "Quality Score (Scope3)",
+              "Story Affinity Score",
+              "Performance Index",
+            ],
             outcomeId: outcome.id,
             source: "scope3",
             timestamp: outcome.timestamp,
             willInfluenceBudgetAllocation: true,
-            algorithmComponents: ["Quality Score (Scope3)", "Story Affinity Score", "Performance Index"]
           },
-          metadata: {
-            action: "provide-scoring-outcomes",
-            outcomeType: "performance-measurement",
-            scoringAlgorithm: "3-component",
-            budgetOptimizationEnabled: true,
-            recommendsReview: args.performanceIndex < 50,
-            recommendsIncreasedBudget: args.performanceIndex >= 150
-          }
-        }
+        },
+        message: response,
+        success: true,
       });
     } catch (error) {
       throw new Error(

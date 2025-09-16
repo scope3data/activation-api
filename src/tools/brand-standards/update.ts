@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
+
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const updateBrandAgentStandardsTool = (client: Scope3ApiClient) => ({
@@ -82,33 +83,33 @@ export const updateBrandAgentStandardsTool = (client: Scope3ApiClient) => ({
       summary += `• Create additional updates as needed to refine safety rules`;
 
       return createMCPResponse({
-        message: summary,
-        success: true,
         data: {
-          updatedModel,
           configuration: {
-            standardsId: args.standardsId,
+            customName: args.name,
             modelName: modelName,
             prompt: args.prompt,
-            customName: args.name
-          },
-          versionInfo: {
-            modelId: updatedModel.id,
-            modelName: updatedModel.name,
-            createdAt: updatedModel.createdAt,
-            isPrimary: true,
-            versionType: "updated"
+            standardsId: args.standardsId,
           },
           metadata: {
-            standardsId: args.standardsId,
-            agentType: "brand-standards",
             action: "update",
-            status: "active",
-            retrainingRequired: true,
             affectsAllCampaigns: true,
-            previousVersionsPreserved: true
-          }
-        }
+            agentType: "brand-standards",
+            previousVersionsPreserved: true,
+            retrainingRequired: true,
+            standardsId: args.standardsId,
+            status: "active",
+          },
+          updatedModel,
+          versionInfo: {
+            createdAt: updatedModel.createdAt,
+            isPrimary: true,
+            modelId: updatedModel.id,
+            modelName: updatedModel.name,
+            versionType: "updated",
+          },
+        },
+        message: summary,
+        success: true,
       });
     } catch (error) {
       throw new Error(

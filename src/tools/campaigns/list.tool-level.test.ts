@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
-import { CampaignValidators } from "../../__tests__/utils/structured-response-helpers.js";
 
+import { CampaignValidators } from "../../__tests__/utils/structured-response-helpers.js";
 import { listCampaignsTool } from "./list.js";
 
 const mockClient = {
@@ -18,36 +18,36 @@ const mockContext: MCPToolExecuteContext = {
 
 const sampleCampaignResponse = [
   {
-    id: "camp_123",
-    name: "Test Campaign",
+    audienceIds: ["audience_1"],
     brandAgentId: "ba_456",
-    status: "active",
     budget: {
-      total: 1000000, // $10,000 in cents
       currency: "USD",
       dailyCap: 50000, // $500 in cents
       pacing: "even",
+      total: 1000000, // $10,000 in cents
     },
-    startDate: "2024-01-01T00:00:00Z",
-    endDate: "2024-01-31T23:59:59Z",
     createdAt: "2024-01-15T10:30:00Z",
-    updatedAt: "2024-01-15T10:30:00Z",
+    creativeIds: ["creative_1", "creative_2"],
     deliverySummary: {
-      status: "delivering",
+      alerts: [],
       healthScore: 85,
-      today: {
-        spend: 45000, // $450 in cents
-        impressions: 12500,
-        averagePrice: 3.6,
-      },
       pacing: {
         budgetUtilized: 0.45,
         status: "on_track",
       },
-      alerts: [],
+      status: "delivering",
+      today: {
+        averagePrice: 3.6,
+        impressions: 12500,
+        spend: 45000, // $450 in cents
+      },
     },
-    creativeIds: ["creative_1", "creative_2"],
-    audienceIds: ["audience_1"],
+    endDate: "2024-01-31T23:59:59Z",
+    id: "camp_123",
+    name: "Test Campaign",
+    startDate: "2024-01-01T00:00:00Z",
+    status: "active",
+    updatedAt: "2024-01-15T10:30:00Z",
   },
 ];
 
@@ -70,7 +70,9 @@ describe("listCampaignsTool", () => {
 
   describe("authentication", () => {
     it("should use session API key when provided", async () => {
-      mockClient.listBrandAgentCampaigns = vi.fn().mockResolvedValue(sampleCampaignResponse);
+      mockClient.listBrandAgentCampaigns = vi
+        .fn()
+        .mockResolvedValue(sampleCampaignResponse);
 
       const result = await tool.execute(
         {
@@ -79,7 +81,10 @@ describe("listCampaignsTool", () => {
         mockContext,
       );
 
-      expect(mockClient.listBrandAgentCampaigns).toHaveBeenCalledWith("test-api-key", "ba_456");
+      expect(mockClient.listBrandAgentCampaigns).toHaveBeenCalledWith(
+        "test-api-key",
+        "ba_456",
+      );
 
       // Parse the JSON response to check structured data
       const parsedResult = JSON.parse(result);
@@ -101,7 +106,9 @@ describe("listCampaignsTool", () => {
 
   describe("structured data response", () => {
     beforeEach(() => {
-      mockClient.listBrandAgentCampaigns = vi.fn().mockResolvedValue(sampleCampaignResponse);
+      mockClient.listBrandAgentCampaigns = vi
+        .fn()
+        .mockResolvedValue(sampleCampaignResponse);
     });
 
     it("should include structured data with campaign list", async () => {
@@ -136,9 +143,9 @@ describe("listCampaignsTool", () => {
       const result = await tool.execute(
         {
           brandAgentId: "ba_456",
-          status: "active",
           sortBy: "name",
           sortOrder: "asc",
+          status: "active",
         },
         mockContext,
       );
@@ -146,12 +153,12 @@ describe("listCampaignsTool", () => {
       const parsedResult = JSON.parse(result);
       expect(parsedResult.data.filters).toEqual({
         brandAgentId: "ba_456",
-        status: "active",
-        dateRange: undefined,
         budgetRange: undefined,
+        dateRange: undefined,
+        limit: undefined,
         sortBy: "name",
         sortOrder: "asc",
-        limit: undefined,
+        status: "active",
       });
     });
 
@@ -165,12 +172,12 @@ describe("listCampaignsTool", () => {
 
       const parsedResult = JSON.parse(result);
       expect(parsedResult.data.summary).toEqual({
-        totalBudget: 1000000,
-        totalSpend: 45000,
-        utilization: 4.5,
         statusCounts: {
           delivering: 1,
         },
+        totalBudget: 1000000,
+        totalSpend: 45000,
+        utilization: 4.5,
       });
     });
   });
@@ -205,7 +212,9 @@ describe("listCampaignsTool", () => {
       );
 
       const parsedResult = JSON.parse(result);
-      expect(parsedResult.message).toContain("No campaigns match your filter criteria");
+      expect(parsedResult.message).toContain(
+        "No campaigns match your filter criteria",
+      );
       expect(parsedResult.message).toContain("Brand Agent ID: ba_456");
       expect(parsedResult.message).toContain("Status: active");
     });
@@ -214,7 +223,9 @@ describe("listCampaignsTool", () => {
       const result = await tool.execute({}, mockContext);
 
       const parsedResult = JSON.parse(result);
-      expect(parsedResult.message).toContain("No campaigns exist in your account yet");
+      expect(parsedResult.message).toContain(
+        "No campaigns exist in your account yet",
+      );
       expect(parsedResult.message).toContain("Use campaign/create");
     });
   });
@@ -240,18 +251,18 @@ describe("listCampaignsTool", () => {
     it("should accept valid parameters", () => {
       const validParams = {
         brandAgentId: "ba_123",
-        status: "active",
+        budgetRange: {
+          max: 10000,
+          min: 1000,
+        },
+        dateRange: {
+          end: "2024-01-31",
+          start: "2024-01-01",
+        },
+        limit: 50,
         sortBy: "name" as const,
         sortOrder: "desc" as const,
-        limit: 50,
-        dateRange: {
-          start: "2024-01-01",
-          end: "2024-01-31",
-        },
-        budgetRange: {
-          min: 1000,
-          max: 10000,
-        },
+        status: "active",
       };
 
       const result = tool.parameters.safeParse(validParams);

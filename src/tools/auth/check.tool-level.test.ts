@@ -21,8 +21,8 @@ const _sampleAuthResponse = {
   customerId: 123,
   permissions: ["read", "write"],
   user: {
-    id: "user_456",
     email: "test@example.com",
+    id: "user_456",
   },
 };
 
@@ -58,9 +58,9 @@ describe("checkAuthTool", () => {
     });
 
     it("should throw error when no API key is available", async () => {
-      await expect(
-        tool.execute({}, { session: {} }),
-      ).rejects.toThrow("Authentication required");
+      await expect(tool.execute({}, { session: {} })).rejects.toThrow(
+        "Authentication required",
+      );
     });
   });
 
@@ -87,9 +87,9 @@ describe("checkAuthTool", () => {
         .fn()
         .mockRejectedValue(new Error("Invalid API key"));
 
-      await expect(
-        tool.execute({}, mockContext),
-      ).rejects.toThrow("Invalid API key");
+      await expect(tool.execute({}, mockContext)).rejects.toThrow(
+        "Invalid API key",
+      );
     });
   });
 });

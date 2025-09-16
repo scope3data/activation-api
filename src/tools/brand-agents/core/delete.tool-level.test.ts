@@ -6,8 +6,8 @@ import type { MCPToolExecuteContext } from "../../../types/mcp.js";
 import { deleteBrandAgentTool } from "./delete.js";
 
 const mockClient = {
-  getBrandAgent: vi.fn(),
   deleteBrandAgent: vi.fn(),
+  getBrandAgent: vi.fn(),
 } as unknown as Scope3ApiClient;
 
 const mockContext: MCPToolExecuteContext = {
@@ -17,11 +17,11 @@ const mockContext: MCPToolExecuteContext = {
 };
 
 const _sampleDeleteResponse = {
+  customerId: 456,
+  deletedAt: "2024-01-15T10:30:00Z",
   id: "ba_123",
   name: "Deleted Brand Agent",
-  customerId: 456,
   status: "deleted",
-  deletedAt: "2024-01-15T10:30:00Z",
 };
 
 describe("deleteBrandAgentTool", () => {
@@ -43,7 +43,9 @@ describe("deleteBrandAgentTool", () => {
 
   describe("authentication", () => {
     it("should use session API key when provided", async () => {
-      mockClient.getBrandAgent = vi.fn().mockResolvedValue({ name: "Test Brand Agent" });
+      mockClient.getBrandAgent = vi
+        .fn()
+        .mockResolvedValue({ name: "Test Brand Agent" });
       mockClient.deleteBrandAgent = vi.fn().mockResolvedValue(true);
 
       const result = await tool.execute(
@@ -65,7 +67,9 @@ describe("deleteBrandAgentTool", () => {
       // Parse the JSON response to check structured data
       const parsedResult = JSON.parse(result);
       expect(parsedResult.success).toBe(true);
-      expect(parsedResult.message).toContain("Brand Agent Deleted Successfully");
+      expect(parsedResult.message).toContain(
+        "Brand Agent Deleted Successfully",
+      );
     });
 
     it("should throw error when no API key is available", async () => {
@@ -82,7 +86,9 @@ describe("deleteBrandAgentTool", () => {
 
   describe("structured data response", () => {
     beforeEach(() => {
-      mockClient.getBrandAgent = vi.fn().mockResolvedValue({ name: "Test Brand Agent" });
+      mockClient.getBrandAgent = vi
+        .fn()
+        .mockResolvedValue({ name: "Test Brand Agent" });
       mockClient.deleteBrandAgent = vi.fn().mockResolvedValue(true);
     });
 
@@ -102,7 +108,6 @@ describe("deleteBrandAgentTool", () => {
       expect(parsedResult.data.operation).toBe("delete");
       expect(parsedResult.data.timestamp).toBeDefined();
     });
-
   });
 
   describe("error handling", () => {
@@ -118,7 +123,9 @@ describe("deleteBrandAgentTool", () => {
           },
           mockContext,
         ),
-      ).rejects.toThrow("Failed to delete brand agent: Brand agent not found or inaccessible: Brand agent not found");
+      ).rejects.toThrow(
+        "Failed to delete brand agent: Brand agent not found or inaccessible: Brand agent not found",
+      );
     });
   });
 });

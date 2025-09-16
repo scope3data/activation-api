@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
+
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const deleteBrandAgentStandardsTool = (client: Scope3ApiClient) => ({
@@ -70,34 +71,34 @@ export const deleteBrandAgentStandardsTool = (client: Scope3ApiClient) => ({
       summary += `💡 **Recovery:** If you need to restore similar functionality, use \`create_brand_agent_standards\` with the same or updated safety prompt.`;
 
       return createMCPResponse({
-        message: summary,
-        success: true,
         data: {
+          archivalInfo: {
+            action: "soft-delete",
+            archivedAt: result.archivedAt,
+            preservedForAudit: true,
+            standardsId: result.id,
+          },
           archivedStandards: result,
           configuration: {
-            standardsId: args.standardsId
-          },
-          archivalInfo: {
-            standardsId: result.id,
-            archivedAt: result.archivedAt,
-            action: "soft-delete",
-            preservedForAudit: true
+            standardsId: args.standardsId,
           },
           impact: {
             campaignsAffected: "all",
-            safetyRulesRemoved: true,
             contentClassificationStopped: true,
-            newCampaignsUnaffected: true
+            newCampaignsUnaffected: true,
+            safetyRulesRemoved: true,
           },
           metadata: {
-            standardsId: result.id,
-            agentType: "brand-standards",
             action: "archive",
-            status: "archived",
+            agentType: "brand-standards",
             isRecoverable: true,
-            requiresReplacement: true
-          }
-        }
+            requiresReplacement: true,
+            standardsId: result.id,
+            status: "archived",
+          },
+        },
+        message: summary,
+        success: true,
       });
     } catch (error) {
       throw new Error(

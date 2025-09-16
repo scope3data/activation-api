@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
+
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 /**
@@ -76,28 +77,28 @@ export const creativeAssignTool = (client: Scope3ApiClient) => ({
 • Real-time inventory allocation`;
 
         return createMCPResponse({
-          message: response,
-          success: true,
           data: {
             assignment: result,
             configuration: {
-              creativeId: args.creativeId,
-              campaignId: args.campaignId,
+              assignmentDate: new Date().toISOString(),
               buyerAgentId: args.buyerAgentId,
-              assignmentDate: new Date().toISOString()
-            },
-            status: {
-              success: result.success,
-              message: result.message,
-              isActive: true
+              campaignId: args.campaignId,
+              creativeId: args.creativeId,
             },
             metadata: {
-              assignmentType: "creative-campaign",
               action: "assign",
+              assignmentType: "creative-campaign",
               ownershipValidated: true,
-              performanceTrackingEnabled: true
-            }
-          }
+              performanceTrackingEnabled: true,
+            },
+            status: {
+              isActive: true,
+              message: result.message,
+              success: result.success,
+            },
+          },
+          message: response,
+          success: true,
         });
       } else {
         throw new Error(`Failed to assign creative: ${result.message}`);
@@ -186,27 +187,27 @@ export const creativeUnassignTool = (client: Scope3ApiClient) => ({
 🔄 **[STUB]** Unassignment will be processed by AdCP publishers.`;
 
         return createMCPResponse({
-          message: response,
-          success: true,
           data: {
-            unassignment: result,
             configuration: {
-              creativeId: args.creativeId,
               campaignId: args.campaignId,
-              unassignmentDate: new Date().toISOString()
-            },
-            status: {
-              success: result.success,
-              message: result.message,
-              isActive: false
+              creativeId: args.creativeId,
+              unassignmentDate: new Date().toISOString(),
             },
             metadata: {
-              assignmentType: "creative-campaign",
               action: "unassign",
+              assignmentType: "creative-campaign",
+              availableForReassignment: true,
               performanceTrackingStopped: true,
-              availableForReassignment: true
-            }
-          }
+            },
+            status: {
+              isActive: false,
+              message: result.message,
+              success: result.success,
+            },
+            unassignment: result,
+          },
+          message: response,
+          success: true,
         });
       } else {
         throw new Error(`Failed to unassign creative: ${result.message}`);

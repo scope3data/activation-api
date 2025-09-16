@@ -128,42 +128,48 @@ export const updatePMPTool = (client: Scope3ApiClient) =>
           `*Last updated: ${updatedPMP.updatedAt.toLocaleString()}*`;
 
         return createMCPResponse({
-          message: response,
-          success: true,
           data: {
-            pmp: updatedPMP,
+            changes: {
+              briefChanges,
+              changeRequestApplied: !!changeRequest,
+              effectivePrompt,
+              fieldsUpdated: updateSummary,
+            },
             configuration: {
-              pmpId: pmp_id,
+              changeRequest,
               name,
+              pmpId: pmp_id,
               prompt: effectivePrompt,
               status,
-              changeRequest,
-            },
-            changes: {
-              fieldsUpdated: updateSummary,
-              changeRequestApplied: !!changeRequest,
-              briefChanges,
-              effectivePrompt,
             },
             dealIds: updatedPMP.dealIds,
-            summary: {
-              pmpId: updatedPMP.id,
-              pmpName: updatedPMP.name,
-              status: updatedPMP.status,
-              totalDeals: updatedPMP.dealIds.length,
-              activeDeals: updatedPMP.dealIds.filter(d => d.status === "active").length,
-              pendingDeals: updatedPMP.dealIds.filter(d => d.status === "pending").length,
-              pausedDeals: updatedPMP.dealIds.filter(d => d.status === "paused").length,
-              sspList: [...new Set(updatedPMP.dealIds.map(d => d.ssp))],
-            },
             optimization: {
               changeRequestUsed: !!changeRequest,
+              nameChanged: !!name,
               promptModified: !!prompt || !!changeRequest,
               statusChanged: !!status,
-              nameChanged: !!name,
+            },
+            pmp: updatedPMP,
+            summary: {
+              activeDeals: updatedPMP.dealIds.filter(
+                (d) => d.status === "active",
+              ).length,
+              pausedDeals: updatedPMP.dealIds.filter(
+                (d) => d.status === "paused",
+              ).length,
+              pendingDeals: updatedPMP.dealIds.filter(
+                (d) => d.status === "pending",
+              ).length,
+              pmpId: updatedPMP.id,
+              pmpName: updatedPMP.name,
+              sspList: [...new Set(updatedPMP.dealIds.map((d) => d.ssp))],
+              status: updatedPMP.status,
+              totalDeals: updatedPMP.dealIds.length,
             },
             updatedAt: updatedPMP.updatedAt,
           },
+          message: response,
+          success: true,
         });
       } catch (error) {
         throw new Error(

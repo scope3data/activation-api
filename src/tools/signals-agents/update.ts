@@ -181,47 +181,50 @@ export const updateSignalsAgentTool = (client: Scope3ApiClient) => ({
       summary += `The signals agent configuration has been successfully updated!`;
 
       return createMCPResponse({
-        message: summary,
-        success: true,
         data: {
-          updatedAgent,
-          previousAgent: currentAgent,
+          changesSummary: {
+            changes: changes,
+            changesCount: changes.length,
+            hasConfigUpdates: !!args.config,
+            hasEndpointChange:
+              !!args.endpointUrl &&
+              args.endpointUrl !== currentAgent.endpointUrl,
+            hasStatusChange:
+              !!args.status && args.status !== currentAgent.status,
+          },
           configuration: {
             agentId: args.agentId,
             updates: {
-              name: args.name,
+              config: args.config,
               description: args.description,
               endpointUrl: args.endpointUrl,
+              name: args.name,
               status: args.status,
-              config: args.config
             },
-            updateTime: new Date().toISOString()
-          },
-          changesSummary: {
-            changesCount: changes.length,
-            changes: changes,
-            hasConfigUpdates: !!args.config,
-            hasEndpointChange: !!args.endpointUrl && args.endpointUrl !== currentAgent.endpointUrl,
-            hasStatusChange: !!args.status && args.status !== currentAgent.status
+            updateTime: new Date().toISOString(),
           },
           currentState: {
+            brandAgentId: updatedAgent.brandAgentId,
+            config: updatedAgent.config,
+            description: updatedAgent.description,
+            endpointUrl: updatedAgent.endpointUrl,
             name: updatedAgent.name,
             status: updatedAgent.status,
-            endpointUrl: updatedAgent.endpointUrl,
-            brandAgentId: updatedAgent.brandAgentId,
-            description: updatedAgent.description,
-            config: updatedAgent.config
           },
           metadata: {
+            action: "update",
             agentId: args.agentId,
             agentName: updatedAgent.name,
             brandAgentId: updatedAgent.brandAgentId,
-            action: "update",
-            status: updatedAgent.status,
+            isOperational: updatedAgent.status === "active",
             requiresConnectivityTest: !!args.endpointUrl,
-            isOperational: updatedAgent.status === "active"
-          }
-        }
+            status: updatedAgent.status,
+          },
+          previousAgent: currentAgent,
+          updatedAgent,
+        },
+        message: summary,
+        success: true,
       });
     } catch (error) {
       return createErrorResponse("Failed to update signals agent", error);

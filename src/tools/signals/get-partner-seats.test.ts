@@ -1,9 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import {
+  expectErrorResponse,
+  expectListResponse,
+} from "../../__tests__/utils/structured-response-helpers.js";
 import { Scope3ApiClient } from "../../client/scope3-client.js";
 import { CustomSignalsClient } from "../../services/custom-signals-client.js";
 import { getPartnerSeatsTool } from "./get-partner-seats.js";
-import { expectListResponse, expectErrorResponse } from "../../__tests__/utils/structured-response-helpers.js";
 
 // Mock the dependencies
 vi.mock("../../client/scope3-client.js", () => ({
@@ -63,14 +67,18 @@ describe("signals/get-partner-seats", () => {
     );
 
     // Validate structured response
-    const parsedResponse = expectListResponse(result, 2, (seat: Record<string, unknown>) => {
-      expect(seat).toHaveProperty("id");
-      expect(seat).toHaveProperty("name");
-      expect(seat).toHaveProperty("customerId");
-      expect(typeof seat.id).toBe("string");
-      expect(typeof seat.name).toBe("string");
-      expect(typeof seat.customerId).toBe("number");
-    });
+    const parsedResponse = expectListResponse(
+      result,
+      2,
+      (seat: Record<string, unknown>) => {
+        expect(seat).toHaveProperty("id");
+        expect(seat).toHaveProperty("name");
+        expect(seat).toHaveProperty("customerId");
+        expect(typeof seat.id).toBe("string");
+        expect(typeof seat.name).toBe("string");
+        expect(typeof seat.customerId).toBe("number");
+      },
+    );
 
     expect((parsedResponse.data! as any).seats).toHaveLength(2);
     expect((parsedResponse.data! as any).count).toBe(2);

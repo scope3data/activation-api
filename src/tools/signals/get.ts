@@ -200,44 +200,55 @@ export const getCustomSignalTool = (client: Scope3ApiClient) => ({
       }
 
       return createMCPResponse({
-        message: summary,
-        success: true,
         data: {
-          signal,
-          metadata: {
-            signalId: args.signalId,
-            isComposite: signal.key.includes(","),
-            keyTypes: signal.key.split(",").map(k => k.trim()),
-            totalClusters: signal.clusters.length,
-            regions,
-            gdprCompliantClusters: gdprClusters,
-            channelSpecificClusters: channels.length,
-            uniqueChannels: [...new Set(channels)],
-          },
           configuration: {
-            keyFormat: signal.key,
             clusters: signal.clusters,
-            regionalCoverage: regions,
             complianceSettings: {
-              gdprEnabled: gdprClusters > 0,
               gdprClusters: gdprClusters,
+              gdprEnabled: gdprClusters > 0,
               totalCompliantRegions: gdprClusters,
             },
+            keyFormat: signal.key,
+            regionalCoverage: regions,
           },
+          metadata: {
+            channelSpecificClusters: channels.length,
+            gdprCompliantClusters: gdprClusters,
+            isComposite: signal.key.includes(","),
+            keyTypes: signal.key.split(",").map((k) => k.trim()),
+            regions,
+            signalId: args.signalId,
+            totalClusters: signal.clusters.length,
+            uniqueChannels: [...new Set(channels)],
+          },
+          signal,
           usageExamples: {
             apiEndpoint: `/signals/${signal.key}`,
-            exampleKey: signal.key.includes(",") 
-              ? signal.key.split(",").map(k => {
-                  switch (k.trim()) {
-                    case "domain": return "cnn.com";
-                    case "maid": return "abcd-1234";
-                    case "postal_code": return "90210";
-                    default: return `${k.trim()}_value`;
-                  }
-                }).join(",")
-              : signal.key === "postal_code" ? "90210" : signal.key === "domain" ? "cnn.com" : `${signal.key}_example`,
+            exampleKey: signal.key.includes(",")
+              ? signal.key
+                  .split(",")
+                  .map((k) => {
+                    switch (k.trim()) {
+                      case "domain":
+                        return "cnn.com";
+                      case "maid":
+                        return "abcd-1234";
+                      case "postal_code":
+                        return "90210";
+                      default:
+                        return `${k.trim()}_value`;
+                    }
+                  })
+                  .join(",")
+              : signal.key === "postal_code"
+                ? "90210"
+                : signal.key === "domain"
+                  ? "cnn.com"
+                  : `${signal.key}_example`,
           },
         },
+        message: summary,
+        success: true,
       });
     } catch (error) {
       throw new Error(

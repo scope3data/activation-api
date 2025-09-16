@@ -1,8 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import {
+  BrandAgentValidators,
+  // expectErrorResponse,
+} from "../../../__tests__/utils/structured-response-helpers.js";
 import { Scope3ApiClient } from "../../../client/scope3-client.js";
 import { getBrandAgentTool } from "./get.js";
-import { BrandAgentValidators, expectErrorResponse } from "../../../__tests__/utils/structured-response-helpers.js";
 
 // Mock the client
 vi.mock("../../../client/scope3-client.js", () => ({
@@ -29,11 +32,11 @@ describe("brand-agents/core/get", () => {
 
   it("should return brand agent details with structured data", async () => {
     const mockBrandAgent = {
+      createdAt: new Date("2024-01-01T00:00:00Z"),
+      customerId: 456,
+      description: "Test description",
       id: "123",
       name: "Test Brand Agent",
-      description: "Test description",
-      customerId: 456,
-      createdAt: new Date("2024-01-01T00:00:00Z"),
       updatedAt: new Date("2024-01-02T00:00:00Z"),
     };
 
@@ -48,7 +51,7 @@ describe("brand-agents/core/get", () => {
 
     // Validate structured response
     const parsedResponse = BrandAgentValidators.validateGetResponse(result);
-    
+
     // Dates get serialized to strings in JSON responses
     const expectedBrandAgent = {
       ...mockBrandAgent,
@@ -64,7 +67,10 @@ describe("brand-agents/core/get", () => {
     expect(result).toContain("Test description");
     expect(result).toContain("**Customer ID:** 456");
 
-    expect(mockClient.getBrandAgent).toHaveBeenCalledWith("test_api_key", "123");
+    expect(mockClient.getBrandAgent).toHaveBeenCalledWith(
+      "test_api_key",
+      "123",
+    );
   });
 
   it("should handle brand agent not found", async () => {
@@ -100,11 +106,11 @@ describe("brand-agents/core/get", () => {
     process.env.SCOPE3_API_KEY = "env_api_key";
 
     const mockBrandAgent = {
+      createdAt: new Date("2024-01-01T00:00:00Z"),
+      customerId: 456,
+      description: "Test description",
       id: "123",
       name: "Test Brand Agent",
-      description: "Test description",
-      customerId: 456,
-      createdAt: new Date("2024-01-01T00:00:00Z"),
       updatedAt: new Date("2024-01-02T00:00:00Z"),
     };
 
@@ -115,7 +121,10 @@ describe("brand-agents/core/get", () => {
 
       BrandAgentValidators.validateGetResponse(result);
 
-      expect(mockClient.getBrandAgent).toHaveBeenCalledWith("env_api_key", "123");
+      expect(mockClient.getBrandAgent).toHaveBeenCalledWith(
+        "env_api_key",
+        "123",
+      );
     } finally {
       process.env.SCOPE3_API_KEY = originalEnv;
     }
@@ -123,11 +132,11 @@ describe("brand-agents/core/get", () => {
 
   it("should handle brand agent without description", async () => {
     const mockBrandAgent = {
+      createdAt: new Date("2024-01-01T00:00:00Z"),
+      customerId: 456,
+      description: "", // Empty description
       id: "123",
       name: "Test Brand Agent",
-      description: "", // Empty description
-      customerId: 456,
-      createdAt: new Date("2024-01-01T00:00:00Z"),
       updatedAt: new Date("2024-01-02T00:00:00Z"),
     };
 
@@ -141,7 +150,7 @@ describe("brand-agents/core/get", () => {
     );
 
     const parsedResponse = BrandAgentValidators.validateGetResponse(result);
-    
+
     // Dates get serialized to strings in JSON responses
     const expectedBrandAgent = {
       ...mockBrandAgent,

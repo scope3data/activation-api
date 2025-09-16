@@ -6,8 +6,8 @@ import type {
   MCPToolExecuteContext,
 } from "../../types/mcp.js";
 
-import { createMCPResponse } from "../../utils/error-handling.js";
 import { CustomSignalsClient } from "../../services/custom-signals-client.js";
+import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const createCustomSignalTool = (_client?: Scope3ApiClient) => ({
   annotations: {
@@ -156,25 +156,26 @@ export const createCustomSignalTool = (_client?: Scope3ApiClient) => ({
       summary += `The custom signal definition is ready for data ingestion!`;
 
       return createMCPResponse({
-        message: summary,
-        success: true,
         data: {
-          signal,
           configuration: {
-            name: args.name,
-            key: args.key,
-            description: args.description,
             clusters: args.clusters,
+            description: args.description,
+            key: args.key,
+            name: args.name,
           },
           metadata: {
+            channelSpecificClusters: signal.clusters.filter((c) => c.channel)
+              .length,
+            gdprCompliantClusters: signal.clusters.filter((c) => c.gdpr).length,
             isComposite: signal.key.includes(","),
-            keyTypes: signal.key.split(",").map(k => k.trim()),
+            keyTypes: signal.key.split(",").map((k) => k.trim()),
+            regions: signal.clusters.map((c) => c.region),
             totalClusters: signal.clusters.length,
-            regions: signal.clusters.map(c => c.region),
-            gdprCompliantClusters: signal.clusters.filter(c => c.gdpr).length,
-            channelSpecificClusters: signal.clusters.filter(c => c.channel).length,
           },
+          signal,
         },
+        message: summary,
+        success: true,
       });
     } catch (error) {
       throw new Error(

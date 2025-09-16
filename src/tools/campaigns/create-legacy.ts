@@ -145,35 +145,35 @@ export const createCampaignLegacyTool = (client: Scope3ApiClient) => ({
       summary += `\nCampaign is ready for activation!`;
 
       return createMCPResponse({
-        message: summary,
-        success: true,
         data: {
-          strategy,
-          parsedStrategy,
-          targetingProfiles: createdTargetingProfiles,
+          agents: {
+            brandStandardsAgents: parsedStrategy.brandStandardsAgents || [],
+            brandStoryAgents: parsedStrategy.brandStoryAgents || [],
+          },
           configuration: {
             name: args.name,
             prompt: args.prompt,
             strategyType: "INTELLIGENT_PMPS",
           },
-          agents: {
-            brandStandardsAgents: parsedStrategy.brandStandardsAgents || [],
-            brandStoryAgents: parsedStrategy.brandStoryAgents || [],
+          metadata: {
+            campaignType: "legacy",
+            customerId,
+            dimensionsMapSize: Object.keys(dimensionsMap).length,
+            isReadyForActivation: true,
+            strategyId: strategy.id,
           },
+          parsedStrategy,
+          strategy,
           targeting: {
             channels: parsedStrategy.channels || [],
             countries: parsedStrategy.countries || [],
             profileCount: createdTargetingProfiles.length,
             profiles: targetingProfiles,
           },
-          metadata: {
-            strategyId: strategy.id,
-            customerId,
-            dimensionsMapSize: Object.keys(dimensionsMap).length,
-            campaignType: "legacy",
-            isReadyForActivation: true,
-          },
+          targetingProfiles: createdTargetingProfiles,
         },
+        message: summary,
+        success: true,
       });
     } catch (error) {
       throw new Error(

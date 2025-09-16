@@ -55,12 +55,12 @@ export const getPartnerSeatsTool = (client: Scope3ApiClient) => ({
       }
 
       return createMCPResponse({
+        data: {
+          count: seats.length,
+          seats,
+        },
         message,
         success: true,
-        data: {
-          seats,
-          count: seats.length,
-        },
       });
     } catch (error) {
       return createErrorResponse("Failed to get partner seats", error);

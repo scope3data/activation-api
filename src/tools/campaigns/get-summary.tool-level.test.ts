@@ -15,8 +15,8 @@ vi.mock("../../services/campaign-bigquery-service.js", () => ({
 }));
 
 const mockClient = {
-  getBrandAgentCampaign: vi.fn(),
   getBrandAgent: vi.fn(),
+  getBrandAgentCampaign: vi.fn(),
   getCampaignDeliveryData: vi.fn(),
   getTacticBreakdown: vi.fn(),
 } as unknown as Scope3ApiClient;
@@ -28,16 +28,16 @@ const mockContext: MCPToolExecuteContext = {
 };
 
 const sampleCampaignResponse = {
-  id: "camp_123",
-  name: "Test Campaign",
   brandAgentId: "ba_456",
-  status: "active",
   budget: {
-    total: 10000,
     currency: "USD",
+    total: 10000,
   },
   createdAt: new Date("2024-01-01T00:00:00Z"),
+  id: "camp_123",
+  name: "Test Campaign",
   prompt: "Test campaign targeting young adults",
+  status: "active",
 };
 
 const sampleBrandAgentResponse = {
@@ -46,23 +46,23 @@ const sampleBrandAgentResponse = {
 };
 
 const sampleDeliveryDataResponse = {
-  impressions: 50000,
   clicks: 500,
-  spend: 7500,
   ctr: 0.01,
+  impressions: 50000,
+  spend: 7500,
 };
 
 const sampleTacticBreakdownResponse = [
   {
-    name: "Display Advertising",
-    impressions: 30000,
     clicks: 300,
+    impressions: 30000,
+    name: "Display Advertising",
     spend: 4500,
   },
   {
-    name: "Video Advertising", 
-    impressions: 20000,
     clicks: 200,
+    impressions: 20000,
+    name: "Video Advertising",
     spend: 3000,
   },
 ];
@@ -80,16 +80,26 @@ describe("getCampaignSummaryTool", () => {
       expect(tool.annotations.category).toBe("Reporting & Analytics");
       expect(tool.annotations.dangerLevel).toBe("low");
       expect(tool.annotations.readOnlyHint).toBe(true);
-      expect(tool.description).toContain("Get a natural language summary of campaign performance");
+      expect(tool.description).toContain(
+        "Get a natural language summary of campaign performance",
+      );
     });
   });
 
   describe("authentication", () => {
     it("should use session API key when provided", async () => {
-      mockClient.getBrandAgentCampaign = vi.fn().mockResolvedValue(sampleCampaignResponse);
-      mockClient.getBrandAgent = vi.fn().mockResolvedValue(sampleBrandAgentResponse);
-      mockClient.getCampaignDeliveryData = vi.fn().mockResolvedValue(sampleDeliveryDataResponse);
-      mockClient.getTacticBreakdown = vi.fn().mockResolvedValue(sampleTacticBreakdownResponse);
+      mockClient.getBrandAgentCampaign = vi
+        .fn()
+        .mockResolvedValue(sampleCampaignResponse);
+      mockClient.getBrandAgent = vi
+        .fn()
+        .mockResolvedValue(sampleBrandAgentResponse);
+      mockClient.getCampaignDeliveryData = vi
+        .fn()
+        .mockResolvedValue(sampleDeliveryDataResponse);
+      mockClient.getTacticBreakdown = vi
+        .fn()
+        .mockResolvedValue(sampleTacticBreakdownResponse);
 
       const result = await tool.execute(
         {
@@ -98,8 +108,14 @@ describe("getCampaignSummaryTool", () => {
         mockContext,
       );
 
-      expect(mockClient.getBrandAgentCampaign).toHaveBeenCalledWith("test-api-key", "camp_123");
-      expect(mockClient.getBrandAgent).toHaveBeenCalledWith("test-api-key", "ba_456");
+      expect(mockClient.getBrandAgentCampaign).toHaveBeenCalledWith(
+        "test-api-key",
+        "camp_123",
+      );
+      expect(mockClient.getBrandAgent).toHaveBeenCalledWith(
+        "test-api-key",
+        "ba_456",
+      );
       expect(mockClient.getCampaignDeliveryData).toHaveBeenCalled();
       expect(mockClient.getTacticBreakdown).toHaveBeenCalled();
 
@@ -123,10 +139,18 @@ describe("getCampaignSummaryTool", () => {
 
   describe("structured data response", () => {
     beforeEach(() => {
-      mockClient.getBrandAgentCampaign = vi.fn().mockResolvedValue(sampleCampaignResponse);
-      mockClient.getBrandAgent = vi.fn().mockResolvedValue(sampleBrandAgentResponse);
-      mockClient.getCampaignDeliveryData = vi.fn().mockResolvedValue(sampleDeliveryDataResponse);
-      mockClient.getTacticBreakdown = vi.fn().mockResolvedValue(sampleTacticBreakdownResponse);
+      mockClient.getBrandAgentCampaign = vi
+        .fn()
+        .mockResolvedValue(sampleCampaignResponse);
+      mockClient.getBrandAgent = vi
+        .fn()
+        .mockResolvedValue(sampleBrandAgentResponse);
+      mockClient.getCampaignDeliveryData = vi
+        .fn()
+        .mockResolvedValue(sampleDeliveryDataResponse);
+      mockClient.getTacticBreakdown = vi
+        .fn()
+        .mockResolvedValue(sampleTacticBreakdownResponse);
     });
 
     it("should include structured data with campaign summary", async () => {
@@ -151,8 +175,8 @@ describe("getCampaignSummaryTool", () => {
       const result = await tool.execute(
         {
           campaignId: "camp_123",
-          verbosity: "detailed",
           includeCharts: true,
+          verbosity: "detailed",
         },
         mockContext,
       );
@@ -176,7 +200,9 @@ describe("getCampaignSummaryTool", () => {
           },
           mockContext,
         ),
-      ).rejects.toThrow("Failed to generate campaign summary: Campaign not found");
+      ).rejects.toThrow(
+        "Failed to generate campaign summary: Campaign not found",
+      );
     });
   });
 });

@@ -16,23 +16,23 @@ const mockContext: MCPToolExecuteContext = {
 };
 
 const samplePMPResponse = {
+  createdAt: "2024-01-15T10:30:00Z",
+  dealIds: [
+    {
+      dealId: "hulu_123",
+      ssp: "Hulu",
+      status: "active",
+    },
+    {
+      dealId: "fox_456",
+      ssp: "Fox News",
+      status: "pending",
+    },
+  ],
   id: "pmp_123",
   name: "Test PMP",
   status: "active",
   summary: "CTV inventory from Hulu and Fox News targeting premium audiences",
-  dealIds: [
-    {
-      ssp: "Hulu",
-      dealId: "hulu_123",
-      status: "active",
-    },
-    {
-      ssp: "Fox News",
-      dealId: "fox_456",
-      status: "pending",
-    },
-  ],
-  createdAt: "2024-01-15T10:30:00Z",
   updatedAt: "2024-01-15T10:30:00Z",
 };
 
@@ -45,13 +45,16 @@ describe("createPMPTool", () => {
 
   describe("authentication", () => {
     it("should use session API key when provided", async () => {
-      mockClient.createBrandAgentPMP = vi.fn().mockResolvedValue(samplePMPResponse);
+      mockClient.createBrandAgentPMP = vi
+        .fn()
+        .mockResolvedValue(samplePMPResponse);
 
       const result = await tool.execute(
         {
           brand_agent_id: "ba_456",
           name: "Test PMP",
-          prompt: "Create PMP with CTV inventory from Hulu targeting premium audiences",
+          prompt:
+            "Create PMP with CTV inventory from Hulu targeting premium audiences",
         },
         mockContext,
       );
@@ -60,8 +63,9 @@ describe("createPMPTool", () => {
         "test-api-key",
         {
           brandAgentId: "ba_456",
-          name: "Test PMP", 
-          prompt: "Create PMP with CTV inventory from Hulu targeting premium audiences",
+          name: "Test PMP",
+          prompt:
+            "Create PMP with CTV inventory from Hulu targeting premium audiences",
         },
       );
 
@@ -88,13 +92,15 @@ describe("createPMPTool", () => {
 
   describe("structured data response", () => {
     beforeEach(() => {
-      mockClient.createBrandAgentPMP = vi.fn().mockResolvedValue(samplePMPResponse);
+      mockClient.createBrandAgentPMP = vi
+        .fn()
+        .mockResolvedValue(samplePMPResponse);
     });
 
     it("should include structured data with PMP details", async () => {
       const result = await tool.execute(
         {
-          brand_agent_id: "ba_456", 
+          brand_agent_id: "ba_456",
           name: "Test PMP",
           prompt: "Test prompt",
         },
@@ -115,7 +121,7 @@ describe("createPMPTool", () => {
       const result = await tool.execute(
         {
           brand_agent_id: "ba_456",
-          name: "Test PMP", 
+          name: "Test PMP",
           prompt: "Test prompt",
         },
         mockContext,
