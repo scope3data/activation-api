@@ -2382,22 +2382,39 @@ export class Scope3ApiClient {
     });
 
     if (!response.ok) {
+      // Enhanced logging for brand agent list failures
+      console.error(
+        `[listBrandAgents] HTTP ${response.status} ${response.statusText}`,
+        {
+          headers: Object.fromEntries(response.headers.entries()),
+          status: response.status,
+          statusText: response.statusText,
+          url: this.graphqlUrl,
+        },
+      );
+
       if (response.status === 401 || response.status === 403) {
         throw new Error("Authentication failed");
       }
       if (response.status >= 500) {
         throw new Error("External service temporarily unavailable");
       }
-      throw new Error("Request failed");
+      throw new Error(
+        `Request failed with status ${response.status}: ${response.statusText}`,
+      );
     }
 
     const result = (await response.json()) as GraphQLResponse<BrandAgentsData>;
 
     if (result.errors && result.errors.length > 0) {
-      throw new Error("Invalid request parameters or query");
+      console.error(`[listBrandAgents] GraphQL errors:`, result.errors);
+      throw new Error(
+        `Invalid request parameters or query: ${result.errors.map((e) => e.message).join(", ")}`,
+      );
     }
 
     if (!result.data?.brandAgents) {
+      console.error(`[listBrandAgents] No brand agents data received`, result);
       throw new Error("No data received");
     }
 

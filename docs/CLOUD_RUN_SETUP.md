@@ -48,7 +48,7 @@ In Google Cloud Console, enable these APIs:
 
 Add these optional environment variables:
 
-- `SCOPE3_GRAPHQL_URL`: https://api.scope3.com/graphql (if different)
+- `SCOPE3_GRAPHQL_URL`: https://api.scope3.com/api/graphql (if different)
 - `NODE_ENV`: production
 
 **Important**: API keys are NOT stored as environment variables. They must be provided by clients in HTTP headers.

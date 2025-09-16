@@ -20,7 +20,7 @@ vi.mock("@google-cloud/bigquery", () => {
 
 // Global test configuration for brand agent testing
 export const testConfig = {
-  graphqlUrl: "https://api.scope3.com/graphql",
+  graphqlUrl: "https://api.scope3.com/api/graphql",
   testAgentId: "ba_test_123",
   testCustomerId: 12345,
   validApiKey: "scope3_test_key_123",

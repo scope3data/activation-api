@@ -24,7 +24,7 @@ This is the Scope3 Campaign API MCP server with comprehensive brand agent manage
 
 The server uses a **GraphQL-primary with BigQuery enhancement approach**:
 
-- **GraphQL** (`https://api.scope3.com/graphql`): Primary data source for all core entities
+- **GraphQL** (`https://api.scope3.com/api/graphql`): Primary data source for all core entities
   - Brand agents (`public_agent` table) - base brand agent data
   - Brand stories, brand standards, PMPs, measurement sources
   - Reliable, always-available API with authentication

@@ -28,7 +28,7 @@ describe("Scope3ApiClient - Service Level Contract", () => {
 
   beforeEach(() => {
     mockClient = createMockScope3ApiClient();
-    realClient = new Scope3ApiClient("https://api.scope3.com/graphql");
+    realClient = new Scope3ApiClient("https://api.scope3.com/api/graphql");
 
     // Replace real client methods with mocks for testing
     Object.assign(realClient, mockClient);
