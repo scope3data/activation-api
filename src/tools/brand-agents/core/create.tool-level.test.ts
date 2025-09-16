@@ -340,7 +340,8 @@ describe("brand-agent/create Tool", () => {
           return {
             ...brandAgentFixtures.enhancedBrandAgent(),
             id: `ba_concurrent_${callCount}`,
-            name: input.name,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            name: (input as any).name,
           };
         },
       );
