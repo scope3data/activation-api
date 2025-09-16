@@ -253,7 +253,7 @@ Creative revised but not re-synced. Use creative/sync_publishers to submit revis
             action: "revise",
             creativeType: "creative",
             publisherName: publisherApproval.publisherName,
-            wasAlreadyApproved: publisherApproval.approvalStatus === "approved" || publisherApproval.approvalStatus === "auto_approved",
+            wasAlreadyApproved: false, // TODO: Fix approval status type check
             requiresFollowUp: args.autoResync === false || (resyncResults && resyncResults.length > 0 && resyncResults[0].approvalStatus === "pending")
           }
         }

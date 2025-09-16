@@ -44,7 +44,7 @@ export const updateCampaignTool = (client: Scope3ApiClient) => ({
 
     try {
       let summary = `✅ Campaign ${args.name ? `"${args.name}"` : args.campaignId} updated successfully\n\n`;
-      const updatedTactics: Record<string, unknown>[] = [];
+      const updatedTactics: any[] = [];
       const errors: Record<string, unknown>[] = [];
 
       if (args.reason) {
@@ -219,22 +219,22 @@ export const updateCampaignTool = (client: Scope3ApiClient) => ({
           summary += `## 📊 **Tactic Budget Updates** (${updatedTactics.length} updated)\n\n`;
 
           const totalNewBudget = updatedTactics.reduce(
-            (sum, tactic) => sum + tactic.budgetAllocation.amount,
+            (sum, tactic) => sum + (tactic as any).budgetAllocation.amount,
             0,
           );
 
           updatedTactics.forEach((tactic, index) => {
-            summary += `### ${index + 1}. **${tactic.name}**\n`;
-            summary += `**Publisher:** ${tactic.mediaProduct.publisherName} → ${tactic.mediaProduct.name}\n`;
-            if (tactic.targeting) {
-              summary += `**Signal:** ${tactic.targeting.signalType.replace(/_/g, " ")}`;
-              if (tactic.targeting.signalProvider) {
-                summary += ` (${tactic.targeting.signalProvider})`;
+            summary += `### ${index + 1}. **${(tactic as any).name}**\n`;
+            summary += `**Publisher:** ${(tactic as any).mediaProduct.publisherName} → ${(tactic as any).mediaProduct.name}\n`;
+            if ((tactic as any).targeting) {
+              summary += `**Signal:** ${(tactic as any).targeting.signalType.replace(/_/g, " ")}`;
+              if ((tactic as any).targeting.signalProvider) {
+                summary += ` (${(tactic as any).targeting.signalProvider})`;
               }
-            } else if (tactic.brandStoryId) {
-              summary += `**Brand Story:** ${tactic.brandStoryId}`;
-              if (tactic.signalId) {
-                summary += ` + Signal: ${tactic.signalId}`;
+            } else if ((tactic as any).brandStoryId) {
+              summary += `**Brand Story:** ${(tactic as any).brandStoryId}`;
+              if ((tactic as any).signalId) {
+                summary += ` + Signal: ${(tactic as any).signalId}`;
               }
             } else {
               summary += `**Targeting:** Basic targeting`;
@@ -242,23 +242,23 @@ export const updateCampaignTool = (client: Scope3ApiClient) => ({
             summary += `\n`;
 
             summary += `\n**💳 New Budget Allocation:**\n`;
-            summary += `• **Budget:** $${tactic.budgetAllocation.amount.toLocaleString()} ${tactic.budgetAllocation.currency}`;
+            summary += `• **Budget:** $${(tactic as any).budgetAllocation.amount.toLocaleString()} ${(tactic as any).budgetAllocation.currency}`;
 
-            if (tactic.budgetAllocation.percentage) {
-              summary += ` (${tactic.budgetAllocation.percentage}% of campaign)`;
+            if ((tactic as any).budgetAllocation.percentage) {
+              summary += ` (${(tactic as any).budgetAllocation.percentage}% of campaign)`;
             }
             summary += `\n`;
 
-            if (tactic.budgetAllocation.dailyCap) {
-              summary += `• **Daily Cap:** $${tactic.budgetAllocation.dailyCap.toLocaleString()}\n`;
+            if ((tactic as any).budgetAllocation.dailyCap) {
+              summary += `• **Daily Cap:** $${(tactic as any).budgetAllocation.dailyCap.toLocaleString()}\n`;
             }
 
-            summary += `• **Pacing:** ${tactic.budgetAllocation.pacing.replace(/_/g, " ")}\n`;
-            summary += `• **Effective CPM:** $${tactic.effectivePricing.totalCpm.toFixed(2)}\n`;
+            summary += `• **Pacing:** ${(tactic as any).budgetAllocation.pacing.replace(/_/g, " ")}\n`;
+            summary += `• **Effective CPM:** $${(tactic as any).effectivePricing.totalCpm.toFixed(2)}\n`;
 
             const projectedImpressions = Math.floor(
-              (tactic.budgetAllocation.amount /
-                tactic.effectivePricing.totalCpm) *
+              ((tactic as any).budgetAllocation.amount /
+                (tactic as any).effectivePricing.totalCpm) *
                 1000,
             );
             summary += `• **Projected Impressions:** ~${projectedImpressions.toLocaleString()}\n\n`;

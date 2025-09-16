@@ -72,15 +72,15 @@ describe("signals/list", () => {
 
     // Validate structured response
     const parsedResponse = SignalValidators.validateListResponse(result, 1);
-    expect(parsedResponse.data.signals).toHaveLength(1);
-    expect(parsedResponse.data.count).toBe(1);
-    expect(parsedResponse.data.filters).toEqual({
+    expect((parsedResponse.data! as any).signals).toHaveLength(1);
+    expect((parsedResponse.data! as any).count).toBe(1);
+    expect((parsedResponse.data! as any).filters).toEqual({
       region: undefined,
       channel: undefined,
       seatId: undefined,
     });
-    expect(parsedResponse.data.statistics).toHaveProperty("totalRegions");
-    expect(parsedResponse.data.statistics).toHaveProperty("compositeSignals");
+    expect((parsedResponse.data! as any).statistics).toHaveProperty("totalRegions");
+    expect((parsedResponse.data! as any).statistics).toHaveProperty("compositeSignals");
 
     // Verify message content
     expect(result).toContain("Custom Signals Overview");
@@ -205,9 +205,9 @@ describe("signals/list", () => {
 
     // Validate structured response
     const parsedResponse = SignalValidators.validateListResponse(result, 0);
-    expect(parsedResponse.data.count).toBe(0);
-    expect(parsedResponse.data.filters.region).toBe("eu-west-1");
-    expect(parsedResponse.data.statistics.totalRegions).toBe(0);
+    expect((parsedResponse.data! as any).count).toBe(0);
+    expect((parsedResponse.data! as any).filters.region).toBe("eu-west-1");
+    expect((parsedResponse.data! as any).statistics.totalRegions).toBe(0);
 
     expect(result).toContain("No Custom Signals Found");
     expect(result).toContain("Applied Filters");

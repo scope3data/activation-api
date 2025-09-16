@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { createMockScope3ApiClient, serviceLevelScenarios, serviceTestData } from "../../../__tests__/setup/service-level-mocks.js";
-import { BrandAgentValidators,  expectLegacyCompatibleResponse } from "../../../__tests__/utils/structured-response-helpers.js";
+import { BrandAgentValidators, expectLegacyCompatibleResponse, ValidatedBrandAgent } from "../../../__tests__/utils/structured-response-helpers.js";
 import { brandAgentFixtures } from "../../../__tests__/fixtures/brand-agent-fixtures.js";
 
 import { listBrandAgentsTool } from "./list.js";
@@ -124,8 +124,8 @@ describe("brand-agent/list Tool", () => {
       
       // Verify each brand agent in data
       if (Array.isArray(response.data!.brandAgents)) {
-        response.data!.brandAgents.forEach((agent: ReturnType<typeof createMockScope3ApiClient>) => {
-          BrandAgentValidators.validateBrandAgent(agent);
+        response.data!.brandAgents.forEach((agent) => {
+          BrandAgentValidators.validateBrandAgent(agent as ValidatedBrandAgent);
         });
       }
     });

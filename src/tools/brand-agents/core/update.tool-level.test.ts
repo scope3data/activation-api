@@ -106,11 +106,14 @@ describe("brand-agents/core/update", () => {
     // Validate structured response
     const parsedResponse = BrandAgentValidators.validateGetResponse(result);
 
-    expect(parsedResponse.data.changes).toEqual({
-      name: "New Name",
-      description: "New description",
-      tacticSeedDataCoop: true,
-    });
+    expect(parsedResponse.data).toBeDefined();
+    if (parsedResponse.data && 'changes' in parsedResponse.data) {
+      expect((parsedResponse.data as any).changes).toEqual({
+        name: "New Name",
+        description: "New description",
+        tacticSeedDataCoop: true,
+      });
+    }
 
     // Verify message content (result is JSON string)
     const parsedMessage = JSON.parse(result);

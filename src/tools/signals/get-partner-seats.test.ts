@@ -72,8 +72,8 @@ describe("signals/get-partner-seats", () => {
       expect(typeof seat.customerId).toBe("number");
     });
 
-    expect(parsedResponse.data.seats).toHaveLength(2);
-    expect(parsedResponse.data.count).toBe(2);
+    expect((parsedResponse.data! as any).seats).toHaveLength(2);
+    expect((parsedResponse.data! as any).count).toBe(2);
 
     // Verify message content
     expect(result).toContain("Found 2 accessible brand agent seats");
@@ -109,8 +109,8 @@ describe("signals/get-partner-seats", () => {
     );
 
     const parsedResponse = expectListResponse(result, 0);
-    expect(parsedResponse.data.seats).toHaveLength(0);
-    expect(parsedResponse.data.count).toBe(0);
+    expect((parsedResponse.data! as any).seats).toHaveLength(0);
+    expect((parsedResponse.data! as any).count).toBe(0);
 
     expect(result).toContain("Found 0 accessible brand agent seats");
     expect(result).toContain("No brand agent seats are accessible");
