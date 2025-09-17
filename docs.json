@@ -28,7 +28,8 @@
             ]
           },
           {
-            "group": "🌟 Features",
+            "group": "Features",
+            "icon": "star",
             "pages": [
               "mintlify/features/media-quality",
               "mintlify/features/publisher-integration",
@@ -36,7 +37,8 @@
             ]
           },
           {
-            "group": "📦 Object Guides",
+            "group": "Object Guides",
+            "icon": "cube",
             "pages": [
               "mintlify/object-guides/brand-agent",
               "mintlify/object-guides/campaign",
@@ -50,7 +52,8 @@
             ]
           },
           {
-            "group": "🔧 Optimization",
+            "group": "Optimization",
+            "icon": "wrench",
             "pages": [
               "mintlify/optimization/scoring",
               "mintlify/optimization/scope3-algorithms",
@@ -58,7 +61,8 @@
             ]
           },
           {
-            "group": "🔌 Integrations",
+            "group": "Integrations",
+            "icon": "plug",
             "pages": [
               "mintlify/integrations/webhooks",
               "mintlify/integrations/creative-agents",
@@ -66,7 +70,8 @@
             ]
           },
           {
-            "group": "📊 Reporting & Analytics",
+            "group": "Reporting & Analytics",
+            "icon": "chart-bar",
             "pages": ["mintlify/reporting-overview"]
           }
         ]
