@@ -88,6 +88,7 @@
             "group": "Publisher Integration",
             "pages": [
               "mintlify/partners/publisher-setup",
+              "mintlify/partners/designing-ad-products",
               "mintlify/partners/publisher-prebid-setup",
               "mintlify/partners/sales-agents",
               "mintlify/partners/axe-integration"
