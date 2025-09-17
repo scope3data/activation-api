@@ -7,6 +7,7 @@ import {
   serviceLevelScenarios,
   serviceTestData,
 } from "../__tests__/setup/service-level-mocks.js";
+import { BrandAgentValidators } from "../__tests__/utils/structured-response-helpers.js";
 import { Scope3ApiClient } from "./scope3-client.js";
 
 /**
@@ -360,6 +361,9 @@ describe("Scope3ApiClient - Service Level Contract", () => {
         expect(result).toHaveProperty("customerId");
         expect(result).toHaveProperty("createdAt");
         expect(result).toHaveProperty("updatedAt");
+
+        // Validate using structured response validators
+        BrandAgentValidators.validateBrandAgent(result);
       });
     });
 

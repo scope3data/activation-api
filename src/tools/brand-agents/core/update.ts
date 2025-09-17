@@ -57,6 +57,11 @@ export const updateBrandAgentTool = (client: Scope3ApiClient) => ({
       // Check if there are actually fields to update
       if (Object.keys(updateInput).length === 0) {
         return createMCPResponse({
+          data: {
+            brandAgentId: args.brandAgentId,
+            changes: {},
+          },
+          error: "INVALID_REQUEST",
           message:
             "No changes specified. Please provide at least a name, description, or tacticSeedDataCoop setting to update.",
           success: false,
@@ -94,6 +99,14 @@ export const updateBrandAgentTool = (client: Scope3ApiClient) => ({
       summary += `\nℹ️ **Note:** All campaigns, creatives, and other resources associated with this brand agent remain unchanged.`;
 
       return createMCPResponse({
+        data: {
+          brandAgent: updatedBrandAgent,
+          changes: {
+            description: args.description,
+            name: args.name,
+            tacticSeedDataCoop: args.tacticSeedDataCoop,
+          },
+        },
         message: summary,
         success: true,
       });

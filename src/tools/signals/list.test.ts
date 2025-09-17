@@ -1,5 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import {
+  expectErrorResponse,
+  SignalValidators,
+} from "../../__tests__/utils/structured-response-helpers.js";
 import { Scope3ApiClient } from "../../client/scope3-client.js";
 import { CustomSignalsClient } from "../../services/custom-signals-client.js";
 import { listCustomSignalsTool } from "./list.js";
@@ -69,6 +74,23 @@ describe("signals/list", () => {
       },
     );
 
+    // Validate structured response
+    const parsedResponse = SignalValidators.validateListResponse(result, 1);
+    expect((parsedResponse.data! as any).signals).toHaveLength(1);
+    expect((parsedResponse.data! as any).count).toBe(1);
+    expect((parsedResponse.data! as any).filters).toEqual({
+      channel: undefined,
+      region: undefined,
+      seatId: undefined,
+    });
+    expect((parsedResponse.data! as any).statistics).toHaveProperty(
+      "totalRegions",
+    );
+    expect((parsedResponse.data! as any).statistics).toHaveProperty(
+      "compositeSignals",
+    );
+
+    // Verify message content
     expect(result).toContain("Custom Signals Overview");
     expect(result).toContain("**Total Signals:** 1");
     expect(result).toContain("Test Signal");
@@ -189,6 +211,12 @@ describe("signals/list", () => {
       },
     );
 
+    // Validate structured response
+    const parsedResponse = SignalValidators.validateListResponse(result, 0);
+    expect((parsedResponse.data! as any).count).toBe(0);
+    expect((parsedResponse.data! as any).filters.region).toBe("eu-west-1");
+    expect((parsedResponse.data! as any).statistics.totalRegions).toBe(0);
+
     expect(result).toContain("No Custom Signals Found");
     expect(result).toContain("Applied Filters");
     expect(result).toContain("**Region:** eu-west-1");
@@ -244,9 +272,8 @@ describe("signals/list", () => {
   it("should handle missing API key", async () => {
     const result = await tool.execute({}, {});
 
-    expect(result).toContain("Authentication required");
+    expectErrorResponse(result, "Authentication required");
     expect(result).toContain("AUTHENTICATION_FAILED");
-    expect(result).toContain('"success":false');
     expect(mockScope3Client.listCustomSignals).not.toHaveBeenCalled();
   });
 
@@ -262,9 +289,8 @@ describe("signals/list", () => {
       },
     );
 
-    expect(result).toContain("Failed to list custom signals");
+    expectErrorResponse(result, "Failed to list custom signals");
     expect(result).toContain("SERVICE_UNAVAILABLE");
-    expect(result).toContain('"success":false');
   });
 
   it("should use environment variable when no session API key", async () => {
@@ -277,7 +303,9 @@ describe("signals/list", () => {
     });
 
     try {
-      await tool.execute({}, {});
+      const result = await tool.execute({}, {});
+
+      SignalValidators.validateListResponse(result, 0);
 
       expect(mockScope3Client.listCustomSignals).toHaveBeenCalledWith(
         "env_api_key",

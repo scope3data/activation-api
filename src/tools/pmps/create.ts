@@ -66,6 +66,26 @@ export const createPMPTool = (client: Scope3ApiClient) =>
           `*Note: Deal IDs marked as 'pending' are being set up and will be active within 24 hours. Active deals are ready for immediate use.*`;
 
         return createMCPResponse({
+          data: {
+            configuration: {
+              brandAgentId: brand_agent_id,
+              name,
+              prompt,
+            },
+            dealIds: pmp.dealIds,
+            pmp,
+            summary: {
+              activeDeals: pmp.dealIds.filter((d) => d.status === "active")
+                .length,
+              pendingDeals: pmp.dealIds.filter((d) => d.status === "pending")
+                .length,
+              pmpId: pmp.id,
+              pmpName: pmp.name,
+              sspList: [...new Set(pmp.dealIds.map((d) => d.ssp))],
+              status: pmp.status,
+              totalDeals: pmp.dealIds.length,
+            },
+          },
           message: response,
           success: true,
         });

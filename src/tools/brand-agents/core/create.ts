@@ -67,6 +67,7 @@ export const createBrandAgentTool = (client: Scope3ApiClient) => ({
       summary += `Use the brand agent ID \`${brandAgent.id}\` for all subsequent operations.`;
 
       return createMCPResponse({
+        data: { brandAgent },
         message: summary,
         success: true,
       });

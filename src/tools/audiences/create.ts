@@ -6,6 +6,8 @@ import type {
   MCPToolExecuteContext,
 } from "../../types/mcp.js";
 
+import { createMCPResponse } from "../../utils/error-handling.js";
+
 export const createSyntheticAudienceTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "System",
@@ -94,7 +96,41 @@ export const createSyntheticAudienceTool = (client: Scope3ApiClient) => ({
 
       summary += `The audience is ready to be assigned to campaigns!`;
 
-      return summary;
+      return createMCPResponse({
+        data: {
+          audience,
+          brandAgent: {
+            id: args.brandAgentId,
+            name: brandAgentName,
+          },
+          configuration: {
+            brandAgentId: args.brandAgentId,
+            description: args.description,
+            name: args.name,
+          },
+          metadata: {
+            assignmentCapable: true,
+            audienceType: "synthetic",
+            capabilities: {
+              behavioralTargeting: false,
+              campaignAssignment: true,
+              crossPublisherMatching: false,
+              demographicProfiling: false,
+              lookalikeGeneration: false,
+            },
+            createdAt: audience.createdAt,
+            isStubImplementation: true,
+          },
+          nextSteps: [
+            "Assign this audience to campaigns within the same brand agent",
+            "Monitor campaign performance with this audience",
+            "Create additional audience variants for different campaign objectives",
+            "Use audience insights to refine targeting strategies",
+          ],
+        },
+        message: summary,
+        success: true,
+      });
     } catch (error) {
       throw new Error(
         `Failed to create synthetic audience: ${error instanceof Error ? error.message : String(error)}`,

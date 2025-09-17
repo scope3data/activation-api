@@ -3,6 +3,8 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
+import { createMCPResponse } from "../../utils/error-handling.js";
+
 export const checkAuthTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "System",
@@ -34,7 +36,24 @@ export const checkAuthTool = (client: Scope3ApiClient) => ({
 
     const customerId = await client.getCustomerId(apiKey);
 
-    return `Authentication successful. Customer ID: ${customerId}`;
+    const message = `✅ **Authentication Status: Verified**
+
+**Customer ID:** ${customerId}
+**API Key:** Valid and active
+**Timestamp:** ${new Date().toISOString()}
+
+🔑 Your API key has the required permissions to access Scope3 services.`;
+
+    return createMCPResponse({
+      data: {
+        apiKeySource: context.session?.scope3ApiKey ? "session" : "environment",
+        authenticated: true,
+        customerId,
+        timestamp: new Date().toISOString(),
+      },
+      message,
+      success: true,
+    });
   },
 
   name: "auth/check",

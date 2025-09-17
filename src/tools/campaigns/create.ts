@@ -104,6 +104,20 @@ export const createCampaignTool = (client: Scope3ApiClient) => ({
       summary += `• Update settings: Use update_campaign with new parameters`;
 
       return createMCPResponse({
+        data: {
+          campaign,
+          configuration: {
+            brandAgentId: args.brandAgentId,
+            budget: {
+              ...args.budget,
+              currency: args.budget.currency || "USD",
+            },
+            creativeIds: args.creativeIds || [],
+            endDate: args.endDate,
+            prompt: args.prompt,
+            startDate: args.startDate,
+          },
+        },
         message: summary,
         success: true,
       });

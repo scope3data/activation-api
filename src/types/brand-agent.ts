@@ -227,6 +227,11 @@ export interface BrandAgentCreativeUpdateInput {
   url?: string;
 }
 
+// API Response types
+export interface BrandAgentData {
+  agent: BrandAgent | null;
+}
+
 // Brand Agent Descriptor - flexible way to reference brand agents in MCP tools
 export interface BrandAgentDescriptor {
   externalId?: string; // Customer's external identifier
@@ -244,9 +249,8 @@ export interface BrandAgentInput {
   tacticSeedDataCoop?: boolean; // Opt-in to tactic seed data cooperative
 }
 
-// API Response types
 export interface BrandAgentsData {
-  brandAgents: BrandAgent[];
+  agents: BrandAgent[];
 }
 
 export interface BrandAgentUpdateInput {

@@ -58,6 +58,13 @@ export const deleteCampaignTool = (client: Scope3ApiClient) => ({
         warning += `**Override:** Use force=true to delete immediately (not recommended)`;
 
         return createMCPResponse({
+          data: {
+            campaignId: args.campaignId,
+            force: args.force,
+            reason: "Cannot delete active campaign",
+            status: campaign.status,
+          },
+          error: "CAMPAIGN_ACTIVE",
           message: warning,
           success: false,
         });
@@ -174,6 +181,25 @@ export const deleteCampaignTool = (client: Scope3ApiClient) => ({
       summary += `• Update budget allocations for remaining campaigns if needed`;
 
       return createMCPResponse({
+        data: {
+          configuration: {
+            campaignId: args.campaignId,
+            force: args.force,
+            preserveCreatives: args.preserveCreatives,
+          },
+          creativesData: assignedCreatives || [],
+          deletedCampaign: {
+            brandAgentId: campaign.brandAgentId,
+            id: campaign.id,
+            name: campaign.name,
+            status: campaign.status,
+          },
+          removed: {
+            creatives: assignedCreatives ? assignedCreatives.length : 0,
+            tactics: campaignTactics ? campaignTactics.length : 0,
+          },
+          tacticsData: campaignTactics || [],
+        },
         message: summary,
         success: true,
       });

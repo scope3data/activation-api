@@ -181,6 +181,48 @@ export const updateSignalsAgentTool = (client: Scope3ApiClient) => ({
       summary += `The signals agent configuration has been successfully updated!`;
 
       return createMCPResponse({
+        data: {
+          changesSummary: {
+            changes: changes,
+            changesCount: changes.length,
+            hasConfigUpdates: !!args.config,
+            hasEndpointChange:
+              !!args.endpointUrl &&
+              args.endpointUrl !== currentAgent.endpointUrl,
+            hasStatusChange:
+              !!args.status && args.status !== currentAgent.status,
+          },
+          configuration: {
+            agentId: args.agentId,
+            updates: {
+              config: args.config,
+              description: args.description,
+              endpointUrl: args.endpointUrl,
+              name: args.name,
+              status: args.status,
+            },
+            updateTime: new Date().toISOString(),
+          },
+          currentState: {
+            brandAgentId: updatedAgent.brandAgentId,
+            config: updatedAgent.config,
+            description: updatedAgent.description,
+            endpointUrl: updatedAgent.endpointUrl,
+            name: updatedAgent.name,
+            status: updatedAgent.status,
+          },
+          metadata: {
+            action: "update",
+            agentId: args.agentId,
+            agentName: updatedAgent.name,
+            brandAgentId: updatedAgent.brandAgentId,
+            isOperational: updatedAgent.status === "active",
+            requiresConnectivityTest: !!args.endpointUrl,
+            status: updatedAgent.status,
+          },
+          previousAgent: currentAgent,
+          updatedAgent,
+        },
         message: summary,
         success: true,
       });

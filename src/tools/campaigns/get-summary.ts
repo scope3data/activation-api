@@ -17,6 +17,8 @@ import type {
   TopTactic,
 } from "../../types/reporting.js";
 
+import { createMCPResponse } from "../../utils/error-handling.js";
+
 export const getCampaignSummaryTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "Reporting & Analytics",
@@ -95,7 +97,20 @@ export const getCampaignSummaryTool = (client: Scope3ApiClient) => ({
         args.includeCharts || true,
       );
 
-      return JSON.stringify(summary);
+      return createMCPResponse({
+        data: {
+          brandAgent,
+          campaign,
+          campaignId: args.campaignId,
+          deliveryData,
+          includeCharts: args.includeCharts || true,
+          summary,
+          tacticBreakdown,
+          verbosity: args.verbosity || "detailed",
+        },
+        message: summary.textSummary,
+        success: true,
+      });
     } catch (error) {
       throw new Error(
         `Failed to generate campaign summary: ${error instanceof Error ? error.message : String(error)}`,

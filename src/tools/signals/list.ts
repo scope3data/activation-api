@@ -93,7 +93,26 @@ export const listCustomSignalsTool = (client: Scope3ApiClient) => ({
         message += `• Upload signal data via the Custom Signals data API\n`;
         message += `• Reference signals in campaign prompts for enhanced targeting\n\n`;
 
-        return message;
+        return createMCPResponse({
+          data: {
+            count: 0,
+            filters: {
+              channel: args.channel,
+              region: args.region,
+              seatId: args.seatId,
+            },
+            signals: [],
+            statistics: {
+              compositeSignals: 0,
+              gdprCompliantSignals: 0,
+              singleKeySignals: 0,
+              totalChannels: 0,
+              totalRegions: 0,
+            },
+          },
+          message,
+          success: true,
+        });
       }
 
       let summary = `📊 **Custom Signals Overview**\n\n`;
@@ -191,6 +210,22 @@ export const listCustomSignalsTool = (client: Scope3ApiClient) => ({
       summary += `• Upload signal data via the Custom Signals data API\n`;
 
       return createMCPResponse({
+        data: {
+          count: result.total,
+          filters: {
+            channel: args.channel,
+            region: args.region,
+            seatId: args.seatId,
+          },
+          signals: result.signals,
+          statistics: {
+            compositeSignals,
+            gdprCompliantSignals,
+            singleKeySignals: result.total - compositeSignals,
+            totalChannels,
+            totalRegions,
+          },
+        },
         message: summary,
         success: true,
       });

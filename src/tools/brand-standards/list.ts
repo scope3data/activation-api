@@ -3,6 +3,8 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
+import { createMCPResponse } from "../../utils/error-handling.js";
+
 export const listBrandAgentStandardsTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "Brand Standards",
@@ -101,7 +103,30 @@ export const listBrandAgentStandardsTool = (client: Scope3ApiClient) => ({
         summary += `• Multiple standards agents can target different markets/channels`;
       }
 
-      return summary;
+      return createMCPResponse({
+        data: {
+          brandAgentId: args.brandAgentId,
+          brandAgentName,
+          count: standardsAgents.length,
+          standardsAgents,
+          statistics: {
+            totalModels: standardsAgents.reduce(
+              (sum, agent) => sum + agent.models.length,
+              0,
+            ),
+            totalStandards: standardsAgents.length,
+            withoutPrimaryModel: standardsAgents.filter(
+              (agent) =>
+                !agent.models.some((model) => model.status === "PRIMARY"),
+            ).length,
+            withPrimaryModel: standardsAgents.filter((agent) =>
+              agent.models.some((model) => model.status === "PRIMARY"),
+            ).length,
+          },
+        },
+        message: summary,
+        success: true,
+      });
     } catch (error) {
       throw new Error(
         `Failed to list brand standards agents: ${error instanceof Error ? error.message : String(error)}`,

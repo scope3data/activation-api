@@ -104,6 +104,26 @@ export const listBrandAgentBrandStoriesTool = (client: Scope3ApiClient) => ({
       }
 
       return createMCPResponse({
+        data: {
+          brandAgentId: args.brandAgentId,
+          brandAgentName,
+          brandStories,
+          count: brandStories.length,
+          statistics: {
+            totalModels: brandStories.reduce(
+              (sum, story) => sum + story.models.length,
+              0,
+            ),
+            totalStories: brandStories.length,
+            withoutPrimaryModel: brandStories.filter(
+              (story) =>
+                !story.models.some((model) => model.status === "PRIMARY"),
+            ).length,
+            withPrimaryModel: brandStories.filter((story) =>
+              story.models.some((model) => model.status === "PRIMARY"),
+            ).length,
+          },
+        },
         message: summary,
         success: true,
       });

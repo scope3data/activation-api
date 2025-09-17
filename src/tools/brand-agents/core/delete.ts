@@ -58,6 +58,12 @@ export const deleteBrandAgentTool = (client: Scope3ApiClient) => ({
 
       if (!success) {
         return createMCPResponse({
+          data: {
+            brandAgentId: args.brandAgentId,
+            operation: "delete",
+            timestamp: new Date().toISOString(),
+          },
+          error: "DELETION_FAILED",
           message:
             "Failed to delete brand agent. The operation was not completed.",
           success: false,
@@ -81,6 +87,14 @@ export const deleteBrandAgentTool = (client: Scope3ApiClient) => ({
       summary += `The brand agent and all its associated data have been permanently removed from the system.`;
 
       return createMCPResponse({
+        data: {
+          deletedBrandAgent: {
+            id: args.brandAgentId,
+            name: brandAgentName,
+          },
+          operation: "delete",
+          timestamp: new Date().toISOString(),
+        },
         message: summary,
         success: true,
       });

@@ -1,0 +1,290 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { Scope3ApiClient } from "../../client/scope3-client.js";
+import type { MCPToolExecuteContext } from "../../types/mcp.js";
+
+import { CampaignValidators } from "../../__tests__/utils/structured-response-helpers.js";
+import { listCampaignsTool } from "./list.js";
+
+const mockClient = {
+  listBrandAgentCampaigns: vi.fn(),
+} as unknown as Scope3ApiClient;
+
+const mockContext: MCPToolExecuteContext = {
+  session: {
+    scope3ApiKey: "test-api-key",
+  },
+};
+
+const sampleCampaignResponse = [
+  {
+    audienceIds: ["audience_1"],
+    brandAgentId: "ba_456",
+    budget: {
+      currency: "USD",
+      dailyCap: 50000, // $500 in cents
+      pacing: "even",
+      total: 1000000, // $10,000 in cents
+    },
+    createdAt: "2024-01-15T10:30:00Z",
+    creativeIds: ["creative_1", "creative_2"],
+    deliverySummary: {
+      alerts: [],
+      healthScore: 85,
+      pacing: {
+        budgetUtilized: 0.45,
+        status: "on_track",
+      },
+      status: "delivering",
+      today: {
+        averagePrice: 3.6,
+        impressions: 12500,
+        spend: 45000, // $450 in cents
+      },
+    },
+    endDate: "2024-01-31T23:59:59Z",
+    id: "camp_123",
+    name: "Test Campaign",
+    startDate: "2024-01-01T00:00:00Z",
+    status: "active",
+    updatedAt: "2024-01-15T10:30:00Z",
+  },
+];
+
+describe("listCampaignsTool", () => {
+  const tool = listCampaignsTool(mockClient);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe("tool metadata", () => {
+    it("should have correct tool configuration", () => {
+      expect(tool.name).toBe("campaign/list");
+      expect(tool.annotations.category).toBe("Campaigns");
+      expect(tool.annotations.dangerLevel).toBe("low");
+      expect(tool.annotations.readOnlyHint).toBe(true);
+      expect(tool.description).toContain("List campaigns with filtering");
+    });
+  });
+
+  describe("authentication", () => {
+    it("should use session API key when provided", async () => {
+      mockClient.listBrandAgentCampaigns = vi
+        .fn()
+        .mockResolvedValue(sampleCampaignResponse);
+
+      const result = await tool.execute(
+        {
+          brandAgentId: "ba_456",
+        },
+        mockContext,
+      );
+
+      expect(mockClient.listBrandAgentCampaigns).toHaveBeenCalledWith(
+        "test-api-key",
+        "ba_456",
+      );
+
+      // Parse the JSON response to check structured data
+      const parsedResult = JSON.parse(result);
+      expect(parsedResult.success).toBe(true);
+      expect(parsedResult.message).toContain("Campaigns List");
+    });
+
+    it("should throw error when no API key is available", async () => {
+      await expect(
+        tool.execute(
+          {
+            brandAgentId: "ba_456",
+          },
+          { session: {} },
+        ),
+      ).rejects.toThrow("Authentication required");
+    });
+  });
+
+  describe("structured data response", () => {
+    beforeEach(() => {
+      mockClient.listBrandAgentCampaigns = vi
+        .fn()
+        .mockResolvedValue(sampleCampaignResponse);
+    });
+
+    it("should include structured data with campaign list", async () => {
+      const result = await tool.execute(
+        {
+          brandAgentId: "ba_456",
+        },
+        mockContext,
+      );
+
+      CampaignValidators.validateListResponse(result);
+    });
+
+    it("should format human-readable message with campaign details", async () => {
+      const result = await tool.execute(
+        {
+          brandAgentId: "ba_456",
+        },
+        mockContext,
+      );
+
+      const parsedResult = JSON.parse(result);
+      expect(parsedResult.message).toContain("**Campaigns List** (1 found)");
+      expect(parsedResult.message).toContain("Test Campaign");
+      expect(parsedResult.message).toContain("camp_123");
+      expect(parsedResult.message).toContain("Portfolio Summary");
+      expect(parsedResult.message).toContain("Total Budget: $10,000");
+      expect(parsedResult.message).toContain("Total Spend: $450");
+    });
+
+    it("should include filter information in structured data", async () => {
+      const result = await tool.execute(
+        {
+          brandAgentId: "ba_456",
+          sortBy: "name",
+          sortOrder: "asc",
+          status: "active",
+        },
+        mockContext,
+      );
+
+      const parsedResult = JSON.parse(result);
+      expect(parsedResult.data.filters).toEqual({
+        brandAgentId: "ba_456",
+        budgetRange: undefined,
+        dateRange: undefined,
+        limit: undefined,
+        sortBy: "name",
+        sortOrder: "asc",
+        status: "active",
+      });
+    });
+
+    it("should include portfolio summary in structured data", async () => {
+      const result = await tool.execute(
+        {
+          brandAgentId: "ba_456",
+        },
+        mockContext,
+      );
+
+      const parsedResult = JSON.parse(result);
+      expect(parsedResult.data.summary).toEqual({
+        statusCounts: {
+          delivering: 1,
+        },
+        totalBudget: 1000000,
+        totalSpend: 45000,
+        utilization: 4.5,
+      });
+    });
+  });
+
+  describe("empty results", () => {
+    beforeEach(() => {
+      mockClient.listBrandAgentCampaigns = vi.fn().mockResolvedValue([]);
+    });
+
+    it("should handle empty campaign list", async () => {
+      const result = await tool.execute(
+        {
+          brandAgentId: "ba_456",
+        },
+        mockContext,
+      );
+
+      const parsedResult = JSON.parse(result);
+      expect(parsedResult.success).toBe(true);
+      expect(parsedResult.message).toContain("No Campaigns Found");
+      expect(parsedResult.data.campaigns).toEqual([]);
+      expect(parsedResult.data.count).toBe(0);
+    });
+
+    it("should show filter information when no results with filters", async () => {
+      const result = await tool.execute(
+        {
+          brandAgentId: "ba_456",
+          status: "active",
+        },
+        mockContext,
+      );
+
+      const parsedResult = JSON.parse(result);
+      expect(parsedResult.message).toContain(
+        "No campaigns match your filter criteria",
+      );
+      expect(parsedResult.message).toContain("Brand Agent ID: ba_456");
+      expect(parsedResult.message).toContain("Status: active");
+    });
+
+    it("should suggest creating campaigns when no filters applied", async () => {
+      const result = await tool.execute({}, mockContext);
+
+      const parsedResult = JSON.parse(result);
+      expect(parsedResult.message).toContain(
+        "No campaigns exist in your account yet",
+      );
+      expect(parsedResult.message).toContain("Use campaign/create");
+    });
+  });
+
+  describe("error handling", () => {
+    it("should handle API errors gracefully", async () => {
+      mockClient.listBrandAgentCampaigns = vi
+        .fn()
+        .mockRejectedValue(new Error("Brand agent not found"));
+
+      await expect(
+        tool.execute(
+          {
+            brandAgentId: "invalid_id",
+          },
+          mockContext,
+        ),
+      ).rejects.toThrow("Failed to list campaigns: Brand agent not found");
+    });
+  });
+
+  describe("parameter validation", () => {
+    it("should accept valid parameters", () => {
+      const validParams = {
+        brandAgentId: "ba_123",
+        budgetRange: {
+          max: 10000,
+          min: 1000,
+        },
+        dateRange: {
+          end: "2024-01-31",
+          start: "2024-01-01",
+        },
+        limit: 50,
+        sortBy: "name" as const,
+        sortOrder: "desc" as const,
+        status: "active",
+      };
+
+      const result = tool.parameters.safeParse(validParams);
+      expect(result.success).toBe(true);
+    });
+
+    it("should validate limit boundaries", () => {
+      const invalidParams = {
+        limit: 500, // Over max of 200
+      };
+
+      const result = tool.parameters.safeParse(invalidParams);
+      expect(result.success).toBe(false);
+    });
+
+    it("should validate enum values", () => {
+      const invalidParams = {
+        sortBy: "invalid_field",
+      };
+
+      const result = tool.parameters.safeParse(invalidParams);
+      expect(result.success).toBe(false);
+    });
+  });
+});

@@ -97,6 +97,7 @@ export function createErrorResponse(
 
 export function createMCPResponse(data: {
   code?: ErrorCode;
+  data?: unknown; // Structured data for API consumers
   details?: unknown;
   error?: string;
   message: string;
@@ -106,6 +107,11 @@ export function createMCPResponse(data: {
     message: data.message,
     success: data.success,
   };
+
+  // Include structured data for API consumers
+  if (data.data !== undefined) {
+    responseData.data = data.data;
+  }
 
   if (data.error) {
     responseData.error = data.error;

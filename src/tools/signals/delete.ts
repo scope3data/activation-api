@@ -6,6 +6,8 @@ import type {
   MCPToolExecuteContext,
 } from "../../types/mcp.js";
 
+import { createMCPResponse } from "../../utils/error-handling.js";
+
 export const deleteCustomSignalTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "Signals",
@@ -140,7 +142,48 @@ export const deleteCustomSignalTool = (client: Scope3ApiClient) => ({
 
       summary += `The custom signal has been permanently removed from the platform.`;
 
-      return summary;
+      return createMCPResponse({
+        data: {
+          configuration: {
+            signalId: args.signalId,
+          },
+          deletedSignal: {
+            clusters: signalDetails.clusters,
+            description: signalDetails.description,
+            id: result.id,
+            key: signalDetails.key,
+            name: signalDetails.name,
+          },
+          deletionResult: result,
+          impact: {
+            apiEndpointsRemoved: [
+              `/signals/${signalDetails.key}`,
+              `/signals/${signalDetails.key}/{identifier}`,
+            ],
+            channelSpecificClustersRemoved: signalDetails.clusters.filter(
+              (c) => c.channel,
+            ).length,
+            clustersRemoved: signalDetails.clusters.length,
+            gdprClustersRemoved: signalDetails.clusters.filter((c) => c.gdpr)
+              .length,
+            isComposite: signalDetails.key.includes(","),
+            keyTypes: signalDetails.key.split(",").map((k) => k.trim()),
+            regionsAffected: [
+              ...new Set(signalDetails.clusters.map((c) => c.region)),
+            ],
+          },
+          recoveryData: {
+            previousConfiguration: {
+              clusters: signalDetails.clusters,
+              description: signalDetails.description,
+              key: signalDetails.key,
+              name: signalDetails.name,
+            },
+          },
+        },
+        message: summary,
+        success: true,
+      });
     } catch (error) {
       throw new Error(
         `Failed to delete custom signal: ${error instanceof Error ? error.message : String(error)}`,

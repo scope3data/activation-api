@@ -3,6 +3,8 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
+import { createMCPResponse } from "../../utils/error-handling.js";
+
 /**
  * Assign creative to campaign (both must belong to same buyer agent)
  * Validates buyer agent ownership before assignment
@@ -74,7 +76,30 @@ export const creativeAssignTool = (client: Scope3ApiClient) => ({
 • Performance tracking setup
 • Real-time inventory allocation`;
 
-        return response;
+        return createMCPResponse({
+          data: {
+            assignment: result,
+            configuration: {
+              assignmentDate: new Date().toISOString(),
+              buyerAgentId: args.buyerAgentId,
+              campaignId: args.campaignId,
+              creativeId: args.creativeId,
+            },
+            metadata: {
+              action: "assign",
+              assignmentType: "creative-campaign",
+              ownershipValidated: true,
+              performanceTrackingEnabled: true,
+            },
+            status: {
+              isActive: true,
+              message: result.message,
+              success: result.success,
+            },
+          },
+          message: response,
+          success: true,
+        });
       } else {
         throw new Error(`Failed to assign creative: ${result.message}`);
       }
@@ -161,7 +186,29 @@ export const creativeUnassignTool = (client: Scope3ApiClient) => ({
 
 🔄 **[STUB]** Unassignment will be processed by AdCP publishers.`;
 
-        return response;
+        return createMCPResponse({
+          data: {
+            configuration: {
+              campaignId: args.campaignId,
+              creativeId: args.creativeId,
+              unassignmentDate: new Date().toISOString(),
+            },
+            metadata: {
+              action: "unassign",
+              assignmentType: "creative-campaign",
+              availableForReassignment: true,
+              performanceTrackingStopped: true,
+            },
+            status: {
+              isActive: false,
+              message: result.message,
+              success: result.success,
+            },
+            unassignment: result,
+          },
+          message: response,
+          success: true,
+        });
       } else {
         throw new Error(`Failed to unassign creative: ${result.message}`);
       }

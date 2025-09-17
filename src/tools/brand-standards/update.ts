@@ -3,6 +3,8 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
+import { createMCPResponse } from "../../utils/error-handling.js";
+
 export const updateBrandAgentStandardsTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "Brand Standards",
@@ -80,7 +82,35 @@ export const updateBrandAgentStandardsTool = (client: Scope3ApiClient) => ({
       summary += `• Monitor campaign performance for any classification changes\n`;
       summary += `• Create additional updates as needed to refine safety rules`;
 
-      return summary;
+      return createMCPResponse({
+        data: {
+          configuration: {
+            customName: args.name,
+            modelName: modelName,
+            prompt: args.prompt,
+            standardsId: args.standardsId,
+          },
+          metadata: {
+            action: "update",
+            affectsAllCampaigns: true,
+            agentType: "brand-standards",
+            previousVersionsPreserved: true,
+            retrainingRequired: true,
+            standardsId: args.standardsId,
+            status: "active",
+          },
+          updatedModel,
+          versionInfo: {
+            createdAt: updatedModel.createdAt,
+            isPrimary: true,
+            modelId: updatedModel.id,
+            modelName: updatedModel.name,
+            versionType: "updated",
+          },
+        },
+        message: summary,
+        success: true,
+      });
     } catch (error) {
       throw new Error(
         `Failed to update brand standards agent: ${error instanceof Error ? error.message : String(error)}`,

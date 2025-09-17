@@ -107,6 +107,33 @@ export const unregisterSignalsAgentTool = (client: Scope3ApiClient) => ({
       summary += `The signals agent has been successfully unregistered and access has been revoked.`;
 
       return createMCPResponse({
+        data: {
+          configuration: {
+            agentId: args.agentId,
+            unregistrationTime: new Date().toISOString(),
+          },
+          metadata: {
+            action: "unregister",
+            agentId: args.agentId,
+            agentName: agent.name,
+            brandAgentId: agent.brandAgentId,
+            previousStatus: agent.status,
+            reregistrationPossible: true,
+            status: "revoked",
+          },
+          preservation: {
+            activityHistoryPreserved: true,
+            auditTrailAvailable: true,
+            existingSegmentsPreserved: true,
+          },
+          revokedAccess: {
+            apiAccess: false,
+            segmentCreation: false,
+            segmentDeletion: false,
+            segmentUpdates: false,
+          },
+          unregisteredAgent: agent,
+        },
         message: summary,
         success: true,
       });

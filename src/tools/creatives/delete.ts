@@ -3,6 +3,8 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
+import { createMCPResponse } from "../../utils/error-handling.js";
+
 export const creativeDeleteTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "Creatives",
@@ -105,7 +107,34 @@ export const creativeDeleteTool = (client: Scope3ApiClient) => ({
       summary += `• Consider uploading replacement creatives if needed\n`;
       summary += `• Update campaign creative assignments as necessary`;
 
-      return summary;
+      return createMCPResponse({
+        data: {
+          affectedCampaigns: {
+            active: activeCampaigns,
+            all: creative.campaignAssignments || [],
+          },
+          configuration: {
+            creativeId: args.creativeId,
+            force: args.force,
+          },
+          deletedCreative: {
+            assetCount: creative.assetIds.length,
+            buyerAgentId: creative.buyerAgentId,
+            campaignAssignments: creative.campaignAssignments || [],
+            id: creative.creativeId,
+            name: creative.creativeName,
+            status: creative.status,
+          },
+          impact: {
+            activeCampaignsAffected: activeCampaigns.length,
+            assetsRemoved: creative.assetIds.length,
+            forceDeleted: args.force && activeCampaigns.length > 0,
+            totalCampaignsAffected: creative.campaignAssignments?.length || 0,
+          },
+        },
+        message: summary,
+        success: true,
+      });
     } catch (error) {
       throw new Error(
         `Failed to delete creative: ${error instanceof Error ? error.message : String(error)}`,

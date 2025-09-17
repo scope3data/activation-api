@@ -3,6 +3,8 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
+import { createMCPResponse } from "../../utils/error-handling.js";
+
 export const creativeGetTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "Creatives",
@@ -118,7 +120,47 @@ export const creativeGetTool = (client: Scope3ApiClient) => ({
       summary += `• Sync to publishers: Use creative/sync_publishers\n`;
       summary += `• Revise creative: Use creative/revise for modifications`;
 
-      return summary;
+      return createMCPResponse({
+        data: {
+          assignments: {
+            activeCampaigns:
+              creative.campaignAssignments?.filter((a) => a.isActive) || [],
+            campaigns: creative.campaignAssignments || [],
+            publishersSyncedTo: [
+              ...new Set(
+                creative.campaignAssignments?.flatMap(
+                  (a) => a.publishersSynced || [],
+                ) || [],
+              ),
+            ],
+          },
+          content: {
+            assemblyMethod: creative.assemblyMethod,
+            assetIds: creative.assetIds,
+            content: creative.content,
+            format: creative.format,
+          },
+          creative,
+          metadata: {
+            activeCampaignAssignments:
+              creative.campaignAssignments?.filter((a) => a.isActive).length ||
+              0,
+            allAssetsValid: creative.assetValidation?.allAssetsValid || false,
+            assetCount: creative.assetIds.length,
+            campaignAssignmentCount: creative.campaignAssignments?.length || 0,
+            creativeId: args.creativeId,
+            hasAssets: creative.assetIds.length > 0,
+            hasCampaignAssignments:
+              (creative.campaignAssignments?.length || 0) > 0,
+            hasValidation: !!creative.assetValidation,
+            invalidAssetCount:
+              creative.assetValidation?.invalidAssets?.length || 0,
+          },
+          validation: creative.assetValidation,
+        },
+        message: summary,
+        success: true,
+      });
     } catch (error) {
       throw new Error(
         `Failed to get creative details: ${error instanceof Error ? error.message : String(error)}`,

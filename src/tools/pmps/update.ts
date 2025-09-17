@@ -128,6 +128,46 @@ export const updatePMPTool = (client: Scope3ApiClient) =>
           `*Last updated: ${updatedPMP.updatedAt.toLocaleString()}*`;
 
         return createMCPResponse({
+          data: {
+            changes: {
+              briefChanges,
+              changeRequestApplied: !!changeRequest,
+              effectivePrompt,
+              fieldsUpdated: updateSummary,
+            },
+            configuration: {
+              changeRequest,
+              name,
+              pmpId: pmp_id,
+              prompt: effectivePrompt,
+              status,
+            },
+            dealIds: updatedPMP.dealIds,
+            optimization: {
+              changeRequestUsed: !!changeRequest,
+              nameChanged: !!name,
+              promptModified: !!prompt || !!changeRequest,
+              statusChanged: !!status,
+            },
+            pmp: updatedPMP,
+            summary: {
+              activeDeals: updatedPMP.dealIds.filter(
+                (d) => d.status === "active",
+              ).length,
+              pausedDeals: updatedPMP.dealIds.filter(
+                (d) => d.status === "paused",
+              ).length,
+              pendingDeals: updatedPMP.dealIds.filter(
+                (d) => d.status === "pending",
+              ).length,
+              pmpId: updatedPMP.id,
+              pmpName: updatedPMP.name,
+              sspList: [...new Set(updatedPMP.dealIds.map((d) => d.ssp))],
+              status: updatedPMP.status,
+              totalDeals: updatedPMP.dealIds.length,
+            },
+            updatedAt: updatedPMP.updatedAt,
+          },
           message: response,
           success: true,
         });

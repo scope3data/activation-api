@@ -183,10 +183,13 @@ All MCP tools should follow these patterns:
 
 ### Branch Management
 
-- Create new branches for feature work
+- **NEVER push directly to main branch** - Always create feature branches
+- Create new branches for feature work: `git checkout -b feature/description`
 - Ask how to handle uncommitted changes before starting
 - Use rebase for clean history when merging
 - Test locally before pushing
+- **Always create pull requests** for code review before merging to main
+- **Production fixes require proper testing** before deployment
 
 ## Brand Agent Architecture
 
@@ -274,6 +277,7 @@ npm run docs:validate     # Run full validation (requires Mintlify CLI)
 4. **Don't use absolute URLs** - Use relative paths for internal links
 5. **Don't bypass git hooks** - They exist for good reasons
 6. **Don't make assumptions** - Ask for clarification when uncertain
+7. **Don't assume GraphQL field names match code concepts** - Always verify actual schema field names
 
 ## Refactoring Best Practices
 
@@ -315,6 +319,36 @@ When refactoring code to match updated documentation terminology:
 - **Tool names** appear in 4+ places: file name, export name, tool registration, export list
 - **Prettier formatting** should be run after bulk changes
 - **Testing early and often** prevents cascade failures
+
+### Lessons Learned from GraphQL Schema Mismatch Investigation
+
+When troubleshooting "Request failed" errors that bypass authentication:
+
+**The Problem**: Assumed GraphQL field names matched code concepts
+
+- **Code**: `brandAgents`, `brandAgent`
+- **Actual API**: `agents`, `agent`
+
+**Root Cause**: GraphQL schema field names can differ from conceptual naming
+
+- Authentication works (validates API key exists)
+- Data queries fail (wrong field names = 400 Bad Request)
+
+**Investigation Process**:
+
+1. **Verify endpoint connectivity** - Test basic HTTP requests
+2. **Test authentication separately** - Confirm API key works for simple queries
+3. **Test actual GraphQL queries directly** - Use curl with real API key to test exact queries
+4. **Verify field names with working queries** - Don't assume, test systematically
+
+**Key Fixes Required**:
+
+- **LIST**: `brandAgents` → `agents` (plural field)
+- **GET**: `brandAgent(id)` → `agent(id)` (singular field)
+- **CREATE/UPDATE**: Parameter structure (`input` object → direct parameters, `ID!` → `BigInt!`)
+- **Type interfaces**: Update response data structures to match actual API fields
+
+**Prevention**: Always test GraphQL queries directly against the API before implementing client code. Schema documentation may be outdated or incomplete.
 
 ## Resources
 

@@ -3,6 +3,8 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
+import { createMCPResponse } from "../../utils/error-handling.js";
+
 export const deleteBrandAgentStandardsTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "Brand Standards",
@@ -68,7 +70,36 @@ export const deleteBrandAgentStandardsTool = (client: Scope3ApiClient) => ({
 
       summary += `💡 **Recovery:** If you need to restore similar functionality, use \`create_brand_agent_standards\` with the same or updated safety prompt.`;
 
-      return summary;
+      return createMCPResponse({
+        data: {
+          archivalInfo: {
+            action: "soft-delete",
+            archivedAt: result.archivedAt,
+            preservedForAudit: true,
+            standardsId: result.id,
+          },
+          archivedStandards: result,
+          configuration: {
+            standardsId: args.standardsId,
+          },
+          impact: {
+            campaignsAffected: "all",
+            contentClassificationStopped: true,
+            newCampaignsUnaffected: true,
+            safetyRulesRemoved: true,
+          },
+          metadata: {
+            action: "archive",
+            agentType: "brand-standards",
+            isRecoverable: true,
+            requiresReplacement: true,
+            standardsId: result.id,
+            status: "archived",
+          },
+        },
+        message: summary,
+        success: true,
+      });
     } catch (error) {
       throw new Error(
         `Failed to archive brand standards agent: ${error instanceof Error ? error.message : String(error)}`,

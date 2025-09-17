@@ -7,6 +7,7 @@ import {
   getTargetingDimensionsMap,
   transformTargetingProfiles,
 } from "../../client/transformers/targeting.js";
+import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const createCampaignLegacyTool = (client: Scope3ApiClient) => ({
   annotations: {
@@ -142,7 +143,38 @@ export const createCampaignLegacyTool = (client: Scope3ApiClient) => ({
       }
 
       summary += `\nCampaign is ready for activation!`;
-      return summary;
+
+      return createMCPResponse({
+        data: {
+          agents: {
+            brandStandardsAgents: parsedStrategy.brandStandardsAgents || [],
+            brandStoryAgents: parsedStrategy.brandStoryAgents || [],
+          },
+          configuration: {
+            name: args.name,
+            prompt: args.prompt,
+            strategyType: "INTELLIGENT_PMPS",
+          },
+          metadata: {
+            campaignType: "legacy",
+            customerId,
+            dimensionsMapSize: Object.keys(dimensionsMap).length,
+            isReadyForActivation: true,
+            strategyId: strategy.id,
+          },
+          parsedStrategy,
+          strategy,
+          targeting: {
+            channels: parsedStrategy.channels || [],
+            countries: parsedStrategy.countries || [],
+            profileCount: createdTargetingProfiles.length,
+            profiles: targetingProfiles,
+          },
+          targetingProfiles: createdTargetingProfiles,
+        },
+        message: summary,
+        success: true,
+      });
     } catch (error) {
       throw new Error(
         `Campaign creation failed: ${error instanceof Error ? error.message : String(error)}`,

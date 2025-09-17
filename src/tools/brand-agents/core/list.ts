@@ -53,6 +53,10 @@ export const listBrandAgentsTool = (client: Scope3ApiClient) => ({
 
       if (brandAgents.length === 0) {
         return createMCPResponse({
+          data: {
+            brandAgents: [],
+            count: 0,
+          },
           message:
             "No brand agents found. Create your first brand agent to get started!",
           success: true,
@@ -78,6 +82,10 @@ export const listBrandAgentsTool = (client: Scope3ApiClient) => ({
       summary += `\n💡 **Tip:** Use the brand agent ID to create campaigns, creatives, or manage settings for any of these agents.`;
 
       return createMCPResponse({
+        data: {
+          brandAgents,
+          count: brandAgents.length,
+        },
         message: summary,
         success: true,
       });

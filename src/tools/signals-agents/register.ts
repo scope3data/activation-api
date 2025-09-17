@@ -101,6 +101,39 @@ export const registerSignalsAgentTool = (client: Scope3ApiClient) => ({
       summary += `The signals agent is ready to manage segments in your account!`;
 
       return createMCPResponse({
+        data: {
+          agent,
+          configuration: {
+            brandAgentId: args.brandAgentId,
+            config: args.config,
+            description: args.description,
+            endpointUrl: args.endpointUrl,
+            name: args.name,
+          },
+          integration: {
+            apiEndpoints: [
+              `getSignals("${agent.id}", query)`,
+              `activateSignal("${agent.id}", signalId)`,
+              `signals-agent/history for monitoring`,
+            ],
+            exampleUsage: {
+              activateSignal: `activateSignal("${agent.id}", "recommended_signal_id")`,
+              getSignals: `getSignals("${agent.id}", "Target millennials interested in sustainable fashion")`,
+            },
+          },
+          metadata: {
+            agentId: agent.id,
+            isReadyForUse: true,
+            protocol: "ADCP",
+            registrationDate: agent.createdAt,
+            status: "active",
+          },
+          permissions: {
+            accountId: authResult.customerId,
+            apiAccess: true,
+            segmentManagement: true,
+          },
+        },
         message: summary,
         success: true,
       });

@@ -3,6 +3,8 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
+import { createMCPResponse } from "../../utils/error-handling.js";
+
 /**
  * Update existing creative properties
  * Orchestration tool for modifying creative metadata and content
@@ -150,7 +152,44 @@ ${statusIcon} ${assignment.campaignName} (${assignment.campaignId})`;
 • Campaign assignments preserved across update
 • Changes processed through appropriate ${updatedCreative.format.type} provider`;
 
-      return response;
+      return createMCPResponse({
+        data: {
+          configuration: {
+            creativeId: args.creativeId,
+            updateDate: new Date().toISOString(),
+            updates: args.updates,
+          },
+          currentState: {
+            assemblyMethod: updatedCreative.assemblyMethod,
+            assetIds: updatedCreative.assetIds || [],
+            buyerAgentId: updatedCreative.buyerAgentId,
+            campaignAssignments: updatedCreative.campaignAssignments || [],
+            creativeId: updatedCreative.creativeId,
+            creativeName: updatedCreative.creativeName,
+            format: updatedCreative.format,
+            status: updatedCreative.status,
+            version: updatedCreative.version,
+          },
+          metadata: {
+            action: "update",
+            creativeType: "creative",
+            lastModifiedBy: updatedCreative.lastModifiedBy,
+            orchestrationComplete: true,
+            preservesCampaignAssignments: true,
+            safeForActiveCampaigns: true,
+          },
+          updatedCreative,
+          updateSummary: {
+            contentChanged: !!content,
+            domainsChanged: !!advertiserDomains,
+            nameChanged: !!name,
+            statusChanged: !!status,
+            versionBumped: true,
+          },
+        },
+        message: response,
+        success: true,
+      });
     } catch (error) {
       throw new Error(
         `Failed to update creative: ${error instanceof Error ? error.message : String(error)}`,

@@ -3,6 +3,8 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
+import { createMCPResponse } from "../../utils/error-handling.js";
+
 /**
  * Sync creative to publishers for pre-approval or campaign deployment
  * Handles the publisher approval workflow
@@ -140,7 +142,55 @@ ${args.preApproval ? "✅ **Pre-Approval Request**" : ""}
 • Ensure creative meets publisher specifications`;
       }
 
-      return response;
+      return createMCPResponse({
+        data: {
+          configuration: {
+            campaignId: args.campaignId,
+            creativeId: args.creativeId,
+            preApproval: args.preApproval || false,
+            publisherIds: args.publisherIds,
+            syncDate: new Date().toISOString(),
+          },
+          metadata: {
+            action: "sync-publishers",
+            creativeType: "creative",
+            readyForCampaigns: autoApproved.length > 0,
+            requiresFollowUp: pendingReview.length > 0 || failed.length > 0,
+          },
+          publisherBreakdown: {
+            autoApproved: autoApproved.map((r) => ({
+              publisherId: r.publisherId,
+              publisherName: r.publisherName,
+            })),
+            failed: failed.map((r) => ({
+              error: r.error,
+              publisherId: r.publisherId,
+              publisherName: r.publisherName,
+            })),
+            pendingReview: pendingReview.map((r) => ({
+              estimatedReviewTime: r.estimatedReviewTime,
+              publisherId: r.publisherId,
+              publisherName: r.publisherName,
+            })),
+          },
+          summary: {
+            autoApproved: autoApproved.length,
+            failed: failed.length,
+            failedSyncs: syncResults.filter((r) => r.syncStatus === "failed")
+              .length,
+            pendingReview: pendingReview.length,
+            pendingSyncs: syncResults.filter((r) => r.syncStatus === "pending")
+              .length,
+            publishersTargeted: args.publisherIds.length,
+            successfulSyncs: syncResults.filter(
+              (r) => r.syncStatus === "success",
+            ).length,
+          },
+          syncResults,
+        },
+        message: response,
+        success: true,
+      });
     } catch (error) {
       throw new Error(
         `Failed to sync creative to publishers: ${error instanceof Error ? error.message : String(error)}`,

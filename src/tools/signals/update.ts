@@ -6,6 +6,8 @@ import type {
   UpdateCustomSignalParams,
 } from "../../types/mcp.js";
 
+import { createMCPResponse } from "../../utils/error-handling.js";
+
 export const updateCustomSignalTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "Signals",
@@ -170,7 +172,39 @@ export const updateCustomSignalTool = (client: Scope3ApiClient) => ({
       summary += `• **Created:** ${new Date(signal.createdAt).toLocaleString()}\n`;
       summary += `• **Updated:** ${new Date(signal.updatedAt).toLocaleString()}\n`;
 
-      return summary;
+      return createMCPResponse({
+        data: {
+          changesApplied: {
+            clustersChanged: args.clusters !== undefined,
+            descriptionChanged:
+              args.description !== undefined &&
+              args.description !== currentSignal.description,
+            nameChanged:
+              args.name !== undefined && args.name !== currentSignal.name,
+          },
+          configuration: {
+            clusters: args.clusters,
+            description: args.description,
+            name: args.name,
+            signalId: args.signalId,
+          },
+          metadata: {
+            gdprCompliantClusters: signal.clusters.filter((c) => c.gdpr).length,
+            isComposite: signal.key.includes(","),
+            keyTypes: signal.key.split(",").map((k) => k.trim()),
+            regions: [...new Set(signal.clusters.map((c) => c.region))],
+            totalClusters: signal.clusters.length,
+          },
+          previousValues: {
+            clusters: currentSignal.clusters,
+            description: currentSignal.description,
+            name: currentSignal.name,
+          },
+          signal,
+        },
+        message: summary,
+        success: true,
+      });
     } catch (error) {
       throw new Error(
         `Failed to update custom signal: ${error instanceof Error ? error.message : String(error)}`,

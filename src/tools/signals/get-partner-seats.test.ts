@@ -1,5 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import {
+  expectErrorResponse,
+  expectListResponse,
+} from "../../__tests__/utils/structured-response-helpers.js";
 import { Scope3ApiClient } from "../../client/scope3-client.js";
 import { CustomSignalsClient } from "../../services/custom-signals-client.js";
 import { getPartnerSeatsTool } from "./get-partner-seats.js";
@@ -61,6 +66,24 @@ describe("signals/get-partner-seats", () => {
       },
     );
 
+    // Validate structured response
+    const parsedResponse = expectListResponse(
+      result,
+      2,
+      (seat: Record<string, unknown>) => {
+        expect(seat).toHaveProperty("id");
+        expect(seat).toHaveProperty("name");
+        expect(seat).toHaveProperty("customerId");
+        expect(typeof seat.id).toBe("string");
+        expect(typeof seat.name).toBe("string");
+        expect(typeof seat.customerId).toBe("number");
+      },
+    );
+
+    expect((parsedResponse.data! as any).seats).toHaveLength(2);
+    expect((parsedResponse.data! as any).count).toBe(2);
+
+    // Verify message content
     expect(result).toContain("Found 2 accessible brand agent seats");
     expect(result).toContain("Test Seat 1");
     expect(result).toContain("seat_1");
@@ -78,7 +101,7 @@ describe("signals/get-partner-seats", () => {
   it("should handle missing API key", async () => {
     const result = await tool.execute({}, {});
 
-    expect(result).toContain("Authentication required");
+    expectErrorResponse(result, "Authentication required");
     expect(result).toContain("SCOPE3_API_KEY");
     expect(mockCustomSignalsClient.getPartnerSeats).not.toHaveBeenCalled();
   });
@@ -92,6 +115,10 @@ describe("signals/get-partner-seats", () => {
         session: { scope3ApiKey: "test_api_key" },
       },
     );
+
+    const parsedResponse = expectListResponse(result, 0);
+    expect((parsedResponse.data! as any).seats).toHaveLength(0);
+    expect((parsedResponse.data! as any).count).toBe(0);
 
     expect(result).toContain("Found 0 accessible brand agent seats");
     expect(result).toContain("No brand agent seats are accessible");
@@ -109,7 +136,7 @@ describe("signals/get-partner-seats", () => {
       },
     );
 
-    expect(result).toContain("Failed to get partner seats");
+    expectErrorResponse(result, "Failed to get partner seats");
     expect(result).toContain("Service temporarily unavailable");
   });
 
@@ -120,7 +147,9 @@ describe("signals/get-partner-seats", () => {
     mockCustomSignalsClient.getPartnerSeats.mockResolvedValueOnce([]);
 
     try {
-      await tool.execute({}, {});
+      const result = await tool.execute({}, {});
+
+      expectListResponse(result, 0);
 
       expect(mockCustomSignalsClient.getPartnerSeats).toHaveBeenCalledWith(
         mockScope3Client,

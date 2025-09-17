@@ -6,6 +6,8 @@ import type {
   MCPToolExecuteContext,
 } from "../../types/mcp.js";
 
+import { createMCPResponse } from "../../utils/error-handling.js";
+
 export const getCustomSignalTool = (client: Scope3ApiClient) => ({
   annotations: {
     category: "Signals",
@@ -197,7 +199,57 @@ export const getCustomSignalTool = (client: Scope3ApiClient) => ({
         summary += `• **Channel Targeting:** ${[...new Set(channels)].join(", ")}\n`;
       }
 
-      return summary;
+      return createMCPResponse({
+        data: {
+          configuration: {
+            clusters: signal.clusters,
+            complianceSettings: {
+              gdprClusters: gdprClusters,
+              gdprEnabled: gdprClusters > 0,
+              totalCompliantRegions: gdprClusters,
+            },
+            keyFormat: signal.key,
+            regionalCoverage: regions,
+          },
+          metadata: {
+            channelSpecificClusters: channels.length,
+            gdprCompliantClusters: gdprClusters,
+            isComposite: signal.key.includes(","),
+            keyTypes: signal.key.split(",").map((k) => k.trim()),
+            regions,
+            signalId: args.signalId,
+            totalClusters: signal.clusters.length,
+            uniqueChannels: [...new Set(channels)],
+          },
+          signal,
+          usageExamples: {
+            apiEndpoint: `/signals/${signal.key}`,
+            exampleKey: signal.key.includes(",")
+              ? signal.key
+                  .split(",")
+                  .map((k) => {
+                    switch (k.trim()) {
+                      case "domain":
+                        return "cnn.com";
+                      case "maid":
+                        return "abcd-1234";
+                      case "postal_code":
+                        return "90210";
+                      default:
+                        return `${k.trim()}_value`;
+                    }
+                  })
+                  .join(",")
+              : signal.key === "postal_code"
+                ? "90210"
+                : signal.key === "domain"
+                  ? "cnn.com"
+                  : `${signal.key}_example`,
+          },
+        },
+        message: summary,
+        success: true,
+      });
     } catch (error) {
       throw new Error(
         `Failed to get custom signal: ${error instanceof Error ? error.message : String(error)}`,

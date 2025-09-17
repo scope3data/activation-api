@@ -60,6 +60,9 @@ export const getBrandAgentTool = (client: Scope3ApiClient) => ({
       summary += `• Delete brand agent (removes all associated data)`;
 
       return createMCPResponse({
+        data: {
+          brandAgent,
+        },
         message: summary,
         success: true,
       });
