@@ -1,0 +1,299 @@
+---
+title: "Designing Ad Products"
+description: "How to structure ad products to maximize spend from Scope3 buying agents"
+icon: "package"
+---
+
+# Designing Ad Products for Scope3 Buying Agents
+
+## The Fundamental Shift: From Impressions to Discoverable Products
+
+In the Scope3 ecosystem, buyers (through their agents) don't evaluate individual impressions—they discover and test products that match their audience needs and campaign goals. This requires publishers to think differently about packaging inventory.
+
+**The New Dynamic:**
+- Buyers describe their audience and objectives
+- Publishers offer products that can deliver against those needs
+- Agents discover, test, and optimize across available products
+- Success depends on clear product definition and consistent delivery
+
+## Understanding How Buyers Find Your Products
+
+When a campaign launches, the buying agent evaluates products through two primary modes:
+
+### BYOT (Bring Your Own Targeting)
+The buyer defines their audience using their own data or signals, and the platform discovers inventory that can reach them. Publishers provide the canvas; buyers bring the paint.
+
+### Custom Products
+Publishers package inventory with their first-party data, contextual signals, or unique capabilities. These pre-built products offer buyers turnkey solutions with clear value propositions.
+
+**Critical Insight:** Unlike programmatic where you blast impressions hoping for purchases, here you must clearly articulate what each product offers. The buying agent needs to understand why your "Finance Decision Makers" product is worth $25 CPM versus your $8 CPM run-of-site offering.
+
+## The Three-Tier Product Strategy
+
+### Tier 1: Commodity Products (Run-of-Site)
+**Purpose:** Provide scalable, always-available inventory at market rates
+**Delivery Model:** Non-guaranteed, price priority
+
+These products compete on price and volume. They're your foundation—reliable inventory that supports consistent daily spending for buyers testing tactics.
+
+**Characteristics:**
+- Broad reach, minimal targeting
+- Floor CPM ($4-8 typical) with dynamic pricing above floor
+- High daily impression volume
+- Clear format support (display, video, etc.)
+- Minimal differentiation
+
+**Example Products:**
+```
+General Display Inventory
+- Formats: 300x250, 728x90
+- Floor CPM: $6 (buyers may bid higher based on performance)
+- Daily Volume: 2M impressions available
+- Description: "Run-of-site display inventory across all content"
+
+Mobile Web Traffic  
+- Formats: 320x50, 300x250
+- Floor CPM: $4 (accepts any price at or above)
+- Daily Volume: 1M impressions available
+- Description: "Mobile-optimized placements, all sections"
+```
+
+### Tier 2: Audience-Specific Catalog Products
+**Purpose:** Pre-packaged solutions targeting specific audiences with clear value propositions
+**Delivery Model:** Non-guaranteed standard; guaranteed options available
+
+This is where you differentiate. These products must have compelling descriptions that help the AI agent understand exactly what audience they reach and why they're valuable. Pricing shown represents recommended starting points—actual prices adjust based on buyer performance.
+
+**Critical Success Factor:** Write descriptions as if explaining to an intelligent buyer who can't see your site. Be specific about WHO this reaches and WHY they're there.
+
+**Example Products:**
+```
+B2B Technology Decision Makers
+- Target CPM: $18 (may transact $14-25 based on performance)
+- Daily Volume: 200K impressions available
+- Guarantee Option: Available for 7+ day commitments
+- Description: "Reaches IT professionals and technology buyers consuming 
+  enterprise software content, cloud computing articles, and security 
+  best practices. 78% manager-level or above based on LinkedIn match. 
+  Peak engagement Tuesday-Thursday, 9am-5pm ET."
+
+Healthcare Professionals - Authenticated
+- Target CPM: $35 (premium floor, typically transacts $35-50)
+- Daily Volume: 50K impressions available
+- Guarantee Option: Required for this premium product
+- Description: "Verified healthcare workers (NPI-validated) accessing 
+  clinical research, treatment protocols, and continuing education 
+  content. Includes physicians (40%), nurses (35%), and allied health 
+  professionals (25%). HIPAA-compliant environment."
+
+Personal Finance Intenders
+- Target CPM: $12 (floor at $10, averages $12-15)
+- Daily Volume: 300K impressions available
+- Guarantee Option: Available for monthly commitments
+- Description: "Users actively engaging with mortgage calculators, 
+  retirement planning tools, and investment comparison content. 
+  High intent signals including multi-page sessions and tool usage. 
+  60% have household income >$75K."
+```
+
+### Tier 3: Bespoke Products (Brief-Responsive)
+**Purpose:** Custom products created in response to specific campaign briefs
+
+When a buyer submits a campaign brief seeking something specific you don't already offer, you can create a new product tailored to their needs. This requires operational flexibility but commands premium pricing.
+
+**Process:**
+1. Brief arrives seeking specific audience (e.g., "Parents planning Disney vacations")
+2. You analyze your data/inventory for matches
+3. Create custom product combining relevant signals
+4. Submit product with clear delivery estimates
+
+**Example Response to Brief:**
+```
+Brief: "Find families with young children interested in theme parks"
+
+Custom Product: Family Entertainment Planners
+- Inventory: Travel section + parenting content + weekend entertainment
+- Signals: Users who viewed 3+ family vacation articles in past 30 days
+- Enhancement: Retargeting pool included for 7-day frequency
+- CPM: $22
+- Estimated Daily Volume: 75K impressions
+- Delivery Confidence: High (based on last 30 days data)
+```
+
+## Core Principle: Products Must Support Consistent Daily Spend
+
+The Scope3 platform uses a multi-armed bandit algorithm to test and optimize tactics. For a product to receive budget, it must support minimum daily spending thresholds.
+
+### Minimum Viable Daily Spend
+- **US Market**: $10/day minimum per product
+- **International Markets**: $1-5/day depending on regional budgets
+- **Testing Period**: 7-14 days before optimization decisions
+
+### Volume Calculation Framework
+
+```
+Daily Revenue Potential = Daily Impressions × CPM ÷ 1000
+Minimum Impressions Needed = (Minimum Daily Spend × 1000) ÷ CPM
+
+Example:
+$10 daily minimum ÷ $8 CPM × 1000 = 1,250 minimum impressions/day
+```
+
+If your product can't reliably deliver this volume, it won't receive test budget.
+
+## Understanding Pricing and Guarantees
+
+### Non-Guaranteed (Standard Model)
+Most products in the Scope3 ecosystem operate as **non-guaranteed inventory** where:
+- Publishers set **target or floor prices** (not fixed rates)
+- Buyers' agents **propose prices** based on performance needs
+- The platform **dynamically adjusts** pricing through optimization
+- Inventory runs as **price priority line items**
+
+**Key Reality:** The CPM prices shown in this guide represent starting points or floors. Actual transaction prices fluctuate based on:
+- Buyer performance requirements (ROI/ROAS targets)
+- Competitive demand for the inventory
+- Real-time optimization decisions
+- Supply and demand dynamics
+
+### Guaranteed Delivery (Premium Model)
+Some products, particularly bespoke offerings, can include delivery guarantees:
+- **Fixed spend commitment** over defined period
+- **Reserved inventory** for exclusive access
+- **Negotiated fixed CPM** or spending levels
+- **Direct IO-style** arrangements
+
+### Price Discovery Through Optimization
+
+The platform's multi-armed bandit doesn't just allocate budget—it discovers optimal pricing:
+
+**Example Scenario:**
+```
+Your "B2B Decision Makers" Product
+- Listed floor: $18 CPM
+- Buyer A (strong performance): Willing to pay $22 CPM, increases spend
+- Buyer B (meeting targets): Maintains at $18 CPM
+- Buyer C (poor performance): Needs $14 CPM to justify ROI
+  → You decide: Accept at $14 or lose the spend?
+```
+
+This dynamic creates a real-time auction where performance drives pricing, not just competition.
+
+*Note: For detailed pricing strategies, yield optimization, and guarantee structures, see our companion guide on Publisher Pricing & Yield Management (coming soon).*
+
+## Writing Effective Product Descriptions
+
+Your product descriptions are crucial—they're how AI agents understand and evaluate your offerings. 
+
+### Description Framework
+
+**Include:**
+1. **WHO** - Specific audience characteristics
+2. **WHAT** - Content they're consuming or actions they're taking
+3. **WHY** - Their intent or purpose for being there
+4. **WHEN** - Temporal patterns if relevant
+5. **VERIFICATION** - Any data validation or quality signals
+
+### Good vs. Poor Descriptions
+
+❌ **Poor:**
+"Premium inventory on our site"
+- Vague, no audience definition
+- No differentiation from run-of-site
+- Agent can't justify premium pricing
+
+✅ **Good:**
+"C-suite executives accessing quarterly earnings reports and market analysis during business hours. 65% director-level or above per LinkedIn verification, with average session time >5 minutes on financial content."
+- Clear audience definition
+- Specific content context
+- Verifiable quality signals
+- Justifies premium pricing
+
+## Product Segmentation Strategies
+
+### For Large Publishers (More than 10M monthly impressions)
+
+**Audience-Based Segmentation:**
+```
+Professional Network
+├── Authenticated Professionals ($25 CPM)
+├── Job Seekers ($15 CPM)
+├── Business Content Readers ($12 CPM)
+└── General Professional Content ($8 CPM)
+
+Consumer Portal
+├── Shopping Intenders ($18 CPM)
+├── Entertainment Seekers ($10 CPM)
+├── News Readers ($8 CPM)
+└── Casual Browsers ($5 CPM)
+```
+
+### For Niche Publishers (Less than 10M monthly impressions)
+
+**Depth-Based Segmentation:**
+```
+Specialty Site (e.g., Gardening)
+├── Enthusiast Members (logged-in, high engagement) - $20 CPM
+├── Seasonal Shoppers (product pages, buying guides) - $15 CPM
+├── Content Consumers (articles, how-tos) - $8 CPM
+└── General Traffic (all other) - $5 CPM
+```
+
+## Integration with Tactics
+
+Your products become [tactics](/api-reference/tactic/create) when combined with:
+- **Brand Stories**: AI-generated audience profiles
+- **Signals**: Additional targeting data
+- **Optimization**: Multi-armed bandit budget allocation
+
+Products that align well with these components receive more test budget and can scale faster.
+
+## Best Practices
+
+### 1. Start with Clear Tiers
+- Always offer commodity products for scale
+- Build 5-10 catalog products based on your strengths
+- Reserve bespoke capability for premium opportunities
+
+### 2. Write for AI Comprehension
+- Use specific, measurable descriptions
+- Include audience percentages and verification methods
+- Explain the "why" behind user presence
+
+### 3. Maintain Consistent Delivery
+- Products must be available continuously
+- Update volume estimates weekly
+- Flag any delivery issues immediately
+
+### 4. Price for Discovery
+- Commodity: Price competitively for volume
+- Catalog: 2-3x commodity pricing with clear value
+- Bespoke: 3-5x commodity for custom work
+
+### 5. Enable Measurement
+- Support viewability tracking
+- Include brand safety signals
+- Provide post-campaign reporting
+
+## Quick Start Checklist
+
+- [ ] Create 2-3 commodity products covering your basic inventory
+- [ ] Identify your 5 strongest audience segments
+- [ ] Write detailed descriptions explaining the value of each segment
+- [ ] Validate each product can support minimum daily spend
+- [ ] Set up measurement and verification capabilities
+- [ ] Prepare process for responding to custom briefs
+- [ ] Test product definitions with the Scope3 integration team
+
+## The Publisher Mindset Shift
+
+**From:** "Here are impressions, figure out if they work for you"
+**To:** "Here are defined products that reach specific audiences"
+
+Success in the Scope3 ecosystem requires thinking like a solutions provider, not an impression vendor. Your products should answer the question: "How can I help this buyer reach their audience effectively?"
+
+## Related Documentation
+
+- [Tactic Object Guide](/object-guides/tactic)
+- [Campaign Optimization](/optimization/campaigns)
+- [Scoring Components](/optimization/scoring)
