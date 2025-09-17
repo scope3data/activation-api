@@ -4,7 +4,6 @@ import type {
   BrandAgent,
   BrandAgentCampaign,
   BrandAgentCampaignInput,
-  BrandAgentCampaignsData,
   BrandAgentCampaignUpdateInput,
   BrandAgentCreative,
   BrandAgentCreativeInput,
@@ -102,7 +101,6 @@ import {
   DELETE_BRAND_AGENT_STANDARDS_MUTATION,
   DELETE_BRAND_AGENT_SYNTHETIC_AUDIENCE_MUTATION,
   GET_BRAND_AGENT_QUERY,
-  LIST_BRAND_AGENT_CAMPAIGNS_QUERY,
   LIST_BRAND_AGENT_CREATIVES_QUERY,
   LIST_BRAND_AGENT_STANDARDS_QUERY,
   LIST_BRAND_AGENT_SYNTHETIC_AUDIENCES_QUERY,
@@ -2190,57 +2188,12 @@ export class Scope3ApiClient {
     brandAgentId: string,
     status?: string,
   ): Promise<BrandAgentCampaign[]> {
-    try {
-      // Try BigQuery first
-      const campaigns = await this.campaignService.listCampaigns(
-        brandAgentId,
-        status,
-        apiKey,
-      );
-      return campaigns;
-    } catch (error) {
-      console.log(
-        "BigQuery listBrandAgentCampaigns failed, falling back to GraphQL:",
-        error,
-      );
-    }
-
-    // Fallback to GraphQL
-    const response = await fetch(this.graphqlUrl, {
-      body: JSON.stringify({
-        query: LIST_BRAND_AGENT_CAMPAIGNS_QUERY,
-        variables: { brandAgentId, status },
-      }),
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "User-Agent": "MCP-Server/1.0",
-      },
-      method: "POST",
-    });
-
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        throw new Error("Authentication failed");
-      }
-      if (response.status >= 500) {
-        throw new Error("External service temporarily unavailable");
-      }
-      throw new Error("Request failed");
-    }
-
-    const result =
-      (await response.json()) as GraphQLResponse<BrandAgentCampaignsData>;
-
-    if (result.errors && result.errors.length > 0) {
-      throw new Error("Invalid request parameters or query");
-    }
-
-    if (!result.data?.brandAgentCampaigns) {
-      throw new Error("No data received");
-    }
-
-    return result.data.brandAgentCampaigns;
+    // Campaign operations are BigQuery-only (not available in GraphQL)
+    return await this.campaignService.listCampaigns(
+      brandAgentId,
+      status,
+      apiKey,
+    );
   }
 
   async listBrandAgentCreatives(

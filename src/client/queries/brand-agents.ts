@@ -101,7 +101,7 @@ export const UPDATE_BRAND_AGENT_CAMPAIGN_MUTATION = `
 `;
 
 export const LIST_BRAND_AGENT_CAMPAIGNS_QUERY = `
-  query ListBrandAgentCampaigns($brandAgentId: ID!, $status: String) {
+  query ListBrandAgentCampaigns($brandAgentId: BigInt!, $status: String) {
     brandAgentCampaigns(brandAgentId: $brandAgentId, status: $status) {
       id
       brandAgentId

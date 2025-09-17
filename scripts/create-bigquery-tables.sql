@@ -5,7 +5,7 @@
 -- 1. Brand Agent Extensions
 -- Extends the existing swift-catfish-337215.postgres_datastream.public_agent table
 CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.brand_agent_extensions` (
-  agent_id STRING NOT NULL,
+  agent_id INT64 NOT NULL,
   advertiser_domains ARRAY<STRING>,
   dsp_seats ARRAY<STRING>,
   description STRING,
@@ -21,7 +21,7 @@ CLUSTER BY agent_id;
 -- 2. Campaigns
 CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.campaigns` (
   id STRING NOT NULL,
-  brand_agent_id STRING NOT NULL,
+  brand_agent_id INT64 NOT NULL,
   name STRING NOT NULL,
   prompt STRING,
   status STRING DEFAULT 'draft',
@@ -42,7 +42,7 @@ CLUSTER BY brand_agent_id, status;
 -- 3. Creatives
 CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.creatives` (
   id STRING NOT NULL,
-  brand_agent_id STRING NOT NULL,
+  brand_agent_id INT64 NOT NULL,
   name STRING NOT NULL,
   description STRING,
   format_type STRING,
@@ -88,7 +88,7 @@ CLUSTER BY campaign_id, brand_story_id;
 -- 6. Signals Agents (registered agents that can manage segments)
 CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.signals_agents` (
   id STRING NOT NULL,
-  brand_agent_id STRING NOT NULL,
+  brand_agent_id INT64 NOT NULL,
   name STRING NOT NULL,
   description STRING,
   endpoint_url STRING NOT NULL,
@@ -106,7 +106,7 @@ CLUSTER BY brand_agent_id, status;
 CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.signals_agent_activity` (
   id STRING NOT NULL,
   signals_agent_id STRING NOT NULL,
-  brand_agent_id STRING NOT NULL,
+  brand_agent_id INT64 NOT NULL,
   activity_type STRING NOT NULL,
   request JSON,
   response JSON,

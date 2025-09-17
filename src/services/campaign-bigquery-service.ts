@@ -515,7 +515,10 @@ export class CampaignBigQueryService {
       WHERE c.brand_agent_id = @brandAgentId AND a.customer_id = @customerId
     `;
 
-    const params: Record<string, unknown> = { brandAgentId, customerId };
+    const params: Record<string, unknown> = {
+      brandAgentId: parseInt(brandAgentId, 10), // Convert to INT64 to match schema
+      customerId: Number(customerId),
+    };
 
     if (status) {
       query += ` AND c.status = @status`;
@@ -595,7 +598,10 @@ export class CampaignBigQueryService {
       WHERE c.brand_agent_id = @brandAgentId AND a.customer_id = @customerId
     `;
 
-    const params: Record<string, unknown> = { brandAgentId, customerId };
+    const params: Record<string, unknown> = {
+      brandAgentId: parseInt(brandAgentId, 10), // Convert to INT64 to match schema
+      customerId: Number(customerId),
+    };
 
     if (status) {
       query += ` AND c.status = @status`;
