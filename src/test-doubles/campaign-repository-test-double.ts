@@ -17,6 +17,7 @@ export class CampaignRepositoryTestDouble implements CampaignRepository {
   private campaigns = new Map<string, Campaign>();
   private nextId = 1;
   private validApiKeys = new Set<string>();
+  private maxItems = 100; // Default max items
 
   addValidApiKey(apiKey: string): void {
     this.validApiKeys.add(apiKey);
@@ -27,6 +28,10 @@ export class CampaignRepositoryTestDouble implements CampaignRepository {
     this.nextId = 1;
   }
 
+  setMaxItems(maxItems: number): void {
+    this.maxItems = maxItems;
+  }
+
   async createCampaign(
     apiKey: string,
     input: CampaignInput,
@@ -35,6 +40,20 @@ export class CampaignRepositoryTestDouble implements CampaignRepository {
 
     if (!input.brandAgentId || !input.campaignName || !input.prompt) {
       throw new Error("Validation error: Required fields missing");
+    }
+    
+    // Business rule validation
+    if (input.budgetTotal !== undefined && input.budgetTotal < 0) {
+      throw new Error("Validation error: Budget total must be positive");
+    }
+    
+    if (input.brandAgentId.trim() === "") {
+      throw new Error("Validation error: Brand agent ID cannot be empty");
+    }
+
+    // Check storage limits
+    if (this.campaigns.size >= this.maxItems) {
+      throw new Error("Storage limit exceeded");
     }
 
     const now = new Date().toISOString();
@@ -124,6 +143,9 @@ export class CampaignRepositoryTestDouble implements CampaignRepository {
       const message = "Campaign not found: " + campaignId;
       throw new Error(message);
     }
+
+    // Ensure updatedAt is later than createdAt
+    await new Promise(resolve => setTimeout(resolve, 1));
 
     const updatedCampaign: Campaign = {
       ...campaign,

@@ -355,7 +355,7 @@ export function testCampaignRepositoryContract(
         // Should not throw error for deleting non-existent campaign
         await expect(
           repository.deleteCampaign(validApiKey, "campaign_nonexistent"),
-        ).not.toThrow();
+        ).resolves.not.toThrow();
       });
     });
 

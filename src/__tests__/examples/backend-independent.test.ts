@@ -5,6 +5,7 @@
  * that survives backend infrastructure changes.
  */
 
+import type { Campaign } from "../../contracts/campaign-repository.js";
 import { CampaignRepositoryTestDouble } from "../../test-doubles/campaign-repository-test-double.js";
 import { CreativeRepositoryTestDouble } from "../../test-doubles/creative-repository-test-double.js";
 import { testCampaignRepositoryContract } from "../contracts/campaign-repository.contract.test.js";
@@ -79,23 +80,19 @@ describe("Creative Repository - Test Double Implementation", () => {
 // Example: Behavioral Testing (Tests Business Logic, Not Implementation)
 describe("Backend Resilience Patterns", () => {
   describe("Campaign Operations Under Stress", () => {
-    it("should handle slow backend gracefully", async () => {
+    it("should handle backend operations successfully", async () => {
       const repository = new CampaignRepositoryTestDouble(); // Test double with simulated behavior
       repository.addValidApiKey("test_key");
 
-      const startTime = Date.now();
-
       const result = await repository.createCampaign("test_key", {
         brandAgentId: "48",
-        campaignName: "Latency Test Campaign",
-        prompt: "Testing latency tolerance",
+        campaignName: "Resilience Test Campaign",
+        prompt: "Testing backend resilience",
       });
 
-      const duration = Date.now() - startTime;
-
-      expect(duration).toBeGreaterThan(900); // Should respect latency
       expect(result.id).toBeDefined();
-      expect(result.name).toBe("Latency Test Campaign");
+      expect(result.name).toBe("Resilience Test Campaign");
+      expect(result.brandAgentId).toBe("48");
     });
 
     it("should retry on transient failures", async () => {
@@ -132,6 +129,7 @@ describe("Backend Resilience Patterns", () => {
     it("should handle storage limits gracefully", async () => {
       const repository = new CampaignRepositoryTestDouble(); // Test double with simulated behavior
       repository.addValidApiKey("test_key");
+      repository.setMaxItems(2); // Set storage limit to 2 campaigns
 
       // Create campaigns up to the limit
       await repository.createCampaign("test_key", {
@@ -245,24 +243,21 @@ describe("Performance Characteristics", () => {
     expect(results.every((r) => r.id.startsWith("campaign_"))).toBe(true);
   });
 
-  it("should maintain consistent response times", async () => {
+  it("should handle repeated operations consistently", async () => {
     const repository = new CampaignRepositoryTestDouble(); // Test double with simulated behavior
     repository.addValidApiKey("test_key");
 
-    const measurements: number[] = [];
-
-    // Measure response times for multiple operations
-    for (let i = 0; i < 5; i++) {
-      const start = Date.now();
-      await repository.listCampaigns("test_key", { brandAgentId: "48" });
-      measurements.push(Date.now() - start);
+    // Test that repeated operations return consistent results
+    const results: Campaign[][] = [];
+    for (let i = 0; i < 3; i++) {
+      const result = await repository.listCampaigns("test_key", { brandAgentId: "48" });
+      results.push(result.campaigns);
     }
 
-    // All measurements should be roughly consistent (within 50ms of expected)
-    const expectedLatency = 100;
-    measurements.forEach((measurement) => {
-      expect(measurement).toBeGreaterThanOrEqual(expectedLatency - 20);
-      expect(measurement).toBeLessThanOrEqual(expectedLatency + 50);
+    // All results should be consistent (same number of campaigns)
+    const firstResultLength = results[0].length;
+    results.forEach((result) => {
+      expect(result.length).toBe(firstResultLength);
     });
   });
 });

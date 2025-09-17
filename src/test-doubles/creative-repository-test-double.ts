@@ -300,6 +300,9 @@ export class CreativeRepositoryTestDouble implements CreativeRepository {
       );
     }
 
+    // Ensure lastModifiedDate is later than createdDate
+    await new Promise(resolve => setTimeout(resolve, 1));
+
     // Apply updates
     const updatedCreative: Creative = {
       ...creative,
