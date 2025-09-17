@@ -6,6 +6,7 @@
  */
 
 import type { Campaign } from "../../contracts/campaign-repository.js";
+
 import { CampaignRepositoryTestDouble } from "../../test-doubles/campaign-repository-test-double.js";
 import { CreativeRepositoryTestDouble } from "../../test-doubles/creative-repository-test-double.js";
 import { testCampaignRepositoryContract } from "../contracts/campaign-repository.contract.test.js";
@@ -250,7 +251,9 @@ describe("Performance Characteristics", () => {
     // Test that repeated operations return consistent results
     const results: Campaign[][] = [];
     for (let i = 0; i < 3; i++) {
-      const result = await repository.listCampaigns("test_key", { brandAgentId: "48" });
+      const result = await repository.listCampaigns("test_key", {
+        brandAgentId: "48",
+      });
       results.push(result.campaigns);
     }
 
