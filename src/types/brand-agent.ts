@@ -181,10 +181,12 @@ export interface BrandAgentCampaignUpdateInput {
     total?: number;
   };
   creativeIds?: string[];
-
+  endDate?: Date;
   name?: string;
-
+  outcomeScoreWindowDays?: number;
   prompt?: string;
+  scoringWeights?: Record<string, unknown>;
+  startDate?: Date;
   status?: string;
   // Inventory management configuration
   tacticManagement?: Partial<TacticManagement>;

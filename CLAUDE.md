@@ -216,40 +216,131 @@ BrandAgent (Advertiser Account)
 
 ### Testing Strategy
 
-**Service-Level Testing (Recommended)**
+**Backend-Independent Contract Testing (Current Approach)**
 
-- Mock at the `Scope3ApiClient` service boundary, not implementation details
-- Tests remain valid when switching from GraphQL → REST or BigQuery → PostgreSQL
-- Focus on business logic and user outcomes, not technical implementation
-- Enables safe refactoring of underlying technologies
+We use a contract testing pattern that ensures tests remain valid across backend technology changes (e.g., BigQuery → PostgreSQL). This approach provides:
 
-**Test Levels:**
+- **Technology Independence**: Tests focus on service behavior, not implementation
+- **Future-Proof**: Backend migrations don't require test rewrites
+- **Fast Feedback**: In-memory test doubles enable rapid development cycles
+- **Contract Validation**: Ensures all implementations adhere to the same behavioral contract
 
-1. **Tool-Level Tests** (`*-tool-level.test.ts`) - Highest level, tests complete MCP tool execution
-2. **Service-Level Tests** (`*-service-level.test.ts`) - Tests service contract and business logic
-3. **Implementation Tests** (`*-client-*.test.ts`) - Only when testing specific technical requirements
+### Contract Testing Architecture
 
-**Example Service-Level Test:**
+**1. Service Contracts (`src/contracts/`)**
+
+Define interfaces that any backend implementation must satisfy:
 
 ```typescript
-// ✅ Good - Tests business logic, survives infrastructure changes
-it("should return brand agents when service is available", async () => {
-  mockClient.listBrandAgents.mockResolvedValue([testAgent]);
-  const result = await realClient.listBrandAgents(apiKey);
-  expect(result).toHaveLength(1);
+// src/contracts/campaign-repository.ts
+export interface CampaignRepository {
+  createCampaign(apiKey: string, data: CreateCampaignData): Promise<Campaign>;
+  listCampaigns(apiKey: string, brandAgentId: string): Promise<Campaign[]>;
+  getCampaign(apiKey: string, campaignId: string): Promise<Campaign>;
+  updateCampaign(
+    apiKey: string,
+    campaignId: string,
+    data: UpdateCampaignData,
+  ): Promise<Campaign>;
+  deleteCampaign(apiKey: string, campaignId: string): Promise<void>;
+}
+```
+
+**2. Contract Test Suites (`src/__tests__/contracts/`)**
+
+Generic test suites that validate any implementation against the contract:
+
+```typescript
+// Tests ANY implementation of CampaignRepository
+export function testCampaignRepositoryContract(
+  repositoryFactory: () => CampaignRepository,
+) {
+  describe("CampaignRepository Contract", () => {
+    it("should create campaigns with valid data", async () => {
+      const repo = repositoryFactory();
+      const campaign = await repo.createCampaign(validApiKey, validData);
+      expect(campaign.id).toBeDefined();
+    });
+    // ... more behavioral tests
+  });
+}
+```
+
+**3. Test Doubles (`src/test-doubles/`)**
+
+In-memory implementations for fast, isolated testing:
+
+```typescript
+// src/test-doubles/campaign-repository-test-double.ts
+export class CampaignRepositoryTestDouble implements CampaignRepository {
+  private campaigns = new Map<string, Campaign>();
+
+  async createCampaign(
+    apiKey: string,
+    data: CreateCampaignData,
+  ): Promise<Campaign> {
+    // In-memory implementation with validation and simulation
+  }
+}
+```
+
+### Why This Testing Strategy
+
+**Problem Solved**: Traditional testing approaches couple tests to specific backend technologies, making backend migrations expensive and risky.
+
+**Our Solution**:
+
+1. **Define Contracts**: Explicit interfaces for all backend services
+2. **Test Contracts**: Generic test suites that validate behavior, not implementation
+3. **Use Test Doubles**: Fast, controlled implementations for development and CI
+4. **Validate Real Services**: Run the same contract tests against actual backend services
+
+**Benefits**:
+
+- **Migration Safety**: When switching BigQuery → PostgreSQL, the same contract tests validate the new implementation
+- **Development Speed**: Test doubles provide instant feedback without external dependencies
+- **Behavioral Focus**: Tests validate what the service does, not how it does it
+- **Regression Prevention**: Contract tests catch breaking changes in service behavior
+
+### Test Levels
+
+1. **Contract Tests** (`src/__tests__/contracts/*.contract.test.ts`) - Validate service interfaces and behavior
+2. **Tool-Level Tests** (`*-tool-level.test.ts`) - Test complete MCP tool execution
+3. **Integration Tests** (`test-*.js`) - End-to-end validation with real backends (for verification)
+
+### Running Contract Tests
+
+```bash
+# Run contract tests with test doubles (fast)
+npm test -- contracts
+
+# Run all tests
+npm test
+
+# Test with coverage
+npm test -- --coverage
+```
+
+**Example Contract Test Usage:**
+
+```typescript
+// src/__tests__/examples/backend-independent.test.ts
+import { testCampaignRepositoryContract } from "../contracts/campaign-repository.contract.test";
+import { CampaignRepositoryTestDouble } from "../../test-doubles/campaign-repository-test-double";
+
+describe("Campaign Repository Contract Validation", () => {
+  testCampaignRepositoryContract(() => new CampaignRepositoryTestDouble());
 });
 
-// ❌ Avoid - Tests implementation details
-it("should call GraphQL then BigQuery", async () => {
-  // This breaks when you change from GraphQL to REST
-});
+// When we implement PostgreSQL backend:
+// testCampaignRepositoryContract(() => new PostgreSQLCampaignRepository());
 ```
 
 ### Before Committing
 
 - Run linters and formatters
 - Ensure all TypeScript compiles
-- Run service-level tests: `npm test -- service-level`
+- Run contract tests: `npm test -- contracts`
 - Test any code examples in documentation
 - Validate docs.json structure if modified
 
@@ -257,7 +348,7 @@ it("should call GraphQL then BigQuery", async () => {
 
 ```bash
 npm test                                    # Run all tests
-npm test -- service-level                  # Service-level tests only
+npm test -- contracts                      # Contract tests with test doubles (fast)
 npm test -- tool-level                     # Tool-level integration tests
 npm test -- --coverage                     # With coverage report
 ```
