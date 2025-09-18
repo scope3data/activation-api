@@ -89,26 +89,30 @@ export class CampaignBigQueryService {
   /**
    * Create a new campaign
    */
-  async createCampaign(data: {
-    brandAgentId: string;
-    budgetCurrency?: string;
-    budgetDailyCap?: number;
-    budgetPacing?: string;
-    budgetTotal?: number;
-    endDate?: Date;
-    name: string;
-    outcomeScoreWindowDays?: number;
-    prompt?: string;
-    scoringWeights?: Record<string, unknown>;
-    startDate?: Date;
-    status?: string;
-  }): Promise<string> {
+  async createCampaign(
+    data: {
+      brandAgentId: string;
+      budgetCurrency?: string;
+      budgetDailyCap?: number;
+      budgetPacing?: string;
+      budgetTotal?: number;
+      endDate?: Date;
+      name: string;
+      outcomeScoreWindowDays?: number;
+      prompt?: string;
+      scoringWeights?: Record<string, unknown>;
+      startDate?: Date;
+      status?: string;
+    },
+    apiToken?: string,
+  ): Promise<string> {
     const campaignId = `campaign_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    const customerId = await this.resolveCustomerId(apiToken);
 
     const query = `
       INSERT INTO \`${this.projectId}.${this.dataset}.campaigns\`
-      (id, brand_agent_id, name, prompt, status, budget_total, budget_currency, budget_daily_cap, budget_pacing, scoring_weights, outcome_score_window_days, start_date, end_date)
-      VALUES (@id, @brandAgentId, @name, @prompt, @status, @budgetTotal, @budgetCurrency, @budgetDailyCap, @budgetPacing, PARSE_JSON(@scoringWeights), @outcomeScoreWindowDays, @startDate, @endDate)
+      (id, brand_agent_id, customer_id, name, prompt, status, budget_total, budget_currency, budget_daily_cap, budget_pacing, scoring_weights, outcome_score_window_days, start_date, end_date)
+      VALUES (@id, @brandAgentId, @customerId, @name, @prompt, @status, @budgetTotal, @budgetCurrency, @budgetDailyCap, @budgetPacing, PARSE_JSON(@scoringWeights), @outcomeScoreWindowDays, @startDate, @endDate)
     `;
 
     await this.bigquery.query({
@@ -118,6 +122,7 @@ export class CampaignBigQueryService {
         budgetDailyCap: data.budgetDailyCap || null,
         budgetPacing: data.budgetPacing || "even",
         budgetTotal: data.budgetTotal || null,
+        customerId,
         endDate: data.endDate || null,
         id: campaignId,
         name: data.name,
@@ -136,6 +141,7 @@ export class CampaignBigQueryService {
         budgetDailyCap: "FLOAT64",
         budgetPacing: "STRING",
         budgetTotal: "FLOAT64",
+        customerId: "INT64",
         endDate: "TIMESTAMP",
         id: "STRING",
         name: "STRING",
@@ -153,26 +159,30 @@ export class CampaignBigQueryService {
   /**
    * Create a new creative
    */
-  async createCreative(data: {
-    assemblyMethod?: string;
-    brandAgentId: string;
-    content?: Record<string, unknown>;
-    contentCategories?: string[];
-    createdBy?: string;
-    description?: string;
-    formatId?: string;
-    formatType?: string;
-    name: string;
-    status?: string;
-    targetAudience?: Record<string, unknown>;
-    version?: string;
-  }): Promise<string> {
+  async createCreative(
+    data: {
+      assemblyMethod?: string;
+      brandAgentId: string;
+      content?: Record<string, unknown>;
+      contentCategories?: string[];
+      createdBy?: string;
+      description?: string;
+      formatId?: string;
+      formatType?: string;
+      name: string;
+      status?: string;
+      targetAudience?: Record<string, unknown>;
+      version?: string;
+    },
+    apiToken?: string,
+  ): Promise<string> {
     const creativeId = `creative_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    const customerId = await this.resolveCustomerId(apiToken);
 
     const query = `
       INSERT INTO \`${this.projectId}.${this.dataset}.creatives\`
-      (id, brand_agent_id, name, description, format_type, format_id, content, status, version, assembly_method, target_audience, content_categories, created_by)
-      VALUES (@id, @brandAgentId, @name, @description, @formatType, @formatId, PARSE_JSON(@content), @status, @version, @assemblyMethod, PARSE_JSON(@targetAudience), @contentCategories, @createdBy)
+      (id, brand_agent_id, customer_id, name, description, format_type, format_id, content, status, version, assembly_method, target_audience, content_categories, created_by)
+      VALUES (@id, @brandAgentId, @customerId, @name, @description, @formatType, @formatId, PARSE_JSON(@content), @status, @version, @assemblyMethod, PARSE_JSON(@targetAudience), @contentCategories, @createdBy)
     `;
 
     await this.bigquery.query({
@@ -182,6 +192,7 @@ export class CampaignBigQueryService {
         content: data.content ? JSON.stringify(data.content) : null,
         contentCategories: data.contentCategories || null,
         createdBy: data.createdBy || "api",
+        customerId,
         description: data.description || null,
         formatId: data.formatId || null,
         formatType: data.formatType || null,
@@ -220,10 +231,7 @@ export class CampaignBigQueryService {
     // Delete the campaign itself (with customer security check)
     const query = `
       DELETE FROM \`${this.projectId}.${this.dataset}.campaigns\`
-      WHERE id = @campaignId 
-        AND brand_agent_id IN (
-          SELECT id FROM \`${this.agentTableRef}\` WHERE customer_id = @customerId
-        )
+      WHERE id = @campaignId AND customer_id = @customerId
     `;
 
     await this.bigquery.query({
@@ -307,8 +315,7 @@ export class CampaignBigQueryService {
           WHERE cbs.campaign_id = c.id
         ) as audience_ids
       FROM \`${this.projectId}.${this.dataset}.campaigns\` c
-      INNER JOIN \`${this.agentTableRef}\` a ON c.brand_agent_id = a.id
-      WHERE c.id = @campaignId AND a.customer_id = @customerId
+      WHERE c.id = @campaignId AND c.customer_id = @customerId
       LIMIT 1
     `;
 
@@ -378,8 +385,7 @@ export class CampaignBigQueryService {
     const query = `
       SELECT c.*
       FROM \`${this.projectId}.${this.dataset}.creatives\` c
-      INNER JOIN \`${this.agentTableRef}\` a ON c.brand_agent_id = a.id
-      WHERE c.id = @creativeId AND a.customer_id = @customerId
+      WHERE c.id = @creativeId AND c.customer_id = @customerId
       LIMIT 1
     `;
 
@@ -565,8 +571,7 @@ export class CampaignBigQueryService {
           WHERE cbs.campaign_id = c.id
         ) as audience_ids
       FROM \`${this.projectId}.${this.dataset}.campaigns\` c
-      INNER JOIN \`${this.agentTableRef}\` a ON c.brand_agent_id = a.id
-      WHERE c.brand_agent_id = @brandAgentId AND a.customer_id = @customerId
+      WHERE c.brand_agent_id = @brandAgentId AND c.customer_id = @customerId
     `;
 
     const params: Record<string, unknown> = {
@@ -648,8 +653,7 @@ export class CampaignBigQueryService {
     let query = `
       SELECT c.*
       FROM \`${this.projectId}.${this.dataset}.creatives\` c
-      INNER JOIN \`${this.agentTableRef}\` a ON c.brand_agent_id = a.id
-      WHERE c.brand_agent_id = @brandAgentId AND a.customer_id = @customerId
+      WHERE c.brand_agent_id = @brandAgentId AND c.customer_id = @customerId
     `;
 
     const params: Record<string, unknown> = {
@@ -896,10 +900,7 @@ export class CampaignBigQueryService {
     const query = `
       UPDATE \`${this.projectId}.${this.dataset}.campaigns\`
       SET ${setClause.join(", ")}
-      WHERE id = @campaignId 
-        AND brand_agent_id IN (
-          SELECT id FROM \`${this.agentTableRef}\` WHERE customer_id = @customerId
-        )
+      WHERE id = @campaignId AND customer_id = @customerId
     `;
 
     await this.bigquery.query({ params, query });

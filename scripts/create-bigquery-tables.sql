@@ -22,6 +22,7 @@ CLUSTER BY agent_id;
 CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.campaigns` (
   id STRING NOT NULL,
   brand_agent_id INT64 NOT NULL,
+  customer_id INT64 NOT NULL,
   name STRING NOT NULL,
   prompt STRING,
   status STRING DEFAULT 'draft',
@@ -37,12 +38,13 @@ CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.campaigns` (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
 )
 PARTITION BY DATE(created_at)
-CLUSTER BY brand_agent_id, status;
+CLUSTER BY brand_agent_id, customer_id, status;
 
 -- 3. Creatives
 CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.creatives` (
   id STRING NOT NULL,
   brand_agent_id INT64 NOT NULL,
+  customer_id INT64 NOT NULL,
   name STRING NOT NULL,
   description STRING,
   format_type STRING,
@@ -58,7 +60,7 @@ CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.creatives` (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
 )
 PARTITION BY DATE(created_at)
-CLUSTER BY brand_agent_id, status;
+CLUSTER BY brand_agent_id, customer_id, status;
 
 -- 4. Campaign-Creative Assignment Mapping
 CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.campaign_creatives` (
@@ -118,6 +120,17 @@ CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.signals_agent_activity` (
 )
 PARTITION BY DATE(executed_at)
 CLUSTER BY signals_agent_id, activity_type;
+
+-- Migration: Add customer_id columns to existing tables
+-- Run these if the tables already exist without the new columns:
+
+-- Add customer_id to campaigns table
+ALTER TABLE `bok-playground.agenticapi.campaigns`
+ADD COLUMN IF NOT EXISTS customer_id INT64 DEFAULT 1;
+
+-- Add customer_id to creatives table  
+ALTER TABLE `bok-playground.agenticapi.creatives`
+ADD COLUMN IF NOT EXISTS customer_id INT64 DEFAULT 1;
 
 -- Migration: Add tactic_seed_data_coop column to existing brand_agent_extensions table
 -- Run this if the table already exists without the new column:
