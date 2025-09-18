@@ -94,11 +94,22 @@ describe("brand-agents/core/get", () => {
   });
 
   it("should handle missing API key", async () => {
-    await expect(tool.execute({ brandAgentId: "123" }, {})).rejects.toThrow(
-      "Authentication required",
-    );
+    // Store original env value and clear it for this test
+    const originalEnv = process.env.SCOPE3_API_KEY;
+    delete process.env.SCOPE3_API_KEY;
 
-    expect(mockClient.getBrandAgent).not.toHaveBeenCalled();
+    try {
+      await expect(tool.execute({ brandAgentId: "123" }, {})).rejects.toThrow(
+        "Authentication required",
+      );
+
+      expect(mockClient.getBrandAgent).not.toHaveBeenCalled();
+    } finally {
+      // Restore original env value
+      if (originalEnv) {
+        process.env.SCOPE3_API_KEY = originalEnv;
+      }
+    }
   });
 
   it("should use environment variable when no session API key", async () => {
