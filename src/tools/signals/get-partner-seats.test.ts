@@ -30,7 +30,9 @@ describe("signals/get-partner-seats", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    mockScope3Client = {} as Scope3ApiClient;
+    mockScope3Client = {
+      listBrandAgents: vi.fn(),
+    } as unknown as Scope3ApiClient;
 
     mockCustomSignalsClient = {
       getPartnerSeats: vi.fn(),
@@ -99,11 +101,22 @@ describe("signals/get-partner-seats", () => {
   });
 
   it("should handle missing API key", async () => {
-    const result = await tool.execute({}, {});
+    // Ensure no environment variable is set
+    const originalApiKey = process.env.SCOPE3_API_KEY;
+    delete process.env.SCOPE3_API_KEY;
 
-    expectErrorResponse(result, "Authentication required");
-    expect(result).toContain("SCOPE3_API_KEY");
-    expect(mockCustomSignalsClient.getPartnerSeats).not.toHaveBeenCalled();
+    try {
+      const result = await tool.execute({}, {});
+
+      expectErrorResponse(result, "Authentication required");
+      expect(result).toContain("SCOPE3_API_KEY");
+      expect(mockCustomSignalsClient.getPartnerSeats).not.toHaveBeenCalled();
+    } finally {
+      // Restore original value
+      if (originalApiKey) {
+        process.env.SCOPE3_API_KEY = originalApiKey;
+      }
+    }
   });
 
   it("should handle empty seats response", async () => {

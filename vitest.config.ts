@@ -80,11 +80,18 @@ export default defineConfig({
     environment: "node",
     exclude: ["node_modules/**", "dist/**", "**/*.d.ts"],
 
+    // Exclude contract test files - they are utilities, not runnable tests
+    exclude: [
+      "node_modules/**",
+      "dist/**",
+      "**/*.d.ts",
+      "src/__tests__/contracts/**",
+    ],
+
     // Global test configuration
     globals: true,
 
     hookTimeout: 5000, // 5 seconds for setup/teardown
-
     // Test file patterns
     include: ["src/**/*.{test,spec}.ts", "src/__tests__/**/*.test.ts"],
     // Test isolation
