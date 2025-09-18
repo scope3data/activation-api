@@ -489,18 +489,21 @@ export class Scope3ApiClient {
   ): Promise<BrandAgentCampaign> {
     try {
       // Create campaign in BigQuery
-      const campaignId = await this.campaignService.createCampaign({
-        brandAgentId: input.brandAgentId,
-        budgetCurrency: input.budget?.currency,
-        budgetDailyCap: input.budget?.dailyCap,
-        budgetPacing: input.budget?.pacing,
-        budgetTotal: input.budget?.total,
-        endDate: input.endDate,
-        name: input.name,
-        prompt: input.prompt,
-        startDate: input.startDate,
-        status: "draft", // Always start as draft
-      });
+      const campaignId = await this.campaignService.createCampaign(
+        {
+          brandAgentId: input.brandAgentId,
+          budgetCurrency: input.budget?.currency,
+          budgetDailyCap: input.budget?.dailyCap,
+          budgetPacing: input.budget?.pacing,
+          budgetTotal: input.budget?.total,
+          endDate: input.endDate,
+          name: input.name,
+          prompt: input.prompt,
+          startDate: input.startDate,
+          status: "draft", // Always start as draft
+        },
+        apiKey,
+      );
 
       // Assign audience IDs (brand stories) if provided
       if (input.audienceIds?.length) {
