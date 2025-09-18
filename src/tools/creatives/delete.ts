@@ -64,12 +64,28 @@ export const creativeDeleteTool = (client: Scope3ApiClient) => ({
         warning += `• Wait for campaigns to complete before deleting\n\n`;
         warning += `**Note:** Force deletion will remove the creative from active campaigns, which may impact campaign performance.`;
 
-        throw new Error(warning);
+        return createMCPResponse({
+          data: {
+            activeCampaignCount: activeCampaigns.length,
+            activeCampaigns: activeCampaigns.map((assignment) => ({
+              campaignId: assignment.campaignId,
+              campaignName: assignment.campaignName,
+            })),
+            creativeId: args.creativeId,
+            suggestedActions: [
+              "Unassign from campaigns first using creative/unassign",
+              "Use force=true parameter to delete anyway (not recommended)",
+              "Wait for campaigns to complete before deleting",
+            ],
+          },
+          error: "CREATIVE_ASSIGNED",
+          message: warning,
+          success: false,
+        });
       }
 
-      // Perform the deletion (stub - implement actual deletion logic)
-      // await client.deleteBrandAgentCreative(apiKey, args.creativeId);
-      console.log(`[STUB] Would delete creative ${args.creativeId}`);
+      // Perform the deletion
+      await client.deleteCreative(apiKey, args.creativeId);
 
       let summary = `✅ **Creative Deleted Successfully**\n\n`;
       summary += `**Deleted Creative:**\n`;

@@ -70,19 +70,31 @@ export const deleteCampaignTool = (client: Scope3ApiClient) => ({
         });
       }
 
-      // Get additional campaign details for comprehensive summary
-      const campaignTactics = await client.getCampaignTactics(
-        apiKey,
-        args.campaignId,
-      );
-      const assignedCreatives = await client.getCampaignCreatives(
-        apiKey,
-        args.campaignId,
-      );
+      // Get additional campaign details for comprehensive summary (optional)
+      let campaignTactics: Record<string, unknown>[] = [];
+      let assignedCreatives: { creativeId: string; creativeName: string }[] =
+        [];
 
-      // Perform the deletion (stub - implement actual deletion logic)
-      // await client.deleteBrandAgentCampaign(apiKey, args.campaignId);
-      console.log(`[STUB] Would delete campaign ${args.campaignId}`);
+      try {
+        campaignTactics = await client.getCampaignTactics(
+          apiKey,
+          args.campaignId,
+        );
+      } catch {
+        // Campaign tactics fetch failed - continue without this data
+      }
+
+      try {
+        assignedCreatives = await client.getCampaignCreatives(
+          apiKey,
+          args.campaignId,
+        );
+      } catch {
+        // Campaign creatives fetch failed - continue without this data
+      }
+
+      // Perform the deletion
+      await client.deleteBrandAgentCampaign(apiKey, args.campaignId);
 
       let summary = `✅ **Campaign Deleted Successfully**\n\n`;
       summary += `**Deleted Campaign:**\n`;

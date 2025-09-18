@@ -257,7 +257,9 @@ export class SignalsAgentService extends BigQueryBaseService {
       ORDER BY registered_at DESC
     `;
 
-    const rows = await this.executeQuery(query, { brandAgentId });
+    const rows = await this.executeQuery(query, {
+      brandAgentId: parseInt(brandAgentId, 10), // Convert to INT64 to match schema
+    });
 
     return rows.map((row) =>
       this.mapRowToSignalsAgent(row as Record<string, unknown>),
@@ -276,7 +278,7 @@ export class SignalsAgentService extends BigQueryBaseService {
 
     await this.executeQuery(query, {
       activityType: activity.activityType,
-      brandAgentId: activity.brandAgentId,
+      brandAgentId: parseInt(activity.brandAgentId, 10), // Convert to INT64 to match schema
       errorDetails: activity.errorDetails || null,
       executedAt: activity.executedAt.toISOString(),
       id: activity.id,
@@ -305,14 +307,26 @@ export class SignalsAgentService extends BigQueryBaseService {
       VALUES (@agentId, @brandAgentId, @name, @description, @endpointUrl, 'active', @config, ${now}, @registeredBy, ${now})
     `;
 
-    await this.executeQuery(query, {
-      agentId,
-      brandAgentId: data.brandAgentId,
-      config: data.config ? JSON.stringify(data.config) : null,
-      description: data.description || null,
-      endpointUrl: data.endpointUrl,
-      name: data.name,
-      registeredBy: data.registeredBy || null,
+    await this.bigquery.query({
+      params: {
+        agentId,
+        brandAgentId: parseInt(data.brandAgentId, 10), // Convert to INT64 to match schema
+        config: data.config ? JSON.stringify(data.config) : null,
+        description: data.description || null,
+        endpointUrl: data.endpointUrl,
+        name: data.name,
+        registeredBy: data.registeredBy || null,
+      },
+      query,
+      types: {
+        agentId: "STRING",
+        brandAgentId: "INT64",
+        config: "JSON",
+        description: "STRING",
+        endpointUrl: "STRING",
+        name: "STRING",
+        registeredBy: "STRING",
+      },
     });
 
     const agent = await this.getSignalsAgent(agentId);

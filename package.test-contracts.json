@@ -1,0 +1,24 @@
+{
+  "scripts": {
+    "test:contracts": "jest src/__tests__/contracts --testMatch='**/*.contract.test.ts'",
+    "test:examples": "jest src/__tests__/examples --testMatch='**/*.test.ts'",
+    "test:backend-independent": "npm run test:contracts && npm run test:examples",
+    "test:contract-validation": "jest --testNamePattern='Contract' --verbose"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "extensionsToTreatAsEsm": [".ts"],
+    "moduleNameMapping": {
+      "^(\\.{1,2}/.*)\\.js$": "$1"
+    },
+    "transform": {
+      "^.+\\.tsx?$": [
+        "ts-jest",
+        {
+          "useESM": true
+        }
+      ]
+    }
+  }
+}

@@ -4,7 +4,6 @@ import type {
   BrandAgent,
   BrandAgentCampaign,
   BrandAgentCampaignInput,
-  BrandAgentCampaignsData,
   BrandAgentCampaignUpdateInput,
   BrandAgentCreative,
   BrandAgentCreativeInput,
@@ -93,7 +92,7 @@ import { GET_AGENTS_QUERY } from "./queries/agents.js";
 import { GET_API_ACCESS_KEYS_QUERY } from "./queries/auth.js";
 import {
   ADD_MEASUREMENT_SOURCE_MUTATION,
-  CREATE_BRAND_AGENT_CAMPAIGN_MUTATION,
+  // CREATE_BRAND_AGENT_CAMPAIGN_MUTATION, // Unused - for future GraphQL operations
   CREATE_BRAND_AGENT_CREATIVE_MUTATION,
   CREATE_BRAND_AGENT_MUTATION,
   CREATE_BRAND_AGENT_STANDARDS_MUTATION,
@@ -102,14 +101,13 @@ import {
   DELETE_BRAND_AGENT_STANDARDS_MUTATION,
   DELETE_BRAND_AGENT_SYNTHETIC_AUDIENCE_MUTATION,
   GET_BRAND_AGENT_QUERY,
-  LIST_BRAND_AGENT_CAMPAIGNS_QUERY,
   LIST_BRAND_AGENT_CREATIVES_QUERY,
   LIST_BRAND_AGENT_STANDARDS_QUERY,
   LIST_BRAND_AGENT_SYNTHETIC_AUDIENCES_QUERY,
   LIST_BRAND_AGENTS_QUERY,
   LIST_MEASUREMENT_SOURCES_QUERY,
   LIST_SYNTHETIC_AUDIENCES_QUERY,
-  UPDATE_BRAND_AGENT_CAMPAIGN_MUTATION,
+  // UPDATE_BRAND_AGENT_CAMPAIGN_MUTATION, // Unused - for future GraphQL operations
   UPDATE_BRAND_AGENT_CREATIVE_MUTATION,
   UPDATE_BRAND_AGENT_MUTATION,
   UPDATE_BRAND_AGENT_STANDARDS_MUTATION,
@@ -124,7 +122,7 @@ import {
 import {
   CREATE_SCORING_OUTCOME_MUTATION,
   CREATE_WEBHOOK_SUBSCRIPTION_MUTATION,
-  GET_BRAND_AGENT_CAMPAIGN_WITH_DELIVERY_QUERY,
+  // GET_BRAND_AGENT_CAMPAIGN_WITH_DELIVERY_QUERY, // Unused - for future GraphQL operations
   GET_BUDGET_ALLOCATIONS_QUERY,
   GET_CAMPAIGN_DELIVERY_DATA_QUERY,
   GET_CAMPAIGN_TACTICS_QUERY,
@@ -277,19 +275,10 @@ export class Scope3ApiClient {
         success: true,
       };
     } catch (error) {
-      console.log(
-        "BigQuery assignCreativeToCampaign failed, falling back to stub:",
-        error,
+      throw new Error(
+        `Failed to assign creative to campaign: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
-
-    // Fallback to stub (since this was stubbed before)
-    return {
-      campaignId,
-      creativeId,
-      message: `[STUB] Creative ${creativeId} assigned to campaign ${campaignId}`,
-      success: true,
-    };
   }
 
   /**
@@ -534,49 +523,11 @@ export class Scope3ApiClient {
 
       return campaign;
     } catch (error) {
-      console.log(
-        "BigQuery createBrandAgentCampaign failed, falling back to GraphQL:",
-        error,
+      // Campaign operations are BigQuery-only (not available in GraphQL)
+      throw new Error(
+        `Failed to create campaign: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
-
-    // Fallback to GraphQL
-    const response = await fetch(this.graphqlUrl, {
-      body: JSON.stringify({
-        query: CREATE_BRAND_AGENT_CAMPAIGN_MUTATION,
-        variables: { input },
-      }),
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "User-Agent": "MCP-Server/1.0",
-      },
-      method: "POST",
-    });
-
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        throw new Error("Authentication failed");
-      }
-      if (response.status >= 500) {
-        throw new Error("External service temporarily unavailable");
-      }
-      throw new Error("Request failed");
-    }
-
-    const result = (await response.json()) as GraphQLResponse<{
-      createBrandAgentCampaign: BrandAgentCampaign;
-    }>;
-
-    if (result.errors && result.errors.length > 0) {
-      throw new Error("Invalid request parameters or query");
-    }
-
-    if (!result.data?.createBrandAgentCampaign) {
-      throw new Error("No data received");
-    }
-
-    return result.data.createBrandAgentCampaign;
   }
 
   // Brand Agent Creative methods
@@ -778,6 +729,7 @@ export class Scope3ApiClient {
         brandAgentId: input.buyerAgentId,
         content: input.content || {},
         creativeDescription: input.creativeDescription,
+        creativeName: input.creativeName,
         format: input.format.formatId,
         targetAudience:
           typeof input.targetAudience === "string"
@@ -797,37 +749,10 @@ export class Scope3ApiClient {
 
       return creative;
     } catch (error) {
-      console.log(
-        "BigQuery createCreative failed, falling back to mock:",
-        error,
+      throw new Error(
+        `Failed to create creative: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
-
-    // Fallback to mock (since this was stubbed before)
-    const mockCreative: Creative = {
-      assemblyMethod: input.assemblyMethod || "pre_assembled",
-      assetIds: input.content?.assetIds || [],
-      buyerAgentId: input.buyerAgentId,
-      content: input.content || {},
-      contentCategories: input.contentCategories || [],
-      createdBy: "api_user",
-
-      createdDate: new Date().toISOString(),
-      creativeDescription: input.creativeDescription,
-      creativeId: `creative_${Date.now()}`,
-      creativeName: input.creativeName,
-
-      customerId: await this.getCustomerId(apiKey),
-      format: input.format,
-
-      lastModifiedBy: "api_user",
-      lastModifiedDate: new Date().toISOString(),
-      status: "draft",
-      targetAudience: input.targetAudience,
-      version: "1.0.0",
-    };
-
-    return mockCreative;
   }
 
   async createCustomSignal(
@@ -1104,6 +1029,11 @@ export class Scope3ApiClient {
     throw new Error("Delete operation not supported by the GraphQL API");
   }
 
+  async deleteBrandAgentCampaign(apiKey: string, id: string): Promise<void> {
+    // Campaign deletions are BigQuery-only (not available in GraphQL)
+    await this.campaignService.deleteCampaign(id, apiKey);
+  }
+
   async deleteBrandAgentStandards(
     apiKey: string,
     standardsId: string,
@@ -1186,6 +1116,19 @@ export class Scope3ApiClient {
     }
 
     return result.data.updateAgent;
+  }
+
+  /**
+   * Delete a creative permanently
+   */
+  async deleteCreative(apiKey: string, creativeId: string): Promise<void> {
+    try {
+      await this.creativeService.deleteCreative(creativeId, apiKey);
+    } catch (error) {
+      throw new Error(
+        `Failed to delete creative: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
   }
 
   async deleteCustomSignal(
@@ -1539,32 +1482,12 @@ export class Scope3ApiClient {
     apiKey: string,
     campaignId: string,
   ): Promise<BrandAgentCampaign> {
-    const response = await fetch(this.graphqlUrl, {
-      body: JSON.stringify({
-        query: GET_BRAND_AGENT_CAMPAIGN_WITH_DELIVERY_QUERY,
-        variables: { id: campaignId },
-      }),
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "User-Agent": "MCP-Server/1.0",
-      },
-      method: "POST",
-    });
-
-    const result = (await response.json()) as GraphQLResponse<{
-      brandAgentCampaign: BrandAgentCampaign;
-    }>;
-
-    if (result.errors) {
-      throw new Error(`GraphQL errors: ${JSON.stringify(result.errors)}`);
-    }
-
-    if (!result.data?.brandAgentCampaign) {
+    // Campaign retrieval is BigQuery-only (not available in GraphQL)
+    const campaign = await this.campaignService.getCampaign(campaignId, apiKey);
+    if (!campaign) {
       throw new Error("Campaign not found");
     }
-
-    return result.data.brandAgentCampaign;
+    return campaign;
   }
 
   async getBudgetAllocations(
@@ -1616,6 +1539,8 @@ export class Scope3ApiClient {
     return [];
   }
 
+  // Inventory Option Management Methods
+
   async getCampaignDeliveryData(
     apiKey: string,
     campaignId: string,
@@ -1651,6 +1576,8 @@ export class Scope3ApiClient {
     );
   }
 
+  // Inventory Option Management Methods
+
   async getCampaignTactics(
     apiKey: string,
     campaignId: string,
@@ -1679,69 +1606,26 @@ export class Scope3ApiClient {
     return result.data?.campaignTactics || [];
   }
 
-  // Inventory Option Management Methods
-
   /**
-   * Get a specific creative with full details including approval status
+   * Get a creative by ID with BigQuery implementation
    */
   async getCreative(
     apiKey: string,
     creativeId: string,
+    brandAgentId?: string,
   ): Promise<Creative | null> {
-    console.log("[STUB] getCreative - fetching creative with approval status");
-    console.log("Creative ID:", creativeId);
-
-    // Mock response with approval details
-    return {
-      assemblyMethod: "pre_assembled",
-      assetIds: ["asset_123", "asset_456"],
-      // Asset validation status
-      assetValidation: {
-        allAssetsValid: true,
-        validatedAt: new Date().toISOString(),
-      },
-      buyerAgentId: "ba_123",
-      content: {
-        htmlSnippet: "<div>Ad content</div>",
-      },
-      createdBy: "user@example.com",
-      createdDate: new Date(Date.now() - 172800000).toISOString(),
-      creativeId,
-      creativeName: "Summer Sale Banner",
-      customerId: 1,
-
-      format: {
-        formatId: "display_banner_728x90",
-        type: "adcp",
-      },
-
-      lastModifiedBy: "user@example.com",
-
-      lastModifiedDate: new Date().toISOString(),
-      // Publisher approvals
-      publisherApprovals: [
-        {
-          approvalStatus: "approved",
-          autoApprovalPolicy: true,
-          publisherId: "pub_google",
-          publisherName: "Google Ads",
-          reviewedAt: new Date().toISOString(),
-          syncedAt: new Date(Date.now() - 86400000).toISOString(),
-        },
-        {
-          approvalStatus: "pending",
-          autoApprovalPolicy: false,
-          publisherId: "pub_amazon",
-          publisherName: "Amazon DSP",
-          syncedAt: new Date().toISOString(),
-        },
-      ],
-      status: "active",
-      version: "1.0",
-    };
+    try {
+      return await this.creativeService.getCreative(
+        creativeId,
+        brandAgentId,
+        apiKey,
+      );
+    } catch (error) {
+      throw new Error(
+        `Failed to get creative: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
   }
-
-  // Inventory Option Management Methods
 
   // Authentication methods
   async getCustomerId(apiKey: string): Promise<number> {
@@ -1934,6 +1818,8 @@ export class Scope3ApiClient {
     return result.data.optimizationRecommendations;
   }
 
+  // Inventory Option Management Methods
+
   // Get product recommendations
   async getProductRecommendations(
     apiKey: string,
@@ -1955,6 +1841,8 @@ export class Scope3ApiClient {
     return this.productDiscovery.getRecommendedProducts(apiKey, params);
   }
 
+  // Inventory Option Management Methods
+
   /**
    * Get list of registered sales agents for format discovery
    */
@@ -1973,8 +1861,6 @@ export class Scope3ApiClient {
       { name: "Scope3 Platform", url: "https://api.scope3.com/mcp" },
     ];
   }
-
-  // Inventory Option Management Methods
 
   async getScoringOutcomes(
     apiKey: string,
@@ -2008,8 +1894,6 @@ export class Scope3ApiClient {
 
     return result.data?.scoringOutcomes || [];
   }
-
-  // Inventory Option Management Methods
 
   async getTacticBreakdown(
     apiKey: string,
@@ -2190,57 +2074,12 @@ export class Scope3ApiClient {
     brandAgentId: string,
     status?: string,
   ): Promise<BrandAgentCampaign[]> {
-    try {
-      // Try BigQuery first
-      const campaigns = await this.campaignService.listCampaigns(
-        brandAgentId,
-        status,
-        apiKey,
-      );
-      return campaigns;
-    } catch (error) {
-      console.log(
-        "BigQuery listBrandAgentCampaigns failed, falling back to GraphQL:",
-        error,
-      );
-    }
-
-    // Fallback to GraphQL
-    const response = await fetch(this.graphqlUrl, {
-      body: JSON.stringify({
-        query: LIST_BRAND_AGENT_CAMPAIGNS_QUERY,
-        variables: { brandAgentId, status },
-      }),
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "User-Agent": "MCP-Server/1.0",
-      },
-      method: "POST",
-    });
-
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        throw new Error("Authentication failed");
-      }
-      if (response.status >= 500) {
-        throw new Error("External service temporarily unavailable");
-      }
-      throw new Error("Request failed");
-    }
-
-    const result =
-      (await response.json()) as GraphQLResponse<BrandAgentCampaignsData>;
-
-    if (result.errors && result.errors.length > 0) {
-      throw new Error("Invalid request parameters or query");
-    }
-
-    if (!result.data?.brandAgentCampaigns) {
-      throw new Error("No data received");
-    }
-
-    return result.data.brandAgentCampaigns;
+    // Campaign operations are BigQuery-only (not available in GraphQL)
+    return await this.campaignService.listCampaigns(
+      brandAgentId,
+      status,
+      apiKey,
+    );
   }
 
   async listBrandAgentCreatives(
@@ -2427,6 +2266,10 @@ export class Scope3ApiClient {
     }
   }
 
+  // ========================================
+  // CREATIVE MANAGEMENT METHODS (MCP Orchestration + REST)
+  // ========================================
+
   // Brand Standards Agent methods
   async listBrandAgentStandards(
     apiKey: string,
@@ -2502,10 +2345,6 @@ export class Scope3ApiClient {
 
     return result.data?.brandStoryAgents || [];
   }
-
-  // ========================================
-  // CREATIVE MANAGEMENT METHODS (MCP Orchestration + REST)
-  // ========================================
 
   /**
    * List available creative formats from all providers
@@ -2779,22 +2618,9 @@ export class Scope3ApiClient {
         totalCount: creatives.length,
       };
     } catch (error) {
-      console.log(
-        "BigQuery listCreatives failed, returning empty result:",
-        error,
+      throw new Error(
+        `Failed to list creatives: ${error instanceof Error ? error.message : String(error)}`,
       );
-      return {
-        creatives: [],
-        hasMore: false,
-        summary: {
-          activeCreatives: 0,
-          assignedCreatives: 0,
-          draftCreatives: 0,
-          totalCreatives: 0,
-          unassignedCreatives: 0,
-        },
-        totalCount: 0,
-      };
     }
   }
 
@@ -3140,15 +2966,24 @@ export class Scope3ApiClient {
     creativeId: string,
     campaignId: string,
   ): Promise<AssignmentResult> {
-    console.log("[STUB] unassignCreativeFromCampaign");
-    console.log("Unassignment:", { campaignId, creativeId });
+    try {
+      // Unassign creative from campaign in BigQuery
+      await this.campaignService.unassignCreativeFromCampaign(
+        campaignId,
+        creativeId,
+      );
 
-    return {
-      campaignId,
-      creativeId,
-      message: `[STUB] Creative ${creativeId} unassigned from campaign ${campaignId}`,
-      success: true,
-    };
+      return {
+        campaignId,
+        creativeId,
+        message: `Creative ${creativeId} unassigned from campaign ${campaignId}`,
+        success: true,
+      };
+    } catch (error) {
+      throw new Error(
+        `Failed to unassign creative from campaign: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
   }
 
   async updateBrandAgent(
@@ -3237,42 +3072,24 @@ export class Scope3ApiClient {
     id: string,
     input: BrandAgentCampaignUpdateInput,
   ): Promise<BrandAgentCampaign> {
-    const response = await fetch(this.graphqlUrl, {
-      body: JSON.stringify({
-        query: UPDATE_BRAND_AGENT_CAMPAIGN_MUTATION,
-        variables: { id, input },
-      }),
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "User-Agent": "MCP-Server/1.0",
+    // Campaign updates are BigQuery-only (not available in GraphQL)
+    return await this.campaignService.updateCampaign(
+      id,
+      {
+        budgetCurrency: input.budget?.currency,
+        budgetDailyCap: input.budget?.dailyCap,
+        budgetPacing: input.budget?.pacing,
+        budgetTotal: input.budget?.total,
+        endDate: input.endDate,
+        name: input.name,
+        outcomeScoreWindowDays: input.outcomeScoreWindowDays,
+        prompt: input.prompt,
+        scoringWeights: input.scoringWeights,
+        startDate: input.startDate,
+        status: input.status,
       },
-      method: "POST",
-    });
-
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        throw new Error("Authentication failed");
-      }
-      if (response.status >= 500) {
-        throw new Error("External service temporarily unavailable");
-      }
-      throw new Error("Request failed");
-    }
-
-    const result = (await response.json()) as GraphQLResponse<{
-      updateBrandAgentCampaign: BrandAgentCampaign;
-    }>;
-
-    if (result.errors && result.errors.length > 0) {
-      throw new Error("Invalid request parameters or query");
-    }
-
-    if (!result.data?.updateBrandAgentCampaign) {
-      throw new Error("No data received");
-    }
-
-    return result.data.updateBrandAgentCampaign;
+      apiKey,
+    );
   }
 
   async updateBrandAgentCreative(
@@ -3318,6 +3135,10 @@ export class Scope3ApiClient {
     return result.data.updateBrandAgentCreative;
   }
 
+  // ========================================
+  // PMP (PRIVATE MARKETPLACE) METHODS
+  // ========================================
+
   // Update Brand Agent PMP (stubbed until backend ready)
   async updateBrandAgentPMP(
     apiKey: string,
@@ -3353,10 +3174,6 @@ export class Scope3ApiClient {
 
     return pmp;
   }
-
-  // ========================================
-  // PMP (PRIVATE MARKETPLACE) METHODS
-  // ========================================
 
   async updateBrandAgentStandards(
     apiKey: string,
@@ -3529,30 +3346,9 @@ export class Scope3ApiClient {
 
       return updatedCreative;
     } catch (error) {
-      console.log(
-        "BigQuery updateCreative failed, falling back to mock:",
-        error,
+      throw new Error(
+        `Failed to update creative: ${error instanceof Error ? error.message : String(error)}`,
       );
-
-      // Fallback to mock response
-      const mockCreative: Creative = {
-        assemblyMethod: "pre_assembled",
-        assetIds: input.updates.content?.assetIds || [],
-        buyerAgentId: "ba_123",
-        content: input.updates.content || {},
-        createdBy: "api_user",
-        createdDate: new Date(Date.now() - 86400000).toISOString(),
-        creativeId: input.creativeId,
-        creativeName: input.updates.name || "Updated Creative",
-        customerId: await this.getCustomerId(apiKey),
-        format: { formatId: "display_banner", type: "adcp" },
-        lastModifiedBy: "api_user",
-        lastModifiedDate: new Date().toISOString(),
-        status: input.updates.status || "draft",
-        version: "1.1.0",
-      };
-
-      return mockCreative;
     }
   }
 

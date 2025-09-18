@@ -270,11 +270,22 @@ describe("signals/list", () => {
   });
 
   it("should handle missing API key", async () => {
-    const result = await tool.execute({}, {});
+    // Ensure no environment variable is set
+    const originalApiKey = process.env.SCOPE3_API_KEY;
+    delete process.env.SCOPE3_API_KEY;
 
-    expectErrorResponse(result, "Authentication required");
-    expect(result).toContain("AUTHENTICATION_FAILED");
-    expect(mockScope3Client.listCustomSignals).not.toHaveBeenCalled();
+    try {
+      const result = await tool.execute({}, {});
+
+      expectErrorResponse(result, "Authentication required");
+      expect(result).toContain("AUTHENTICATION_FAILED");
+      expect(mockScope3Client.listCustomSignals).not.toHaveBeenCalled();
+    } finally {
+      // Restore original value
+      if (originalApiKey) {
+        process.env.SCOPE3_API_KEY = originalApiKey;
+      }
+    }
   });
 
   it("should handle API errors", async () => {

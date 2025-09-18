@@ -1,5 +1,12 @@
 import type { Creative, CreativeContent } from "../types/creative.js";
 
+import {
+  BigQueryTypes,
+  createBigQueryParams,
+  toBigQueryInt64,
+  toBigQueryJson,
+  toBigQueryString,
+} from "../utils/bigquery-types.js";
 import { BigQueryBaseService } from "./base/bigquery-base-service.js";
 
 /**
@@ -14,6 +21,7 @@ export class CreativeService extends BigQueryBaseService {
     brandAgentId: string;
     content: CreativeContent;
     creativeDescription?: string;
+    creativeName?: string;
     format: string;
     targetAudience?: Record<string, unknown>;
   }): Promise<string> {
@@ -21,26 +29,67 @@ export class CreativeService extends BigQueryBaseService {
 
     const query = `
       INSERT INTO ${this.getTableRef("creatives")} (
-        id, brand_agent_id, creative_description, format, content, 
-        target_audience, last_modified_date, created_date
+        id, brand_agent_id, name, description, format_id, content, 
+        target_audience, updated_at, created_at
       ) VALUES (
-        @creativeId, @brandAgentId, @creativeDescription, @format, 
-        @content, @targetAudience, ${this.getCurrentTimestamp()}, ${this.getCurrentTimestamp()}
+        @creativeId, @brandAgentId, @creativeName, @creativeDescription, @format, 
+        PARSE_JSON(@content), PARSE_JSON(@targetAudience), ${this.getCurrentTimestamp()}, ${this.getCurrentTimestamp()}
       )
     `;
 
-    await this.executeQuery(query, {
-      brandAgentId: data.brandAgentId,
-      content: JSON.stringify(data.content),
-      creativeDescription: data.creativeDescription || null,
-      creativeId,
-      format: data.format,
-      targetAudience: data.targetAudience
-        ? JSON.stringify(data.targetAudience)
-        : null,
-    });
+    const { params, types } = createBigQueryParams(
+      {
+        brandAgentId: toBigQueryInt64(data.brandAgentId),
+        content: toBigQueryJson(data.content),
+        creativeDescription: data.creativeDescription || null,
+        creativeId,
+        creativeName: toBigQueryString(
+          data.creativeName || `Creative ${creativeId}`,
+        ),
+        format: data.format,
+        targetAudience: toBigQueryJson(data.targetAudience),
+      },
+      {
+        brandAgentId: BigQueryTypes.INT64,
+        content: BigQueryTypes.JSON,
+        creativeDescription: BigQueryTypes.STRING,
+        creativeId: BigQueryTypes.STRING,
+        creativeName: BigQueryTypes.STRING,
+        format: BigQueryTypes.STRING,
+        targetAudience: BigQueryTypes.JSON,
+      },
+    );
+
+    await this.bigquery.query({ params, query, types });
 
     return creativeId;
+  }
+
+  /**
+   * Delete a creative and its assignments
+   */
+  async deleteCreative(creativeId: string, apiToken?: string): Promise<void> {
+    // First verify the creative exists and user has access
+    const existingCreative = await this.getCreative(
+      creativeId,
+      undefined,
+      apiToken,
+    );
+    if (!existingCreative) {
+      throw new Error("Creative not found or access denied");
+    }
+
+    // Delete campaign assignments first
+    await this.bigquery.query({
+      params: { creativeId },
+      query: `DELETE FROM ${this.getTableRef("campaign_creatives")} WHERE creative_id = @creativeId`,
+    });
+
+    // Delete the creative itself
+    await this.bigquery.query({
+      params: { creativeId },
+      query: `DELETE FROM ${this.getTableRef("creatives")} WHERE id = @creativeId`,
+    });
   }
 
   /**
@@ -63,11 +112,21 @@ export class CreativeService extends BigQueryBaseService {
       LIMIT 1
     `;
 
-    const row = await this.executeQuerySingle(query, {
-      brandAgentId: brandAgentId || null,
-      creativeId,
-      customerId,
+    const [rows] = await this.bigquery.query({
+      params: {
+        brandAgentId: brandAgentId ? parseInt(brandAgentId, 10) : null, // Convert to INT64 to match schema
+        creativeId,
+        customerId,
+      },
+      query,
+      types: {
+        brandAgentId: "INT64",
+        creativeId: "STRING",
+        customerId: "INT64",
+      },
     });
+
+    const row = rows.length > 0 ? rows[0] : null;
 
     return row ? this.mapCreativeRow(row as Record<string, unknown>) : null;
   }
@@ -89,7 +148,15 @@ export class CreativeService extends BigQueryBaseService {
       GROUP BY cc.creative_id
     `;
 
-    const rows = await this.executeQuery(query, { brandAgentId });
+    const [rows] = await this.bigquery.query({
+      params: {
+        brandAgentId: parseInt(brandAgentId, 10), // Convert to INT64 to match schema
+      },
+      query,
+      types: {
+        brandAgentId: "INT64",
+      },
+    });
 
     const counts: Record<string, number> = {};
     for (const row of rows) {
@@ -114,7 +181,10 @@ export class CreativeService extends BigQueryBaseService {
       WHERE c.brand_agent_id = @brandAgentId 
         AND agent.customer_id = @customerId
     `;
-    const params: Record<string, unknown> = { brandAgentId, customerId };
+    const params: Record<string, unknown> = {
+      brandAgentId: parseInt(brandAgentId, 10), // Convert to INT64 to match schema
+      customerId,
+    };
 
     if (format) {
       whereClause += " AND c.format = @format";
@@ -126,10 +196,19 @@ export class CreativeService extends BigQueryBaseService {
       FROM ${this.getTableRef("creatives")} c
       LEFT JOIN \`${this.agentTableRef}\` agent ON c.brand_agent_id = agent.id
       ${whereClause}
-      ORDER BY c.created_date DESC
+      ORDER BY c.created_at DESC
     `;
 
-    const rows = await this.executeQuery(query, params);
+    const [rows] = await this.bigquery.query({
+      params,
+      query,
+      types: {
+        brandAgentId: "INT64",
+        customerId: "INT64",
+        format: "STRING",
+      },
+    });
+
     return rows.map((row) =>
       this.mapCreativeRow(row as Record<string, unknown>),
     );
@@ -157,23 +236,21 @@ export class CreativeService extends BigQueryBaseService {
       throw new Error("Creative not found or access denied");
     }
 
-    const setParts: string[] = [
-      `last_modified_date = ${this.getCurrentTimestamp()}`,
-    ];
+    const setParts: string[] = [`updated_at = ${this.getCurrentTimestamp()}`];
     const params: Record<string, unknown> = { creativeId };
 
     if (updates.content !== undefined) {
-      setParts.push("content = @content");
+      setParts.push("content = PARSE_JSON(@content)");
       params.content = JSON.stringify(updates.content);
     }
 
     if (updates.creativeDescription !== undefined) {
-      setParts.push("creative_description = @creativeDescription");
+      setParts.push("description = @creativeDescription");
       params.creativeDescription = updates.creativeDescription;
     }
 
     if (updates.targetAudience !== undefined) {
-      setParts.push("target_audience = @targetAudience");
+      setParts.push("target_audience = PARSE_JSON(@targetAudience)");
       params.targetAudience = JSON.stringify(updates.targetAudience);
     }
 
@@ -188,7 +265,7 @@ export class CreativeService extends BigQueryBaseService {
       WHERE id = @creativeId
     `;
 
-    await this.executeQuery(query, params);
+    await this.bigquery.query({ params, query });
   }
 
   /**
@@ -242,25 +319,19 @@ export class CreativeService extends BigQueryBaseService {
       content,
       contentCategories,
       createdBy: "system", // Default - could be enhanced later
-      createdDate: new Date(
-        row.created_date as Date | number | string,
-      ).toISOString(),
-      creativeDescription: row.creative_description
-        ? String(row.creative_description)
+      createdDate: this.safeParseDate(row.created_at),
+      creativeDescription: row.description
+        ? String(row.description)
         : undefined,
       creativeId: String(row.id),
-      creativeName: String(
-        row.creative_name || row.name || `Creative ${row.id}`,
-      ),
+      creativeName: String(row.name || `Creative ${row.id}`),
       customerId: Number(row.customer_id),
       format: {
-        formatId: String(row.format),
+        formatId: String(row.format_id),
         type: "publisher", // Default type for BigQuery stored formats
       },
       lastModifiedBy: "system", // Default - could be enhanced later
-      lastModifiedDate: new Date(
-        row.last_modified_date as Date | number | string,
-      ).toISOString(),
+      lastModifiedDate: this.safeParseDate(row.updated_at),
       status: String(row.status || "active") as
         | "active"
         | "archived"
@@ -271,5 +342,30 @@ export class CreativeService extends BigQueryBaseService {
       targetAudience,
       version: "1.0", // Default version
     };
+  }
+
+  /**
+   * Safely parse date value from BigQuery
+   */
+  private safeParseDate(dateValue: unknown): string {
+    if (!dateValue) return new Date().toISOString();
+
+    try {
+      // Handle BigQuery timestamp objects
+      if (dateValue && typeof dateValue === "object" && "value" in dateValue) {
+        const timestamp = (dateValue as { value: string }).value;
+        return new Date(timestamp).toISOString();
+      }
+
+      const date = new Date(dateValue as Date | number | string);
+      if (isNaN(date.getTime())) {
+        console.warn("Invalid date value:", dateValue);
+        return new Date().toISOString();
+      }
+      return date.toISOString();
+    } catch (error) {
+      console.warn("Failed to parse date:", dateValue, error);
+      return new Date().toISOString();
+    }
   }
 }

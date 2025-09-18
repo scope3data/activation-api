@@ -93,14 +93,25 @@ describe("listCampaignsTool", () => {
     });
 
     it("should throw error when no API key is available", async () => {
-      await expect(
-        tool.execute(
-          {
-            brandAgentId: "ba_456",
-          },
-          { session: {} },
-        ),
-      ).rejects.toThrow("Authentication required");
+      // Store original env value and clear it for this test
+      const originalEnv = process.env.SCOPE3_API_KEY;
+      delete process.env.SCOPE3_API_KEY;
+
+      try {
+        await expect(
+          tool.execute(
+            {
+              brandAgentId: "ba_456",
+            },
+            { session: {} },
+          ),
+        ).rejects.toThrow("Authentication required");
+      } finally {
+        // Restore original env value
+        if (originalEnv) {
+          process.env.SCOPE3_API_KEY = originalEnv;
+        }
+      }
     });
   });
 

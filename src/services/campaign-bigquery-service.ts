@@ -3,6 +3,7 @@ import { BigQuery } from "@google-cloud/bigquery";
 import type { BrandAgent, BrandAgentCampaign } from "../types/brand-agent.js";
 import type { Creative } from "../types/creative.js";
 
+import { BigQueryConfig } from "../utils/config.js";
 import { AuthenticationService } from "./auth-service.js";
 
 export class CampaignBigQueryService {
@@ -73,6 +74,11 @@ export class CampaignBigQueryService {
         creativeId,
       },
       query,
+      types: {
+        assignedBy: "STRING",
+        campaignId: "STRING",
+        creativeId: "STRING",
+      },
     });
   }
 
@@ -107,7 +113,7 @@ export class CampaignBigQueryService {
 
     await this.bigquery.query({
       params: {
-        brandAgentId: data.brandAgentId,
+        brandAgentId: parseInt(data.brandAgentId, 10),
         budgetCurrency: data.budgetCurrency || "USD",
         budgetDailyCap: data.budgetDailyCap || null,
         budgetPacing: data.budgetPacing || "even",
@@ -124,6 +130,21 @@ export class CampaignBigQueryService {
         status: data.status || "draft",
       },
       query,
+      types: {
+        brandAgentId: "INT64",
+        budgetCurrency: "STRING",
+        budgetDailyCap: "FLOAT64",
+        budgetPacing: "STRING",
+        budgetTotal: "FLOAT64",
+        endDate: "TIMESTAMP",
+        id: "STRING",
+        name: "STRING",
+        outcomeScoreWindowDays: "INT64",
+        prompt: "STRING",
+        scoringWeights: "STRING",
+        startDate: "TIMESTAMP",
+        status: "STRING",
+      },
     });
 
     return campaignId;
@@ -179,6 +200,43 @@ export class CampaignBigQueryService {
   }
 
   /**
+   * Delete a campaign
+   */
+  async deleteCampaign(campaignId: string, apiToken?: string): Promise<void> {
+    // Resolve customer ID for security
+    const customerId = await this.resolveCustomerId(apiToken);
+
+    // Delete campaign assignments first (foreign key constraints)
+    await this.bigquery.query({
+      params: { campaignId },
+      query: `DELETE FROM \`${this.projectId}.${this.dataset}.campaign_creatives\` WHERE campaign_id = @campaignId`,
+    });
+
+    await this.bigquery.query({
+      params: { campaignId },
+      query: `DELETE FROM \`${this.projectId}.${this.dataset}.campaign_brand_stories\` WHERE campaign_id = @campaignId`,
+    });
+
+    // Delete the campaign itself (with customer security check)
+    const query = `
+      DELETE FROM \`${this.projectId}.${this.dataset}.campaigns\`
+      WHERE id = @campaignId 
+        AND brand_agent_id IN (
+          SELECT id FROM \`${this.agentTableRef}\` WHERE customer_id = @customerId
+        )
+    `;
+
+    await this.bigquery.query({
+      params: { campaignId, customerId },
+      query,
+    });
+  }
+
+  // ============================================================================
+  // CAMPAIGN METHODS
+  // ============================================================================
+
+  /**
    * Get brand agent with extensions (joins with existing agent table)
    */
   async getBrandAgent(agentId: string): Promise<BrandAgent | null> {
@@ -224,10 +282,6 @@ export class CampaignBigQueryService {
       updatedAt: new Date(row.updated_at as Date | number | string),
     };
   }
-
-  // ============================================================================
-  // CAMPAIGN METHODS
-  // ============================================================================
 
   /**
    * Get campaign with relationships (customer-scoped)
@@ -425,6 +479,10 @@ export class CampaignBigQueryService {
     return this.authService.getCustomerIdFromToken(apiToken);
   }
 
+  // ============================================================================
+  // CREATIVE METHODS
+  // ============================================================================
+
   /**
    * Health check - test BigQuery connectivity
    */
@@ -438,10 +496,6 @@ export class CampaignBigQueryService {
       return false;
     }
   }
-
-  // ============================================================================
-  // CREATIVE METHODS
-  // ============================================================================
 
   /**
    * List brand agents for a customer
@@ -515,7 +569,10 @@ export class CampaignBigQueryService {
       WHERE c.brand_agent_id = @brandAgentId AND a.customer_id = @customerId
     `;
 
-    const params: Record<string, unknown> = { brandAgentId, customerId };
+    const params: Record<string, unknown> = {
+      brandAgentId: parseInt(brandAgentId, 10), // Convert to INT64 to match schema
+      customerId: Number(customerId),
+    };
 
     if (status) {
       query += ` AND c.status = @status`;
@@ -595,7 +652,10 @@ export class CampaignBigQueryService {
       WHERE c.brand_agent_id = @brandAgentId AND a.customer_id = @customerId
     `;
 
-    const params: Record<string, unknown> = { brandAgentId, customerId };
+    const params: Record<string, unknown> = {
+      brandAgentId: parseInt(brandAgentId, 10), // Convert to INT64 to match schema
+      customerId: Number(customerId),
+    };
 
     if (status) {
       query += ` AND c.status = @status`;
@@ -658,6 +718,10 @@ export class CampaignBigQueryService {
     }));
   }
 
+  // ============================================================================
+  // RELATIONSHIP METHODS
+  // ============================================================================
+
   /**
    * Resolve brand agent descriptor to brand agent ID
    * Supports lookup by ID, external ID, or nickname (customer-scoped)
@@ -718,10 +782,6 @@ export class CampaignBigQueryService {
     return rows.length > 0 ? String(rows[0].id) : null;
   }
 
-  // ============================================================================
-  // RELATIONSHIP METHODS
-  // ============================================================================
-
   /**
    * Remove creative from campaign
    */
@@ -737,7 +797,120 @@ export class CampaignBigQueryService {
     await this.bigquery.query({
       params: { campaignId, creativeId },
       query,
+      types: {
+        campaignId: "STRING",
+        creativeId: "STRING",
+      },
     });
+  }
+
+  /**
+   * Update an existing campaign
+   */
+  async updateCampaign(
+    campaignId: string,
+    updates: {
+      budgetCurrency?: string;
+      budgetDailyCap?: number;
+      budgetPacing?: string;
+      budgetTotal?: number;
+      endDate?: Date;
+      name?: string;
+      outcomeScoreWindowDays?: number;
+      prompt?: string;
+      scoringWeights?: Record<string, unknown>;
+      startDate?: Date;
+      status?: string;
+    },
+    apiToken?: string,
+  ): Promise<BrandAgentCampaign> {
+    // Resolve customer ID for security
+    const customerId = await this.resolveCustomerId(apiToken);
+
+    const setClause = [];
+    const params: Record<string, unknown> = { campaignId, customerId };
+
+    if (updates.name) {
+      setClause.push("name = @name");
+      params.name = updates.name;
+    }
+
+    if (updates.prompt !== undefined) {
+      setClause.push("prompt = @prompt");
+      params.prompt = updates.prompt;
+    }
+
+    if (updates.status) {
+      setClause.push("status = @status");
+      params.status = updates.status;
+    }
+
+    if (updates.budgetTotal !== undefined) {
+      setClause.push("budget_total = @budgetTotal");
+      params.budgetTotal = updates.budgetTotal;
+    }
+
+    if (updates.budgetCurrency) {
+      setClause.push("budget_currency = @budgetCurrency");
+      params.budgetCurrency = updates.budgetCurrency;
+    }
+
+    if (updates.budgetDailyCap !== undefined) {
+      setClause.push("budget_daily_cap = @budgetDailyCap");
+      params.budgetDailyCap = updates.budgetDailyCap;
+    }
+
+    if (updates.budgetPacing) {
+      setClause.push("budget_pacing = @budgetPacing");
+      params.budgetPacing = updates.budgetPacing;
+    }
+
+    if (updates.scoringWeights) {
+      setClause.push("scoring_weights = PARSE_JSON(@scoringWeights)");
+      params.scoringWeights = JSON.stringify(updates.scoringWeights);
+    }
+
+    if (updates.outcomeScoreWindowDays !== undefined) {
+      setClause.push("outcome_score_window_days = @outcomeScoreWindowDays");
+      params.outcomeScoreWindowDays = updates.outcomeScoreWindowDays;
+    }
+
+    if (updates.startDate !== undefined) {
+      setClause.push("start_date = @startDate");
+      params.startDate = updates.startDate;
+    }
+
+    if (updates.endDate !== undefined) {
+      setClause.push("end_date = @endDate");
+      params.endDate = updates.endDate;
+    }
+
+    // Always update the updated_at timestamp
+    setClause.push("updated_at = CURRENT_TIMESTAMP()");
+
+    if (setClause.length === 1) {
+      // Only updated_at
+      throw new Error("No fields to update");
+    }
+
+    const query = `
+      UPDATE \`${this.projectId}.${this.dataset}.campaigns\`
+      SET ${setClause.join(", ")}
+      WHERE id = @campaignId 
+        AND brand_agent_id IN (
+          SELECT id FROM \`${this.agentTableRef}\` WHERE customer_id = @customerId
+        )
+    `;
+
+    await this.bigquery.query({ params, query });
+
+    // Return the updated campaign
+    const updatedCampaign = await this.getCampaign(campaignId, apiToken);
+    if (!updatedCampaign) {
+      throw new Error(`Campaign not found: ${campaignId}`);
+    }
+
+    return updatedCampaign;
   }
 
   /**
@@ -883,7 +1056,7 @@ export class CampaignBigQueryService {
         return customerId;
       }
     }
-    return 1; // Default fallback
+    return BigQueryConfig.DEFAULT_CUSTOMER_ID;
   }
 
   // ============================================================================
