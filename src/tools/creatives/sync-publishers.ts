@@ -198,7 +198,7 @@ ${args.preApproval ? "✅ **Pre-Approval Request**" : ""}
     }
   },
 
-  name: "creative/sync_publishers",
+  name: "creative_sync_publishers",
 
   parameters: z.object({
     campaignId: z

@@ -137,7 +137,7 @@ export const listSignalsAgentsTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "signals-agent/list",
+  name: "signals_agent_list",
   parameters: z.object({
     brandAgentId: z
       .string()

@@ -149,7 +149,7 @@ export const listSyntheticAudiencesTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "audience/list",
+  name: "audience_list",
   parameters: z.object({
     brandAgentId: z
       .string()

@@ -182,7 +182,7 @@ export const createCampaignLegacyTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "campaign/create-legacy",
+  name: "campaign_create_legacy",
   parameters: z.object({
     name: z.string().describe("Name for the campaign strategy"),
     prompt: z

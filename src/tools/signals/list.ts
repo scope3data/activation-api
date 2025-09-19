@@ -234,7 +234,7 @@ export const listCustomSignalsTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "signal/list",
+  name: "signal_list",
   parameters: z.object({
     channel: z
       .string()

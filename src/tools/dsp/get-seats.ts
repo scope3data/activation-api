@@ -67,7 +67,7 @@ export const getDSPSeatsTool = (client: Scope3ApiClient) =>
         );
       }
     },
-    name: "dsp/get-seats",
+    name: "dsp_get_seats",
     parameters: z.object({
       dsp: z
         .string()

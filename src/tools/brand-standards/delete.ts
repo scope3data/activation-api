@@ -107,7 +107,7 @@ export const deleteBrandAgentStandardsTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "brand-standards/delete",
+  name: "brand_standards_delete",
   parameters: z.object({
     standardsId: z
       .string()

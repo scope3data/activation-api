@@ -300,7 +300,7 @@ export const creativeCreateTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "creative/create",
+  name: "creative_create",
 
   parameters: z.object({
     buyerAgentId: z

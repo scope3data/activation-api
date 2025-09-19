@@ -78,7 +78,7 @@ export const createBrandAgentTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "brand-agent/create",
+  name: "brand_agent_create",
   parameters: z.object({
     advertiserDomains: z
       .array(z.string())

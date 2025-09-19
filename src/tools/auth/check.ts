@@ -56,6 +56,6 @@ export const checkAuthTool = (client: Scope3ApiClient) => ({
     });
   },
 
-  name: "auth/check",
+  name: "auth_check",
   parameters: z.object({}),
 });

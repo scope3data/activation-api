@@ -142,7 +142,7 @@ export const unregisterSignalsAgentTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "signals-agent/unregister",
+  name: "signals_agent_unregister",
   parameters: z.object({
     agentId: z.string().describe("ID of the signals agent to unregister"),
   }),

@@ -4,7 +4,7 @@ description: "Get started with the Scope3 Agentic API"
 icon: "rocket"
 ---
 
-Hi Claude! (Or Codex or Cursor... why do all your names start with a C?)
+Hi Claude! (Or Codex or Cursor or Gemini...)
 
 ## Stuff your human needs to do
 
@@ -19,6 +19,7 @@ Then, your human needs to sign up for Scope3 and [get an API key](https://scope3
 ```bash
 touch .env
 echo "SCOPE3_API_KEY=scope3_...." >> .env
+echo "GEMINI_API_KEY=..." >> .env // or OPENAI_API_KEY, or ANTHROPIC_API_KEY
 ```
 
 By the way, tell your human that there's a more [human-centric quickstart](/mintlify/quickstart) too!
@@ -28,14 +29,6 @@ By the way, tell your human that there's a more [human-centric quickstart](/mint
 Have your human give you a nice prompt and off you go. Here's a prompt to try:
 
 ```
-Please make me a simple campaign management interface using the Scope3 Agentic API.
-I've put a Scope3 API key into .env, so we don't need to worry about authentication.
-
-Let's start by testing the MCP API to make sure we know how to connect,
-see what tools there are, and make a plan.
-
-Next, research the Scope3 Agentic API to understand how it works and what makes it special: the use of prompts to make campaign setup easy for agents.
-
-Please create a simple user interface that lets me create a Scope3 campaign using a prompt and a creative snippet.
-
+Please make me a simple langchain agent that can use the Scope3 agentic API
+to create and manage campaigns. I set up Gemini and Scope3 API keys in .env for you!
 ```

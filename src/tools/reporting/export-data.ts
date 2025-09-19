@@ -84,7 +84,7 @@ export const exportDataTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "reporting/export-data",
+  name: "reporting_export_data",
   parameters: z.object({
     brandAgentId: z
       .string()

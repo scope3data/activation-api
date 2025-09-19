@@ -96,7 +96,7 @@ export const listBrandAgentsTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "brand-agent/list",
+  name: "brand_agent_list",
   parameters: z.object({
     where: z
       .object({

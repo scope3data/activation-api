@@ -168,7 +168,7 @@ export const creativeGetTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "creative/get",
+  name: "creative_get",
   parameters: z.object({
     creativeId: z.string().describe("ID of the creative to retrieve"),
   }),

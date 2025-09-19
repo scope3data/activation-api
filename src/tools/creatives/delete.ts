@@ -158,7 +158,7 @@ export const creativeDeleteTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "creative/delete",
+  name: "creative_delete",
   parameters: z.object({
     creativeId: z.string().describe("ID of the creative to delete"),
     force: z

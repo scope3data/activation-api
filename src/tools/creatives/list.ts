@@ -191,7 +191,7 @@ ${
     }
   },
 
-  name: "creative/list",
+  name: "creative_list",
 
   parameters: z.object({
     buyerAgentId: z.string().describe("The buyer agent to list creatives for"),

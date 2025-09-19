@@ -184,7 +184,7 @@ export const createCustomSignalTool = (_client?: Scope3ApiClient) => ({
     }
   },
 
-  name: "signal/create",
+  name: "signal_create",
   parameters: z.object({
     clusters: z
       .array(

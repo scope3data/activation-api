@@ -163,7 +163,7 @@ export const activateSignalTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "signals-agent/activate",
+  name: "signals_agent_activate",
   parameters: z.object({
     agentId: z
       .string()

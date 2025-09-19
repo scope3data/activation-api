@@ -265,7 +265,7 @@ export const discoverPublisherProductsTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "tactic/discover-products",
+  name: "tactic_discover_products",
   parameters: z.object({
     campaignBrief: z
       .string()

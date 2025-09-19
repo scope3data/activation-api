@@ -124,7 +124,7 @@ export const registerWebhookTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "webhook/register",
+  name: "webhook_register",
   parameters: z.object({
     brandAgentId: z.string().describe("Brand agent ID to register webhook for"),
     endpoint: z.object({

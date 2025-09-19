@@ -66,6 +66,6 @@ export const getPartnerSeatsTool = (client: Scope3ApiClient) => ({
       return createErrorResponse("Failed to get partner seats", error);
     }
   },
-  name: "signals/get-partner-seats",
+  name: "signals_get_partner_seats",
   parameters: z.object({}),
 });

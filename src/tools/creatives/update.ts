@@ -197,7 +197,7 @@ ${statusIcon} ${assignment.campaignName} (${assignment.campaignId})`;
     }
   },
 
-  name: "creative/update",
+  name: "creative_update",
 
   parameters: z.object({
     creativeId: z.string().describe("ID of the creative to update"),

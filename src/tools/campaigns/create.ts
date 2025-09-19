@@ -128,7 +128,7 @@ export const createCampaignTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "campaign/create",
+  name: "campaign_create",
   parameters: z.object({
     brandAgentId: z
       .string()

@@ -95,7 +95,7 @@ export const createPMPTool = (client: Scope3ApiClient) =>
         );
       }
     },
-    name: "pmp/create",
+    name: "pmp_create",
     parameters: z.object({
       brand_agent_id: z
         .string()

@@ -274,11 +274,11 @@ info:
   version: 1.0.0
 openapi: 3.1.0
 paths:
-  /signals-agent/activate:
+  /signals-agent-activate:
     post:
       description: Tell a signals agent to activate a recommended signal by creating segments using our
         API. The agent will handle all signal configuration details. Requires authentication.
-      operationId: signals-agent/activate
+      operationId: signals_agent_activate
       summary: Activate Signal
       tags:
         - Signals Agents
@@ -346,10 +346,10 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /auth/check:
+  /auth-check:
     post:
       description: Check the authentication status of the current API key and return user information.
-      operationId: auth/check
+      operationId: auth_check
       summary: Check Authentication Status
       tags:
         - System
@@ -408,14 +408,14 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /brand-story/create:
+  /brand-story-create:
     post:
       description: Create a new brand story for a brand agent. Brand stories are AI-powered target
         audience definitions that use natural language prompts to define audience profiles,
         demographics, and behavioral characteristics. You can describe your target audience, their
         interests, preferences, and behaviors through conversational prompts. The brand story will
         automatically inform campaign targeting within the brand agent. Requires authentication.
-      operationId: brand-story/create
+      operationId: brand_story_create
       summary: Create Brand Agent Brand Story
       tags:
         - Brand Stories
@@ -509,14 +509,14 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /brand-standards/create:
+  /brand-standards-create:
     post:
       description: Create a new brand safety standards agent for a brand agent. The standards agent uses
         AI to classify content and enforce brand safety rules based on a natural language prompt.
         You can define safety guidelines, content restrictions, and approval criteria through
         conversational prompts. The agent will automatically apply to all campaigns within the brand
         agent. Requires authentication.
-      operationId: brand-standards/create
+      operationId: brand_standards_create
       summary: Create Brand Agent Standards
       tags:
         - Brand Standards
@@ -610,12 +610,12 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /brand-agent/create:
+  /brand-agent-create:
     post:
       description: Create a new brand agent (advertiser account). This creates the top-level container
         that will own campaigns, creatives, audiences, standards, and measurement sources. Requires
         authentication.
-      operationId: brand-agent/create
+      operationId: brand_agent_create
       summary: Create Brand Agent
       tags:
         - Brand Agents
@@ -694,13 +694,13 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /campaign/create-legacy:
+  /campaign-create-legacy:
     post:
       description: Create a complete campaign in Scope3 by parsing a natural language prompt and
         automatically creating the strategy and targeting profiles. Returns the created strategy ID
         and a human-readable summary of what was created. Uses INTELLIGENT_PMPS strategy type by
         default (future versions will support media buys). Requires authentication.
-      operationId: campaign/create-legacy
+      operationId: campaign_create_legacy
       summary: Create Campaign
       tags:
         - Campaigns
@@ -770,13 +770,13 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /campaign/create:
+  /campaign-create:
     post:
       description: Create a new campaign within a brand agent. This creates a budget-allocated marketing
         initiative with natural language targeting. The campaign will be managed within the
         specified brand agent context and can use the brand agent's shared creatives and audiences.
         Supports campaign scheduling with start and end dates. Requires authentication.
-      operationId: campaign/create
+      operationId: campaign_create
       summary: Create Campaign
       tags:
         - Campaigns
@@ -880,12 +880,12 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /signal/create:
+  /signal-create:
     post:
       description: Create a new custom signal definition for the Custom Signals Platform. Defines the
         signal metadata, key type (single or composite), and regional cluster configuration for data
         residency and compliance. Requires authentication.
-      operationId: signal/create
+      operationId: signal_create
       summary: Create Custom Signal
       tags:
         - Signals
@@ -976,11 +976,11 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /pmp/create:
+  /pmp-create:
     post:
       description: Create a Private Marketplace deal with natural language prompt. The backend will
         intelligently parse the prompt to extract inventory requirements, targeting, and pricing.
-      operationId: pmp/create
+      operationId: pmp_create
       summary: Create PMP
       tags:
         - PMPs
@@ -1053,13 +1053,13 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /tactic/create:
+  /tactic-create:
     post:
       description: "Create a new tactic by combining a publisher media product with a brand story and
         signal. Simplified targeting approach focusing on the core components: media product + brand
         story + signal configuration. Includes budget allocation and effective pricing. Requires
         authentication."
-      operationId: tactic/create
+      operationId: tactic_create
       summary: Create Tactic
       tags:
         - Tactics
@@ -1170,12 +1170,12 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /creative/assign:
+  /creative-assign:
     post:
       description: Assign a creative to a campaign. Both the creative and campaign must belong to the same
         buyer agent. This ensures proper ownership and access control while enabling creative reuse
         across campaigns within the same advertiser account.
-      operationId: creative/assign
+      operationId: creative_assign
       summary: Assign Creative to Campaign
       tags:
         - Creatives
@@ -1246,12 +1246,12 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /creative/create:
+  /creative-create:
     post:
       description: Create one or more creatives with array-first design. Each creative can have different
         formats, content, and assembly methods. Supports ADCP snippets, template variables for
         native ads, and shared defaults. Single creative = array with 1 item.
-      operationId: creative/create
+      operationId: creative_create
       summary: Create Creative
       tags:
         - Creatives
@@ -1385,7 +1385,7 @@ paths:
               schema:
                 properties:
                   data:
-                    $ref: "#/components/schemas/Creative"
+                    type: object
                   message:
                     type: string
                   success:
@@ -1412,13 +1412,13 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /creative/delete:
+  /creative-delete:
     post:
       description: Delete a creative asset permanently. This will remove the creative from all campaigns
         and cannot be undone. Use with caution as this action is irreversible. Consider unassigning
         the creative from campaigns first if you want to preserve campaign history. Requires
         creative ID and authentication.
-      operationId: creative/delete
+      operationId: creative_delete
       summary: Delete Creative
       tags:
         - Creatives
@@ -1484,14 +1484,14 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /creative/get:
+  /creative-get:
     post:
       description: Get comprehensive information about a creative asset including content details, format
         specifications, asset validation status, campaign assignments, and publisher approval/sync
         status. All approval information is included in this single tool. Useful for reviewing
         creative assets before assignment or troubleshooting creative issues. Requires creative ID
         and authentication.
-      operationId: creative/get
+      operationId: creative_get
       summary: Get Creative
       tags:
         - Creatives
@@ -1556,12 +1556,12 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /creative/list:
+  /creative-list:
     post:
       description: List all creatives for a specific buyer agent, showing their assets and campaign
         assignments. Includes filtering options and summary statistics. Results include campaign
         assignments to reduce additional API calls.
-      operationId: creative/list
+      operationId: creative_list
       summary: List Creatives
       tags:
         - Creatives
@@ -1629,17 +1629,6 @@ paths:
               schema:
                 properties:
                   data:
-                    properties:
-                      assignedCreatives:
-                        type: integer
-                      creatives:
-                        items:
-                          $ref: "#/components/schemas/Creative"
-                        type: array
-                      totalCreatives:
-                        type: integer
-                      unassignedCreatives:
-                        type: integer
                     type: object
                   message:
                     type: string
@@ -1667,11 +1656,11 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /creative/revise:
+  /creative-revise:
     post:
       description: Update a creative's content, assets, or metadata. Can be used for general updates or to
         address publisher feedback. Optionally re-sync to specified publisher after updates.
-      operationId: creative/revise
+      operationId: creative_revise
       summary: Update Creative
       tags:
         - Creatives
@@ -1772,12 +1761,12 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /creative/sync-publishers:
+  /creative-sync-publishers:
     post:
       description: Sync a creative to one or more publishers for approval. Can be used for pre-approval
         before campaign launch or when inventory is selected. Publishers may auto-approve standard
         formats or require manual review.
-      operationId: creative/sync_publishers
+      operationId: creative_sync_publishers
       summary: Sync Creative to Publishers
       tags:
         - Creatives
@@ -1852,11 +1841,11 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /creative/unassign:
+  /creative-unassign:
     post:
       description: Remove a creative assignment from a campaign. This stops the creative from being used
         in that campaign but keeps it available for other campaigns or future reassignment.
-      operationId: creative/unassign
+      operationId: creative_unassign
       summary: Unassign Creative from Campaign
       tags:
         - Creatives
@@ -1923,12 +1912,12 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /creative/update:
+  /creative-update:
     post:
       description: Update existing creative properties including name, status, content sources, and
         advertiser domains. Creates new version while preserving campaign assignments. This is
         orchestration only - no file uploads.
-      operationId: creative/update
+      operationId: creative_update
       summary: Update Creative
       tags:
         - Creatives
@@ -1996,14 +1985,14 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /brand-story/delete:
+  /brand-story-delete:
     post:
       description: Archive (soft delete) a brand story. This disables the brand story and removes its
         targeting guidance from active campaigns. The brand story and its model history are
         preserved for audit purposes but will no longer inform campaign targeting or audience
         segmentation. This action affects all campaigns within the brand agent. Requires
         authentication.
-      operationId: brand-story/delete
+      operationId: brand_story_delete
       summary: Delete Brand Agent Brand Story
       tags:
         - Brand Stories
@@ -2068,13 +2057,13 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /brand-standards/delete:
+  /brand-standards-delete:
     post:
       description: Archive (soft delete) a brand standards agent. This disables the standards agent and
         removes its safety rules from active campaigns. The agent and its model history are
         preserved for audit purposes but will no longer be applied to content classification. This
         action affects all campaigns within the brand agent. Requires authentication.
-      operationId: brand-standards/delete
+      operationId: brand_standards_delete
       summary: Delete Brand Agent Standards
       tags:
         - Brand Standards
@@ -2138,12 +2127,12 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /brand-agent/delete:
+  /brand-agent-delete:
     post:
       description: "⚠️ DANGER: Permanently delete a brand agent (advertiser account) and ALL associated
         data including campaigns, creatives, audiences, standards, and measurement sources. This
         action cannot be undone. Requires authentication."
-      operationId: brand-agent/delete
+      operationId: brand_agent_delete
       summary: Delete Brand Agent
       tags:
         - Brand Agents
@@ -2209,13 +2198,13 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /campaign/delete:
+  /campaign-delete:
     post:
       description: Delete a campaign permanently. This action cannot be undone and will remove all
         campaign data including tactics, targeting profiles, and performance history. Active
         campaigns should be paused first. Use with extreme caution as this will permanently destroy
         campaign data. Requires campaign ID and authentication.
-      operationId: campaign/delete
+      operationId: campaign_delete
       summary: Delete Campaign
       tags:
         - Campaigns
@@ -2285,12 +2274,12 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /signal/delete:
+  /signal-delete:
     post:
       description: "Delete a custom signal definition from the Custom Signals Platform. WARNING: This will
         permanently remove the signal definition and all associated data. This action cannot be
         undone. Requires authentication."
-      operationId: signal/delete
+      operationId: signal_delete
       summary: Delete Custom Signal
       tags:
         - Signals
@@ -2354,13 +2343,13 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /reporting/export-data:
+  /reporting-export-data:
     post:
       description: Export raw performance data for BI/analytics systems in structured format. Supports
         multi-campaign exports with flexible grouping by campaigns, tactics, signals, stories, and
         other dimensions. Returns structured data suitable for external analysis tools and data
         warehouses.
-      operationId: reporting/export-data
+      operationId: reporting_export_data
       summary: Export Data
       tags:
         - Reporting & Analytics
@@ -2460,11 +2449,11 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /brand-agent/get:
+  /brand-agent-get:
     post:
       description: Get detailed information about a specific brand agent (advertiser account) by ID.
         Requires authentication.
-      operationId: brand-agent/get
+      operationId: brand_agent_get
       summary: Get Brand Agent
       tags:
         - Brand Agents
@@ -2528,12 +2517,12 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /campaign/get-summary:
+  /campaign-get-summary:
     post:
       description: Get a natural language summary of campaign performance with insights and
         visualizations. Perfect for casual users asking 'how's my campaign doing?'. Includes pacing,
         performance metrics, tactic breakdown, and actionable recommendations.
-      operationId: campaign/get-summary
+      operationId: campaign_get_summary
       summary: Get Campaign Summary
       tags:
         - Reporting & Analytics
@@ -2612,12 +2601,12 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /signal/get:
+  /signal-get:
     post:
       description: Retrieve detailed information about a specific custom signal definition. Shows complete
         configuration including all cluster settings, metadata, and usage instructions. Requires
         authentication.
-      operationId: signal/get
+      operationId: signal_get
       summary: Get Custom Signal
       tags:
         - Signals
@@ -2681,10 +2670,10 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /dsp/get-seats:
+  /dsp-get-seats:
     post:
       description: Search for available DSP seats to add to brand agent for PMP creation
-      operationId: dsp/get-seats
+      operationId: dsp_get_seats
       summary: Get DSP Seats
       tags:
         - System
@@ -2751,10 +2740,10 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /signals/get-partner-seats:
+  /signals-get-partner-seats:
     post:
       description: Get brand agent seats (advertisers) accessible to your API key
-      operationId: signals/get-partner-seats
+      operationId: signals_get_partner_seats
       summary: Get Partner Seats
       tags:
         - Signals
@@ -2813,13 +2802,13 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /product/list:
+  /product-list:
     post:
       description: Discover available advertising products from multiple sales agents based on campaign
         requirements. This tool queries BigQuery for active sales agents and then calls their
         get_products endpoints to aggregate results. Follows the Ad Context Protocol (ADCP)
         specification.
-      operationId: product/list
+      operationId: product_list
       summary: Discover Products
       tags:
         - Tactics
@@ -2925,12 +2914,12 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /signals-agent/history:
+  /signals-agent-history:
     post:
       description: View complete activity history for a signals agent including all interactions, segment
         operations, and performance metrics. Provides audit trail of agent actions. Requires
         authentication.
-      operationId: signals-agent/history
+      operationId: signals_agent_history
       summary: Get Signals Agent History
       tags:
         - Signals Agents
@@ -2998,11 +2987,11 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /signals-agent/get:
+  /signals-agent-get:
     post:
       description: Get detailed information about a specific signals agent including configuration,
         status, and metadata. Requires authentication.
-      operationId: signals-agent/get
+      operationId: signals_agent_get
       summary: Get Signals Agent
       tags:
         - Signals Agents
@@ -3066,12 +3055,12 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /signals-agent/get-signals:
+  /signals-agent-get-signals:
     post:
       description: Query signals agents for targeting recommendations and signal insights. Can query
         specific agents or all active agents for a brand agent. Stateless operation that can be
         called anytime. Requires authentication.
-      operationId: signals-agent/get-signals
+      operationId: signals_agent_get_signals
       summary: Get Signals from Agents
       tags:
         - Signals Agents
@@ -3145,13 +3134,13 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /brand-story/list:
+  /brand-story-list:
     post:
       description: List all brand stories for a brand agent. Brand stories are AI-powered target audience
         definitions using natural language prompts. Each story has a primary model that contains the
         current audience definition and can be applied to campaign targeting and content creation.
         Requires authentication.
-      operationId: brand-story/list
+      operationId: brand_story_list
       summary: List Brand Agent Brand Stories
       tags:
         - Brand Stories
@@ -3215,13 +3204,13 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /brand-standards/list:
+  /brand-standards-list:
     post:
       description: List all brand safety standards agents for a brand agent. Brand standards agents define
         safety rules and filtering criteria using AI-powered prompts. Each agent has a primary model
         that contains the current safety guidelines and can be applied across campaigns. Requires
         authentication.
-      operationId: brand-standards/list
+      operationId: brand_standards_list
       summary: List Brand Agent Standards
       tags:
         - Brand Standards
@@ -3284,11 +3273,11 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /brand-agent/list:
+  /brand-agent-list:
     post:
       description: List all brand agents (advertiser accounts) for the authenticated user. Optionally
         filter by name or customer ID. Requires authentication.
-      operationId: brand-agent/list
+      operationId: brand_agent_list
       summary: List Brand Agents
       tags:
         - Brand Agents
@@ -3357,13 +3346,13 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /campaign/list:
+  /campaign-list:
     post:
       description: List campaigns with filtering and sorting options. Can filter by brand agent, status,
         date range, or budget range. Shows campaign summary information including name, status,
         budget, performance metrics, and schedule. Use this to get an overview of campaign portfolio
         or find specific campaigns. Requires authentication.
-      operationId: campaign/list
+      operationId: campaign_list
       summary: List Campaigns
       tags:
         - Campaigns
@@ -3457,12 +3446,12 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /format/list:
+  /format-list:
     post:
       description: List all available creative formats from AdCP standards, publishers, and creative
         agents. Use this to discover format options before creating creatives. Shows requirements,
         capabilities, and assembly methods for each format.
-      operationId: format/list
+      operationId: format_list
       summary: List Creative Formats
       tags:
         - Creatives
@@ -3533,12 +3522,12 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /signal/list:
+  /signal-list:
     post:
       description: List all custom signal definitions in the Custom Signals Platform. Optionally filter by
         region, channel, or specific brand agent seat. Shows signal metadata, key types, cluster
         configurations, and seat information for partner visibility. Requires authentication.
-      operationId: signal/list
+      operationId: signal_list
       summary: List Custom Signals
       tags:
         - Signals
@@ -3603,10 +3592,10 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /pmp/list:
+  /pmp-list:
     post:
       description: List all PMPs for a brand agent with their deal IDs and status
-      operationId: pmp/list
+      operationId: pmp_list
       summary: List PMPs
       tags:
         - PMPs
@@ -3670,11 +3659,11 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /signals-agent/list:
+  /signals-agent-list:
     post:
       description: List all registered signals agents for a brand agent. Shows agent status, endpoints,
         and registration details. Requires authentication.
-      operationId: signals-agent/list
+      operationId: signals_agent_list
       summary: List Signals Agents
       tags:
         - Signals Agents
@@ -3737,14 +3726,14 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /tactic/list:
+  /tactic-list:
     post:
       description: List all tactics for a specific campaign with comprehensive details. Shows publisher
         products, simplified targeting (media product + brand story + signal), budget allocations,
         performance metrics, and actionable recommendations. Includes budget distribution
         visualization and performance alerts. Use this to get an overview of how campaign budget is
         distributed across different tactics. Requires authentication.
-      operationId: tactic/list
+      operationId: tactic_list
       summary: List Tactics
       tags:
         - Tactics
@@ -3809,12 +3798,12 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /reporting/provide-outcomes:
+  /reporting-provide-outcomes:
     post:
       description: Provide scoring outcomes for campaign optimization. This replaces the old campaign
         events system with a focus on performance measurement. Takes campaign and optional
         tactic/creative, exposure range, and performance index (100 = expected performance).
-      operationId: reporting/provide-outcomes
+      operationId: reporting_provide_outcomes
       summary: Provide Scoring Outcomes
       tags:
         - Reporting & Analytics
@@ -3901,12 +3890,12 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /signals-agent/register:
+  /signals-agent-register:
     post:
       description: Register a new signals agent to your seat. The agent will receive permissions to manage
         segments in your account using our API. Supports ADCP (Advertising Data Control Protocol)
         compliant agents. Requires authentication.
-      operationId: signals-agent/register
+      operationId: signals_agent_register
       summary: Register Signals Agent
       tags:
         - Signals Agents
@@ -3983,12 +3972,12 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /webhook/register:
+  /webhook-register:
     post:
       description: Register a webhook endpoint to receive real-time campaign event notifications. Supports
         delivery updates, performance events, and threshold alerts. Follows enterprise security
         patterns with authentication and retry policies.
-      operationId: webhook/register
+      operationId: webhook_register
       summary: Register Webhook
       tags:
         - System
@@ -4114,12 +4103,12 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /signals-agent/unregister:
+  /signals-agent-unregister:
     post:
       description: Unregister a signals agent from your seat. This revokes the agent's API access and sets
         its status to inactive. The agent will no longer be able to manage segments. Requires
         authentication.
-      operationId: signals-agent/unregister
+      operationId: signals_agent_unregister
       summary: Unregister Signals Agent
       tags:
         - Signals Agents
@@ -4182,13 +4171,13 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /brand-story/update:
+  /brand-story-update:
     post:
       description: Update the target audience profile and characteristics for an existing brand story.
         This creates a new model version with the updated audience prompt and makes it the
         primary/active version. The updated brand story definition will automatically inform
         campaign targeting within the brand agent. Requires authentication.
-      operationId: brand-story/update
+      operationId: brand_story_update
       summary: Update Brand Agent Brand Story
       tags:
         - Brand Stories
@@ -4263,13 +4252,13 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /brand-standards/update:
+  /brand-standards-update:
     post:
       description: Update the safety prompt and configuration for an existing brand standards agent. This
         creates a new model version with the updated prompt and sets it as the primary/active
         version. The updated standards will automatically apply to all campaigns within the brand
         agent. Requires authentication.
-      operationId: brand-standards/update
+      operationId: brand_standards_update
       summary: Update Brand Agent Standards
       tags:
         - Brand Standards
@@ -4342,12 +4331,12 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /brand-agent/update:
+  /brand-agent-update:
     post:
       description: Update the name or description of an existing brand agent (advertiser account). This
         only updates metadata - campaigns, creatives, and other resources remain unchanged. Requires
         authentication.
-      operationId: brand-agent/update
+      operationId: brand_agent_update
       summary: Update Brand Agent
       tags:
         - Brand Agents
@@ -4421,14 +4410,14 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /campaign/update:
+  /campaign-update:
     post:
       description: Update an existing campaign including strategy, targeting, and tactic budget
         allocations. Can update campaign prompt/strategy, tactic budget amounts, percentages, daily
         caps, or pacing strategies. Supports bulk tactic updates. Use this to modify campaign
         parameters and rebalance budget based on performance or changing priorities. Requires
         campaign ID and authentication.
-      operationId: campaign/update
+      operationId: campaign_update
       summary: Update Campaign
       tags:
         - Campaigns
@@ -4535,11 +4524,11 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /signal/update:
+  /signal-update:
     post:
       description: "Update an existing custom signal definition. Can modify name, description, and cluster
         configurations. Note: Key type cannot be changed after creation. Requires authentication."
-      operationId: signal/update
+      operationId: signal_update
       summary: Update Custom Signal
       tags:
         - Signals
@@ -4625,11 +4614,11 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /pmp/update:
+  /pmp-update:
     post:
       description: Update an existing PMP with new requirements. The backend will parse the new prompt and
         adjust deal IDs accordingly.
-      operationId: pmp/update
+      operationId: pmp_update
       summary: Update PMP
       tags:
         - PMPs
@@ -4706,11 +4695,11 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /signals-agent/update:
+  /signals-agent-update:
     post:
       description: Update configuration and settings for a registered signals agent. Can modify name,
         description, endpoint, status, and configuration parameters. Requires authentication.
-      operationId: signals-agent/update
+      operationId: signals_agent_update
       summary: Update Signals Agent
       tags:
         - Signals Agents

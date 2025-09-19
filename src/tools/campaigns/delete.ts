@@ -222,7 +222,7 @@ export const deleteCampaignTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "campaign/delete",
+  name: "campaign_delete",
   parameters: z.object({
     campaignId: z.string().describe("ID of the campaign to delete"),
     force: z

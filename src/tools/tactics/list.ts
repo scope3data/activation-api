@@ -317,7 +317,7 @@ export const listTacticsTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "tactic/list",
+  name: "tactic_list",
   parameters: z.object({
     campaignId: z.string().describe("ID of the campaign to list tactics for"),
   }),

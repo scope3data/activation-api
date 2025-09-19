@@ -329,7 +329,7 @@ export const getProductsTool = () => ({
     }
   },
 
-  name: "product/list",
+  name: "product_list",
   parameters: z.object({
     brief: z
       .string()
