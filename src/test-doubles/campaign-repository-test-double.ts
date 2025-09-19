@@ -145,7 +145,7 @@ export class CampaignRepositoryTestDouble implements CampaignRepository {
     }
 
     // Ensure updatedAt is later than createdAt
-    await new Promise((resolve) => setTimeout(resolve, 1));
+    await new Promise((resolve) => setTimeout(resolve, 10));
 
     const updatedCampaign: Campaign = {
       ...campaign,
