@@ -307,7 +307,7 @@ export const updateCampaignTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "campaign/update",
+  name: "campaign_update",
   parameters: z.object({
     campaignId: z.string().describe("ID of the campaign to update"),
     changeRequest: z

@@ -62,27 +62,10 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
       );
 
       if (!campaigns || campaigns.length === 0) {
-        let emptyMessage = `📭 **No Campaigns Found**\n\n`;
-        if (
-          args.brandAgentId ||
-          args.status ||
-          args.dateRange ||
-          args.budgetRange
-        ) {
-          emptyMessage += `No campaigns match your filter criteria:\n`;
-          if (args.brandAgentId)
-            emptyMessage += `• Brand Agent ID: ${args.brandAgentId}\n`;
-          if (args.status) emptyMessage += `• Status: ${args.status}\n`;
-          if (args.dateRange) {
-            emptyMessage += `• Date Range: ${args.dateRange.start || "any"} to ${args.dateRange.end || "any"}\n`;
-          }
-          if (args.budgetRange) {
-            emptyMessage += `• Budget Range: $${args.budgetRange.min || 0} - $${args.budgetRange.max || "∞"}\n`;
-          }
-        } else {
-          emptyMessage += `No campaigns exist in your account yet.\n`;
-          emptyMessage += `Use campaign/create to create your first campaign.`;
-        }
+        const emptyMessage =
+          args.brandAgentId || args.status || args.dateRange || args.budgetRange
+            ? "No campaigns match filters"
+            : "No campaigns found";
 
         return createMCPResponse({
           data: {
@@ -108,28 +91,6 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
         });
       }
 
-      let summary = `📊 **Campaigns List** (${campaigns.length} found)\n\n`;
-
-      // Add filter summary if any filters were applied
-      if (
-        args.brandAgentId ||
-        args.status ||
-        args.dateRange ||
-        args.budgetRange
-      ) {
-        summary += `**Applied Filters:**\n`;
-        if (args.brandAgentId)
-          summary += `• Brand Agent ID: ${args.brandAgentId}\n`;
-        if (args.status) summary += `• Status: ${args.status}\n`;
-        if (args.dateRange) {
-          summary += `• Date Range: ${args.dateRange.start || "any start"} to ${args.dateRange.end || "any end"}\n`;
-        }
-        if (args.budgetRange) {
-          summary += `• Budget Range: $${args.budgetRange.min || 0} - $${args.budgetRange.max || "∞"}\n`;
-        }
-        summary += `• Sorted by: ${args.sortBy || "updated"} (${args.sortOrder || "desc"})\n\n`;
-      }
-
       // Calculate summary statistics
       const totalBudget = campaigns.reduce(
         (sum, campaign) => sum + (campaign.budget?.total || 0),
@@ -149,107 +110,7 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
         {} as Record<string, number>,
       );
 
-      summary += `**Portfolio Summary:**\n`;
-      summary += `• Total Budget: $${(totalBudget / 100).toLocaleString()}\n`;
-      summary += `• Total Spend: $${(totalSpend / 100).toLocaleString()}\n`;
-      summary += `• Utilization: ${totalBudget > 0 ? ((totalSpend / totalBudget) * 100).toFixed(1) : "0"}%\n`;
-
-      summary += `• Status Breakdown: `;
-      const statusEntries = Object.entries(statusCounts);
-      summary += statusEntries
-        .map(([status, count]) => `${count} ${status}`)
-        .join(", ");
-      summary += `\n\n`;
-
-      // List individual campaigns
-      campaigns.forEach((campaign, index) => {
-        const status = campaign.deliverySummary?.status || "unknown";
-        const statusEmoji =
-          status === "delivering"
-            ? "🟢"
-            : status === "paused"
-              ? "⏸️"
-              : status === "completed"
-                ? "✅"
-                : status === "scheduled"
-                  ? "📅"
-                  : "⚪";
-
-        summary += `## ${index + 1}. ${statusEmoji} **${campaign.name}**\n`;
-        summary += `**ID:** ${campaign.id}\n`;
-        summary += `**Status:** ${status}\n`;
-        summary += `**Brand Agent:** ${campaign.brandAgentId}\n`;
-
-        // Budget information
-        if (campaign.budget) {
-          summary += `**Budget:** ${campaign.budget.currency} ${(campaign.budget.total / 100).toLocaleString()}`;
-          if (campaign.budget.dailyCap) {
-            summary += ` (Daily Cap: ${campaign.budget.currency} ${(campaign.budget.dailyCap / 100).toLocaleString()})`;
-          }
-          summary += `\n`;
-          summary += `**Pacing:** ${campaign.budget.pacing || "even"}\n`;
-        }
-
-        // Schedule information
-        if (campaign.startDate || campaign.endDate) {
-          summary += `**Schedule:** `;
-          if (campaign.startDate) {
-            summary += `${new Date(campaign.startDate).toLocaleDateString()}`;
-          } else {
-            summary += `Immediate start`;
-          }
-          if (campaign.endDate) {
-            summary += ` → ${new Date(campaign.endDate).toLocaleDateString()}`;
-          } else {
-            summary += ` → No end date`;
-          }
-          summary += `\n`;
-        }
-
-        // Performance metrics (if available)
-        if (campaign.deliverySummary) {
-          summary += `**Performance:**\n`;
-          summary += `• Today's Spend: $${(campaign.deliverySummary.today.spend / 100).toLocaleString()}\n`;
-          summary += `• Budget Utilized: ${(campaign.deliverySummary.pacing.budgetUtilized * 100).toFixed(1)}%\n`;
-          summary += `• Pacing Status: ${campaign.deliverySummary.pacing.status}\n`;
-
-          if (campaign.deliverySummary.today.impressions > 0) {
-            summary += `• Today's Impressions: ${campaign.deliverySummary.today.impressions.toLocaleString()}\n`;
-            summary += `• Today's Avg CPM: $${campaign.deliverySummary.today.averagePrice.toFixed(2)}\n`;
-          }
-
-          summary += `• Health Score: ${campaign.deliverySummary.healthScore}\n`;
-          if (campaign.deliverySummary.alerts.length > 0) {
-            summary += `• Active Alerts: ${campaign.deliverySummary.alerts.length}\n`;
-          }
-        }
-
-        // Creative count
-        if (campaign.creativeIds && campaign.creativeIds.length > 0) {
-          summary += `**Creatives:** ${campaign.creativeIds.length} assigned\n`;
-        }
-
-        // Audience count
-        if (campaign.audienceIds && campaign.audienceIds.length > 0) {
-          summary += `**Audiences:** ${campaign.audienceIds.length} assigned\n`;
-        }
-
-        summary += `**Created:** ${new Date(campaign.createdAt).toLocaleString()}\n`;
-        if (campaign.updatedAt) {
-          summary += `**Updated:** ${new Date(campaign.updatedAt).toLocaleString()}\n`;
-        }
-
-        // Quick actions
-        summary += `\n**Quick Actions:** [get_campaign_summary](command:get_campaign_summary?campaignId=${campaign.id}) | [export_campaign_data](command:export_campaign_data?campaignIds=${campaign.id}) | [update_campaign](command:update_campaign?campaignId=${campaign.id})\n`;
-        summary += `---\n\n`;
-      });
-
-      // Management suggestions
-      summary += `🎯 **Campaign Management:**\n`;
-      summary += `• Get detailed view: Use get_campaign_summary with campaign ID\n`;
-      summary += `• Update campaigns: Use update_campaign tool\n`;
-      summary += `• Export performance data: Use export_campaign_data\n`;
-      summary += `• Create new campaign: Use create_campaign tool`;
+      const summary = `Found ${campaigns.length} campaigns. Budget: $${(totalBudget / 100).toLocaleString()}, Spend: $${(totalSpend / 100).toLocaleString()} (${totalBudget > 0 ? ((totalSpend / totalBudget) * 100).toFixed(1) : "0"}%)`;
 
       return createMCPResponse({
         data: {
@@ -281,7 +142,7 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "campaign/list",
+  name: "campaign_list",
   parameters: z.object({
     brandAgentId: z
       .string()

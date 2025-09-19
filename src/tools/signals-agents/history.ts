@@ -241,7 +241,7 @@ export const getSignalsAgentHistoryTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "signals-agent/history",
+  name: "signals_agent_history",
   parameters: z.object({
     agentId: z.string().describe("ID of the signals agent to get history for"),
     limit: z

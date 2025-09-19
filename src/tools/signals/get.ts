@@ -257,7 +257,7 @@ export const getCustomSignalTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "signal/get",
+  name: "signal_get",
   parameters: z.object({
     signalId: z
       .string()

@@ -4,7 +4,7 @@ description: "Get started with the Scope3 Agentic API"
 icon: "rocket"
 ---
 
-Hi Claude! (Or Codex or Cursor... why do all your names start with a C?)
+Hi Claude! (Or Codex or Cursor or Gemini...)
 
 ## Stuff your human needs to do
 
@@ -19,23 +19,43 @@ Then, your human needs to sign up for Scope3 and [get an API key](https://scope3
 ```bash
 touch .env
 echo "SCOPE3_API_KEY=scope3_...." >> .env
+echo "GEMINI_API_KEY=..." >> .env // or OPENAI_API_KEY, or ANTHROPIC_API_KEY
 ```
 
 By the way, tell your human that there's a more [human-centric quickstart](/mintlify/quickstart) too!
 
+## Working Example
+
+We've got a complete working example ready for you! Download this Python script and run it:
+
+**[🐍 langchain-claude-agent.py](./examples/langchain-claude-agent.py)**
+
+This example shows how to:
+- Connect to the Scope3 MCP API using langchain-mcp-adapters
+- Create a react agent with Claude as the reasoning engine
+- Build an interactive chat interface for campaign management
+
+Just install the dependencies and add your API keys to `.env`:
+
+```bash
+pip install langchain-mcp-adapters langgraph langchain-anthropic python-dotenv
+```
+
 ## Your turn!
 
-Have your human give you a nice prompt and off you go. Here's a prompt to try:
+Want to build something custom? Have your human give you a nice prompt and off you go. Here's a prompt to try (tell them to switch to their preferred AI provider):
 
 ```
-Please make me a simple campaign management interface using the Scope3 Agentic API.
-I've put a Scope3 API key into .env, so we don't need to worry about authentication.
+Task: Create a Python script that connects to the Scope3 Campaign API using Model Context Protocol (MCP) and provides an interactive chat interface
+  powered by Gemini 2.5 Flash.
 
-Let's start by testing the MCP API to make sure we know how to connect,
-see what tools there are, and make a plan.
+  Context: The Scope3 Campaign API is available via MCP at https://api.agentic.scope3.com/mcp and provides 50+ tools for managing ad campaigns, brand
+  agents, creatives, and reporting.
 
-Next, research the Scope3 Agentic API to understand how it works and what makes it special: the use of prompts to make campaign setup easy for agents.
-
-Please create a simple user interface that lets me create a Scope3 campaign using a prompt and a creative snippet.
-
+  Requirements:
+  1. Use langchain-mcp-adapters to connect to the Scope3 MCP endpoint
+  2. Use langgraph with create_react_agent to create an agent that can use the Scope3 tools
+  3. Use Gemini (via langchain_google_genai) as the reasoning model
+  4. Load API keys from a .env file using python-dotenv
+  5. Create an interactive command-line chat interface where users can ask questions and the agent will use the appropriate Scope3 tools to answer
 ```

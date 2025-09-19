@@ -126,7 +126,7 @@ ${status} **${assetResult.assetId || "Failed"}**`;
     }
   },
 
-  name: "assets/add",
+  name: "assets_add",
 
   parameters: z.object({
     assets: z

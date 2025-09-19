@@ -212,7 +212,7 @@ export const updateCustomSignalTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "signal/update",
+  name: "signal_update",
   parameters: z.object({
     clusters: z
       .array(

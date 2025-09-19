@@ -277,7 +277,7 @@ Creative revised but not re-synced. Use creative/sync_publishers to submit revis
     }
   },
 
-  name: "creative/revise",
+  name: "creative_revise",
 
   parameters: z.object({
     autoResync: z

@@ -191,7 +191,7 @@ export const deleteCustomSignalTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "signal/delete",
+  name: "signal_delete",
   parameters: z.object({
     signalId: z
       .string()

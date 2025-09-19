@@ -209,7 +209,7 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "tactic/create",
+  name: "tactic_create",
   parameters: z.object({
     brandStoryId: z
       .string()

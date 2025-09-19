@@ -36,7 +36,7 @@ describe("brand-agent/list Tool", () => {
 
   describe("Tool Configuration", () => {
     it("should have correct tool metadata", () => {
-      expect(tool.name).toBe("brand-agent/list");
+      expect(tool.name).toBe("brand_agent_list");
       expect(tool.description).toContain("List all brand agents");
       expect(tool.annotations.category).toBe("Brand Agents");
       expect(tool.annotations.dangerLevel).toBe("low");

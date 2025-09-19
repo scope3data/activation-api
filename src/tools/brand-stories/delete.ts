@@ -82,7 +82,7 @@ export const deleteBrandAgentBrandStoryTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "brand-story/delete",
+  name: "brand_story_delete",
   parameters: z.object({
     brandStoryId: z.string().describe("ID of the brand story to archive"),
   }),

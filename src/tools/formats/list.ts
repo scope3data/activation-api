@@ -286,7 +286,7 @@ creative/create format.type="creative_agent" format.formatId="dynamic_product"
     }
   },
 
-  name: "format/list",
+  name: "format_list",
 
   parameters: z.object({
     acceptsThirdPartyTags: z

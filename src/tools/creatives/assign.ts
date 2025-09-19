@@ -110,7 +110,7 @@ export const creativeAssignTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "creative/assign",
+  name: "creative_assign",
 
   parameters: z.object({
     buyerAgentId: z
@@ -219,7 +219,7 @@ export const creativeUnassignTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "creative/unassign",
+  name: "creative_unassign",
 
   parameters: z.object({
     campaignId: z

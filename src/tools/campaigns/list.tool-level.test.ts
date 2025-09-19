@@ -60,7 +60,7 @@ describe("listCampaignsTool", () => {
 
   describe("tool metadata", () => {
     it("should have correct tool configuration", () => {
-      expect(tool.name).toBe("campaign/list");
+      expect(tool.name).toBe("campaign_list");
       expect(tool.annotations.category).toBe("Campaigns");
       expect(tool.annotations.dangerLevel).toBe("low");
       expect(tool.annotations.readOnlyHint).toBe(true);
@@ -89,7 +89,7 @@ describe("listCampaignsTool", () => {
       // Parse the JSON response to check structured data
       const parsedResult = JSON.parse(result);
       expect(parsedResult.success).toBe(true);
-      expect(parsedResult.message).toContain("Campaigns List");
+      expect(parsedResult.message).toContain("Found 1 campaigns");
     });
 
     it("should throw error when no API key is available", async () => {
@@ -142,12 +142,9 @@ describe("listCampaignsTool", () => {
       );
 
       const parsedResult = JSON.parse(result);
-      expect(parsedResult.message).toContain("**Campaigns List** (1 found)");
-      expect(parsedResult.message).toContain("Test Campaign");
-      expect(parsedResult.message).toContain("camp_123");
-      expect(parsedResult.message).toContain("Portfolio Summary");
-      expect(parsedResult.message).toContain("Total Budget: $10,000");
-      expect(parsedResult.message).toContain("Total Spend: $450");
+      expect(parsedResult.message).toContain("Found 1 campaigns");
+      expect(parsedResult.message).toContain("Budget: $10,000");
+      expect(parsedResult.message).toContain("Spend: $450");
     });
 
     it("should include filter information in structured data", async () => {
@@ -208,7 +205,7 @@ describe("listCampaignsTool", () => {
 
       const parsedResult = JSON.parse(result);
       expect(parsedResult.success).toBe(true);
-      expect(parsedResult.message).toContain("No Campaigns Found");
+      expect(parsedResult.message).toContain("No campaigns match filters");
       expect(parsedResult.data.campaigns).toEqual([]);
       expect(parsedResult.data.count).toBe(0);
     });
@@ -223,21 +220,14 @@ describe("listCampaignsTool", () => {
       );
 
       const parsedResult = JSON.parse(result);
-      expect(parsedResult.message).toContain(
-        "No campaigns match your filter criteria",
-      );
-      expect(parsedResult.message).toContain("Brand Agent ID: ba_456");
-      expect(parsedResult.message).toContain("Status: active");
+      expect(parsedResult.message).toContain("No campaigns match filters");
     });
 
     it("should suggest creating campaigns when no filters applied", async () => {
       const result = await tool.execute({}, mockContext);
 
       const parsedResult = JSON.parse(result);
-      expect(parsedResult.message).toContain(
-        "No campaigns exist in your account yet",
-      );
-      expect(parsedResult.message).toContain("Use campaign/create");
+      expect(parsedResult.message).toContain("No campaigns found");
     });
   });
 

@@ -73,7 +73,7 @@ export const getBrandAgentTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "brand-agent/get",
+  name: "brand_agent_get",
   parameters: z.object({
     brandAgentId: z.string().describe("ID of the brand agent to retrieve"),
   }),

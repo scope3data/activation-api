@@ -117,7 +117,7 @@ export const updateBrandAgentTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "brand-agent/update",
+  name: "brand_agent_update",
   parameters: z.object({
     brandAgentId: z.string().describe("ID of the brand agent to update"),
     description: z

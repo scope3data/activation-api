@@ -118,7 +118,7 @@ export const getCampaignSummaryTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "campaign/get-summary",
+  name: "campaign_get_summary",
   parameters: z.object({
     campaignId: z.string().describe("Campaign ID to analyze"),
     dateRange: z

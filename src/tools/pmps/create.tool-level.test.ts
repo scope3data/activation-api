@@ -170,7 +170,7 @@ describe("createPMPTool", () => {
 
   describe("tool metadata", () => {
     it("should have correct tool configuration", () => {
-      expect(tool.name).toBe("pmp/create");
+      expect(tool.name).toBe("pmp_create");
       expect(tool.annotations.category).toBe("PMPs");
       expect(tool.annotations.dangerLevel).toBe("medium");
       expect(tool.annotations.readOnlyHint).toBe(false);

@@ -46,7 +46,7 @@ describe("creativeGetTool", () => {
 
   describe("tool metadata", () => {
     it("should have correct tool configuration", () => {
-      expect(tool.name).toBe("creative/get");
+      expect(tool.name).toBe("creative_get");
       expect(tool.annotations.category).toBe("Creatives");
       expect(tool.annotations.dangerLevel).toBe("low");
       expect(tool.annotations.readOnlyHint).toBe(true);

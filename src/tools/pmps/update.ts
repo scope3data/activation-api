@@ -177,7 +177,7 @@ export const updatePMPTool = (client: Scope3ApiClient) =>
         );
       }
     },
-    name: "pmp/update",
+    name: "pmp_update",
     parameters: z.object({
       changeRequest: z
         .string()

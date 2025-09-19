@@ -129,7 +129,7 @@ export const provideScoringOutcomesTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "reporting/provide-outcomes",
+  name: "reporting_provide_outcomes",
   parameters: z.object({
     campaignId: z.string().describe("Campaign ID that this outcome applies to"),
     creativeId: z

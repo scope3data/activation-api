@@ -33,7 +33,7 @@ describe("deleteBrandAgentTool", () => {
 
   describe("tool metadata", () => {
     it("should have correct tool configuration", () => {
-      expect(tool.name).toBe("brand-agent/delete");
+      expect(tool.name).toBe("brand_agent_delete");
       expect(tool.annotations.category).toBe("Brand Agents");
       expect(tool.annotations.dangerLevel).toBe("high");
       expect(tool.annotations.readOnlyHint).toBe(false);

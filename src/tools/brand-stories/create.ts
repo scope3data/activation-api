@@ -129,7 +129,7 @@ export const createBrandAgentBrandStoryTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "brand-story/create",
+  name: "brand_story_create",
   parameters: z.object({
     brandAgentId: z
       .string()

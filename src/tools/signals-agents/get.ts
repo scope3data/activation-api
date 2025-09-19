@@ -155,7 +155,7 @@ export const getSignalsAgentTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "signals-agent/get",
+  name: "signals_agent_get",
   parameters: z.object({
     agentId: z.string().describe("ID of the signals agent to retrieve"),
   }),

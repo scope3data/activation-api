@@ -76,7 +76,7 @@ describe("getCampaignSummaryTool", () => {
 
   describe("tool metadata", () => {
     it("should have correct tool configuration", () => {
-      expect(tool.name).toBe("campaign/get-summary");
+      expect(tool.name).toBe("campaign_get_summary");
       expect(tool.annotations.category).toBe("Reporting & Analytics");
       expect(tool.annotations.dangerLevel).toBe("low");
       expect(tool.annotations.readOnlyHint).toBe(true);

@@ -231,7 +231,7 @@ export const updateSignalsAgentTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "signals-agent/update",
+  name: "signals_agent_update",
   parameters: z.object({
     agentId: z.string().describe("ID of the signals agent to update"),
     config: z

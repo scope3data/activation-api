@@ -161,7 +161,7 @@ export const listPMPsTool = (client: Scope3ApiClient) =>
         );
       }
     },
-    name: "pmp/list",
+    name: "pmp_list",
     parameters: z.object({
       brand_agent_id: z.string().describe("Brand agent ID to list PMPs for"),
     }),
