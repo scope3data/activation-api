@@ -26,9 +26,19 @@ By the way, tell your human that there's a more [human-centric quickstart](/mint
 
 ## Your turn!
 
-Have your human give you a nice prompt and off you go. Here's a prompt to try:
+Have your human give you a nice prompt and off you go. Here's a prompt to try (tell them to switch to their preferred AI provider):
 
 ```
-Please make me a simple langchain agent that can use the Scope3 agentic API
-to create and manage campaigns. I set up Gemini and Scope3 API keys in .env for you!
+Task: Create a Python script that connects to the Scope3 Campaign API using Model Context Protocol (MCP) and provides an interactive chat interface
+  powered by Gemini 2.5 Flash.
+
+  Context: The Scope3 Campaign API is available via MCP at https://api.agentic.scope3.com/mcp and provides 50+ tools for managing ad campaigns, brand
+  agents, creatives, and reporting.
+
+  Requirements:
+  1. Use langchain-mcp-adapters to connect to the Scope3 MCP endpoint
+  2. Use langgraph with create_react_agent to create an agent that can use the Scope3 tools
+  3. Use Gemini (via langchain_google_genai) as the reasoning model
+  4. Load API keys from a .env file using python-dotenv
+  5. Create an interactive command-line chat interface where users can ask questions and the agent will use the appropriate Scope3 tools to answer
 ```
