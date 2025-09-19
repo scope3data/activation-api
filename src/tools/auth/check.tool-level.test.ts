@@ -35,7 +35,7 @@ describe("checkAuthTool", () => {
 
   describe("tool metadata", () => {
     it("should have correct tool configuration", () => {
-      expect(tool.name).toBe("auth/check");
+      expect(tool.name).toBe("auth_check");
       expect(tool.annotations.category).toBe("System");
       expect(tool.annotations.dangerLevel).toBe("low");
       expect(tool.annotations.readOnlyHint).toBe(true);

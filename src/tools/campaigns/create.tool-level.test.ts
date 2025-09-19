@@ -50,7 +50,7 @@ describe("createCampaignTool", () => {
 
   describe("tool metadata", () => {
     it("should have correct tool configuration", () => {
-      expect(tool.name).toBe("campaign/create");
+      expect(tool.name).toBe("campaign_create");
       expect(tool.annotations.category).toBe("Campaigns");
       expect(tool.annotations.dangerLevel).toBe("medium");
       expect(tool.annotations.readOnlyHint).toBe(false);

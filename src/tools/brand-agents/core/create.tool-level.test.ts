@@ -35,7 +35,7 @@ describe("brand-agent/create Tool", () => {
 
   describe("Tool Configuration", () => {
     it("should have correct tool metadata", () => {
-      expect(tool.name).toBe("brand-agent/create");
+      expect(tool.name).toBe("brand_agent_create");
       expect(tool.description).toContain("Create a new brand agent");
       expect(tool.annotations.category).toBe("Brand Agents");
       expect(tool.annotations.dangerLevel).toBe("low");

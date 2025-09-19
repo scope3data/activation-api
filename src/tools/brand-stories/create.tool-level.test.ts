@@ -35,7 +35,7 @@ describe("createBrandAgentBrandStoryTool", () => {
 
   describe("tool metadata", () => {
     it("should have correct tool configuration", () => {
-      expect(tool.name).toBe("brand-story/create");
+      expect(tool.name).toBe("brand_story_create");
       expect(tool.annotations.category).toBe("Brand Stories");
       expect(tool.annotations.dangerLevel).toBe("low");
       expect(tool.annotations.readOnlyHint).toBe(false);
