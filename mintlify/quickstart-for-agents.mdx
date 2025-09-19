@@ -24,9 +24,26 @@ echo "GEMINI_API_KEY=..." >> .env // or OPENAI_API_KEY, or ANTHROPIC_API_KEY
 
 By the way, tell your human that there's a more [human-centric quickstart](/mintlify/quickstart) too!
 
+## Working Example
+
+We've got a complete working example ready for you! Download this Python script and run it:
+
+**[🐍 langchain-claude-agent.py](./examples/langchain-claude-agent.py)**
+
+This example shows how to:
+- Connect to the Scope3 MCP API using langchain-mcp-adapters
+- Create a react agent with Claude as the reasoning engine
+- Build an interactive chat interface for campaign management
+
+Just install the dependencies and add your API keys to `.env`:
+
+```bash
+pip install langchain-mcp-adapters langgraph langchain-anthropic python-dotenv
+```
+
 ## Your turn!
 
-Have your human give you a nice prompt and off you go. Here's a prompt to try (tell them to switch to their preferred AI provider):
+Want to build something custom? Have your human give you a nice prompt and off you go. Here's a prompt to try (tell them to switch to their preferred AI provider):
 
 ```
 Task: Create a Python script that connects to the Scope3 Campaign API using Model Context Protocol (MCP) and provides an interactive chat interface
