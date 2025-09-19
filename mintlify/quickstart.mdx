@@ -6,88 +6,53 @@ icon: "rocket"
 
 <img src="/mintlify/api_header.svg" alt="Scope3 Campaign API" className="w-full mb-6" />
 
-## Steps to Launch a Basic Campaign
+## Set up your agent
 
-Create your first agentic advertising campaign:
-1. Connect your MCP client to the Scope3 API
-2. Create a brand agent, which holds the goals and key objects for an advertiser
-3. Add creatives directly or connect a [creative agent](integration/creative-agents)
-4. Use a prompt to set up a campaign
-5. Explore the tactics the campaign is using
-6. Monitor performance
+Sign up for Scope3 and [get an API key](https://scope3.com/integrate/api-keys).
 
-## Prerequisites
+Our MCP server is at https://api.agentic.scope3.com/mcp and uses the HTTP Streaming transport mechanism.
 
-- Scope3 API key ([Get one here](https://scope3.com/integrate/api-keys))
+For authentication, add `x-scope3-api-key: {scope3_api_key}`.
 
-<Info>
-If you use Claude Code or another coding agent, try adding our [docs as an MCP server](https://docs.agentic.scope3.com/mcp)!
+### Sample agent
+
+If you don't have an agent, download this Python script:
+
+**[🐍 langchain-claude-agent.py](./examples/langchain-claude-agent.py)**
+
+This example shows how to:
+- Connect to the Scope3 MCP API using langchain-mcp-adapters
+- Create a react agent with Claude as the reasoning engine
+- Build an interactive chat interface for campaign management
+
+Just install the dependencies, add your API keys to `.env`, and run the agent!
 
 ```bash
-claude mcp add --transport http scope3 https://docs.agentic.scope3.com/mcp
+uv init
+uv add langchain-mcp-adapters langgraph langchain-anthropic python-dotenv
+
+touch .env
+echo "SCOPE3_API_KEY=scope3_...." >> .env
+echo "GEMINI_API_KEY=..." >> .env
+
+uv run langchain-claude-agent.py
 ```
+
+<Info>
+If you use Claude Code or another coding agent, check out the [quickstart for agents](/mintlify/quickstart-for-agents)!
 </Info>
 
-## Step 1: Authentication
+## Steps your agent needs to do to set up a campaign
 
-Authentication depends on how you're integrating the API:
+1. Create a brand agent, which holds the goals and key objects for an advertiser
+2. Add creatives directly or connect a [creative agent](integration/creative-agents)
+3. Use a prompt to set up a campaign
+4. Explore the tactics the campaign is using
+5. Monitor performance
 
-<Tabs>
-  <Tab title="Python">
-    ```python
-    from fastmcp import Client
-    from fastmcp.client.transports import StreamableHttpTransport
+Here's what's happening behind the scenes:
 
-    transport = StreamableHttpTransport(
-        "https://api.agentic.scope3.com/mcp", 
-        auth="<scope3_api_key>",
-    )
-
-    async with Client(transport) as client:
-        await client.ping()
-    
-    # Test authentication
-    result = await client.call_tool('check_auth_status')
-    print(result)  # ✅ Authenticated as user@company.com
-    ```
-  </Tab>
-  <Tab title="Node JS">
-    ```javascript
-    import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-    import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-
-    const scope3_api_key = 'scope3_...';
-    const scope3_api_url = 'https://api.agentic.scope3.com/mcp';
-
-    var transport = new StreamableHTTPClientTransport(scope3_api_url, {
-        requestInit: {
-          headers: {
-            Accept: "application/json, text/event-stream",
-            "Content-Type": "application/json",
-            "x-scope3-api-key": scope3_api_key,
-          },
-        },
-      });
-
-    const client = new Client(...);
-    await client.connect(transport);
-    
-    // Test authentication
-    const result = await client.callTool('check_auth_status');
-    console.log(result); // ✅ Authenticated as user@company.com
-    ```
-  </Tab>
-  <Tab title="REST">
-    ```bash
-    curl -H "Authorization: Bearer YOUR_API_KEY" \
-         -H "Content-Type: application/json" \
-         -d '{}' \
-         https://api.agentic.scope3.com/rest/v1/auth/check
-    ```
-  </Tab>
-</Tabs>
-
-## Step 2: Create Brand Agent
+### Create Brand Agent
 
 Your brand agent acts as an advertiser account that owns all campaigns and assets.
 
@@ -121,7 +86,7 @@ Call tool `create_brand_agent` with body:
 }
 ```
 
-## Step 3: Add Creatives
+### Add Creatives
 
 Creatives can be added after the campaign is set up, but let's do it now. Let's assume we're running a third-party tag for the purposes of this demo, but the platform also supports native, hosted, and custom formats too.
 Again, the platform supports external IDs and nicknames if helpful.
@@ -161,7 +126,7 @@ Call tool `create_creatives` with body:
 }
 ```
 
-## Step 4: Set up the campaign
+### Set up the campaign
 The "magic" of using an agentic API is that we don't need to try to map all of the complex targeting fields across platforms because AI is very good at figuring out, for instance, that "US" and "USA" are the same thing - we don't need a complex protocol spec for handling ISO country codes.
 
 We also don't need to try to take a well-thought-out brief and map it to an audience or contextual taxonomy. Instead, we can send our brief to signals agents - which could include an internal agent that knows about our customer data - and let the agent recommend the best audiences for this brief.
@@ -201,7 +166,7 @@ Call tool `create_campaign` with data:
 }
 ```
 
-## Step 5: Explore tactics
+### Explore tactics
 Tactics are a combination of inventory and signals that are executed in an actual media buy with a publisher. To execute a campaign, we need to:
 - Find inventory that could be a fit for our campaign
 - Find signals that could be a fit for our campaign
@@ -247,7 +212,7 @@ Call tool `get_campaign_tactics` with data:
 }
 ```
 
-## Step 6: Monitor Performance
+### Monitor Performance
 
 Once the campaign launches, we can monitor performance in a few ways, from getting log-level data pushed to a cloud bucket, using the APIs to dump aggregated data into an analytics system, or simply asking how the campaign is doing.
 
@@ -289,7 +254,7 @@ Call tool `get_campaign_summary`:
 }
 ```
 
-## 🎉 Congratulations!
+### 🎉 Congratulations!
 
 You've successfully:
 - ✅ Created your first brand agent
