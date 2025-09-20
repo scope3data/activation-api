@@ -28,144 +28,63 @@ scope3_<32_character_client_id>_<secret>
 
 Example: `scope3_abc123def456ghi789jkl012mno345pq_xyz789`
 
-## Authentication Methods
+## MCP Authentication
 
-<Tabs>
-  <Tab title="REST API">
-    For direct REST API calls, use Bearer authentication with your API key:
+For Model Context Protocol integrations with AI agents like Claude, OpenAI, or Anthropic:
 
-    ```bash
-    curl --request POST \
-      --url https://api.agentic.scope3.com/rest/v1/auth/check \
-      --header 'Authorization: Bearer scope3_your_api_key_here' \
-      --header 'Content-Type: application/json' \
-      --data '{}'
-    ```
+**Python (Claude Code)**:
+```python
+from mcp.client.streamable_http_transport import StreamableHttpTransport
+from mcp.client import Client
 
-    **All REST endpoints** use Bearer authentication:
-    ```bash
-    Authorization: Bearer YOUR_API_KEY
-    ```
+transport = StreamableHttpTransport(
+    "https://api.agentic.scope3.com/mcp", 
+    auth="scope3_your_api_key_here",
+)
 
-    <Note>
-    **Legacy Support**: The `x-scope3-api-key` header is still supported for backward compatibility, but Bearer auth is recommended for new integrations.
-    </Note>
-  </Tab>
-  
-  <Tab title="MCP (AI Agents)">
-    For Model Context Protocol integrations with AI agents like Claude, OpenAI, or Anthropic:
+async with Client(transport) as client:
+    result = await client.call_tool('check_auth_status')
+    print(result)  # ✅ Authenticated as user@company.com
+```
 
-    **Python (Claude Code)**:
-    ```python
-    from mcp.client.streamable_http_transport import StreamableHttpTransport
-    from mcp.client import Client
+**Node.js**:
+```javascript
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
-    transport = StreamableHttpTransport(
-        "https://api.agentic.scope3.com/mcp", 
-        auth="scope3_your_api_key_here",
-    )
+const scope3_api_key = 'scope3_your_api_key_here';
+const transport = new StreamableHTTPClientTransport(
+  'https://api.agentic.scope3.com/mcp',
+  {
+    fetch: (url, init) => fetch(url, {
+      ...init,
+      headers: {
+        ...init.headers,
+        "x-scope3-api-key": scope3_api_key,
+      },
+    }),
+  }
+);
 
-    async with Client(transport) as client:
-        result = await client.call_tool('check_auth_status')
-        print(result)  # ✅ Authenticated as user@company.com
-    ```
+const client = new Client(...);
+await client.connect(transport);
 
-    **Node.js**:
-    ```javascript
-    import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-    import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-
-    const scope3_api_key = 'scope3_your_api_key_here';
-    const transport = new StreamableHTTPClientTransport(
-      'https://api.agentic.scope3.com/mcp',
-      {
-        fetch: (url, init) => fetch(url, {
-          ...init,
-          headers: {
-            ...init.headers,
-            "x-scope3-api-key": scope3_api_key,
-          },
-        }),
-      }
-    );
-
-    const client = new Client(...);
-    await client.connect(transport);
-    
-    const result = await client.callTool('check_auth_status');
-    console.log(result); // ✅ Authenticated as user@company.com
-    ```
-  </Tab>
-
-  <Tab title="Environment Variables">
-    **Recommended**: Store your API key as an environment variable:
-
-    ```bash
-    # .env file
-    SCOPE3_API_KEY=scope3_your_api_key_here
-    ```
-
-    **Python**:
-    ```python
-    import os
-    api_key = os.getenv('SCOPE3_API_KEY')
-    ```
-
-    **Node.js**:
-    ```javascript
-    const apiKey = process.env.SCOPE3_API_KEY;
-    ```
-
-    **cURL**:
-    ```bash
-    curl --request POST \
-      --url https://api.agentic.scope3.com/rest/v1/auth/check \
-      --header "Authorization: Bearer $SCOPE3_API_KEY" \
-      --header 'Content-Type: application/json' \
-      --data '{}'
-    ```
-  </Tab>
-</Tabs>
+const result = await client.callTool('check_auth_status');
+console.log(result); // ✅ Authenticated as user@company.com
+```
 
 ## Testing Authentication
 
-### Check Authentication Status
-
-Test your API key with the `/rest/v1/auth/check` endpoint:
-
-```bash
-curl --request POST \
-  --url https://api.agentic.scope3.com/rest/v1/auth/check \
-  --header 'Authorization: Bearer YOUR_API_KEY' \
-  --header 'Content-Type: application/json' \
-  --data '{}'
-```
-
-**Success Response**:
-```json
-{
-  "authenticated": true,
-  "user": "user@company.com",
-  "customerId": 12345,
-  "permissions": ["campaigns:read", "campaigns:write", "creatives:read"]
-}
-```
-
-**Error Response**:
-```json
-{
-  "error": "Invalid API key",
-  "authenticated": false
-}
-```
-
-### MCP Authentication Test
-
-If using MCP with AI agents, test with the `check_auth_status` tool:
+Test your API key with the `check_auth_status` MCP tool:
 
 ```python
 result = await client.call_tool('check_auth_status')
 # ✅ Authenticated as user@company.com (Customer ID: 12345)
+```
+
+**Tool Response**:
+```
+✅ Authenticated as user@company.com (Customer ID: 12345)
 ```
 
 ## Security Model
@@ -221,15 +140,15 @@ HTTP/1.1 401 Unauthorized
 ```
 **Solution**: Check your API key format and generate a new one if needed.
 
-### Missing Authentication Header
+### Missing Authentication
 ```bash
 HTTP/1.1 401 Unauthorized
 {
-  "error": "Missing authentication header",
-  "code": "AUTH_MISSING_HEADER"
+  "error": "Missing authentication",
+  "code": "AUTH_MISSING"
 }
 ```
-**Solution**: Include the `x-scope3-api-key` header in your request.
+**Solution**: Include your API key in the MCP transport configuration.
 
 ### Rate Limit Exceeded
 ```bash
