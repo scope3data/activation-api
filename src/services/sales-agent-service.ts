@@ -5,6 +5,8 @@ import type { AgentConfig } from "@adcp/client";
 
 import { BigQuery } from "@google-cloud/bigquery";
 
+import { AuthHandlerFactory } from "./auth/auth-handler-factory.js";
+
 export interface RegisterSalesAgentRequest {
   account_identifier?: string;
   auth_config?: Record<string, unknown>;
@@ -18,6 +20,7 @@ export interface RegisterSalesAgentRequest {
 export interface SalesAgent {
   added_at: string;
   added_by?: string;
+  auth_type: string; // oauth, bearer, custom_header, yahoo
   description?: string;
   endpoint_url: string;
   id: string;
@@ -60,7 +63,7 @@ export class SalesAgentService {
   }
 
   /**
-   * Get agent configs for discovery - returns configs with proper account precedence
+   * Get agent configs for discovery - returns configs with dynamic authentication
    */
   async getAgentConfigsForDiscovery(
     customerId: number,
@@ -73,10 +76,38 @@ export class SalesAgentService {
       (agent) => agent.account_type !== "unavailable",
     );
 
-    return availableAgents.map((agent) => {
-      const authConfig = agent.account?.auth_config || {};
+    // Process each agent's authentication
+    const agentConfigs: AgentConfig[] = [];
 
-      return {
+    for (const agent of availableAgents) {
+      const authConfig = agent.account?.auth_config || {};
+      let authFields: Record<string, string> = {};
+
+      // Process authentication if config exists
+      if (Object.keys(authConfig).length > 0) {
+        try {
+          // Get auth handler and process authentication
+          const handler = AuthHandlerFactory.getHandler(agent.auth_type);
+          const typedConfig = AuthHandlerFactory.createTypedConfig(
+            agent.auth_type,
+            authConfig,
+          );
+
+          // Get authentication token
+          const token = await handler.getToken(agent.id, typedConfig);
+
+          // Get auth fields to spread into agent config
+          authFields = handler.getAgentAuthFields(token);
+        } catch (error) {
+          console.warn(
+            `Failed to process authentication for agent ${agent.name} (${agent.id}):`,
+            error instanceof Error ? error.message : String(error),
+          );
+          // Continue without auth fields for this agent
+        }
+      }
+
+      agentConfigs.push({
         agent_uri: agent.endpoint_url,
         id: agent.id,
         name: agent.name,
@@ -84,10 +115,12 @@ export class SalesAgentService {
           (agent.protocol === "adcp"
             ? "mcp"
             : (agent.protocol as "a2a" | "mcp")) || "mcp", // ADCP maps to MCP for client compatibility
-        requires_auth: Boolean(authConfig),
-        ...authConfig, // Spread auth config into the agent config
-      };
-    });
+        requiresAuth: Boolean(Object.keys(authConfig).length > 0),
+        ...authFields, // Spread processed auth fields into the agent config
+      });
+    }
+
+    return agentConfigs;
   }
 
   /**
@@ -101,6 +134,7 @@ export class SalesAgentService {
         description,
         endpoint_url,
         protocol,
+        auth_type,
         status,
         added_at,
         added_by,
@@ -133,6 +167,7 @@ export class SalesAgentService {
         sa.description,
         sa.endpoint_url,
         sa.protocol,
+        sa.auth_type,
         sa.status,
         sa.added_at,
         sa.added_by,
@@ -212,6 +247,7 @@ export class SalesAgentService {
           account_type: accountType,
           added_at: row.added_at as string,
           added_by: row.added_by as string | undefined,
+          auth_type: row.auth_type as string,
           description: row.description as string | undefined,
           endpoint_url: row.endpoint_url as string,
           id: row.id as string,
@@ -294,12 +330,21 @@ export class SalesAgentService {
           protocol: request.protocol || "adcp",
         },
         query: insertAgentQuery,
+        types: {
+          added_by: "STRING",
+          description: "STRING",
+          endpoint_url: "STRING",
+          id: "STRING",
+          name: "STRING",
+          protocol: "STRING",
+        },
       });
 
       // Fetch the created agent
       const [newAgentRows] = await this.bigquery.query({
         params: { id: agentId },
         query: `SELECT * FROM \`${this.projectId}.${this.datasetId}.sales_agents\` WHERE id = @id`,
+        types: { id: "STRING" },
       });
       agent = newAgentRows[0] as SalesAgent;
     }
@@ -314,6 +359,7 @@ export class SalesAgentService {
     const [existingAccountRows] = await this.bigquery.query({
       params: { customer_id: customerId, sales_agent_id: agent.id },
       query: existingAccountQuery,
+      types: { customer_id: "INT64", sales_agent_id: "STRING" },
     });
 
     if (existingAccountRows.length > 0) {
@@ -338,12 +384,20 @@ export class SalesAgentService {
         sales_agent_id: agent.id,
       },
       query: insertAccountQuery,
+      types: {
+        account_identifier: "STRING",
+        auth_config: "JSON",
+        customer_id: "INT64",
+        registered_by: "STRING",
+        sales_agent_id: "STRING",
+      },
     });
 
     // Fetch the created account
     const [newAccountRows] = await this.bigquery.query({
       params: { customer_id: customerId, sales_agent_id: agent.id },
       query: existingAccountQuery,
+      types: { customer_id: "INT64", sales_agent_id: "STRING" },
     });
     const account = newAccountRows[0] as SalesAgentAccount;
 

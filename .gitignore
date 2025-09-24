@@ -12,6 +12,11 @@ node_modules
 .env.development
 .env.production
 
+# Authentication secrets and implementation docs
+.yahoo_key
+get-token.sh
+IMPLEMENTATION_SUMMARY.md
+
 # IDE files
 .vscode
 .idea
