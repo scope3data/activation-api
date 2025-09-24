@@ -134,6 +134,161 @@ This enables you to understand which seat owns each resource and manage targetin
 }
 ```
 
+## Sales Agent & Signals Agent Authentication
+
+Sales agents and signals agents support multiple authentication mechanisms for secure communication with publisher endpoints. This section covers how to register agents with authentication and the approval process for live inventory access.
+
+### Supported Authentication Types
+
+The platform supports four authentication mechanisms for agent integrations:
+
+#### Bearer Token Authentication
+Simple token-based authentication using HTTP Authorization headers.
+
+**Configuration Example:**
+```json
+{
+  "tool": "sales_agents_register",
+  "parameters": {
+    "name": "Publisher Direct Sales",
+    "endpoint_url": "https://publisher.com/adcp",
+    "auth_config": {
+      "type": "bearer",
+      "token": "your_bearer_token_here"
+    }
+  }
+}
+```
+
+#### OAuth 2.0 Authentication
+Full OAuth 2.0 flow with automatic token refresh and caching.
+
+**Configuration Example:**
+```json
+{
+  "tool": "sales_agents_register", 
+  "parameters": {
+    "name": "OAuth Publisher Integration",
+    "endpoint_url": "https://publisher.com/adcp",
+    "auth_config": {
+      "type": "oauth",
+      "clientId": "your_client_id",
+      "clientSecret": "your_client_secret", 
+      "refreshToken": "your_refresh_token",
+      "tokenEndpoint": "https://publisher.com/oauth/token"
+    }
+  }
+}
+```
+
+#### Custom Headers Authentication
+Custom header-based authentication (e.g., API keys in custom headers).
+
+**Configuration Example:**
+```json
+{
+  "tool": "sales_agents_register",
+  "parameters": {
+    "name": "API Key Publisher",
+    "endpoint_url": "https://publisher.com/adcp", 
+    "auth_config": {
+      "type": "custom_header",
+      "headerName": "x-api-key",
+      "headerValue": "your_api_key_value"
+    }
+  }
+}
+```
+
+#### Custom Integrations
+Scope3 can build custom authentication integrations for specific publishers with unique authentication requirements.
+
+<Note>
+**Custom Integration Development:**
+For publishers requiring specialized authentication flows (like proprietary JWT schemes), contact Scope3 to discuss custom integration development. These integrations are built on a case-by-case basis.
+</Note>
+
+### Agent Authentication Features
+
+**Automatic Token Management:**
+- Token caching and automatic refresh for OAuth flows
+- Environment-aware configuration (production vs staging)
+- Secure credential storage and handling
+
+**Multi-Environment Support:**
+- Production and staging endpoint configurations
+- Environment-specific authentication parameters
+- Separate credential management per environment
+
+### Registration Process
+
+#### For Sales Agents
+Use the `sales_agents_register` tool with authentication configuration:
+
+```json
+{
+  "tool": "sales_agents_register",
+  "parameters": {
+    "name": "Publisher Sales Team",
+    "endpoint_url": "https://publisher.com/adcp",
+    "account_identifier": "your_publisher_account_id",
+    "description": "Direct sales integration with Publisher",
+    "auth_config": {
+      "type": "bearer",
+      "token": "secure_bearer_token"
+    }
+  }
+}
+```
+
+#### For Signals Agents  
+Use the `signals_agent_register` tool with optional authentication in config:
+
+```json
+{
+  "tool": "signals_agent_register",
+  "parameters": {
+    "name": "Publisher Signals Agent",
+    "endpointUrl": "https://publisher.com/signals",
+    "brandAgentId": "brand_agent_123",
+    "description": "Automated audience signals from Publisher",
+    "config": {
+      "auth_type": "oauth",
+      "client_id": "signals_client_123"
+    }
+  }
+}
+```
+
+<Warning>
+**Business Approval Required:**
+All sales agents added by customers require Scope3 testing and approval before accessing live inventory. This ensures:
+- Technical compatibility with publisher endpoints
+- Authentication security validation  
+- Compliance with platform standards
+- Quality assurance for production use
+
+Contact your Scope3 representative to initiate the approval process after registration.
+</Warning>
+
+### Security Best Practices
+
+**Credential Management:**
+- Store authentication credentials securely
+- Use environment variables for sensitive data
+- Rotate tokens and keys regularly
+- Never commit credentials to version control
+
+**Environment Separation:**
+- Use separate authentication for staging and production
+- Test authentication flows thoroughly before production
+- Monitor authentication failures and token expiry
+
+**Access Control:**
+- Limit authentication scope to required operations
+- Use least-privilege principle for API access
+- Monitor and audit authentication usage
+
 ## Next Steps
 
 After authentication setup:
