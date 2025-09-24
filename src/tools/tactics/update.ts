@@ -78,7 +78,7 @@ export const updateTacticTool = (_client: Scope3ApiClient) => ({
         updates.budgetAllocation = {};
         Object.keys(args.budgetAllocation).forEach(key => {
           if (args.budgetAllocation![key as keyof typeof args.budgetAllocation] !== undefined) {
-            updates.budgetAllocation[key] = args.budgetAllocation![key as keyof typeof args.budgetAllocation];
+            (updates.budgetAllocation as any)[key] = args.budgetAllocation![key as keyof typeof args.budgetAllocation];
           }
         });
       }

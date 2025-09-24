@@ -88,6 +88,7 @@ import { AuthenticationService } from "../services/auth-service.js";
 import { BrandAgentService } from "../services/brand-agent-service.js";
 import { CampaignBigQueryService } from "../services/campaign-bigquery-service.js";
 import { CreativeService } from "../services/creative-service.js";
+import { TacticBigQueryService } from "../services/tactic-bigquery-service.js";
 import { GET_AGENTS_QUERY } from "./queries/agents.js";
 import { GET_API_ACCESS_KEYS_QUERY } from "./queries/auth.js";
 import {
@@ -168,6 +169,7 @@ export class Scope3ApiClient {
   private creativeService: CreativeService;
   private graphqlUrl: string;
   private productDiscovery: ProductDiscoveryService;
+  private tacticService: TacticBigQueryService;
 
   constructor(graphqlUrl: string) {
     this.graphqlUrl = graphqlUrl;
@@ -180,6 +182,7 @@ export class Scope3ApiClient {
     this.brandAgentService = new BrandAgentService(this.authService);
     this.campaignService = new CampaignBigQueryService();
     this.creativeService = new CreativeService(this.authService);
+    this.tacticService = new TacticBigQueryService();
   }
 
   /**
@@ -993,6 +996,44 @@ export class Scope3ApiClient {
     }
 
     return result.data.createTactic;
+  }
+
+  // Get tactic by ID (BigQuery implementation)
+  async getTactic(apiKey: string, tacticId: string): Promise<Tactic | null> {
+    const tacticRecord = await this.tacticService.getTactic(tacticId, apiKey);
+    
+    if (!tacticRecord) {
+      return null;
+    }
+
+    // Convert BigQuery record to Tactic interface
+    return {
+      id: tacticRecord.id,
+      name: tacticRecord.name,
+      campaignId: tacticRecord.campaign_id,
+      brandStoryId: tacticRecord.brand_story_id,
+      signalId: tacticRecord.signal_id,
+      description: tacticRecord.description,
+      status: tacticRecord.status as "active" | "completed" | "draft" | "paused",
+      budgetAllocation: {
+        amount: tacticRecord.budget_amount,
+        currency: tacticRecord.budget_currency || "USD",
+        pacing: tacticRecord.budget_pacing as any
+      },
+      effectivePricing: {
+        cpm: tacticRecord.cpm,
+        type: "cpm"
+      },
+      mediaProduct: {
+        id: tacticRecord.media_product_id,
+        name: tacticRecord.media_product_name || `Product ${tacticRecord.media_product_id}`,
+        publisherName: tacticRecord.publisher_name || "Unknown Publisher",
+        formats: [],
+        pricing: { cpm: tacticRecord.cpm, type: "cpm" }
+      },
+      createdAt: tacticRecord.created_at,
+      updatedAt: tacticRecord.updated_at
+    };
   }
 
   async createWebhookSubscription(

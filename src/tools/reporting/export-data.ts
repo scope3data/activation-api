@@ -400,12 +400,12 @@ async function exportTacticData(
       rows.push({
         campaign_id: campaignId,
         daily_budget: tactic.dailyBudget || null,
-        end_date: (tactic.endDate as Date)?.toISOString().split("T")[0] || null,
+        end_date: (tactic.endDate as Date | null)?.toISOString().split("T")[0] || null,
         publisher_products:
           (tactic.publisherProducts as string[])?.join(",") || null,
         signals: (tactic.signals as string[])?.join(",") || null,
         start_date:
-          (tactic.startDate as Date)?.toISOString().split("T")[0] || null,
+          (tactic.startDate as Date | null)?.toISOString().split("T")[0] || null,
         status: tactic.status,
         stories: (tactic.stories as string[])?.join(",") || null,
         tactic_id: tactic.id as string,

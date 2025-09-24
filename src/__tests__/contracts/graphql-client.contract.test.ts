@@ -104,7 +104,7 @@ export function testGraphQLClientContract(
         const agents = await client.listBrandAgents(options.apiKey);
         
         if (agents.length > 0) {
-          const campaigns = await client.listCampaigns(options.apiKey, agents[0].id);
+          const campaigns = await client.listBrandAgentCampaigns(options.apiKey, agents[0].id);
           
           expect(campaigns).toBeDefined();
           expect(Array.isArray(campaigns)).toBe(true);
@@ -129,7 +129,7 @@ export function testGraphQLClientContract(
         const agents = await client.listBrandAgents(options.apiKey);
         
         if (agents.length > 0) {
-          const campaigns = await client.listCampaigns(options.apiKey, agents[0].id);
+          const campaigns = await client.listBrandAgentCampaigns(options.apiKey, agents[0].id);
           
           // Should return array even if empty
           expect(Array.isArray(campaigns)).toBe(true);
@@ -242,7 +242,7 @@ describe("GraphQL Client Integration", () => {
 describe("GraphQL Client Contract Validation", () => {
   // Create a mock client that implements the expected interface
   class MockGraphQLClient extends Scope3ApiClient {
-    async listBrandAgents(apiKey: string) {
+    async listBrandAgents(apiKey: string, where?: any) {
       if (apiKey === "invalid_key_12345") {
         throw new Error("Unauthorized");
       }
@@ -251,9 +251,10 @@ describe("GraphQL Client Contract Validation", () => {
         {
           id: "agent_123",
           name: "Test Brand Agent",
-          status: "active",
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+          advertiserDomains: ["test.example.com"],
+          customerId: 12345,
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       ];
     }
@@ -266,13 +267,14 @@ describe("GraphQL Client Contract Validation", () => {
       return {
         id: id,
         name: "Test Brand Agent",
-        status: "active",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        advertiserDomains: ["test.example.com"],
+        customerId: 12345,
+        createdAt: new Date(),
+        updatedAt: new Date()
       };
     }
 
-    async listCampaigns(apiKey: string, brandAgentId: string) {
+    async listBrandAgentCampaigns(apiKey: string, brandAgentId: string) {
       return [
         {
           id: "campaign_123",

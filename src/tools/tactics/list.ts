@@ -60,9 +60,9 @@ export const listTacticsTool = (_client: Scope3ApiClient) => ({
           inventoryType: "run_of_site" as "premium" | "run_of_site" | "targeted_package",
           basePricing: {
             model: "auction" as "auction" | "fixed_cpm",
-            fixedCpm: null,
+            fixedCpm: undefined,
             floorCpm: record.cpm,
-            targetCpm: null,
+            targetCpm: undefined,
           },
           supportedTargeting: ["demographic", "geographic"],
           createdAt: new Date(),
