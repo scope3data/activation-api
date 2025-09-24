@@ -66,6 +66,7 @@
             "pages": [
               "mintlify/integrations/webhooks",
               "mintlify/integrations/creative-agents",
+              "mintlify/integrations/sales-agents",
               "mintlify/integrations/signals-agents"
             ]
           },
@@ -97,6 +98,14 @@
               "mintlify/partners/publisher-prebid-setup",
               "mintlify/partners/sales-agents",
               "mintlify/partners/axe-integration"
+            ]
+          },
+          {
+            "group": "Ad Network Integration",
+            "icon": "network-wired",
+            "pages": [
+              "mintlify/partners/ad-networks/overview",
+              "mintlify/partners/ad-networks/sales-agent-setup"
             ]
           },
           {

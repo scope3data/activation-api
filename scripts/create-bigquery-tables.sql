@@ -121,6 +121,35 @@ CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.signals_agent_activity` (
 PARTITION BY DATE(executed_at)
 CLUSTER BY signals_agent_id, activity_type;
 
+-- 8. Sales Agents (global registry of all known sales agents)
+CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.sales_agents` (
+  id STRING NOT NULL,
+  name STRING NOT NULL,
+  description STRING,
+  endpoint_url STRING NOT NULL,
+  protocol STRING DEFAULT 'adcp',
+  auth_type STRING DEFAULT 'api_key', -- oauth, bearer, custom_header, yahoo
+  status STRING DEFAULT 'active',
+  added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
+  added_by STRING, -- customer_id or 'scope3' who discovered this agent
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
+)
+PARTITION BY DATE(added_at)
+CLUSTER BY status;
+
+-- 9. Sales Agent Accounts (customer relationships/accounts with sales agents)
+CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.sales_agent_accounts` (
+  customer_id INT64 NOT NULL,
+  sales_agent_id STRING NOT NULL,
+  account_identifier STRING, -- username/account ID with the agent
+  auth_config JSON, -- credentials/tokens for their account
+  status STRING DEFAULT 'active',
+  registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
+  registered_by STRING,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
+)
+CLUSTER BY customer_id, sales_agent_id;
+
 -- Migration: Add customer_id columns to existing tables
 -- Run these if the tables already exist without the new columns:
 
