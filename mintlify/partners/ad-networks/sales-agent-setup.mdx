@@ -1,0 +1,62 @@
+---
+title: "Sales Agent Setup"
+description: "How to implement an ADCP-compliant sales agent for your ad network"
+icon: "code"
+---
+
+## Overview
+
+To integrate your ad network with Scope3, you need to build an ADCP (Ad Context Protocol) sales agent that implements the MCP (Model Context Protocol) or A-to-A (Agent-to-Agent) communication standards.
+
+## Technical Requirements
+
+### ADCP Implementation
+
+ADCP uses MCP/A-to-A protocols, not REST APIs. For complete technical specifications and implementation guides:
+
+- **📖 Official ADCP Documentation**: [https://adcontextprotocol.org/docs/media-buy/](https://adcontextprotocol.org/docs/media-buy/)
+- **💬 ADCP Slack Community**: [Join here](https://join.slack.com/t/agenticads/shared_invite/zt-3c5sxvdjk-x0rVmLB3OFHVUp~WutVWZg)
+
+### Scope3-Specific Integration
+
+Beyond standard ADCP implementation, you need to integrate:
+
+- **Real-time Decisioning** - Connect to Scope3's real-time data provider for campaign optimization
+- **Custom Authentication** - Handle custom auth patterns if your ADCP agent requires non-standard authentication
+
+## Getting Listed in Scope3
+
+Once your ADCP sales agent is built and tested:
+
+1. **Test the Integration**
+   - Test product discovery across all your creative formats
+   - Validate campaign booking and reservation flows  
+   - Ensure real-time decisioning integration works
+
+2. **Register with Scope3**
+   ```json
+   sales_agents_register({
+     "name": "Your Network",
+     "endpoint_url": "your-adcp-endpoint-url",
+     "protocol": "adcp",
+     "description": "Your network description"
+   })
+   ```
+
+3. **Production Validation**
+   - Contact your Scope3 account manager for production listing
+   - We'll validate your ADCP implementation
+   - Get added to the global sales agent registry
+
+## Support Resources
+
+- **Technical Questions**: [ADCP Slack Community](https://join.slack.com/t/agenticads/shared_invite/zt-3c5sxvdjk-x0rVmLB3OFHVUp~WutVWZg)
+- **Implementation Guide**: [ADCP Documentation](https://adcontextprotocol.org/docs/media-buy/)
+- **Scope3 Integration**: Contact your Scope3 account manager
+
+## Next Steps
+
+1. Review the official ADCP documentation
+2. Join the ADCP Slack community for implementation support
+3. Build and test your ADCP sales agent
+4. Register for production listing with Scope3

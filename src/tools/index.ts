@@ -53,6 +53,11 @@ import { getProductsTool } from "./products/list.js";
 import { exportDataTool } from "./reporting/export-data.js";
 // Reporting
 import { provideScoringOutcomesTool } from "./reporting/provide-outcomes.js";
+// Sales Agents
+import { listSalesAgentsTool } from "./sales-agents/list.js";
+import { registerSalesAgentTool } from "./sales-agents/register.js";
+import { unregisterSalesAgentTool } from "./sales-agents/unregister.js";
+import { updateSalesAgentTool } from "./sales-agents/update.js";
 // Signals Agents
 import { activateSignalTool } from "./signals-agents/activate.js";
 import { getSignalsTool } from "./signals-agents/get-signals.js";
@@ -71,6 +76,7 @@ import { listCustomSignalsTool } from "./signals/list.js";
 import { updateCustomSignalTool } from "./signals/update.js";
 // Tactics
 import { createTacticTool } from "./tactics/create.js";
+import { discoverPublisherProductsTool } from "./tactics/discover-products.js";
 import { listTacticsTool } from "./tactics/list.js";
 // Webhooks
 import { registerWebhookTool } from "./webhooks/register.js";
@@ -121,6 +127,7 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
 
   // Tactics (budget allocation merged into campaign/update)
   server.addTool(createTacticTool(client)); // tactic/create
+  server.addTool(discoverPublisherProductsTool(client)); // tactic/discover_products
   server.addTool(listTacticsTool(client)); // tactic/list
 
   // PMPs
@@ -145,6 +152,12 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(getSignalsTool(client)); // signals-agent/get-signals
   server.addTool(activateSignalTool(client)); // signals-agent/activate
   server.addTool(getSignalsAgentHistoryTool(client)); // signals-agent/history
+
+  // Sales Agents
+  server.addTool(listSalesAgentsTool(client)); // sales-agents/list
+  server.addTool(registerSalesAgentTool(client)); // sales-agents/register
+  server.addTool(updateSalesAgentTool(client)); // sales-agents/update
+  server.addTool(unregisterSalesAgentTool(client)); // sales-agents/unregister
 
   // Reporting
   server.addTool(provideScoringOutcomesTool(client)); // reporting/provide-outcomes
@@ -202,6 +215,7 @@ export {
   // Campaign CRUD
   deleteCampaignTool,
   deleteCustomSignalTool,
+  discoverPublisherProductsTool,
   exportDataTool,
   getBrandAgentTool,
   getCampaignSummaryTool,
@@ -221,13 +235,16 @@ export {
   listCreativeFormatsTool,
   listCustomSignalsTool,
   listPMPsTool,
+  listSalesAgentsTool,
   listSignalsAgentsTool,
   listTacticsTool,
   provideScoringOutcomesTool,
+  registerSalesAgentTool,
   // Signals Agents
   registerSignalsAgentTool,
   // Webhooks
   registerWebhookTool,
+  unregisterSalesAgentTool,
   unregisterSignalsAgentTool,
   updateBrandAgentBrandStoryTool,
   updateBrandAgentStandardsTool,
@@ -235,5 +252,6 @@ export {
   updateCampaignTool,
   updateCustomSignalTool,
   updatePMPTool,
+  updateSalesAgentTool,
   updateSignalsAgentTool,
 };

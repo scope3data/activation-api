@@ -2343,6 +2343,110 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /tactic-discover-products:
+    post:
+      description: Discover available publisher media products based on campaign requirements using
+        multi-agent ADCP protocol. Returns raw publisher inventory from multiple sales agents in
+        parallel before applying any targeting strategies. Requires authentication and configured
+        sales agents.
+      operationId: tactic_discover_products
+      summary: Discover Publisher Products
+      tags:
+        - Tactics
+      x-llm-hints:
+        - Use this tool when user wants to discover available publisher media products based on
+          campaign requirements using multi-agent adcp protocol
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                campaignBrief:
+                  type: string
+                  description: Natural language description of campaign goals to help match relevant inventory
+                campaignId:
+                  type: string
+                  description: Campaign ID to enable tactic seed data cooperative insights
+                deliveryType:
+                  type: string
+                  description: Filter by delivery guarantee type
+                formats:
+                  items:
+                    type: string
+                  type: array
+                  description: Creative formats to filter by
+                inventoryType:
+                  type: string
+                  description: Type of inventory to search for
+                maxCpm:
+                  type: number
+                  description: Maximum CPM price filter
+                minCpm:
+                  type: number
+                  description: Minimum CPM price filter
+                publisherIds:
+                  items:
+                    type: string
+                  type: array
+                  description: Specific publisher IDs to search within
+                salesAgents:
+                  items:
+                    type: string
+                  type: array
+                  description: Specific sales agent IDs to query. If not provided, queries all available sales agents
+                supportedSignals:
+                  items:
+                    type: string
+                  type: array
+                  description: Filter products by signal support
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /reporting-export-data:
     post:
       description: Export raw performance data for BI/analytics systems in structured format. Supports
@@ -3659,6 +3763,80 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /sales-agents-list:
+    post:
+      description: List all available sales agents for ADCP multi-agent product discovery. Shows global
+        agents with account indicators - which agents you have direct relationships with, which use
+        Scope3's default relationships, and which are unavailable. Use this to understand your sales
+        agent access before running product discovery.
+      operationId: sales_agents_list
+      summary: List Sales Agents
+      tags:
+        - Sales Agents
+      x-llm-hints:
+        - Use this tool when user wants to list all available sales agents for adcp multi-agent
+          product discovery
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                filter_available:
+                  type: string
+                  description: Only show agents that are available (have accounts) - hide unavailable agents
+                include_details:
+                  type: string
+                  description: Include detailed information like descriptions and additional metadata
+              required:
+                - filter_available
+                - include_details
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /signals-agent-list:
     post:
       description: List all registered signals agents for a brand agent. Shows agent status, endpoints,
@@ -3890,6 +4068,95 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /sales-agents-register:
+    post:
+      description: Register a new sales agent or create an account with an existing sales agent. This
+        allows you to use your own sales agent relationship for product discovery, which will
+        override Scope3's default agents. Supports ADCP (Advertising Data Control Protocol)
+        compliant agents.
+      operationId: sales_agents_register
+      summary: Register Sales Agent
+      tags:
+        - Sales Agents
+      x-llm-hints:
+        - Use this tool when user wants to register a new sales agent or create an account with an
+          existing sales agent
+        - Call this when user says 'create', 'make', 'set up', or 'add'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                account_identifier:
+                  type: string
+                  description: Your account ID or username with this sales agent (if applicable)
+                auth_config:
+                  type: string
+                  description: Authentication configuration for your account with this agent (credentials, tokens,
+                    etc.)
+                description:
+                  type: string
+                  description: Optional description of the sales agent's services
+                endpoint_url:
+                  type: string
+                  description: The ADCP endpoint URL for the sales agent (e.g., 'https://ads.scribd.com/adcp')
+                name:
+                  type: string
+                  description: Human-readable name for the sales agent (e.g., 'Scribd Sales', 'PubMatic Direct')
+                protocol:
+                  type: string
+                  description: "Protocol used by the sales agent (default: adcp)"
+              required:
+                - endpoint_url
+                - name
+                - protocol
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /signals-agent-register:
     post:
       description: Register a new signals agent to your seat. The agent will receive permissions to manage
@@ -4060,6 +4327,77 @@ paths:
                 - brandAgentId
                 - endpoint
                 - eventTypes
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /sales-agents-unregister:
+    post:
+      description: Remove your account with a sales agent. This will stop using your direct relationship
+        and fall back to Scope3's default relationship (if available) for future product discovery
+        calls. The global sales agent remains available for other users.
+      operationId: sales_agents_unregister
+      summary: Unregister Sales Agent Account
+      tags:
+        - Sales Agents
+      x-llm-hints:
+        - Use this tool when user wants to remove your account with a sales agent
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                confirm:
+                  type: boolean
+                  description: Set to true to confirm the unregistration (required for safety)
+                sales_agent_id:
+                  type: string
+                  description: The ID of the sales agent to remove your account from
+              required:
+                - sales_agent_id
               type: object
         required: true
       responses:
@@ -4652,6 +4990,84 @@ paths:
                   description: Update the PMP status
               required:
                 - pmp_id
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /sales-agents-update:
+    post:
+      description: Update your account details with a registered sales agent. You can modify your account
+        identifier, authentication configuration, or status. This only updates YOUR account
+        relationship with the agent, not the global agent configuration.
+      operationId: sales_agents_update
+      summary: Update Sales Agent Account
+      tags:
+        - Sales Agents
+      x-llm-hints:
+        - Use this tool when user wants to update your account details with a registered sales agent
+        - Call this when user says 'change', 'update', 'modify', or 'edit'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                account_identifier:
+                  type: string
+                  description: Update your account ID or username with this sales agent
+                auth_config:
+                  type: string
+                  description: Update authentication configuration for your account (credentials, tokens, etc.)
+                sales_agent_id:
+                  type: string
+                  description: The ID of the sales agent to update your account with
+                status:
+                  type: string
+                  description: Set account status - 'inactive' will stop using this agent for discovery
+              required:
+                - sales_agent_id
               type: object
         required: true
       responses:

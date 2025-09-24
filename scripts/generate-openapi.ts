@@ -453,8 +453,22 @@ For detailed guides, see our [documentation](https://docs.scope3.com).
       ],
     };
 
+    // Filter out private API tools (e.g., sales agents - requires business agreements)
+    const publicTools = Object.fromEntries(
+      Object.entries(tools).filter(
+        ([_, tool]) => !tool.annotations?.privateApi,
+      ),
+    );
+
+    console.log(
+      `🔒 Filtered out ${Object.keys(tools).length - Object.keys(publicTools).length} private API tools`,
+    );
+    console.log(
+      `📋 Including ${Object.keys(publicTools).length} public API tools in OpenAPI spec`,
+    );
+
     // Convert tools to OpenAPI paths
-    for (const [toolName, tool] of Object.entries(tools)) {
+    for (const [toolName, tool] of Object.entries(publicTools)) {
       let path = "";
       let method: "DELETE" | "GET" | "POST" | "PUT" = "POST";
 

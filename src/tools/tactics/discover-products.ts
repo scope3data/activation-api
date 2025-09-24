@@ -3,7 +3,184 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
-export const discoverPublisherProductsTool = (client: Scope3ApiClient) => ({
+import { ADCPProductDiscoveryService } from "../../services/adcp-product-discovery.js";
+
+// ADCP Multi-Agent Discovery Function
+async function executeADCPDiscovery(
+  args: {
+    campaignBrief?: string;
+    deliveryType?: "guaranteed" | "non_guaranteed";
+    formats?: ("audio" | "display" | "html5" | "native" | "video")[];
+    maxCpm?: number;
+    minCpm?: number;
+    salesAgents?: string[];
+  },
+  customerId: number,
+): Promise<string> {
+  try {
+    // Create ADCP client from database configuration
+    const adcpService = await ADCPProductDiscoveryService.fromDatabase(
+      customerId,
+      { debug: true },
+    );
+
+    const availableAgents = adcpService.getAvailableAgents();
+    if (availableAgents.length === 0) {
+      return "⚠️ **ADCP Discovery Unavailable**\n\nNo ADCP sales agents are enabled for your account. This could mean:\n\n• No sales agents have been configured in the system\n• All sales agents have been disabled for your account\n• There may be a database connectivity issue\n\n**Setup Guide:**\n• Use `sales_agents_list` to see available agents\n• Use `sales_agents_manage` to enable agents for your account\n• Contact your administrator to configure sales agents in the system";
+    }
+
+    // Build query for ADCP
+    const query = {
+      campaignBrief: args.campaignBrief,
+      deliveryType: args.deliveryType,
+      formats: args.formats as
+        | ("audio" | "display" | "html5" | "native" | "video")[]
+        | undefined,
+      maxCpm: args.maxCpm,
+      minCpm: args.minCpm,
+    };
+
+    let result;
+    if (args.salesAgents && args.salesAgents.length > 0) {
+      // Query specific sales agents
+      result = await adcpService.discoverProductsFromAgents(
+        args.salesAgents,
+        query,
+      );
+    } else {
+      // Query all available sales agents
+      result = await adcpService.discoverProducts(query, {
+        minSuccessfulAgents: 1,
+      });
+    }
+
+    const { agentResults, products } = result;
+
+    if (products.length === 0) {
+      let summary = "🔍 **No Products Found via ADCP**\n\n";
+      summary +=
+        "No publisher products match your criteria across all sales agents.\n\n";
+
+      // Show agent results
+      summary += "**Sales Agent Results:**\n";
+      agentResults.forEach((agent) => {
+        const status = agent.success ? "✅" : "❌";
+        summary += `• ${status} **${agent.agentName}** (${agent.agentId}): ${agent.productCount} products`;
+        if (agent.error) {
+          summary += ` - ${agent.error}`;
+        }
+        summary += "\n";
+      });
+
+      return summary;
+    }
+
+    // Build response with multi-agent insights
+    let summary = "🚀 **ADCP Multi-Agent Discovery**\n\n";
+    summary += `📦 Found **${products.length} products** from **${agentResults.filter((a) => a.success).length}/${agentResults.length} sales agents**\n\n`;
+
+    // Agent performance summary
+    summary += "**Sales Agent Results:**\n";
+    agentResults.forEach((agent) => {
+      const status = agent.success ? "✅" : "❌";
+      summary += `• ${status} **${agent.agentName}**: ${agent.productCount} products`;
+      if (agent.error) {
+        summary += ` (Error: ${agent.error})`;
+      }
+      summary += "\n";
+    });
+    summary += "\n";
+
+    // Group products by publisher
+    const productsByPublisher = products.reduce(
+      (acc, product) => {
+        if (!acc[product.publisherName]) {
+          acc[product.publisherName] = [];
+        }
+        acc[product.publisherName].push(product);
+        return acc;
+      },
+      {} as Record<string, typeof products>,
+    );
+
+    // Display products grouped by publisher
+    for (const [publisherName, publisherProducts] of Object.entries(
+      productsByPublisher,
+    )) {
+      summary += `## 🏢 **${publisherName}** (${publisherProducts.length} products)\n\n`;
+
+      publisherProducts.slice(0, 5).forEach((product, index) => {
+        // Limit to 5 per publisher for readability
+        summary += `### ${index + 1}. **${product.name}**\n`;
+        summary += `   - **Product ID:** ${product.productId}\n`;
+        summary += `   - **Type:** ${product.inventoryType.replace(/_/g, " ")} • ${product.deliveryType.replace(/_/g, " ")}\n`;
+        summary += `   - **Formats:** ${product.formats.join(", ")}\n`;
+
+        // Pricing information
+        if (
+          product.basePricing.model === "fixed_cpm" &&
+          product.basePricing.fixedCpm
+        ) {
+          summary += `   - **Pricing:** $${product.basePricing.fixedCpm.toFixed(2)} CPM (fixed)\n`;
+        } else if (product.basePricing.model === "auction") {
+          summary += `   - **Pricing:** Auction`;
+          if (product.basePricing.floorCpm) {
+            summary += ` (floor: $${product.basePricing.floorCpm.toFixed(2)})`;
+          }
+          if (product.basePricing.targetCpm) {
+            summary += ` (target: $${product.basePricing.targetCpm.toFixed(2)})`;
+          }
+          summary += "\n";
+        }
+
+        summary += `   - **Description:** ${product.description}\n\n`;
+      });
+
+      if (publisherProducts.length > 5) {
+        summary += `   *... and ${publisherProducts.length - 5} more products*\n\n`;
+      }
+
+      summary += "---\n\n";
+    }
+
+    // Summary statistics
+    const guaranteedCount = products.filter(
+      (p) => p.deliveryType === "guaranteed",
+    ).length;
+    const nonGuaranteedCount = products.filter(
+      (p) => p.deliveryType === "non_guaranteed",
+    ).length;
+    const premiumCount = products.filter(
+      (p) => p.inventoryType === "premium",
+    ).length;
+
+    summary += "## 📊 **Multi-Agent Summary**\n\n";
+    summary += `• **Publishers:** ${Object.keys(productsByPublisher).length}\n`;
+    summary += `• **Guaranteed:** ${guaranteedCount} products\n`;
+    summary += `• **Non-guaranteed:** ${nonGuaranteedCount} products\n`;
+    summary += `• **Premium inventory:** ${premiumCount} products\n`;
+    summary += `• **Successful agents:** ${agentResults.filter((a) => a.success).length}/${agentResults.length}\n\n`;
+
+    summary += "🔗 **ADCP Protocol Benefits:**\n";
+    summary += "• Parallel discovery across multiple sales agents\n";
+    summary += "• Standardized product data format\n";
+    summary += "• Real-time inventory availability\n";
+    summary += "• Cross-platform product comparison\n\n";
+
+    summary += "**Next Steps:**\n";
+    summary +=
+      "• Use create_inventory_option to combine products with targeting\n";
+    summary += "• Compare pricing and delivery guarantees across agents\n";
+    summary += "• Use sales_agents_list to see all available agents";
+
+    return summary;
+  } catch (error) {
+    console.error("ADCP Discovery Error:", error);
+    return `❌ **ADCP Discovery Failed**\n\nError: ${error instanceof Error ? error.message : String(error)}\n\nUse sales_agents_list to check agent configuration.`;
+  }
+}
+
+export const discoverPublisherProductsTool = (_client: Scope3ApiClient) => ({
   annotations: {
     category: "Tactics",
     dangerLevel: "low",
@@ -13,7 +190,7 @@ export const discoverPublisherProductsTool = (client: Scope3ApiClient) => ({
   },
 
   description:
-    "Discover available publisher media products based on campaign requirements. Returns raw publisher inventory before applying any targeting strategies. Use this to explore available inventory options from various publishers. Requires authentication.",
+    "Discover available publisher media products based on campaign requirements using multi-agent ADCP protocol. Returns raw publisher inventory from multiple sales agents in parallel before applying any targeting strategies. Requires authentication and configured sales agents.",
 
   execute: async (
     args: {
@@ -25,6 +202,7 @@ export const discoverPublisherProductsTool = (client: Scope3ApiClient) => ({
       maxCpm?: number;
       minCpm?: number;
       publisherIds?: string[];
+      salesAgents?: string[];
       supportedSignals?: ("buyer" | "scope3" | "third_party")[];
     },
     context: MCPToolExecuteContext,
@@ -43,221 +221,23 @@ export const discoverPublisherProductsTool = (client: Scope3ApiClient) => ({
     }
 
     try {
-      // Check if tactic seed data cooperative is enabled for enhanced recommendations
-      let tacticSeedDataCoopEnabled = false;
-      let _campaignVertical = ""; // Reserved for future category-specific insights
+      // Get customer ID from session context (defaulting to 1 for testing)
+      const customerId = context.session?.customerId || 1;
 
-      if (args.campaignId) {
-        try {
-          const campaign = await client.getBrandAgentCampaign(
-            apiKey,
-            args.campaignId,
-          );
-          if (campaign) {
-            const brandAgent = await client.getBrandAgent(
-              apiKey,
-              campaign.brandAgentId,
-            );
-            tacticSeedDataCoopEnabled = brandAgent.tacticSeedDataCoop || false;
-            // Extract campaign vertical from brief or prompt for category-specific insights
-            _campaignVertical = args.campaignBrief || campaign.prompt || "";
-          }
-        } catch (error) {
-          // Non-fatal error - continue without cooperative data
-          console.log(
-            "Could not fetch brand agent settings for cooperative data:",
-            error,
-          );
-        }
-      }
-
-      // Build discovery query from parameters
-      const discoveryQuery = {
-        campaignBrief: args.campaignBrief,
-        deliveryType: args.deliveryType,
-        formats: args.formats as (
-          | "audio"
-          | "display"
-          | "html5"
-          | "native"
-          | "video"
-        )[],
-        inventoryType: args.inventoryType,
-        maxCpm: args.maxCpm,
-        minCpm: args.minCpm,
-        publisherIds: args.publisherIds,
-        supportedSignals: args.supportedSignals,
-      };
-
-      // Remove undefined values
-      Object.keys(discoveryQuery).forEach((key) => {
-        if ((discoveryQuery as Record<string, unknown>)[key] === undefined) {
-          delete (discoveryQuery as Record<string, unknown>)[key];
-        }
-      });
-
-      const products = await client.discoverPublisherProducts(
-        apiKey,
-        discoveryQuery,
-      );
-
-      if (products.length === 0) {
-        return "🔍 **No Publisher Products Found**\n\nNo publisher products match your current criteria. Try adjusting your filters or requirements.";
-      }
-
-      let summary = `📦 **Found ${products.length} Publisher Products**\n\n`;
-
-      // Group products by publisher for better organization
-      const productsByPublisher = products.reduce(
-        (acc, product) => {
-          if (!acc[product.publisherName]) {
-            acc[product.publisherName] = [];
-          }
-          acc[product.publisherName].push(product);
-          return acc;
+      // Always use ADCP multi-agent discovery
+      return await executeADCPDiscovery(
+        {
+          campaignBrief: args.campaignBrief,
+          deliveryType: args.deliveryType,
+          formats: args.formats as
+            | ("audio" | "display" | "html5" | "native" | "video")[]
+            | undefined,
+          maxCpm: args.maxCpm,
+          minCpm: args.minCpm,
+          salesAgents: args.salesAgents,
         },
-        {} as Record<string, typeof products>,
+        customerId,
       );
-
-      // Display products grouped by publisher
-      for (const [publisherName, publisherProducts] of Object.entries(
-        productsByPublisher,
-      )) {
-        summary += `## 🏢 **${publisherName}** (${publisherProducts.length} products)\n\n`;
-
-        publisherProducts.forEach((product, index) => {
-          summary += `### ${index + 1}. **${product.name}**\n`;
-          summary += `   - **Product ID:** ${product.productId}\n`;
-          summary += `   - **Type:** ${product.inventoryType.replace(/_/g, " ")} • ${product.deliveryType.replace(/_/g, " ")}\n`;
-          summary += `   - **Formats:** ${product.formats.join(", ")}\n`;
-
-          // Pricing information
-          if (
-            product.basePricing.model === "fixed_cpm" &&
-            product.basePricing.fixedCpm
-          ) {
-            summary += `   - **Pricing:** $${product.basePricing.fixedCpm.toFixed(2)} CPM (fixed)\n`;
-          } else if (product.basePricing.model === "auction") {
-            summary += `   - **Pricing:** Auction`;
-            if (product.basePricing.floorCpm) {
-              summary += ` (floor: $${product.basePricing.floorCpm.toFixed(2)})`;
-            }
-            if (product.basePricing.targetCpm) {
-              summary += ` (target: $${product.basePricing.targetCpm.toFixed(2)})`;
-            }
-            summary += `\n`;
-          }
-
-          // Signal support
-          if (
-            product.supportedTargeting &&
-            product.supportedTargeting.length > 0
-          ) {
-            const signals = [];
-            if (product.supportedTargeting.includes("buyer_signals"))
-              signals.push("1st Party");
-            if (product.supportedTargeting.includes("scope3_signals"))
-              signals.push("Scope3");
-            if (
-              product.supportedTargeting.some((t) => t.includes("third_party"))
-            )
-              signals.push("3rd Party");
-
-            if (signals.length > 0) {
-              summary += `   - **Signal Support:** ${signals.join(", ")}\n`;
-            }
-          }
-
-          // Tactic Seed Data Cooperative insights (if enabled)
-          if (tacticSeedDataCoopEnabled) {
-            // Mock cooperative data - in real implementation, this would come from aggregated platform data
-            const cooperativeInsights = [];
-
-            // Historical pricing insights
-            const marketCpm =
-              product.basePricing.fixedCpm || product.basePricing.targetCpm;
-            if (marketCpm) {
-              if (marketCpm < 15) {
-                cooperativeInsights.push(
-                  "💰 Below-market CPM based on platform data",
-                );
-              } else if (marketCpm > 40) {
-                cooperativeInsights.push(
-                  "📈 Premium pricing - historically high performance",
-                );
-              }
-            }
-
-            // Category performance quintiles (mock data)
-            const performanceQuintile = Math.floor(Math.random() * 5) + 1; // Mock: 1-5 quintiles
-            if (performanceQuintile >= 4) {
-              cooperativeInsights.push(
-                `⭐ Top 40% performer for similar campaigns`,
-              );
-            } else if (performanceQuintile <= 2) {
-              cooperativeInsights.push(
-                `⚠️ Bottom 40% performer - use cautiously`,
-              );
-            }
-
-            // Delivery reliability
-            if (product.deliveryType === "guaranteed") {
-              cooperativeInsights.push(
-                "✅ High fill rate history from platform data",
-              );
-            }
-
-            if (cooperativeInsights.length > 0) {
-              summary += `   - **🤝 Cooperative Insights:** ${cooperativeInsights.join(", ")}\n`;
-            }
-          }
-
-          summary += `   - **Description:** ${product.description}\n\n`;
-        });
-
-        summary += `---\n\n`;
-      }
-
-      // Add summary statistics
-      const guaranteedCount = products.filter(
-        (p) => p.deliveryType === "guaranteed",
-      ).length;
-      const nonGuaranteedCount = products.filter(
-        (p) => p.deliveryType === "non_guaranteed",
-      ).length;
-      const premiumCount = products.filter(
-        (p) => p.inventoryType === "premium",
-      ).length;
-
-      const cpmPrices = products
-        .map((p) => p.basePricing.fixedCpm || p.basePricing.targetCpm)
-        .filter(Boolean) as number[];
-
-      summary += `## 📊 **Summary**\n\n`;
-      summary += `• **Publishers:** ${Object.keys(productsByPublisher).length}\n`;
-      summary += `• **Guaranteed:** ${guaranteedCount} products\n`;
-      summary += `• **Non-guaranteed:** ${nonGuaranteedCount} products\n`;
-      summary += `• **Premium inventory:** ${premiumCount} products\n`;
-
-      if (cpmPrices.length > 0) {
-        const avgCpm = cpmPrices.reduce((a, b) => a + b, 0) / cpmPrices.length;
-        const minPrice = Math.min(...cpmPrices);
-        const maxPrice = Math.max(...cpmPrices);
-        summary += `• **Price range:** $${minPrice.toFixed(2)} - $${maxPrice.toFixed(2)} CPM\n`;
-        summary += `• **Average CPM:** $${avgCpm.toFixed(2)}\n`;
-      }
-
-      // Add cooperative data notice if enabled
-      if (tacticSeedDataCoopEnabled) {
-        summary += `\n🤝 **Tactic Seed Data Cooperative enabled** - Enhanced recommendations based on platform-wide pricing and performance data.\n`;
-      }
-
-      summary += `\n**Next Steps:**\n`;
-      summary += `• Use create_inventory_option to combine products with targeting strategies\n`;
-      summary += `• Consider different signal types for the same publisher product\n`;
-      summary += `• Review pricing and delivery guarantees for budget planning`;
-
-      return summary;
     } catch (error) {
       throw new Error(
         `Failed to discover publisher products: ${error instanceof Error ? error.message : String(error)}`,
@@ -295,6 +275,12 @@ export const discoverPublisherProductsTool = (client: Scope3ApiClient) => ({
       .array(z.string())
       .optional()
       .describe("Specific publisher IDs to search within"),
+    salesAgents: z
+      .array(z.string())
+      .optional()
+      .describe(
+        "Specific sales agent IDs to query. If not provided, queries all available sales agents",
+      ),
     supportedSignals: z
       .array(z.enum(["buyer", "scope3", "third_party"]))
       .optional()

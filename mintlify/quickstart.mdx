@@ -126,6 +126,46 @@ Call tool `create_creatives` with body:
 }
 ```
 
+### Sales Agents (Automatic Access)
+
+Your campaigns automatically have access to advertising inventory through Scope3's sales agent relationships. No setup required!
+
+*Optional: Register Your Own Sales Agent Account*
+
+If you have a direct relationship with a sales agent, you can register your account to:
+- Pay them directly (Scope3 charges less for direct connections)  
+- Use your negotiated terms and rates
+- Note that you will get invoiced separately by Scope3 for these campaigns, whereas for Scope3 accounts these fees are factored into media cost
+
+*User*:
+We have a direct account with Scribd's sales team
+
+*Agent*:
+Call tool `sales_agents_register` with body:
+```json
+{
+  "name": "Scribd Direct", 
+  "endpoint_url": "https://ads.scribd.com/adcp",
+  "account_identifier": "nike-scribd-2024",
+  "auth_config": {
+    "api_key": "scribd_api_key_here"
+  }
+}
+```
+
+*Scope3*
+`sales_agents_register` response
+```json
+{
+  "success": true,
+  "message": "Sales agent account registered successfully"
+}
+```
+
+<Info>
+When you register your own sales agent account, you handle payments directly with that sales agent. Your account will override Scope3's default relationship with that sales agent.
+</Info>
+
 ### Set up the campaign
 The "magic" of using an agentic API is that we don't need to try to map all of the complex targeting fields across platforms because AI is very good at figuring out, for instance, that "US" and "USA" are the same thing - we don't need a complex protocol spec for handling ISO country codes.
 

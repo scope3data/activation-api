@@ -1,0 +1,146 @@
+---
+title: "Sales Agents"
+description: "Manage sales agent accounts for inventory access and direct billing"
+icon: "handshake"
+---
+
+## Overview
+
+Sales agents provide access to advertising inventory through the ADCP protocol. They represent various types of sellers: publishers, ad networks, sales houses, and other inventory sources.
+
+## How It Works
+
+By default, you have access to inventory through Scope3's relationships with sales agents. You can optionally register your own accounts with sales agents for:
+
+- **Direct billing** - Pay the sales agent directly (Scope3 charges less for direct connections)
+- **Your negotiated terms** - Use your existing relationships and rates
+- **Additional inventory** - Access sales agents that Scope3 doesn't have relationships with
+
+### Account Precedence
+
+When you discover products, the system automatically:
+1. **Your accounts** - Uses your registered sales agent accounts
+2. **Scope3 accounts** - Falls back to Scope3's relationships 
+3. **Unavailable** - Skips agents with no available accounts
+
+## Managing Your Sales Agents
+
+### List Available Agents
+
+*Agent*:
+Call tool `sales_agents_list` with body:
+```json
+{}
+```
+
+Shows all sales agents with account status:
+- ✅ **Your account** - You have a direct relationship
+- 🏢 **Scope3 account** - Available through Scope3's relationship
+- ❌ **Unavailable** - No accounts registered
+
+### Register Your Account
+
+If you have a direct relationship with a sales agent:
+
+*Agent*:
+Call tool `sales_agents_register` with body:
+```json
+{
+  "name": "Scribd Sales",
+  "endpoint_url": "https://ads.scribd.com/adcp",
+  "account_identifier": "your-account-id",
+  "auth_config": {
+    "api_key": "your_scribd_api_key"
+  }
+}
+```
+
+### Update Your Account
+
+*Agent*:
+Call tool `sales_agents_update` with body:
+```json
+{
+  "sales_agent_id": "agent_123",
+  "account_identifier": "new-account-id"
+}
+```
+
+### Unregister Account
+
+*Agent*:
+Call tool `sales_agents_unregister` with body:
+```json
+{
+  "sales_agent_id": "agent_123",
+  "confirm": true
+}
+```
+
+## Using Sales Agents in Campaigns
+
+Sales agents are automatically used for product discovery:
+
+*Agent*:
+Call tool `tactic_discover_products` with body:
+```json
+{
+  "campaignBrief": "Premium coffee brand inventory"
+}
+```
+
+**What happens behind the scenes:**
+1. Scope3 identifies available sales agents (your accounts + Scope3 accounts)
+2. Scope3 sends ADCP `get-products` calls to each sales agent via MCP/A-to-A protocol
+3. Each sales agent responds with their available inventory through the ADCP protocol
+4. Scope3 combines and ranks the results
+
+<Info>
+ADCP uses MCP (Model Context Protocol) or A-to-A (Agent-to-Agent) communication, not REST APIs. For technical details, see the [official ADCP documentation](https://adcontextprotocol.org/docs/media-buy/).
+</Info>
+
+To use specific sales agents only:
+
+*Agent*:
+Call tool `tactic_discover_products` with body:
+```json
+{
+  "campaignBrief": "Coffee brands",
+  "salesAgents": ["scribd_sales", "pubmatic_direct"]
+}
+```
+
+## Important Notes
+
+<Warning>
+When you use your own sales agent account, you are responsible for payments directly with that sales agent. Scope3 is not involved in the financial relationship.
+</Warning>
+
+<Info>
+If you register a sales agent that Scope3 doesn't have a relationship with, Scope3 cannot provide technical support or guarantees for that integration.
+</Info>
+
+## Adding New Sales Agents
+
+If you work with a sales agent not in our system, you can add them:
+
+*Agent*:
+Call tool `sales_agents_register` with body:
+```json
+{
+  "name": "New Sales House",
+  "endpoint_url": "https://newsaleshouse.com/adcp",
+  "description": "Premium lifestyle inventory",
+  "auth_config": {
+    "api_key": "your_api_key_for_new_sales_house"
+  }
+}
+```
+
+This creates the sales agent in the global registry and registers your account with them.
+
+## Next Steps
+
+- Use `tactic_discover_products` to find inventory across your available sales agents
+- Set up [campaigns](/object-guides/campaign) using discovered products
+- Monitor performance through [reporting](/reporting-overview)
