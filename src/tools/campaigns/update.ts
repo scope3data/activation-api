@@ -12,6 +12,7 @@ import {
   transformTargetingProfiles,
 } from "../../client/transformers/targeting.js";
 import { OptimizationInterpreter } from "../../services/optimization-interpreter.js";
+import { TacticBigQueryService } from "../../services/tactic-bigquery-service.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const updateCampaignTool = (client: Scope3ApiClient) => ({
@@ -45,7 +46,7 @@ export const updateCampaignTool = (client: Scope3ApiClient) => ({
 
     try {
       let summary = `✅ Campaign ${args.name ? `"${args.name}"` : args.campaignId} updated successfully\n\n`;
-      const updatedTactics: any[] = [];
+      const updatedTactics: (import('../../services/tactic-bigquery-service.js').TacticBigQueryRecord | null)[] = [];
       const errors: Record<string, unknown>[] = [];
 
       if (args.reason) {
@@ -200,10 +201,17 @@ export const updateCampaignTool = (client: Scope3ApiClient) => ({
               });
             }
 
-            const updatedTactic = await client.updateTactic(
-              apiKey!,
+            const bigQueryService = new TacticBigQueryService();
+            await bigQueryService.updateTactic(
               adjustment.tacticId,
               updateInput,
+              apiKey!,
+            );
+            
+            // Get the updated tactic for response
+            const updatedTactic = await bigQueryService.getTactic(
+              adjustment.tacticId,
+              apiKey!,
             );
 
             updatedTactics.push(updatedTactic);

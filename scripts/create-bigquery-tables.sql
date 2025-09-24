@@ -127,6 +127,7 @@ CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.sales_agents` (
   name STRING NOT NULL,
   description STRING,
   endpoint_url STRING NOT NULL,
+  org_id STRING, -- Publisher organization ID for prebid integration
   protocol STRING DEFAULT 'adcp',
   auth_type STRING DEFAULT 'api_key', -- oauth, bearer, custom_header, yahoo
   status STRING DEFAULT 'active',
@@ -135,7 +136,7 @@ CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.sales_agents` (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
 )
 PARTITION BY DATE(added_at)
-CLUSTER BY status;
+CLUSTER BY status, org_id;
 
 -- 9. Sales Agent Accounts (customer relationships/accounts with sales agents)
 CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.sales_agent_accounts` (
@@ -150,22 +151,38 @@ CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.sales_agent_accounts` (
 )
 CLUSTER BY customer_id, sales_agent_id;
 
--- Migration: Add customer_id columns to existing tables
--- Run these if the tables already exist without the new columns:
+-- 10. Tactics (buyer media purchases via sales agents)
+CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.tactics` (
+  id STRING NOT NULL,
+  campaign_id STRING NOT NULL,
+  sales_agent_id STRING NOT NULL, -- References sales_agents.id (seller's agent)
+  media_product_id STRING NOT NULL,
+  name STRING NOT NULL,
+  description STRING,
+  -- Budget allocation
+  budget_amount FLOAT64 NOT NULL,
+  budget_currency STRING DEFAULT 'USD',
+  budget_daily_cap FLOAT64,
+  budget_pacing STRING DEFAULT 'even', -- 'asap', 'even', 'front_loaded'
+  budget_percentage FLOAT64, -- Percentage of campaign budget
+  -- Pricing
+  cpm FLOAT64 NOT NULL,
+  total_cpm FLOAT64 NOT NULL, -- Effective CPM after signal costs
+  signal_cost FLOAT64, -- Additional cost for data signals
+  -- AXE segment for prebid integration (inclusion only)
+  axe_include_segment STRING, -- Segment ID returned to prebid
+  -- Simplified targeting
+  brand_story_id STRING,
+  signal_id STRING,
+  -- Status and ownership
+  status STRING DEFAULT 'draft',
+  customer_id INT64 NOT NULL, -- Buyer's customer ID
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
+)
+PARTITION BY DATE(created_at)
+CLUSTER BY sales_agent_id, campaign_id, status;
 
--- Add customer_id to campaigns table
-ALTER TABLE `bok-playground.agenticapi.campaigns`
-ADD COLUMN IF NOT EXISTS customer_id INT64 DEFAULT 1;
-
--- Add customer_id to creatives table  
-ALTER TABLE `bok-playground.agenticapi.creatives`
-ADD COLUMN IF NOT EXISTS customer_id INT64 DEFAULT 1;
-
--- Migration: Add tactic_seed_data_coop column to existing brand_agent_extensions table
--- Run this if the table already exists without the new column:
--- ALTER TABLE `bok-playground.agenticapi.brand_agent_extensions`
--- ADD COLUMN IF NOT EXISTS tactic_seed_data_coop BOOLEAN DEFAULT FALSE;
-
--- Migration: Add agent tracking columns to custom signals tables
--- These will be handled in the custom signals dataset, not here
--- The signal-storage-service.ts will need to be updated to support agent tracking
+-- NOTE: For existing table migrations, use the separate bigquery-migrations.sql script
+-- BigQuery doesn't support ADD COLUMN with DEFAULT values in a single statement
+-- The migrations are handled in scripts/bigquery-migrations.sql

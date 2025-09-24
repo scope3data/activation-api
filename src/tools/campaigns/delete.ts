@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
+import { TacticBigQueryService } from "../../services/tactic-bigquery-service.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const deleteCampaignTool = (client: Scope3ApiClient) => ({
@@ -76,9 +77,10 @@ export const deleteCampaignTool = (client: Scope3ApiClient) => ({
         [];
 
       try {
-        campaignTactics = await client.getCampaignTactics(
-          apiKey,
+        const tacticService = new TacticBigQueryService();
+        campaignTactics = await tacticService.listTactics(
           args.campaignId,
+          apiKey,
         );
       } catch {
         // Campaign tactics fetch failed - continue without this data

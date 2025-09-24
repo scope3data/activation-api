@@ -7,6 +7,7 @@ import type {
 } from "../../types/mcp.js";
 import type { DataExportResponse } from "../../types/reporting.js";
 
+import { TacticBigQueryService } from "../../services/tactic-bigquery-service.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const exportDataTool = (client: Scope3ApiClient) => ({
@@ -376,7 +377,24 @@ async function exportTacticData(
   };
 
   for (const campaignId of campaignIds) {
-    const tactics = await client.getCampaignTactics(apiKey, campaignId);
+    const tacticService = new TacticBigQueryService();
+    const tacticRecords = await tacticService.listTactics(campaignId, apiKey);
+    
+    // Convert BigQuery records to expected tactic format
+    const tactics = tacticRecords.map(record => ({
+      id: record.id,
+      name: record.name,
+      dailyBudget: record.budget_daily_cap,
+      totalBudget: record.budget_amount,
+      cpm: record.total_cpm,
+      status: record.status,
+      targetPrice: record.total_cpm, // Use total CPM as target price
+      endDate: null, // End date not stored in tactics table
+      startDate: null, // Start date not stored in tactics table
+      publisherProducts: [record.media_product_id], // Media product ID
+      signals: record.signal_id ? [record.signal_id] : [], // Signal ID if available
+      stories: record.brand_story_id ? [record.brand_story_id] : [], // Brand story ID if available
+    }));
 
     for (const tactic of tactics || []) {
       rows.push({

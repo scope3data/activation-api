@@ -3,9 +3,10 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
+import { TacticBigQueryService } from "../../services/tactic-bigquery-service.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
 
-export const createTacticTool = (client: Scope3ApiClient) => ({
+export const createTacticTool = (_client: Scope3ApiClient) => ({
   annotations: {
     category: "Tactics",
     dangerLevel: "medium",
@@ -67,7 +68,11 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
         signalId: args.signalId,
       };
 
-      const tactic = await client.createTactic(apiKey, tacticInput);
+      // IMPORTANT: GraphQL doesn't have tactic mutations, so we use BigQuery-only approach
+      // TODO: Implement tactic GraphQL mutations in backend when ready
+      
+      const bigQueryService = new TacticBigQueryService();
+      const tactic = await bigQueryService.createTactic(tacticInput, apiKey);
 
       let summary = `✅ **Tactic Created Successfully!**\n\n`;
 
@@ -80,8 +85,11 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
 
       // Publisher product information
       const product = tactic.mediaProduct;
+      if (!product) {
+        throw new Error("Media product is required but was not found in tactic creation response");
+      }
       summary += `### 📦 **Publisher Product**\n`;
-      summary += `• **Publisher:** ${product.publisherName}\n`;
+      summary += `• **Publisher:** ${product.publisherName || 'Unknown Publisher'}\n`;
       summary += `• **Product:** ${product.name}\n`;
       summary += `• **Type:** ${product.inventoryType.replace(/_/g, " ")} • ${product.deliveryType.replace(/_/g, " ")}\n`;
       summary += `• **Formats:** ${product.formats.join(", ")}\n`;
@@ -209,7 +217,7 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
     }
   },
 
-  name: "tactic_create",
+  name: "create_tactic",
   parameters: z.object({
     brandStoryId: z
       .string()

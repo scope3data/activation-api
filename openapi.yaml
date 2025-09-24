@@ -1065,13 +1065,13 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /tactic-create:
+  /tactics:
     post:
       description: "Create a new tactic by combining a publisher media product with a brand story and
         signal. Simplified targeting approach focusing on the core components: media product + brand
         story + signal configuration. Includes budget allocation and effective pricing. Requires
         authentication."
-      operationId: tactic_create
+      operationId: create_tactic
       summary: Create Tactic
       tags:
         - Tactics
@@ -2355,6 +2355,80 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /tactic-delete:
+    post:
+      description: Delete a tactic by marking it as inactive. This stops the tactic from participating in
+        campaign delivery and removes it from active listings. The tactic data is preserved for
+        historical reporting. Use with caution as this action affects campaign budget allocation and
+        delivery. Requires authentication.
+      operationId: tactic_delete
+      summary: Delete Tactic
+      tags:
+        - Tactics
+      x-llm-hints:
+        - Use this tool when user wants to delete a tactic by marking it as inactive
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                tacticId:
+                  type: string
+                  description: ID of the tactic to delete
+                confirm:
+                  type: boolean
+                  description: Must be set to true to confirm deletion
+              required:
+                - tacticId
+                - confirm
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /tactic-discover-products:
     post:
       description: Discover available publisher media products based on campaign requirements using
@@ -2918,6 +2992,66 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /prebid-segmentss/{id}:
+    get:
+      description: Get AXE inclusion segments for a publisher organization ID. Used by prebid integration
+        to determine which buyer campaigns are targeting this publisher's inventory. Returns segment
+        IDs and maximum CPM for auction prioritization.
+      operationId: get_prebid_segments
+      summary: Get Prebid Segments
+      tags:
+        - Prebid
+      x-llm-hints:
+        - Use this tool when user wants to get axe inclusion segments for a publisher organization id
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      parameters:
+        - description: Resource identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /product-list:
     post:
       description: Discover available advertising products from multiple sales agents based on campaign
@@ -3207,6 +3341,77 @@ paths:
                   description: Optional campaign brief or targeting description to get tailored recommendations
               required:
                 - brandAgentId
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /tactic-get:
+    post:
+      description: Get detailed information about a specific tactic including media product details,
+        targeting strategy, budget allocation, pricing, and performance metrics. Shows simplified
+        targeting approach with brand story and signal configuration. Requires authentication.
+      operationId: tactic_get
+      summary: Get Tactic
+      tags:
+        - Tactics
+      x-llm-hints:
+        - Use this tool when user wants to get detailed information about a specific tactic
+          including media product details, targeting strategy, budget allocation, pricing, and
+          performance metrics
+        - Call this when user asks 'show me', 'list', or 'what are my'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                tacticId:
+                  type: string
+                  description: ID of the tactic to retrieve
+              required:
+                - tacticId
               type: object
         required: true
       responses:
@@ -5240,6 +5445,112 @@ paths:
               required:
                 - brief
                 - threshold
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /tactic-update:
+    post:
+      description: Update an existing tactic's configuration including name, description, status, budget
+        allocation, and pricing. Supports partial updates - only specified fields will be modified.
+        Use this to adjust tactic performance, change budget allocation, or update status. Requires
+        authentication.
+      operationId: tactic_update
+      summary: Update Tactic
+      tags:
+        - Tactics
+      x-llm-hints:
+        - Use this tool when user wants to update an existing tactic's configuration including name,
+          description, status, budget allocation, and pricing
+        - Call this when user asks 'show me', 'list', or 'what are my'
+        - Call this when user says 'change', 'update', 'modify', or 'edit'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                tacticId:
+                  type: string
+                  description: ID of the tactic to update
+                name:
+                  type: string
+                  description: New name for the tactic
+                description:
+                  type: string
+                  description: New description for the tactic
+                status:
+                  type: string
+                  description: New status for the tactic
+                budgetAllocation:
+                  properties:
+                    amount:
+                      type: number
+                      description: New budget amount
+                    currency:
+                      type: string
+                      description: Currency code
+                    dailyCap:
+                      type: number
+                      description: New daily spending limit
+                    pacing:
+                      type: string
+                      description: New budget pacing strategy
+                    percentage:
+                      type: number
+                      description: New percentage of campaign budget
+                  type: object
+                  description: Budget allocation updates
+                cpm:
+                  type: number
+                  description: New cost per mille (CPM)
+                signalCost:
+                  type: number
+                  description: New signal cost to add to base CPM
+              required:
+                - tacticId
               type: object
         required: true
       responses:

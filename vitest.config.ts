@@ -78,12 +78,11 @@ export default defineConfig({
     },
 
     environment: "node",
-    exclude: ["node_modules/**", "dist/**", "**/*.d.ts"],
-
-    // Exclude contract test files - they are utilities, not runnable tests
+    
+    // Exclude contract test files and standard exclusions
     exclude: [
       "node_modules/**",
-      "dist/**",
+      "dist/**", 
       "**/*.d.ts",
       "src/__tests__/contracts/**",
     ],
