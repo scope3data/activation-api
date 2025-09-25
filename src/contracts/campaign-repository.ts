@@ -40,6 +40,30 @@ export interface Campaign {
   scoringWeights?: Record<string, number>;
   status: "active" | "completed" | "draft" | "paused";
   updatedAt: string;
+
+  // Creative sync health summary (inline, no separate tool needed)
+  creativeSyncHealth?: {
+    status: "healthy" | "warning" | "critical";
+    summary: {
+      creativesFullySynced: number;    // Synced to all relevant sales agents
+      creativesPartiallySynced: number; // Some agents missing  
+      creativesNotSynced: number;       // No sync yet
+      creativesWithIssues: number;      // Rejections or failures
+    };
+    issues?: Array<{
+      creativeId: string;
+      creativeName: string;
+      issue: string; 
+      salesAgentName: string;
+      suggestedAction: string;
+    }>;
+  };
+
+  // Simple notification count (no separate tool needed)
+  notifications?: {
+    unread: number;
+    types: string[]; // Notification types present for this campaign
+  };
 }
 
 export interface CampaignInput {

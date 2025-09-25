@@ -2,6 +2,9 @@ import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
+import { CreativeSyncService } from "../../services/creative-sync-service.js";
+import { NotificationService } from "../../services/notification-service.js"; 
+import { AuthenticationService } from "../../services/auth-service.js";
 
 import { createMCPResponse } from "../../utils/error-handling.js";
 
@@ -55,11 +58,87 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
     }
 
     try {
+      // Initialize services for sync health and notifications
+      const authService = new AuthenticationService();
+      const creativeSyncService = new CreativeSyncService(authService);
+      const notificationService = new NotificationService(authService);
+      
+      // Validate API key to get customer info
+      const authResult = await authService.validateApiKey(apiKey);
+      if (!authResult.isValid) {
+        throw new Error("Invalid API key");
+      }
+      const customerId = authResult.customerId!;
+
       // For now, use the basic method with brandAgentId
       const campaigns = await client.listBrandAgentCampaigns(
         apiKey,
         args.brandAgentId || "",
       );
+
+      // Enhance campaigns with sync health and notification data
+      if (campaigns && campaigns.length > 0) {
+        for (const campaign of campaigns) {
+          try {
+            // Get notification summary for this campaign
+            const notifications = await notificationService.getCampaignNotifications(
+              campaign.id,
+              customerId
+            );
+            campaign.notifications = notifications;
+
+            // Calculate creative sync health (simplified for list view)
+            // Note: In a real implementation, this would be optimized with batch queries
+            if (campaign.creativeIds && campaign.creativeIds.length > 0) {
+              let creativesFullySynced = 0;
+              let creativesWithIssues = 0;
+              let creativesNotSynced = 0;
+
+              for (const creativeId of campaign.creativeIds.slice(0, 10)) { // Limit for performance
+                try {
+                  const syncStatus = await creativeSyncService.getCreativeSyncStatus(creativeId);
+                  if (syncStatus.length === 0) {
+                    creativesNotSynced++;
+                  } else {
+                    const approved = syncStatus.filter(s => s.approvalStatus === "approved").length;
+                    const rejected = syncStatus.filter(s => s.approvalStatus === "rejected").length;
+                    
+                    if (approved === syncStatus.length) {
+                      creativesFullySynced++;
+                    } else if (rejected > 0) {
+                      creativesWithIssues++;  
+                    }
+                  }
+                } catch (error) {
+                  // Skip individual creative sync status errors
+                  creativesNotSynced++;
+                }
+              }
+
+              // Determine overall health status
+              const totalCreatives = campaign.creativeIds.length;
+              let healthStatus: "healthy" | "warning" | "critical" = "healthy";
+              
+              if (creativesWithIssues > 0 || creativesNotSynced > totalCreatives / 2) {
+                healthStatus = creativesWithIssues > totalCreatives / 2 ? "critical" : "warning";
+              }
+
+              campaign.creativeSyncHealth = {
+                status: healthStatus,
+                summary: {
+                  creativesFullySynced,
+                  creativesPartiallySynced: Math.max(0, totalCreatives - creativesFullySynced - creativesWithIssues - creativesNotSynced),
+                  creativesNotSynced,
+                  creativesWithIssues,
+                },
+              };
+            }
+          } catch (error) {
+            console.warn(`Failed to get sync health for campaign ${campaign.id}:`, error);
+            // Continue without sync health - not critical for campaign list
+          }
+        }
+      }
 
       if (!campaigns || campaigns.length === 0) {
         const emptyMessage =
@@ -110,7 +189,54 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
         {} as Record<string, number>,
       );
 
-      const summary = `Found ${campaigns.length} campaigns. Budget: $${(totalBudget / 100).toLocaleString()}, Spend: $${(totalSpend / 100).toLocaleString()} (${totalBudget > 0 ? ((totalSpend / totalBudget) * 100).toFixed(1) : "0"}%)`;
+      // Calculate health and notification summary
+      const healthySummary = campaigns.filter(c => c.creativeSyncHealth?.status === "healthy").length;
+      const warningsSummary = campaigns.filter(c => c.creativeSyncHealth?.status === "warning").length;
+      const criticalSummary = campaigns.filter(c => c.creativeSyncHealth?.status === "critical").length;
+      const totalNotifications = campaigns.reduce((sum, c) => sum + (c.notifications?.unread || 0), 0);
+
+      let summary = `📊 **Found ${campaigns.length} campaigns**
+
+💰 **Budget**: $${(totalBudget / 100).toLocaleString()} | **Spend**: $${(totalSpend / 100).toLocaleString()} (${totalBudget > 0 ? ((totalSpend / totalBudget) * 100).toFixed(1) : "0"}%)
+
+🔄 **Creative Sync Health**:`;
+
+      if (healthySummary > 0) summary += ` ✅ ${healthySummary} healthy`;
+      if (warningsSummary > 0) summary += ` ⚠️ ${warningsSummary} warnings`;
+      if (criticalSummary > 0) summary += ` 🔴 ${criticalSummary} critical`;
+      
+      if (totalNotifications > 0) {
+        summary += `\n🔔 **${totalNotifications} unread notifications** across campaigns`;
+      }
+
+      // Add individual campaign details
+      summary += `\n\n---\n\n`;
+      
+      campaigns.forEach((campaign, index) => {
+        const healthEmoji = campaign.creativeSyncHealth?.status === "healthy" ? "✅" : 
+                           campaign.creativeSyncHealth?.status === "warning" ? "⚠️" : 
+                           campaign.creativeSyncHealth?.status === "critical" ? "🔴" : "⚫";
+        
+        const notificationBadge = campaign.notifications?.unread && campaign.notifications.unread > 0 
+          ? ` 🔔${campaign.notifications.unread}` : "";
+          
+        summary += `${index + 1}. ${healthEmoji} **${campaign.name}**${notificationBadge}\n`;
+        summary += `   💰 $${((campaign.budget?.total || 0) / 100).toLocaleString()} | Status: ${campaign.status}\n`;
+        
+        if (campaign.creativeSyncHealth) {
+          const health = campaign.creativeSyncHealth;
+          summary += `   🎨 Creatives: ${health.summary.creativesFullySynced} synced`;
+          if (health.summary.creativesWithIssues > 0) {
+            summary += `, ${health.summary.creativesWithIssues} issues`;
+          }
+          if (health.summary.creativesNotSynced > 0) {
+            summary += `, ${health.summary.creativesNotSynced} not synced`;
+          }
+          summary += `\n`;
+        }
+        
+        summary += `\n`;
+      });
 
       return createMCPResponse({
         data: {
@@ -130,6 +256,17 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
             totalBudget,
             totalSpend,
             utilization: totalBudget > 0 ? (totalSpend / totalBudget) * 100 : 0,
+            // Add health and notification summaries
+            healthSummary: {
+              healthy: healthySummary,
+              warning: warningsSummary,
+              critical: criticalSummary,
+              unknown: campaigns.length - healthySummary - warningsSummary - criticalSummary,
+            },
+            notificationSummary: {
+              totalUnread: totalNotifications,
+              campaignsWithNotifications: campaigns.filter(c => (c.notifications?.unread || 0) > 0).length,
+            },
           },
         },
         message: summary,

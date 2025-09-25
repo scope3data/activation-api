@@ -17,7 +17,15 @@ vi.mock("../../services/tactic-bigquery-service.js", () => ({
   })),
 }));
 
+// Mock the sync services
+vi.mock("../../services/creative-sync-service.js");
+vi.mock("../../services/notification-service.js");
+vi.mock("../../services/auth-service.js");
+
 import { TacticBigQueryService } from "../../services/tactic-bigquery-service.js";
+import { CreativeSyncService } from "../../services/creative-sync-service.js";
+import { NotificationService } from "../../services/notification-service.js";
+import { AuthenticationService } from "../../services/auth-service.js";
 import { createTacticTool } from "./create.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -445,6 +453,224 @@ describe("create_tactic Tool", () => {
       expect(description).toContain("brand story");
       expect(description).toContain("signal");
       expect(description).toContain("Requires authentication");
+    });
+  });
+
+  describe("Automatic Creative Sync", () => {
+    let mockCreativeSyncService: any;
+    let mockNotificationService: any;
+    let mockAuthService: any;
+
+    const validArgs = {
+      brandStoryId: "story_123",
+      budgetAllocation: {
+        amount: 1000,
+        currency: "USD",
+        pacing: "even" as const,
+      },
+      campaignId: "campaign_123",
+      cpm: 5.0,
+      mediaProductId: "media_123",
+      name: "Sync Test Tactic",
+    };
+
+    const contextWithAuth = {
+      request: { method: "tools/call", params: {} },
+      server: {} as Record<string, unknown>,
+      session: { scope3ApiKey: "test_api_key" },
+    };
+
+    beforeEach(() => {
+      // Setup sync service mocks
+      mockCreativeSyncService = {
+        onTacticCreated: vi.fn().mockResolvedValue(undefined),
+        setNotificationService: vi.fn(),
+      };
+      mockNotificationService = {};
+      mockAuthService = {};
+
+      vi.mocked(CreativeSyncService).mockImplementation(() => mockCreativeSyncService);
+      vi.mocked(NotificationService).mockImplementation(() => mockNotificationService);
+      vi.mocked(AuthenticationService).mockImplementation(() => mockAuthService);
+
+      // Mock tactic creation with sales agent
+      const mockTactic: Tactic = {
+        brandStoryId: "story_123",
+        budgetAllocation: { amount: 1000, currency: "USD", pacing: "even" },
+        campaignId: "campaign_123",
+        createdAt: new Date("2024-01-01T00:00:00Z"),
+        description: undefined,
+        effectivePricing: { cpm: 5.0, currency: "USD", totalCpm: 5.0 },
+        id: "tactic_sync_123",
+        mediaProduct: {
+          basePricing: { fixedCpm: 5.0, model: "fixed_cpm" as const },
+          createdAt: new Date("2024-01-01T00:00:00Z"),
+          deliveryType: "guaranteed" as const,
+          description: "Test media product",
+          formats: ["display" as const],
+          id: "media_123",
+          inventoryType: "premium" as const,
+          name: "Test Media Product",
+          productId: "prod_123",
+          publisherId: "sales_agent_123", // Sales agent ID available
+          publisherName: "Test Publisher",
+          updatedAt: new Date("2024-01-01T00:00:00Z"),
+        },
+        name: "Sync Test Tactic",
+        signalId: undefined,
+        status: "active",
+        updatedAt: new Date("2024-01-01T00:00:00Z"),
+      };
+
+      mockBigQueryService.createTactic.mockResolvedValue(mockTactic);
+    });
+
+    it("should trigger automatic sync when tactic is created with sales agent", async () => {
+      const result = await createTactic.execute(validArgs, contextWithAuth);
+
+      // Verify tactic creation succeeded
+      expect(result).toContain("✅ **Tactic Created Successfully!**");
+
+      // Verify sync services were initialized
+      expect(CreativeSyncService).toHaveBeenCalledWith(mockAuthService);
+      expect(NotificationService).toHaveBeenCalledWith(mockAuthService);
+      expect(mockCreativeSyncService.setNotificationService).toHaveBeenCalledWith(mockNotificationService);
+
+      // Verify automatic sync was triggered
+      expect(mockCreativeSyncService.onTacticCreated).toHaveBeenCalledWith(
+        "tactic_sync_123",
+        "campaign_123",
+        "sales_agent_123"
+      );
+
+      // Verify response mentions automatic sync
+      expect(result).toContain("Automatic Creative Sync");
+      expect(result).toContain("Campaign creatives are being synced to this tactic's sales agent");
+      expect(result).toContain("Only format-compatible creatives will be synced");
+    });
+
+    it("should handle tactic without sales agent ID", async () => {
+      // Mock tactic creation without sales agent
+      const mockTacticNoAgent: Tactic = {
+        brandStoryId: "story_123",
+        budgetAllocation: { amount: 1000, currency: "USD", pacing: "even" },
+        campaignId: "campaign_123",
+        createdAt: new Date("2024-01-01T00:00:00Z"),
+        description: undefined,
+        effectivePricing: { cpm: 5.0, currency: "USD", totalCpm: 5.0 },
+        id: "tactic_no_agent_123",
+        mediaProduct: {
+          basePricing: { fixedCpm: 5.0, model: "fixed_cpm" as const },
+          createdAt: new Date("2024-01-01T00:00:00Z"),
+          deliveryType: "guaranteed" as const,
+          description: "Test media product",
+          formats: ["display" as const],
+          id: "media_123",
+          inventoryType: "premium" as const,
+          name: "Test Media Product",
+          productId: "prod_123",
+          publisherId: undefined, // No sales agent
+          publisherName: "Test Publisher",
+          updatedAt: new Date("2024-01-01T00:00:00Z"),
+        },
+        name: "No Agent Test Tactic",
+        signalId: undefined,
+        status: "active",
+        updatedAt: new Date("2024-01-01T00:00:00Z"),
+      };
+
+      mockBigQueryService.createTactic.mockResolvedValue(mockTacticNoAgent);
+
+      const result = await createTactic.execute(validArgs, contextWithAuth);
+
+      // Verify tactic creation succeeded
+      expect(result).toContain("✅ **Tactic Created Successfully!**");
+
+      // Should not trigger sync when no sales agent
+      expect(mockCreativeSyncService.onTacticCreated).not.toHaveBeenCalled();
+    });
+
+    it("should handle sync service failures gracefully", async () => {
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      
+      // Mock sync to fail
+      mockCreativeSyncService.onTacticCreated.mockRejectedValue(
+        new Error("Sync service unavailable")
+      );
+
+      const result = await createTactic.execute(validArgs, contextWithAuth);
+
+      // Tactic creation should still succeed even if sync fails
+      expect(result).toContain("✅ **Tactic Created Successfully!**");
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Background creative sync failed for new tactic tactic_sync_123"),
+        expect.any(Error)
+      );
+
+      consoleWarnSpy.mockRestore();
+    });
+
+    it("should handle sync service initialization failures gracefully", async () => {
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      
+      // Mock service initialization to fail
+      vi.mocked(CreativeSyncService).mockImplementation(() => {
+        throw new Error("Service initialization failed");
+      });
+
+      const result = await createTactic.execute(validArgs, contextWithAuth);
+
+      // Tactic creation should still succeed even if sync setup fails
+      expect(result).toContain("✅ **Tactic Created Successfully!**");
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        "Failed to initialize sync services for tactic creation:",
+        expect.any(Error)
+      );
+
+      consoleWarnSpy.mockRestore();
+    });
+
+    it("should use salesAgentId from tactic object when publisherId not available", async () => {
+      // Mock tactic with salesAgentId but no publisherId
+      const mockTacticWithSalesAgent: Tactic = {
+        brandStoryId: "story_123",
+        budgetAllocation: { amount: 1000, currency: "USD", pacing: "even" },
+        campaignId: "campaign_123",
+        createdAt: new Date("2024-01-01T00:00:00Z"),
+        description: undefined,
+        effectivePricing: { cpm: 5.0, currency: "USD", totalCpm: 5.0 },
+        id: "tactic_sales_agent_123",
+        mediaProduct: {
+          basePricing: { fixedCpm: 5.0, model: "fixed_cpm" as const },
+          createdAt: new Date("2024-01-01T00:00:00Z"),
+          deliveryType: "guaranteed" as const,
+          description: "Test media product",
+          formats: ["display" as const],
+          id: "media_123",
+          inventoryType: "premium" as const,
+          name: "Test Media Product",
+          productId: "prod_123",
+          publisherId: undefined, // No publisherId
+          publisherName: "Test Publisher",
+          updatedAt: new Date("2024-01-01T00:00:00Z"),
+        },
+        name: "Sales Agent Test Tactic",
+        signalId: undefined,
+        status: "active",
+        updatedAt: new Date("2024-01-01T00:00:00Z"),
+        salesAgentId: "direct_sales_agent_456", // Sales agent from tactic
+      };
+
+      mockBigQueryService.createTactic.mockResolvedValue(mockTacticWithSalesAgent);
+
+      await createTactic.execute(validArgs, contextWithAuth);
+
+      // Should use salesAgentId from tactic when publisherId not available
+      expect(mockCreativeSyncService.onTacticCreated).toHaveBeenCalledWith(
+        "tactic_sales_agent_123",
+        "campaign_123", 
+        "direct_sales_agent_456"
+      );
     });
   });
 });

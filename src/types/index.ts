@@ -38,6 +38,22 @@ export type {
 // Brand agent specific BrandAgentData (agent response)
 export type { BrandAgentData as BrandAgentResponse } from "./brand-agent.js";
 export * from "./creative.js";
+
+// Notifications types - simplified agent-actionable notifications
+export type {
+  Notification,
+  NotificationData,
+  NotificationEventType,
+  NotificationWebhookPayload,
+  NotificationListResponse,
+  NotificationCreateRequest,
+  NotificationFilter,
+  CreativeSyncStatus,
+  SalesAgentCapabilities,
+  CampaignSyncHealth,
+  CampaignNotificationSummary,
+} from "./notifications.js";
+
 // Events types
 export type {
   OutcomeAggregationResult,

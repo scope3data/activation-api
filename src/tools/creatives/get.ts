@@ -2,6 +2,8 @@ import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
+import { CreativeSyncService } from "../../services/creative-sync-service.js";
+import { AuthenticationService } from "../../services/auth-service.js";
 
 import { createMCPResponse } from "../../utils/error-handling.js";
 
@@ -41,6 +43,33 @@ export const creativeGetTool = (client: Scope3ApiClient) => ({
         throw new Error(
           `Creative not found: Creative with ID ${args.creativeId} not found`,
         );
+      }
+
+      // Get sync status with sales agents
+      const authService = new AuthenticationService();
+      const creativeSyncService = new CreativeSyncService(authService);
+      
+      let syncStatus: any[] = [];
+      let syncStatusSummary = {
+        totalRelevantAgents: 0,
+        synced: 0,
+        approved: 0,
+        rejected: 0,
+        pending: 0,
+      };
+
+      try {
+        syncStatus = await creativeSyncService.getCreativeSyncStatus(args.creativeId);
+        syncStatusSummary = {
+          totalRelevantAgents: syncStatus.length,
+          synced: syncStatus.filter(s => s.status === "synced").length,
+          approved: syncStatus.filter(s => s.approvalStatus === "approved").length,
+          rejected: syncStatus.filter(s => s.approvalStatus === "rejected").length,
+          pending: syncStatus.filter(s => !s.approvalStatus || s.approvalStatus === "pending").length,
+        };
+      } catch (syncError) {
+        console.warn("Failed to fetch sync status:", syncError);
+        // Continue without sync status - not critical for creative display
       }
 
       let summary = `✅ **Creative Details**\n\n`;
@@ -112,12 +141,58 @@ export const creativeGetTool = (client: Scope3ApiClient) => ({
         summary += `**Campaign Assignments:** None\n\n`;
       }
 
+      // Sales agent sync status
+      if (syncStatus.length > 0) {
+        summary += `**Sales Agent Sync Status** (${syncStatus.length} agents):\n`;
+        
+        // Group by status for better display
+        const synced = syncStatus.filter(s => s.status === "synced");
+        const failed = syncStatus.filter(s => s.status === "failed");
+        const pending = syncStatus.filter(s => s.status === "pending");
+
+        if (synced.length > 0) {
+          summary += `• ✅ **Synced** (${synced.length}):\n`;
+          synced.forEach(agent => {
+            const approvalEmoji = agent.approvalStatus === "approved" ? "✅" : 
+                                agent.approvalStatus === "rejected" ? "❌" : "⏳";
+            summary += `  - ${agent.salesAgentName}: ${approvalEmoji} ${agent.approvalStatus || "Pending approval"}\n`;
+            if (agent.approvalStatus === "rejected" && agent.rejectionReason) {
+              summary += `    Reason: ${agent.rejectionReason}\n`;
+            }
+          });
+        }
+
+        if (pending.length > 0) {
+          summary += `• ⏳ **Sync in Progress** (${pending.length}):\n`;
+          pending.forEach(agent => {
+            summary += `  - ${agent.salesAgentName}: Syncing...\n`;
+          });
+        }
+
+        if (failed.length > 0) {
+          summary += `• ❌ **Sync Failed** (${failed.length}):\n`;
+          failed.forEach(agent => {
+            summary += `  - ${agent.salesAgentName}: ${agent.rejectionReason || "Sync failed"}\n`;
+          });
+        }
+
+        // Quick summary
+        summary += `\n**Sync Summary:**\n`;
+        summary += `• Total Sales Agents: ${syncStatusSummary.totalRelevantAgents}\n`;
+        summary += `• ✅ Approved: ${syncStatusSummary.approved}\n`;
+        summary += `• ⏳ Pending: ${syncStatusSummary.pending}\n`;
+        summary += `• ❌ Issues: ${syncStatusSummary.rejected + failed.length}\n\n`;
+      } else {
+        summary += `**Sales Agent Sync Status:** No sync attempts yet\n`;
+        summary += `• Use \`creative/sync_sales_agents\` to sync to compatible sales agents\n\n`;
+      }
+
       // Management options
       summary += `🎯 **Creative Management:**\n`;
       summary += `• Update content: Use creative/update with this creative ID\n`;
       summary += `• Assign to campaigns: Use creative/assign tool\n`;
       summary += `• Approval status: Already shown above in Asset Validation and Publisher Sync sections\n`;
-      summary += `• Sync to publishers: Use creative/sync_publishers\n`;
+      summary += `• Sync to sales agents: Use creative/sync_sales_agents\n`;
       summary += `• Revise creative: Use creative/revise for modifications`;
 
       return createMCPResponse({
@@ -141,6 +216,11 @@ export const creativeGetTool = (client: Scope3ApiClient) => ({
             format: creative.format,
           },
           creative,
+          // Add sync status data
+          syncStatus: {
+            salesAgentSyncStatus: syncStatus,
+            syncStatusSummary: syncStatusSummary,
+          },
           metadata: {
             activeCampaignAssignments:
               creative.campaignAssignments?.filter((a) => a.isActive).length ||
@@ -155,6 +235,12 @@ export const creativeGetTool = (client: Scope3ApiClient) => ({
             hasValidation: !!creative.assetValidation,
             invalidAssetCount:
               creative.assetValidation?.invalidAssets?.length || 0,
+            // Add sync status metadata
+            salesAgentsSynced: syncStatusSummary.synced,
+            salesAgentsApproved: syncStatusSummary.approved,
+            salesAgentsPending: syncStatusSummary.pending,
+            salesAgentsRejected: syncStatusSummary.rejected,
+            hasSyncStatus: syncStatus.length > 0,
           },
           validation: creative.assetValidation,
         },

@@ -105,13 +105,17 @@ Tools for discovering, configuring, and optimizing inventory allocation.
 
 ### Creative Assets
 
-Tools for managing creative assets across campaigns.
+Tools for managing creative assets and syncing them to sales agents.
 
-| Tool              | Purpose                 | Natural Language Examples                             |
-| ----------------- | ----------------------- | ----------------------------------------------------- |
-| `create_creative` | Upload creative assets  | "Add our new video creative for the holiday campaign" |
-| `list_creatives`  | View creative library   | "Show me all video creatives for Nike"                |
-| `update_creative` | Modify creative details | "Update the headline for the summer sale banner"      |
+| Tool                        | Purpose                           | Natural Language Examples                                    |
+| --------------------------- | --------------------------------- | ------------------------------------------------------------ |
+| `create_creative`           | Upload creative assets            | "Add our new video creative for the holiday campaign"        |
+| `list_creatives`            | View creative library             | "Show me all video creatives for Nike"                       |
+| `update_creative`           | Modify creative details           | "Update the headline for the summer sale banner"             |
+| `creative_sync_sales_agents`| Sync creatives to sales agents   | "Sync this creative to relevant sales agents"               |
+| `creative_assign`           | Assign creative to campaign       | "Assign creative cr_123 to campaign camp_456"               |
+
+**Enhanced with Automatic Sync**: Creative operations now automatically trigger sync to sales agents when appropriate, ensuring creatives are distributed and approved before campaigns launch.
 
 ## Integration Patterns
 

@@ -217,22 +217,25 @@ export interface Creative {
 
   lastModifiedDate: string;
 
-  // Publisher approval status
-  publisherApprovals?: Array<{
-    approvalStatus:
-      | "approved"
-      | "auto_approved"
-      | "changes_requested"
-      | "pending"
-      | "rejected";
-    autoApprovalPolicy?: boolean; // Publisher auto-approves standard formats
-    publisherId: string;
-    publisherName: string;
+  // Sales agent sync status (simplified for agent workflows)
+  salesAgentSyncStatus?: Array<{
+    salesAgentId: string;
+    salesAgentName: string;
+    status: "synced" | "failed" | "pending" | "not_applicable";
+    approvalStatus?: "approved" | "rejected" | "pending" | "changes_requested";
+    lastSyncAttempt?: string;
     rejectionReason?: string;
     requestedChanges?: string[];
-    reviewedAt?: string;
-    syncedAt: string;
   }>;
+  
+  // Summary of sync status for quick overview
+  syncStatusSummary?: {
+    totalRelevantAgents: number;  // Agents that can handle this format
+    synced: number;
+    approved: number; 
+    rejected: number;
+    pending: number;
+  };
   // Status and lifecycle
   status:
     | "active"
