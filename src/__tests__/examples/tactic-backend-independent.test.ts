@@ -6,7 +6,7 @@
  */
 
 import { TacticRepositoryTestDouble } from "../../test-doubles/tactic-repository-test-double.js";
-import { testTacticRepositoryContract } from "../contracts/tactic-repository.contract.test.js";
+import { testTacticRepositoryContract } from "../contracts/tactic-repository.contracts.js";
 
 describe("Tactic Repository Contract Validation with Test Double", () => {
   // Share the same test double instance across repository factory and setup

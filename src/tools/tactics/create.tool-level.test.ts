@@ -53,7 +53,9 @@ describe("create_tactic Tool", () => {
     };
 
     // Mock the BigQuery service
-    mockBigQueryService = new MockedTacticBigQueryService();
+    mockBigQueryService = {
+      createTactic: vi.fn(),
+    };
     MockedTacticBigQueryService.mockImplementation(() => mockBigQueryService);
 
     mockContext = {

@@ -17,8 +17,11 @@ export class CampaignBigQueryService {
     projectId: string = "bok-playground",
     dataset: string = "agenticapi",
     agentTableRef: string = "swift-catfish-337215.postgres_datastream.public_agent",
+    bigquery?: BigQuery, // Optional injection point for cached BigQuery
   ) {
-    this.bigquery = new BigQuery({ location: "us-central1", projectId });
+    // Use injected BigQuery instance or create a new one
+    this.bigquery =
+      bigquery || new BigQuery({ location: "us-central1", projectId });
     this.projectId = projectId;
     this.dataset = dataset;
     this.agentTableRef = agentTableRef;

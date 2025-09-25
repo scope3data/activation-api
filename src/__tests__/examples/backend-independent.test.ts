@@ -9,8 +9,8 @@ import type { Campaign } from "../../contracts/campaign-repository.js";
 
 import { CampaignRepositoryTestDouble } from "../../test-doubles/campaign-repository-test-double.js";
 import { CreativeRepositoryTestDouble } from "../../test-doubles/creative-repository-test-double.js";
-import { testCampaignRepositoryContract } from "../contracts/campaign-repository.contract.test.js";
-import { testCreativeRepositoryContract } from "../contracts/creative-repository.contract.test.js";
+import { testCampaignRepositoryContract } from "../contracts/campaign-repository.contracts.js";
+import { testCreativeRepositoryContract } from "../contracts/creative-repository.contracts.js";
 
 // Example: Testing with Test Doubles (Fast, No External Dependencies)
 describe("Campaign Repository - Test Double Implementation", () => {
