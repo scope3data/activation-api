@@ -9,6 +9,7 @@ import type { MCPToolExecuteContext } from "../../types/mcp.js";
 import { BigQueryService } from "../../services/bigquery-service.js";
 import { MCPClientService } from "../../services/mcp-client-service.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
+import { createLogger } from "../../utils/logging.js";
 
 // Initialize services (these could be injected via dependency injection in a more sophisticated setup)
 const bigQueryService = new BigQueryService();
@@ -16,15 +17,15 @@ const mcpClientService = new MCPClientService();
 
 export const getProductsTool = () => ({
   annotations: {
-    category: "Tactics",
+    category: "Media Products",
     dangerLevel: "low",
     openWorldHint: true,
     readOnlyHint: true,
-    title: "Discover Products",
+    title: "Media Product List",
   },
 
   description:
-    "Discover available advertising products from multiple sales agents based on campaign requirements. This tool queries BigQuery for active sales agents and then calls their get_products endpoints to aggregate results. Follows the Ad Context Protocol (ADCP) specification.",
+    "Discover available media advertising products from all active sales agents based on campaign requirements. This tool queries all configured sales agents and calls their get_products endpoints to aggregate inventory results. Follows the Ad Context Protocol (ADCP) specification.",
 
   execute: async (
     args: {
@@ -41,9 +42,10 @@ export const getProductsTool = () => ({
       publisher_ids?: string[];
       standard_formats_only?: boolean;
     },
-    _context: MCPToolExecuteContext,
+    context: MCPToolExecuteContext,
   ): Promise<string> => {
-    const startTime = Date.now();
+    const logger = createLogger("media_product_list", context);
+    const { startTime } = logger.logToolStart(args);
 
     try {
       // Validate required parameters
@@ -76,6 +78,9 @@ export const getProductsTool = () => ({
       });
 
       // Get sales agents from BigQuery
+      logger.logInfo("Fetching sales agents", {
+        customer_id: args.customer_id,
+      });
       let salesAgents;
       try {
         if (args.customer_id) {
@@ -85,7 +90,12 @@ export const getProductsTool = () => ({
         } else {
           salesAgents = await bigQueryService.getMCPSalesAgents();
         }
+        logger.logInfo("Sales agents fetched", { count: salesAgents.length });
       } catch (error) {
+        logger.logToolError(error, {
+          context: "fetching_sales_agents",
+          startTime,
+        });
         throw new Error(
           `Failed to query sales agents from BigQuery: ${error instanceof Error ? error.message : String(error)}`,
         );
@@ -112,14 +122,18 @@ export const getProductsTool = () => ({
       }
 
       // Call get_products on all sales agents concurrently
-      console.log(
-        `Querying ${salesAgents.length} sales agents for products...`,
-      );
+      logger.logInfo("Querying sales agents for products", {
+        agent_count: salesAgents.length,
+        promoted_offering: args.promoted_offering,
+      });
       const { failed, successful } =
         await mcpClientService.callGetProductsMultiple(
           salesAgents,
           adcpRequest,
         );
+
+      // Log detailed results
+      logger.logSalesAgentResults({ failed, successful });
 
       // Aggregate products from all successful responses
       const allProducts = successful.flatMap((response) =>
@@ -218,6 +232,18 @@ export const getProductsTool = () => ({
       }
 
       summary += `• **Query Duration:** ${duration}ms\n\n`;
+
+      // Log successful completion
+      logger.logToolSuccess({
+        metadata: {
+          failed_agents: failed.length,
+          successful_agents: successful.length,
+          total_products: allProducts.length,
+          unique_publishers: uniquePublishers,
+        },
+        resultSummary: `Found ${allProducts.length} products from ${successful.length}/${salesAgents.length} agents`,
+        startTime,
+      });
 
       // Group products by sales agent for display
       if (successful.length > 0) {
@@ -320,6 +346,7 @@ export const getProductsTool = () => ({
         success: true,
       });
     } catch (error) {
+      logger.logToolError(error, { context: "product_discovery", startTime });
       throw new Error(
         `Failed to discover products from sales agents: ${error instanceof Error ? error.message : String(error)}`,
       );
@@ -329,7 +356,7 @@ export const getProductsTool = () => ({
     }
   },
 
-  name: "product_list",
+  name: "media_product_list",
   parameters: z.object({
     brief: z
       .string()

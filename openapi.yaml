@@ -2377,110 +2377,6 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /tactic-discover-products:
-    post:
-      description: Discover available publisher media products based on campaign requirements using
-        multi-agent ADCP protocol. Returns raw publisher inventory from multiple sales agents in
-        parallel before applying any targeting strategies. Requires authentication and configured
-        sales agents.
-      operationId: tactic_discover_products
-      summary: Discover Publisher Products
-      tags:
-        - Tactics
-      x-llm-hints:
-        - Use this tool when user wants to discover available publisher media products based on
-          campaign requirements using multi-agent adcp protocol
-        - Call this when user asks 'show me', 'list', or 'what are my'
-      requestBody:
-        content:
-          application/json:
-            examples:
-              basic:
-                summary: Basic example
-                value: {}
-            schema:
-              properties:
-                campaignBrief:
-                  type: string
-                  description: Natural language description of campaign goals to help match relevant inventory
-                campaignId:
-                  type: string
-                  description: Campaign ID to enable tactic seed data cooperative insights
-                deliveryType:
-                  type: string
-                  description: Filter by delivery guarantee type
-                formats:
-                  items:
-                    type: string
-                  type: array
-                  description: Creative formats to filter by
-                inventoryType:
-                  type: string
-                  description: Type of inventory to search for
-                maxCpm:
-                  type: number
-                  description: Maximum CPM price filter
-                minCpm:
-                  type: number
-                  description: Minimum CPM price filter
-                publisherIds:
-                  items:
-                    type: string
-                  type: array
-                  description: Specific publisher IDs to search within
-                salesAgents:
-                  items:
-                    type: string
-                  type: array
-                  description: Specific sales agent IDs to query. If not provided, queries all available sales agents
-                supportedSignals:
-                  items:
-                    type: string
-                  type: array
-                  description: Filter products by signal support
-              type: object
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
   /reporting-export-data:
     post:
       description: Export raw performance data for BI/analytics systems in structured format. Supports
@@ -3000,19 +2896,19 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /product-list:
+  /media-product-list:
     post:
-      description: Discover available advertising products from multiple sales agents based on campaign
-        requirements. This tool queries BigQuery for active sales agents and then calls their
-        get_products endpoints to aggregate results. Follows the Ad Context Protocol (ADCP)
-        specification.
-      operationId: product_list
-      summary: Discover Products
+      description: Discover available media advertising products from all active sales agents based on
+        campaign requirements. This tool queries all configured sales agents and calls their
+        get_products endpoints to aggregate inventory results. Follows the Ad Context Protocol
+        (ADCP) specification.
+      operationId: media_product_list
+      summary: Media Product List
       tags:
-        - Tactics
+        - Media Products
       x-llm-hints:
-        - Use this tool when user wants to discover available advertising products from multiple
-          sales agents based on campaign requirements
+        - Use this tool when user wants to discover available media advertising products from all
+          active sales agents based on campaign requirements
         - Call this when user asks 'show me', 'list', or 'what are my'
       requestBody:
         content:
