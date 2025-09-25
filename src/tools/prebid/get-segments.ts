@@ -21,9 +21,6 @@ export const getPrebidSegmentsTool = () => ({
   description:
     "Get AXE inclusion segments for a publisher organization ID. Used by prebid integration to determine which buyer campaigns are targeting this publisher's inventory. Returns segment IDs and maximum CPM for auction prioritization.",
 
-  inputSchema: GetPrebidSegmentsSchema,
-  name: "get_prebid_segments",
-
   execute: async (
     args: unknown,
     _context: MCPToolExecuteContext,
@@ -90,4 +87,7 @@ export const getPrebidSegmentsTool = () => ({
       );
     }
   },
+  inputSchema: GetPrebidSegmentsSchema,
+
+  name: "get_prebid_segments",
 });

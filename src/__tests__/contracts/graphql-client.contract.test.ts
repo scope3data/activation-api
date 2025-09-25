@@ -1,5 +1,6 @@
-import { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { BrandAgentCampaign, Tactic } from "../../types/index.js";
+
+import { Scope3ApiClient } from "../../client/scope3-client.js";
 
 /**
  * GraphQL Client Contract Tests
@@ -280,14 +281,14 @@ describe("GraphQL Client Contract Validation", () => {
     async getTactic(
       _apiKey: string,
       _tacticId: string,
-    ): Promise<Tactic | null> {
+    ): Promise<null | Tactic> {
       throw new Error("Field 'tactic' doesn't exist on type 'Query'");
     }
 
     async listBrandAgentCampaigns(
       apiKey: string,
       brandAgentId: string,
-      status?: string,
+      _status?: string,
     ): Promise<BrandAgentCampaign[]> {
       return [
         {

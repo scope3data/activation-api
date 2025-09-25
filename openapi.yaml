@@ -5359,83 +5359,6 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /campaign-validate-brief:
-    post:
-      description: Validate a campaign brief against Ad Context Protocol standards using AI evaluation.
-        Returns a quality score (0-100), identifies missing elements, and provides specific
-        suggestions for improvement. Used to ensure briefs meet quality standards before campaign
-        creation.
-      operationId: campaign_validate_brief
-      summary: Validate Campaign Brief
-      tags:
-        - Campaigns
-      x-llm-hints:
-        - Use this tool when user wants to validate a campaign brief against ad context protocol
-          standards using ai evaluation
-      requestBody:
-        content:
-          application/json:
-            examples:
-              basic:
-                summary: Basic example
-                value: {}
-            schema:
-              properties:
-                brandAgentId:
-                  type: string
-                  description: Optional brand agent ID for context-aware validation
-                brief:
-                  type: string
-                  description: The campaign brief text to validate against Ad Context Protocol standards
-                threshold:
-                  type: string
-                  description: "Minimum quality score required to pass validation (default: 70)"
-              required:
-                - brief
-                - threshold
-              type: object
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
   /tactic-update:
     post:
       description: Update an existing tactic's configuration including name, description, status, budget
@@ -5499,6 +5422,83 @@ paths:
                   description: ID of the tactic to update
               required:
                 - tacticId
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /campaign-validate-brief:
+    post:
+      description: Validate a campaign brief against Ad Context Protocol standards using AI evaluation.
+        Returns a quality score (0-100), identifies missing elements, and provides specific
+        suggestions for improvement. Used to ensure briefs meet quality standards before campaign
+        creation.
+      operationId: campaign_validate_brief
+      summary: Validate Campaign Brief
+      tags:
+        - Campaigns
+      x-llm-hints:
+        - Use this tool when user wants to validate a campaign brief against ad context protocol
+          standards using ai evaluation
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                brandAgentId:
+                  type: string
+                  description: Optional brand agent ID for context-aware validation
+                brief:
+                  type: string
+                  description: The campaign brief text to validate against Ad Context Protocol standards
+                threshold:
+                  type: string
+                  description: "Minimum quality score required to pass validation (default: 70)"
+              required:
+                - brief
+                - threshold
               type: object
         required: true
       responses:

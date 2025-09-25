@@ -723,7 +723,11 @@ export class Scope3ApiClient {
     const { assetIds, htmlSnippet, javascriptTag, productUrl, vastTag } =
       (input.content as Record<string, unknown>) || {};
     const hasContent =
-      htmlSnippet || javascriptTag || vastTag || (Array.isArray(assetIds) && assetIds.length > 0) || productUrl;
+      htmlSnippet ||
+      javascriptTag ||
+      vastTag ||
+      (Array.isArray(assetIds) && assetIds.length > 0) ||
+      productUrl;
 
     if (!hasContent) {
       throw new Error("At least one content source required");
@@ -1942,7 +1946,8 @@ export class Scope3ApiClient {
           `Product ${tacticRecord.media_product_id}`,
         productId: tacticRecord.media_product_id,
         publisherId: "unknown",
-        publisherName: (tacticRecord.publisher_name as string) || "Unknown Publisher",
+        publisherName:
+          (tacticRecord.publisher_name as string) || "Unknown Publisher",
         updatedAt: new Date(),
       },
       name: tacticRecord.name,

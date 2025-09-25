@@ -21,6 +21,7 @@ vi.mock("../../services/tactic-bigquery-service.js", () => ({
 
 import { TacticBigQueryService } from "../../services/tactic-bigquery-service.js";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const MockedTacticBigQueryService = TacticBigQueryService as any;
 
 describe("get_prebid_segments Tool", () => {

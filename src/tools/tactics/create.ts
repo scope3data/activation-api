@@ -35,9 +35,6 @@ export const createTacticTool = (_client: Scope3ApiClient) => ({
   description:
     "Create a new tactic by combining a publisher media product with a brand story and signal. Simplified targeting approach focusing on the core components: media product + brand story + signal configuration. Includes budget allocation and effective pricing. Requires authentication.",
 
-  inputSchema: CreateTacticSchema,
-  name: "create_tactic",
-
   execute: async (
     args: unknown,
     context: MCPToolExecuteContext,
@@ -225,4 +222,7 @@ export const createTacticTool = (_client: Scope3ApiClient) => ({
       );
     }
   },
+  inputSchema: CreateTacticSchema,
+
+  name: "create_tactic",
 });

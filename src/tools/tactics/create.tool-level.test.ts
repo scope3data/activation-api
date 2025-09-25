@@ -20,6 +20,7 @@ vi.mock("../../services/tactic-bigquery-service.js", () => ({
 import { TacticBigQueryService } from "../../services/tactic-bigquery-service.js";
 import { createTacticTool } from "./create.js";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const MockedTacticBigQueryService = TacticBigQueryService as any;
 
 type CreateTacticTool = {
@@ -63,6 +64,7 @@ describe("create_tactic Tool", () => {
       },
     } as MCPToolExecuteContext;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     createTactic = createTacticTool(mockClient as any);
   });
 
@@ -71,15 +73,15 @@ describe("create_tactic Tool", () => {
       // Remove API key from context and environment
       mockContext.session = undefined;
       delete process.env.SCOPE3_API_KEY;
-      
+
       await expect(
         createTactic.execute(
           {
             brandStoryId: "story_123",
-            budgetAllocation: { 
+            budgetAllocation: {
               amount: 1000,
               currency: "USD",
-              pacing: "even"
+              pacing: "even",
             },
             campaignId: "campaign_123",
             cpm: 5.0,
@@ -130,10 +132,10 @@ describe("create_tactic Tool", () => {
       const result = await createTactic.execute(
         {
           brandStoryId: "story_123",
-          budgetAllocation: { 
+          budgetAllocation: {
             amount: 1000,
             currency: "USD",
-            pacing: "even"
+            pacing: "even",
           },
           campaignId: "campaign_123",
           cpm: 5.0,
@@ -188,10 +190,10 @@ describe("create_tactic Tool", () => {
       const result = await createTactic.execute(
         {
           brandStoryId: "story_123",
-          budgetAllocation: { 
+          budgetAllocation: {
             amount: 1000,
             currency: "USD",
-            pacing: "even"
+            pacing: "even",
           },
           campaignId: "campaign_123",
           cpm: 5.0,
@@ -214,10 +216,10 @@ describe("create_tactic Tool", () => {
   describe("Tactic Creation", () => {
     const _validArgs = {
       brandStoryId: "story_123",
-      budgetAllocation: { 
+      budgetAllocation: {
         amount: 1000,
         currency: "USD",
-        pacing: "even"
+        pacing: "even",
       },
       campaignId: "campaign_123",
       cpm: 5.0,
@@ -267,10 +269,10 @@ describe("create_tactic Tool", () => {
       const result = await createTactic.execute(
         {
           brandStoryId: "story_123",
-          budgetAllocation: { 
+          budgetAllocation: {
             amount: 1000,
             currency: "USD",
-            pacing: "even"
+            pacing: "even",
           },
           campaignId: "campaign_123",
           cpm: 5.0,
@@ -343,10 +345,10 @@ describe("create_tactic Tool", () => {
   describe("BigQuery Integration", () => {
     const validArgs = {
       brandStoryId: "story_123",
-      budgetAllocation: { 
+      budgetAllocation: {
         amount: 1000,
         currency: "USD",
-        pacing: "even"
+        pacing: "even",
       },
       campaignId: "campaign_123",
       cpm: 5.0,
@@ -436,6 +438,7 @@ describe("create_tactic Tool", () => {
     });
 
     it("should have comprehensive description", () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const description = (createTactic as any).description;
       expect(description).toContain("Create a new tactic");
       expect(description).toContain("media product");
