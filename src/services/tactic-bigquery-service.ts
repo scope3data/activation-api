@@ -9,6 +9,10 @@ import type {
   TacticUpdateInput,
 } from "../types/tactics.js";
 
+import {
+  AdCPMediaBuyService,
+  type MediaBuyResult,
+} from "./adcp-media-buy-service.js";
 import { AuthenticationService } from "./auth-service.js";
 
 export interface PrebidSegment {
@@ -29,7 +33,14 @@ export interface TacticBigQueryRecord extends Record<string, unknown> {
   created_at: string;
   customer_id: number;
   description?: string;
+  error_message?: string;
   id: string;
+  media_buy_approved_at?: string;
+  media_buy_id?: string;
+  media_buy_request?: Record<string, unknown>;
+  media_buy_response?: Record<string, unknown>;
+  media_buy_status?: string;
+  media_buy_submitted_at?: string;
   media_product_id: string;
   name: string;
   sales_agent_id: string;
@@ -38,6 +49,8 @@ export interface TacticBigQueryRecord extends Record<string, unknown> {
   status: string;
   total_cpm: number;
   updated_at: string;
+  webhook_secret?: string;
+  webhook_url?: string;
 }
 
 export class TacticBigQueryService {
@@ -57,7 +70,7 @@ export class TacticBigQueryService {
   }
 
   /**
-   * Create a new tactic in BigQuery
+   * Create a new tactic in BigQuery and execute media buy
    */
   async createTactic(data: TacticInput, apiToken?: string): Promise<Tactic> {
     const customerId = await this.resolveCustomerId(apiToken);
@@ -65,6 +78,7 @@ export class TacticBigQueryService {
     // Generate tactic ID and calculate pricing
     const tacticId = `tactic_${Date.now()}_${Math.random().toString(36).substring(2)}`;
     const effectivePricing = this.calculateEffectivePricing(data);
+    const axeSegment = this.generateAxeSegment(tacticId);
 
     // Mock media product data (since we can't get it from GraphQL)
     const mediaProduct = this.getMockMediaProduct(data.mediaProductId);
@@ -72,21 +86,22 @@ export class TacticBigQueryService {
     // Ensure BudgetAllocation type is properly recognized by TypeScript/ESLint
     const budgetAllocation: BudgetAllocation = data.budgetAllocation;
 
+    // 1. Create tactic record with draft status and pending media buy
     const query = `
       INSERT INTO \`${this.projectId}.${this.dataset}.tactics\`
       (id, campaign_id, sales_agent_id, media_product_id, name, description, 
        budget_amount, budget_currency, budget_daily_cap, budget_pacing, budget_percentage,
        cpm, total_cpm, signal_cost, axe_include_segment, brand_story_id, signal_id, 
-       status, customer_id)
+       status, media_buy_status, customer_id)
       VALUES (@id, @campaignId, @salesAgentId, @mediaProductId, @name, @description,
               @budgetAmount, @budgetCurrency, @budgetDailyCap, @budgetPacing, @budgetPercentage,
               @cpm, @totalCpm, @signalCost, @axeIncludeSegment, @brandStoryId, @signalId,
-              @status, @customerId)
+              @status, @mediaBuyStatus, @customerId)
     `;
 
     await this.bigquery.query({
       params: {
-        axeIncludeSegment: this.generateAxeSegment(tacticId),
+        axeIncludeSegment: axeSegment,
         brandStoryId: data.brandStoryId || null,
         budgetAmount: budgetAllocation.amount,
         budgetCurrency: budgetAllocation.currency || "USD",
@@ -98,12 +113,13 @@ export class TacticBigQueryService {
         customerId,
         description: data.description || null,
         id: tacticId,
+        mediaBuyStatus: "pending",
         mediaProductId: data.mediaProductId,
         name: data.name,
         salesAgentId: mediaProduct.publisherId,
         signalCost: effectivePricing.signalCost || null,
         signalId: data.signalId || null,
-        status: "active", // Set to active by default
+        status: "draft", // Start as draft, will be updated after media buy
         totalCpm: effectivePricing.totalCpm,
       },
       query,
@@ -117,6 +133,107 @@ export class TacticBigQueryService {
         totalCpm: "FLOAT64",
       },
     });
+
+    // 2. Create tactic record for media buy service
+    const tacticRecord: TacticBigQueryRecord = {
+      axe_include_segment: axeSegment,
+      brand_story_id: data.brandStoryId,
+      budget_amount: budgetAllocation.amount,
+      budget_currency: budgetAllocation.currency || "USD",
+      budget_daily_cap: budgetAllocation.dailyCap,
+      budget_pacing: budgetAllocation.pacing || "even",
+      budget_percentage: budgetAllocation.percentage,
+      campaign_id: data.campaignId,
+      cpm: effectivePricing.cpm,
+      created_at: new Date().toISOString(),
+      customer_id: customerId,
+      description: data.description,
+      id: tacticId,
+      media_buy_status: "pending",
+      media_product_id: data.mediaProductId,
+      name: data.name,
+      sales_agent_id: mediaProduct.publisherId,
+      signal_cost: effectivePricing.signalCost,
+      signal_id: data.signalId,
+      status: "draft",
+      total_cpm: effectivePricing.totalCpm,
+      updated_at: new Date().toISOString(),
+    };
+
+    // 3. Attempt to execute media buy
+    let finalStatus:
+      | "active"
+      | "completed"
+      | "draft"
+      | "failed"
+      | "paused"
+      | "pending_approval" = "draft";
+    let mediaBuyResult: MediaBuyResult | null = null;
+
+    try {
+      const mediaBuyService = new AdCPMediaBuyService();
+
+      // Find sales agent for this publisher/media product
+      const salesAgent = await mediaBuyService.findSalesAgentForPublisher(
+        mediaProduct.publisherId,
+        customerId,
+      );
+
+      if (salesAgent) {
+        // Execute media buy
+        mediaBuyResult = await mediaBuyService.executeMediaBuy(
+          tacticRecord,
+          salesAgent,
+          data.description || `Campaign for ${data.name}`,
+          customerId,
+        );
+
+        // Update tactic with media buy results
+        await this.updateTacticMediaBuy(tacticId, {
+          error_message: mediaBuyResult.error_message,
+          media_buy_id: mediaBuyResult.media_buy_id,
+          media_buy_request: mediaBuyResult.request as unknown as Record<
+            string,
+            unknown
+          >,
+          media_buy_response: mediaBuyResult.response as unknown as Record<
+            string,
+            unknown
+          >,
+          media_buy_status: mediaBuyResult.status,
+          media_buy_submitted_at: new Date().toISOString(),
+          webhook_secret: mediaBuyResult.webhook_secret,
+          webhook_url: mediaBuyResult.webhook_url,
+        });
+
+        // Update final status based on media buy result
+        finalStatus =
+          mediaBuyResult.status === "active" ? "active" : "pending_approval";
+        if (mediaBuyResult.status === "failed") {
+          finalStatus = "failed";
+        }
+      } else {
+        // No sales agent available
+        await this.updateTacticMediaBuy(tacticId, {
+          error_message: "No sales agent available for this publisher",
+          media_buy_status: "failed",
+        });
+        finalStatus = "failed";
+      }
+    } catch (error) {
+      // Handle media buy execution errors
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
+      await this.updateTacticMediaBuy(tacticId, {
+        error_message: errorMessage,
+        media_buy_status: "failed",
+      });
+      finalStatus = "failed";
+    }
+
+    // 4. Update final tactic status (it will always be different from initial "draft")
+    await this.updateTacticStatus(tacticId, finalStatus);
 
     // Return full tactic object matching expected interface
     return {
@@ -136,7 +253,7 @@ export class TacticBigQueryService {
       mediaProduct,
       name: data.name,
       signalId: data.signalId,
-      status: "active",
+      status: finalStatus,
       targeting: {
         inheritFromCampaign: !data.signalId,
         overrides: undefined,
@@ -389,6 +506,80 @@ export class TacticBigQueryService {
         signalCost: "FLOAT64",
         totalCpm: "FLOAT64",
       },
+    });
+  }
+
+  /**
+   * Update tactic media buy information
+   */
+  async updateTacticMediaBuy(
+    tacticId: string,
+    updates: {
+      error_message?: string;
+      media_buy_approved_at?: string;
+      media_buy_id?: string;
+      media_buy_request?: Record<string, unknown>;
+      media_buy_response?: Record<string, unknown>;
+      media_buy_status?: string;
+      media_buy_submitted_at?: string;
+      webhook_secret?: string;
+      webhook_url?: string;
+    },
+  ): Promise<void> {
+    const query = `
+      UPDATE \`${this.projectId}.${this.dataset}.tactics\`
+      SET 
+        media_buy_id = COALESCE(@mediaBuyId, media_buy_id),
+        media_buy_status = COALESCE(@mediaBuyStatus, media_buy_status),
+        media_buy_request = COALESCE(@mediaBuyRequest, media_buy_request),
+        media_buy_response = COALESCE(@mediaBuyResponse, media_buy_response),
+        media_buy_submitted_at = COALESCE(@mediaBuySubmittedAt, media_buy_submitted_at),
+        media_buy_approved_at = COALESCE(@mediaBuyApprovedAt, media_buy_approved_at),
+        webhook_url = COALESCE(@webhookUrl, webhook_url),
+        webhook_secret = COALESCE(@webhookSecret, webhook_secret),
+        error_message = COALESCE(@errorMessage, error_message),
+        updated_at = CURRENT_TIMESTAMP()
+      WHERE id = @tacticId
+    `;
+
+    await this.bigquery.query({
+      params: {
+        errorMessage: updates.error_message || null,
+        mediaBuyApprovedAt: updates.media_buy_approved_at || null,
+        mediaBuyId: updates.media_buy_id || null,
+        mediaBuyRequest: updates.media_buy_request
+          ? JSON.stringify(updates.media_buy_request)
+          : null,
+        mediaBuyResponse: updates.media_buy_response
+          ? JSON.stringify(updates.media_buy_response)
+          : null,
+        mediaBuyStatus: updates.media_buy_status || null,
+        mediaBuySubmittedAt: updates.media_buy_submitted_at || null,
+        tacticId,
+        webhookSecret: updates.webhook_secret || null,
+        webhookUrl: updates.webhook_url || null,
+      },
+      query,
+      types: {
+        mediaBuyRequest: "JSON",
+        mediaBuyResponse: "JSON",
+      },
+    });
+  }
+
+  /**
+   * Update tactic status
+   */
+  async updateTacticStatus(tacticId: string, status: string): Promise<void> {
+    const query = `
+      UPDATE \`${this.projectId}.${this.dataset}.tactics\`
+      SET status = @status, updated_at = CURRENT_TIMESTAMP()
+      WHERE id = @tacticId
+    `;
+
+    await this.bigquery.query({
+      params: { status, tacticId },
+      query,
     });
   }
 

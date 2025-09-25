@@ -189,7 +189,9 @@ export const listTacticsTool = (_client: Scope3ApiClient) => ({
             active: "🟢",
             completed: "✅",
             draft: "⚪",
+            failed: "🔴",
             paused: "🟡",
+            pending_approval: "🟠",
           }[tactic.status] || "❓";
 
         summary += `### ${index + 1}. ${statusIcon} **${tactic.name}**\n`;
