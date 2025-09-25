@@ -195,10 +195,10 @@ export class TacticBigQueryService {
         );
 
         if (sanitizedBrief) {
-          sanitizedBrief += `\n\nAllocation: ${formattedAllocation}`;
+          sanitizedBrief += `\n\nTarget allocation per product: ${formattedAllocation}`;
         } else {
           // Fallback if no campaign brief available
-          sanitizedBrief = `Tactic for ${data.name}\n\nAllocation: ${formattedAllocation}`;
+          sanitizedBrief = `Tactic for ${data.name}\n\nTarget allocation per product: ${formattedAllocation}`;
         }
 
         // Execute media buy with sanitized brief plus allocation context

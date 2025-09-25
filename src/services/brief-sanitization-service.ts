@@ -124,7 +124,7 @@ export class BriefSanitizationService {
           allocationAmount,
           currency,
         );
-        sanitizedBrief += `\n\nAllocation: ${formattedAllocation}`;
+        sanitizedBrief += `\n\nTarget allocation per product: ${formattedAllocation}`;
       }
 
       // Determine confidence and context preservation

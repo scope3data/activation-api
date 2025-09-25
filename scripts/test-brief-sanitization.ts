@@ -100,7 +100,7 @@ async function testBriefSanitization() {
   for (const test of allocationTests) {
     const formatted = sanitizer.formatAllocation(test.amount, test.currency);
     console.log(
-      `💵 ${test.currency} ${test.amount.toLocaleString()}: Allocation: ${formatted}`,
+      `💵 ${test.currency} ${test.amount.toLocaleString()}: Target allocation per product: ${formatted}`,
     );
     console.log();
   }
