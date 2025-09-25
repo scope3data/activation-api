@@ -798,6 +798,10 @@ paths:
                 brandAgentId:
                   type: string
                   description: ID of the brand agent that will own this campaign
+                briefValidationThreshold:
+                  type: string
+                  description: "Minimum quality score required for brief validation (0-100, default: 70). Campaign
+                    creation will fail if brief scores below this threshold."
                 budget:
                   properties:
                     currency:
@@ -831,17 +835,13 @@ paths:
                 prompt:
                   type: string
                   description: Natural language description of campaign objectives, targeting, and strategy
-                startDate:
-                  type: string
-                  description: Campaign start date in UTC (ISO 8601 format, e.g., '2024-01-01T00:00:00Z')
                 skipBriefValidation:
                   type: string
                   description: "Skip AI-powered brief validation (default: false). When false, the campaign brief will
                     be validated against Ad Context Protocol standards."
-                briefValidationThreshold:
+                startDate:
                   type: string
-                  description: "Minimum quality score required for brief validation (0-100, default: 70). Campaign
-                    creation will fail if brief scores below this threshold."
+                  description: Campaign start date in UTC (ISO 8601 format, e.g., '2024-01-01T00:00:00Z')
               required:
                 - brandAgentId
                 - budget
@@ -5226,15 +5226,15 @@ paths:
                 value: {}
             schema:
               properties:
+                brandAgentId:
+                  type: string
+                  description: Optional brand agent ID for context-aware validation
                 brief:
                   type: string
                   description: The campaign brief text to validate against Ad Context Protocol standards
                 threshold:
                   type: string
                   description: "Minimum quality score required to pass validation (default: 70)"
-                brandAgentId:
-                  type: string
-                  description: Optional brand agent ID for context-aware validation
               required:
                 - brief
               type: object
