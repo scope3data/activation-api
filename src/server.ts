@@ -4,6 +4,7 @@ import http from "http";
 import type { FastMCPSessionAuth } from "./types/mcp.js";
 
 import { Scope3ApiClient } from "./client/scope3-client.js";
+import { posthogService } from "./services/posthog-service.js";
 import { registerTools } from "./tools/index.js";
 import { config } from "./utils/config.js";
 
@@ -59,6 +60,12 @@ const server = new FastMCP<FastMCPSessionAuth>({
         );
       }
 
+      // Track successful authentication
+      posthogService.trackAuth({
+        apiKeyPrefix: `${apiKey.substring(0, 6)}...`,
+        event: "auth_success",
+      });
+
       return {
         scope3ApiKey: apiKey,
       };
@@ -69,6 +76,13 @@ const server = new FastMCP<FastMCPSessionAuth>({
           error instanceof Error ? error.message : String(error),
         );
       }
+
+      // Track authentication failure
+      posthogService.trackAuth({
+        errorMessage: error instanceof Error ? error.message : String(error),
+        event: "auth_failure",
+      });
+
       throw error;
     }
   },
@@ -103,4 +117,17 @@ if (process.env.NODE_ENV !== "test") {
   );
   console.log(`Endpoint: http://0.0.0.0:${port}${config.endpoint}`);
   console.log(`Health check: http://0.0.0.0:${port}/health`);
+
+  // Graceful shutdown handler to flush PostHog events
+  process.on("SIGTERM", async () => {
+    console.log("SIGTERM received, shutting down gracefully...");
+    await posthogService.shutdown();
+    process.exit(0);
+  });
+
+  process.on("SIGINT", async () => {
+    console.log("SIGINT received, shutting down gracefully...");
+    await posthogService.shutdown();
+    process.exit(0);
+  });
 }

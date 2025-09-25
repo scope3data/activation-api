@@ -80,7 +80,6 @@ import { updateCustomSignalTool } from "./signals/update.js";
 // Tactics
 import { createTacticTool } from "./tactics/create.js";
 import { deleteTacticTool } from "./tactics/delete.js";
-import { discoverPublisherProductsTool } from "./tactics/discover-products.js";
 import { getTacticTool } from "./tactics/get.js";
 import { listTacticsTool } from "./tactics/list.js";
 import { updateTacticTool } from "./tactics/update.js";
@@ -138,7 +137,6 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(listTacticsTool(client)); // tactic/list
   server.addTool(updateTacticTool(client)); // tactic/update
   server.addTool(deleteTacticTool(client)); // tactic/delete
-  server.addTool(discoverPublisherProductsTool(client)); // tactic/discover_products
 
   // Prebid Integration
   server.addTool(getPrebidSegmentsTool()); // prebid/get-segments
@@ -229,7 +227,6 @@ export {
   deleteCampaignTool,
   deleteCustomSignalTool,
   deleteTacticTool,
-  discoverPublisherProductsTool,
   exportDataTool,
   getBrandAgentTool,
   getCampaignSummaryTool,

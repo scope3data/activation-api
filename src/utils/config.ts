@@ -8,6 +8,17 @@ export const config: ServerConfig = {
 };
 
 /**
+ * PostHog analytics configuration
+ */
+export const PostHogConfig = {
+  apiKey:
+    process.env.POSTHOG_API_KEY ||
+    "phc_LOrnbPcOPcPQvlhjwzk0TMdx8HaUbUvh2U2GkQBQmTv",
+  enabled: process.env.POSTHOG_API_KEY !== undefined,
+  host: process.env.POSTHOG_HOST || "https://us.i.posthog.com",
+} as const;
+
+/**
  * BigQuery service configuration constants
  */
 export const BigQueryConfig = {
