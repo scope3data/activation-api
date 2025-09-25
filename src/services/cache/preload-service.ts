@@ -2,11 +2,11 @@ import type { AuthenticationService } from "../auth-service.js";
 import type { CampaignBigQueryService } from "../campaign-bigquery-service.js";
 
 interface PreloadConfig {
+  concurrentRequests: number;
   enabled: boolean;
+  loadRecentCampaigns: boolean;
   maxBrandAgents: number;
   maxCampaignsPerAgent: number;
-  loadRecentCampaigns: boolean;
-  concurrentRequests: number;
 }
 
 export class PreloadService {
@@ -20,37 +20,13 @@ export class PreloadService {
   ) {}
 
   /**
-   * Trigger preload for a customer (fire-and-forget)
-   * Returns immediately, preload continues in background
+   * Get preload status for debugging
    */
-  triggerPreload(apiKey: string): void {
-    if (!this.config.enabled) {
-      console.log("[Preload] Disabled by config");
-      return;
-    }
-
-    // Check if we're already processing this API key
-    if (this.triggerPromises.has(apiKey)) {
-      console.log("[Preload] Already triggered for this API key");
-      return;
-    }
-
-    // Start preload but don't wait for it - use setTimeout to ensure it's truly async
-    const triggerPromise = new Promise<void>((resolve) => {
-      setTimeout(async () => {
-        try {
-          await this.preloadCustomerData(apiKey);
-          resolve();
-        } catch (err) {
-          console.error("[Preload] Background preload failed:", err);
-          resolve(); // Always resolve to clean up
-        } finally {
-          this.triggerPromises.delete(apiKey);
-        }
-      }, 0);
-    });
-
-    this.triggerPromises.set(apiKey, triggerPromise);
+  getPreloadStatus(): { activePreloads: number; customerIds: number[] } {
+    return {
+      activePreloads: this.preloadPromises.size + this.triggerPromises.size,
+      customerIds: Array.from(this.preloadPromises.keys()),
+    };
   }
 
   /**
@@ -93,6 +69,51 @@ export class PreloadService {
     } catch (error) {
       console.error("[Preload] Preload failed:", error);
     }
+  }
+
+  /**
+   * Trigger preload for a customer (fire-and-forget)
+   * Returns immediately, preload continues in background
+   */
+  triggerPreload(apiKey: string): void {
+    if (!this.config.enabled) {
+      console.log("[Preload] Disabled by config");
+      return;
+    }
+
+    // Check if we're already processing this API key
+    if (this.triggerPromises.has(apiKey)) {
+      console.log("[Preload] Already triggered for this API key");
+      return;
+    }
+
+    // Start preload but don't wait for it - use setTimeout to ensure it's truly async
+    const triggerPromise = new Promise<void>((resolve) => {
+      setTimeout(async () => {
+        try {
+          await this.preloadCustomerData(apiKey);
+          resolve();
+        } catch (err) {
+          console.error("[Preload] Background preload failed:", err);
+          resolve(); // Always resolve to clean up
+        } finally {
+          this.triggerPromises.delete(apiKey);
+        }
+      }, 0);
+    });
+
+    this.triggerPromises.set(apiKey, triggerPromise);
+  }
+
+  /**
+   * Wait for all active preloads to complete (for testing)
+   */
+  async waitForAllPreloads(): Promise<void> {
+    // Wait for both trigger promises and preload promises
+    await Promise.allSettled([
+      ...Array.from(this.triggerPromises.values()),
+      ...Array.from(this.preloadPromises.values()),
+    ]);
   }
 
   private async doPreload(apiKey: string, customerId: number): Promise<void> {
@@ -190,33 +211,12 @@ export class PreloadService {
       `[Preload] Loaded individual details for ${topAgentsForDetails.length} brand agents`,
     );
   }
-
-  /**
-   * Get preload status for debugging
-   */
-  getPreloadStatus(): { activePreloads: number; customerIds: number[] } {
-    return {
-      activePreloads: this.preloadPromises.size + this.triggerPromises.size,
-      customerIds: Array.from(this.preloadPromises.keys()),
-    };
-  }
-
-  /**
-   * Wait for all active preloads to complete (for testing)
-   */
-  async waitForAllPreloads(): Promise<void> {
-    // Wait for both trigger promises and preload promises
-    await Promise.allSettled([
-      ...Array.from(this.triggerPromises.values()),
-      ...Array.from(this.preloadPromises.values()),
-    ]);
-  }
 }
 
 export const DEFAULT_PRELOAD_CONFIG: PreloadConfig = {
+  concurrentRequests: 3, // Process 3 brand agents at a time
   enabled: true,
+  loadRecentCampaigns: true, // Whether to load individual campaign details
   maxBrandAgents: 10, // Load campaigns for top 10 brand agents
   maxCampaignsPerAgent: 20, // Load details for up to 20 recent campaigns per agent
-  loadRecentCampaigns: true, // Whether to load individual campaign details
-  concurrentRequests: 3, // Process 3 brand agents at a time
 };

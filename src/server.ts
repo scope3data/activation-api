@@ -4,17 +4,17 @@ import http from "http";
 import type { FastMCPSessionAuth } from "./types/mcp.js";
 
 import { Scope3ApiClient } from "./client/scope3-client.js";
-import { posthogService } from "./services/posthog-service.js";
 import { AuthenticationService } from "./services/auth-service.js";
-import { CampaignBigQueryService } from "./services/campaign-bigquery-service.js";
 import {
   CachedBigQuery,
   DEFAULT_CACHE_CONFIG,
 } from "./services/cache/cached-bigquery.js";
 import {
-  PreloadService,
   DEFAULT_PRELOAD_CONFIG,
+  PreloadService,
 } from "./services/cache/preload-service.js";
+import { CampaignBigQueryService } from "./services/campaign-bigquery-service.js";
+import { posthogService } from "./services/posthog-service.js";
 import { registerTools } from "./tools/index.js";
 import { config } from "./utils/config.js";
 

@@ -13,19 +13,11 @@ export interface CacheEntry<T> {
   ttl: number;
 }
 
-export interface CacheStats {
-  size: number;
-  hitRate: number;
-  memoryUsage: number;
-  hits?: number;
-  misses?: number;
-}
-
 export interface CacheService {
   /**
-   * Execute a query with caching
+   * Clear all cache entries
    */
-  query(options: QueryOptions): Promise<any>;
+  clearCache(): void;
 
   /**
    * Get cache statistics
@@ -38,27 +30,25 @@ export interface CacheService {
   invalidatePattern(pattern: string): void;
 
   /**
-   * Clear all cache entries
-   */
-  clearCache(): void;
-
-  /**
    * Check if a query result is cached
    */
   isCached(options: QueryOptions): boolean;
+
+  /**
+   * Execute a query with caching
+   */
+  query(options: QueryOptions): Promise<any>;
 }
 
-export interface QueryOptions {
-  query: string;
-  params?: Record<string, any>;
+export interface CacheStats {
+  hitRate: number;
+  hits?: number;
+  memoryUsage: number;
+  misses?: number;
+  size: number;
 }
 
 export interface PreloadService {
-  /**
-   * Trigger background preload for an API key
-   */
-  triggerPreload(apiKey: string): void;
-
   /**
    * Get current preload status
    */
@@ -68,12 +58,22 @@ export interface PreloadService {
   };
 
   /**
-   * Wait for preload completion (for testing)
+   * Trigger background preload for an API key
    */
-  waitForPreload(customerId: number, timeoutMs?: number): Promise<void>;
+  triggerPreload(apiKey: string): void;
 
   /**
    * Wait for all active preloads to complete (for testing)
    */
   waitForAllPreloads?(): Promise<void>;
+
+  /**
+   * Wait for preload completion (for testing)
+   */
+  waitForPreload(customerId: number, timeoutMs?: number): Promise<void>;
+}
+
+export interface QueryOptions {
+  params?: Record<string, any>;
+  query: string;
 }

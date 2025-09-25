@@ -3,25 +3,25 @@ import type { AuthenticationService } from "../auth-service.js";
 import type { CampaignBigQueryService } from "../campaign-bigquery-service.js";
 
 interface AdTechPreloadConfig {
-  enabled: boolean;
-
-  // Brand agent prioritization
-  maxBrandAgents: number;
-  prioritizeActiveSpenders: boolean;
-
-  // Campaign prioritization
-  maxCampaignsPerAgent: number;
-  prioritizeActiveCampaigns: boolean;
-  loadBudgetData: boolean;
-  loadSpendData: boolean;
-
   // Performance tuning
   concurrentRequests: number;
+
+  enabled: boolean;
+  loadBudgetData: boolean;
+
+  loadSpendData: boolean;
+  // Brand agent prioritization
+  maxBrandAgents: number;
+  // Campaign prioritization
+  maxCampaignsPerAgent: number;
   preloadFrequency: number; // How often to refresh preloaded data (minutes)
 
+  prioritizeActiveCampaigns: boolean;
+  prioritizeActiveSpenders: boolean;
+
+  warmBrandStoryAssignments: boolean;
   // Ad tech specific warming
   warmCreativeAssignments: boolean;
-  warmBrandStoryAssignments: boolean;
   warmRecentSpendData: boolean;
 }
 
@@ -38,6 +38,19 @@ export class AdTechPreloadService {
     private authService: AuthenticationService,
     private config: AdTechPreloadConfig = AD_TECH_PRELOAD_CONFIG,
   ) {}
+
+  /**
+   * Cleanup method to clear intervals
+   */
+  cleanup(): void {
+    for (const [customerId, timer] of this.refreshIntervals.entries()) {
+      clearInterval(timer);
+      console.log(
+        `[AdTechPreload] Cleaned up refresh timer for customer ${customerId}`,
+      );
+    }
+    this.refreshIntervals.clear();
+  }
 
   /**
    * Enhanced preload with ad tech optimization patterns
@@ -181,6 +194,79 @@ export class AdTechPreloadService {
   }
 
   /**
+   * Refresh only critical, fast-changing data
+   */
+  private async refreshCriticalData(
+    apiKey: string,
+    customerId: number,
+  ): Promise<void> {
+    const brandAgents = await this.campaignService.listBrandAgents(customerId);
+    const topAgents = brandAgents.slice(0, Math.min(5, brandAgents.length));
+
+    // Refresh active campaign lists (status may have changed)
+    await Promise.allSettled(
+      topAgents.map((agent) =>
+        this.campaignService.listCampaigns(agent.id, "active", apiKey),
+      ),
+    );
+
+    console.log(
+      `[AdTechPreload] Refreshed critical data for ${topAgents.length} top brand agents`,
+    );
+  }
+
+  /**
+   * Schedule periodic refresh of critical ad tech data
+   * Focuses on spend tracking and budget status
+   */
+  private schedulePeriodicRefresh(apiKey: string, customerId: number): void {
+    // Clear existing refresh timer
+    const existingTimer = this.refreshIntervals.get(customerId);
+    if (existingTimer) {
+      clearInterval(existingTimer);
+    }
+
+    const refreshMs = this.config.preloadFrequency * 60 * 1000;
+    const timer = setInterval(async () => {
+      console.log(
+        `[AdTechPreload] Periodic refresh for customer ${customerId}`,
+      );
+
+      try {
+        // Only refresh critical data, not full preload
+        await this.refreshCriticalData(apiKey, customerId);
+      } catch (err) {
+        console.error(
+          `[AdTechPreload] Periodic refresh failed for customer ${customerId}:`,
+          err,
+        );
+      }
+    }, refreshMs);
+
+    this.refreshIntervals.set(customerId, timer);
+    console.log(
+      `[AdTechPreload] Scheduled periodic refresh every ${this.config.preloadFrequency} minutes for customer ${customerId}`,
+    );
+  }
+
+  /**
+   * Warm brand story assignment queries
+   */
+  private async warmBrandStoryAssignments(
+    apiKey: string,
+    brandAgents: any[],
+  ): Promise<void> {
+    console.log("[AdTechPreload] Warming brand story assignments");
+
+    // This would need brand story assignment querying methods
+    for (const agent of brandAgents) {
+      console.log(
+        `[AdTechPreload] Would warm brand story assignments for brand agent ${agent.id}`,
+      );
+    }
+  }
+
+  /**
    * Critical: Warm budget and spend tracking queries
    * These are the most time-sensitive for ad tech operations
    */
@@ -248,113 +334,27 @@ export class AdTechPreloadService {
       );
     }
   }
-
-  /**
-   * Warm brand story assignment queries
-   */
-  private async warmBrandStoryAssignments(
-    apiKey: string,
-    brandAgents: any[],
-  ): Promise<void> {
-    console.log("[AdTechPreload] Warming brand story assignments");
-
-    // This would need brand story assignment querying methods
-    for (const agent of brandAgents) {
-      console.log(
-        `[AdTechPreload] Would warm brand story assignments for brand agent ${agent.id}`,
-      );
-    }
-  }
-
-  /**
-   * Schedule periodic refresh of critical ad tech data
-   * Focuses on spend tracking and budget status
-   */
-  private schedulePeriodicRefresh(apiKey: string, customerId: number): void {
-    // Clear existing refresh timer
-    const existingTimer = this.refreshIntervals.get(customerId);
-    if (existingTimer) {
-      clearInterval(existingTimer);
-    }
-
-    const refreshMs = this.config.preloadFrequency * 60 * 1000;
-    const timer = setInterval(async () => {
-      console.log(
-        `[AdTechPreload] Periodic refresh for customer ${customerId}`,
-      );
-
-      try {
-        // Only refresh critical data, not full preload
-        await this.refreshCriticalData(apiKey, customerId);
-      } catch (err) {
-        console.error(
-          `[AdTechPreload] Periodic refresh failed for customer ${customerId}:`,
-          err,
-        );
-      }
-    }, refreshMs);
-
-    this.refreshIntervals.set(customerId, timer);
-    console.log(
-      `[AdTechPreload] Scheduled periodic refresh every ${this.config.preloadFrequency} minutes for customer ${customerId}`,
-    );
-  }
-
-  /**
-   * Refresh only critical, fast-changing data
-   */
-  private async refreshCriticalData(
-    apiKey: string,
-    customerId: number,
-  ): Promise<void> {
-    const brandAgents = await this.campaignService.listBrandAgents(customerId);
-    const topAgents = brandAgents.slice(0, Math.min(5, brandAgents.length));
-
-    // Refresh active campaign lists (status may have changed)
-    await Promise.allSettled(
-      topAgents.map((agent) =>
-        this.campaignService.listCampaigns(agent.id, "active", apiKey),
-      ),
-    );
-
-    console.log(
-      `[AdTechPreload] Refreshed critical data for ${topAgents.length} top brand agents`,
-    );
-  }
-
-  /**
-   * Cleanup method to clear intervals
-   */
-  cleanup(): void {
-    for (const [customerId, timer] of this.refreshIntervals.entries()) {
-      clearInterval(timer);
-      console.log(
-        `[AdTechPreload] Cleaned up refresh timer for customer ${customerId}`,
-      );
-    }
-    this.refreshIntervals.clear();
-  }
 }
 
 export const AD_TECH_PRELOAD_CONFIG: AdTechPreloadConfig = {
-  enabled: true,
-
-  // Prioritize active spenders
-  maxBrandAgents: 10,
-  prioritizeActiveSpenders: true,
-
-  // Focus on active campaigns
-  maxCampaignsPerAgent: 15,
-  prioritizeActiveCampaigns: true,
-  loadBudgetData: true,
-  loadSpendData: true,
-
   // Performance tuning for ad tech workloads
   concurrentRequests: 5, // Higher concurrency for ad tech
+
+  enabled: true,
+  loadBudgetData: true,
+
+  loadSpendData: true,
+  // Prioritize active spenders
+  maxBrandAgents: 10,
+  // Focus on active campaigns
+  maxCampaignsPerAgent: 15,
   preloadFrequency: 5, // Refresh every 5 minutes
 
+  prioritizeActiveCampaigns: true,
+  prioritizeActiveSpenders: true,
+
+  warmBrandStoryAssignments: true,
   // Ad tech specific warming
   warmCreativeAssignments: true,
-  warmBrandStoryAssignments: true,
   warmRecentSpendData: true,
 };

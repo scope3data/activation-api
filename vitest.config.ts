@@ -18,8 +18,8 @@ export default defineConfig({
   },
 
   test: {
-    // Test environment configuration
-    maxConcurrency: 1, // Further reduce concurrency for event listener stability
+    // Better cleanup and isolation
+    clearMocks: true,
 
     // Coverage configuration
     // Strategy: Focus on business logic layers that survive backend infrastructure changes
@@ -54,6 +54,19 @@ export default defineConfig({
           lines: 25,
           statements: 25,
         },
+        // High thresholds for caching system (critical for performance)
+        "src/services/cache/cached-bigquery.ts": {
+          branches: 85,
+          functions: 90,
+          lines: 85,
+          statements: 85,
+        },
+        "src/services/cache/preload-service.ts": {
+          branches: 80,
+          functions: 85,
+          lines: 80,
+          statements: 80,
+        },
         // Higher thresholds only for tested tools to prevent regression
         "src/tools/signals/get-partner-seats.ts": {
           branches: 95,
@@ -73,19 +86,6 @@ export default defineConfig({
           functions: 50,
           lines: 65,
           statements: 65,
-        },
-        // High thresholds for caching system (critical for performance)
-        "src/services/cache/cached-bigquery.ts": {
-          branches: 85,
-          functions: 90,
-          lines: 85,
-          statements: 85,
-        },
-        "src/services/cache/preload-service.ts": {
-          branches: 80,
-          functions: 85,
-          lines: 80,
-          statements: 80,
         },
       },
     },
@@ -112,12 +112,17 @@ export default defineConfig({
     // Test isolation
     isolate: true,
 
+    // Test environment configuration
+    maxConcurrency: 1, // Further reduce concurrency for event listener stability
+
+    mockReset: true,
     outputFile: {
       json: "./test-results.json",
     },
 
     // Concurrent test execution - use forks for better isolation
     pool: "forks",
+
     poolOptions: {
       forks: {
         maxForks: 2,
@@ -125,26 +130,21 @@ export default defineConfig({
         singleFork: false,
       },
     },
-
     // Reporter configuration
     reporter: ["verbose", "json"],
 
+    restoreMocks: true,
+
     // Retry configuration for flaky tests
     retry: 1,
-    // Setup files
-    setupFiles: ["./src/__tests__/setup/test-setup.ts"],
-
-    // Test timeout configuration
-    testTimeout: 15000, // 15 seconds for integration tests with caching delays
 
     // Test environment stability
     sequence: {
       concurrent: false, // Run tests sequentially to avoid resource conflicts
     },
-
-    // Better cleanup and isolation
-    clearMocks: true,
-    restoreMocks: true,
-    mockReset: true,
+    // Setup files
+    setupFiles: ["./src/__tests__/setup/test-setup.ts"],
+    // Test timeout configuration
+    testTimeout: 15000, // 15 seconds for integration tests with caching delays
   },
 });

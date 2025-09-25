@@ -9,25 +9,27 @@ import type { PreloadService } from "../contracts/cache-service.js";
  */
 export class PreloadServiceTestDouble implements PreloadService {
   private activePreloads = new Map<number, Promise<void>>();
+  private customerIdCounter = 1000;
   private customerIdMap = new Map<string, number>(); // apiKey -> customerId
   private preloadDelay = 100; // Simulate preload work
-  private customerIdCounter = 1000;
 
   constructor(
     private config?: {
+      maxConcurrentPreloads?: number;
       preloadDelay?: number;
       shouldFail?: boolean;
-      maxConcurrentPreloads?: number;
     },
   ) {
     this.preloadDelay = config?.preloadDelay ?? 100;
   }
 
-  triggerPreload(apiKey: string): void {
-    // Non-blocking - start preload in background
-    this.startPreload(apiKey).catch((err) => {
-      console.error("[TestDouble] Preload failed:", err);
-    });
+  public clearPreloads(): void {
+    this.activePreloads.clear();
+    this.customerIdMap.clear();
+  }
+
+  public getCustomerIdForApiKey(apiKey: string): number | undefined {
+    return this.customerIdMap.get(apiKey);
   }
 
   getPreloadStatus(): { activePreloads: number; customerIds: number[] } {
@@ -35,6 +37,22 @@ export class PreloadServiceTestDouble implements PreloadService {
       activePreloads: this.activePreloads.size,
       customerIds: Array.from(this.activePreloads.keys()),
     };
+  }
+
+  // Test utilities
+  public setPreloadDelay(delayMs: number): void {
+    this.preloadDelay = delayMs;
+  }
+
+  public simulatePreloadFailure(shouldFail: boolean): void {
+    this.config = { ...this.config, shouldFail };
+  }
+
+  triggerPreload(apiKey: string): void {
+    // Non-blocking - start preload in background
+    this.startPreload(apiKey).catch((err) => {
+      console.error("[TestDouble] Preload failed:", err);
+    });
   }
 
   async waitForPreload(
@@ -57,22 +75,28 @@ export class PreloadServiceTestDouble implements PreloadService {
     await Promise.race([preloadPromise, timeoutPromise]);
   }
 
-  // Test utilities
-  public setPreloadDelay(delayMs: number): void {
-    this.preloadDelay = delayMs;
-  }
+  private async doPreload(customerId: number, apiKey: string): Promise<void> {
+    if (this.config?.shouldFail) {
+      await new Promise((resolve) =>
+        setTimeout(resolve, this.preloadDelay / 2),
+      );
+      throw new Error(`Simulated preload failure for customer ${customerId}`);
+    }
 
-  public simulatePreloadFailure(shouldFail: boolean): void {
-    this.config = { ...this.config, shouldFail };
-  }
+    // Simulate preload work phases
+    const phases = [
+      "Loading brand agents",
+      "Loading campaigns",
+      "Loading campaign details",
+      "Loading brand agent details",
+    ];
 
-  public getCustomerIdForApiKey(apiKey: string): number | undefined {
-    return this.customerIdMap.get(apiKey);
-  }
-
-  public clearPreloads(): void {
-    this.activePreloads.clear();
-    this.customerIdMap.clear();
+    for (const phase of phases) {
+      await new Promise((resolve) =>
+        setTimeout(resolve, this.preloadDelay / phases.length),
+      );
+      // Could emit events or log progress here for testing
+    }
   }
 
   private async startPreload(apiKey: string): Promise<void> {
@@ -104,30 +128,6 @@ export class PreloadServiceTestDouble implements PreloadService {
       await preloadPromise;
     } finally {
       this.activePreloads.delete(customerId);
-    }
-  }
-
-  private async doPreload(customerId: number, apiKey: string): Promise<void> {
-    if (this.config?.shouldFail) {
-      await new Promise((resolve) =>
-        setTimeout(resolve, this.preloadDelay / 2),
-      );
-      throw new Error(`Simulated preload failure for customer ${customerId}`);
-    }
-
-    // Simulate preload work phases
-    const phases = [
-      "Loading brand agents",
-      "Loading campaigns",
-      "Loading campaign details",
-      "Loading brand agent details",
-    ];
-
-    for (const phase of phases) {
-      await new Promise((resolve) =>
-        setTimeout(resolve, this.preloadDelay / phases.length),
-      );
-      // Could emit events or log progress here for testing
     }
   }
 }
