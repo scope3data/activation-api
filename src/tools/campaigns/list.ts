@@ -66,6 +66,9 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
 
       // Get customer info from auth service
       const customerId = await authService.getCustomerIdFromToken(apiKey);
+      if (!customerId) {
+        throw new Error("Unable to determine customer ID from API key");
+      }
 
       // For now, use the basic method with brandAgentId
       const campaigns = await client.listBrandAgentCampaigns(
