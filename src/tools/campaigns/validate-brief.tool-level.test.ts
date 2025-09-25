@@ -1,9 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { validateBriefTool } from "./validate-brief.js";
-import { BriefValidationService } from "../../services/brief-validation-service.js";
-import type { ValidateBriefParams, MCPToolExecuteContext } from "../../types/mcp.js";
+
 import type { BriefValidationResult } from "../../types/brief-validation.js";
+import type {
+  MCPToolExecuteContext,
+  ValidateBriefParams,
+} from "../../types/mcp.js";
+
+import { BriefValidationService } from "../../services/brief-validation-service.js";
 import { BriefQualityLevel } from "../../types/brief-validation.js";
+import { validateBriefTool } from "./validate-brief.js";
 
 // Mock the BriefValidationService
 vi.mock("../../services/brief-validation-service.js", () => ({
@@ -22,7 +27,9 @@ describe("validateBriefTool", () => {
       validateBrief: vi.fn(),
     };
 
-    (BriefValidationService as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => mockValidationService);
+    (
+      BriefValidationService as unknown as ReturnType<typeof vi.fn>
+    ).mockImplementation(() => mockValidationService);
 
     tool = validateBriefTool();
 
@@ -55,9 +62,9 @@ describe("validateBriefTool", () => {
     it("should require brief parameter", () => {
       const params = tool.parameters;
       const briefParam = params.shape.brief;
-      
+
       expect(briefParam).toBeDefined();
-      
+
       // Test that brief is required by attempting to parse without it
       expect(() => params.parse({})).toThrow();
     });
@@ -65,19 +72,19 @@ describe("validateBriefTool", () => {
     it("should have optional threshold parameter with default 70", () => {
       const params = tool.parameters;
       const parsed = params.parse({ brief: "test brief" });
-      
+
       expect(parsed.threshold).toBe(70);
     });
 
     it("should validate threshold range", () => {
       const params = tool.parameters;
-      
+
       // Should fail for negative threshold
       expect(() => params.parse({ brief: "test", threshold: -1 })).toThrow();
-      
+
       // Should fail for threshold > 100
       expect(() => params.parse({ brief: "test", threshold: 101 })).toThrow();
-      
+
       // Should pass for valid threshold
       const parsed = params.parse({ brief: "test", threshold: 80 });
       expect(parsed.threshold).toBe(80);
@@ -86,8 +93,11 @@ describe("validateBriefTool", () => {
     it("should have optional brandAgentId parameter", () => {
       const params = tool.parameters;
       const parsed1 = params.parse({ brief: "test brief" });
-      const parsed2 = params.parse({ brief: "test brief", brandAgentId: "agent-123" });
-      
+      const parsed2 = params.parse({
+        brandAgentId: "agent-123",
+        brief: "test brief",
+      });
+
       expect(parsed1.brandAgentId).toBeUndefined();
       expect(parsed2.brandAgentId).toBe("agent-123");
     });
@@ -96,28 +106,29 @@ describe("validateBriefTool", () => {
   describe("execute", () => {
     it("should validate brief and return formatted results for passing brief", async () => {
       const mockResult: BriefValidationResult = {
-        score: 85,
-        meetsThreshold: true,
-        threshold: 70,
         feedback: "Excellent comprehensive brief with clear objectives.",
-        suggestions: ["Consider adding more specific metrics"],
+        meetsThreshold: true,
         missingElements: [],
         qualityLevel: BriefQualityLevel.COMPREHENSIVE,
+        score: 85,
+        suggestions: ["Consider adding more specific metrics"],
+        threshold: 70,
       };
 
       mockValidationService.validateBrief.mockResolvedValue(mockResult);
 
       const args: ValidateBriefParams = {
-        brief: "Comprehensive campaign brief with objectives, audience, budget, and metrics.",
+        brief:
+          "Comprehensive campaign brief with objectives, audience, budget, and metrics.",
         threshold: 70,
       };
 
       const result = await tool.execute(args, mockContext);
 
       expect(mockValidationService.validateBrief).toHaveBeenCalledWith({
+        brandAgentId: undefined,
         brief: args.brief,
         threshold: 70,
-        brandAgentId: undefined,
       });
 
       expect(result).toContain("Brief Validation Results");
@@ -130,19 +141,19 @@ describe("validateBriefTool", () => {
 
     it("should validate brief and return formatted results for failing brief", async () => {
       const mockResult: BriefValidationResult = {
-        score: 45,
-        meetsThreshold: false,
-        threshold: 70,
         feedback: "Basic brief missing key information.",
-        suggestions: [
-          "Add specific business objectives",
-          "Define target audience demographics",
-        ],
+        meetsThreshold: false,
         missingElements: [
           "Business objectives not clearly defined",
           "Success metrics not defined",
         ],
         qualityLevel: BriefQualityLevel.MINIMAL,
+        score: 45,
+        suggestions: [
+          "Add specific business objectives",
+          "Define target audience demographics",
+        ],
+        threshold: 70,
       };
 
       mockValidationService.validateBrief.mockResolvedValue(mockResult);
@@ -165,13 +176,13 @@ describe("validateBriefTool", () => {
 
     it("should use custom threshold", async () => {
       const mockResult: BriefValidationResult = {
-        score: 60,
-        meetsThreshold: true,
-        threshold: 50,
         feedback: "Brief meets custom threshold.",
-        suggestions: [],
+        meetsThreshold: true,
         missingElements: [],
         qualityLevel: BriefQualityLevel.STANDARD,
+        score: 60,
+        suggestions: [],
+        threshold: 50,
       };
 
       mockValidationService.validateBrief.mockResolvedValue(mockResult);
@@ -184,48 +195,48 @@ describe("validateBriefTool", () => {
       await tool.execute(args, mockContext);
 
       expect(mockValidationService.validateBrief).toHaveBeenCalledWith({
+        brandAgentId: undefined,
         brief: args.brief,
         threshold: 50,
-        brandAgentId: undefined,
       });
     });
 
     it("should include brand agent context when provided", async () => {
       const mockResult: BriefValidationResult = {
-        score: 75,
-        meetsThreshold: true,
-        threshold: 70,
         feedback: "Good brief with brand context.",
-        suggestions: [],
+        meetsThreshold: true,
         missingElements: [],
         qualityLevel: BriefQualityLevel.STANDARD,
+        score: 75,
+        suggestions: [],
+        threshold: 70,
       };
 
       mockValidationService.validateBrief.mockResolvedValue(mockResult);
 
       const args: ValidateBriefParams = {
-        brief: "Campaign brief with brand context.",
         brandAgentId: "brand-456",
+        brief: "Campaign brief with brand context.",
       };
 
       await tool.execute(args, mockContext);
 
       expect(mockValidationService.validateBrief).toHaveBeenCalledWith({
+        brandAgentId: "brand-456",
         brief: args.brief,
         threshold: 70,
-        brandAgentId: "brand-456",
       });
     });
 
     it("should return structured response data", async () => {
       const mockResult: BriefValidationResult = {
-        score: 80,
-        meetsThreshold: true,
-        threshold: 70,
         feedback: "Good brief quality.",
-        suggestions: [],
+        meetsThreshold: true,
         missingElements: [],
         qualityLevel: BriefQualityLevel.COMPREHENSIVE,
+        score: 80,
+        suggestions: [],
+        threshold: 70,
       };
 
       mockValidationService.validateBrief.mockResolvedValue(mockResult);
@@ -240,36 +251,40 @@ describe("validateBriefTool", () => {
       const responseMatch = result.match(/```json\n([\s\S]*?)\n```/);
       if (responseMatch) {
         const responseData = JSON.parse(responseMatch[1]);
-        
+
         expect(responseData.data.validation).toEqual(mockResult);
         expect(responseData.data.briefAnalysis).toBeDefined();
         expect(responseData.data.briefAnalysis.wordCount).toBeTypeOf("number");
-        expect(responseData.data.briefAnalysis.characterCount).toBeTypeOf("number");
+        expect(responseData.data.briefAnalysis.characterCount).toBeTypeOf(
+          "number",
+        );
         expect(responseData.success).toBe(true);
       }
     });
 
     it("should handle validation service errors", async () => {
-      mockValidationService.validateBrief.mockRejectedValue(new Error("Service unavailable"));
+      mockValidationService.validateBrief.mockRejectedValue(
+        new Error("Service unavailable"),
+      );
 
       const args: ValidateBriefParams = {
         brief: "Test brief",
       };
 
       await expect(tool.execute(args, mockContext)).rejects.toThrow(
-        "Failed to validate campaign brief: Service unavailable"
+        "Failed to validate campaign brief: Service unavailable",
       );
     });
 
     it("should include quality guidelines in response", async () => {
       const mockResult: BriefValidationResult = {
-        score: 75,
-        meetsThreshold: true,
-        threshold: 70,
         feedback: "Standard brief quality.",
-        suggestions: [],
+        meetsThreshold: true,
         missingElements: [],
         qualityLevel: BriefQualityLevel.STANDARD,
+        score: 75,
+        suggestions: [],
+        threshold: 70,
       };
 
       mockValidationService.validateBrief.mockResolvedValue(mockResult);

@@ -1,5 +1,9 @@
-import { describe, expect, it } from "vitest";
-import type { IBriefValidationService, BriefValidationRequest, BriefValidationResult } from "../../types/brief-validation.js";
+import { beforeEach, describe, expect, it } from "vitest";
+
+import type {
+  BriefValidationRequest,
+  IBriefValidationService,
+} from "../../types/brief-validation.js";
 
 /**
  * Contract test suite for BriefValidationService implementations
@@ -58,7 +62,8 @@ export function testBriefValidationServiceContract(
       });
 
       it("should return low score for minimal brief", async () => {
-        const minimalBrief = "We want to advertise our cleaning products to people.";
+        const minimalBrief =
+          "We want to advertise our cleaning products to people.";
 
         const request: BriefValidationRequest = {
           brief: minimalBrief,
@@ -99,10 +104,10 @@ export function testBriefValidationServiceContract(
 
         expect(lowResult.threshold).toBe(40);
         expect(highResult.threshold).toBe(90);
-        
+
         // Same brief, different thresholds should yield same score but different pass/fail
         expect(lowResult.score).toBe(highResult.score);
-        
+
         // High threshold is more likely to fail
         if (lowResult.meetsThreshold) {
           expect(highResult.meetsThreshold).toBe(false);
@@ -140,19 +145,20 @@ export function testBriefValidationServiceContract(
         // Should provide specific suggestions
         expect(result.suggestions.length).toBeGreaterThan(0);
         expect(result.missingElements.length).toBeGreaterThan(0);
-        
+
         // Feedback should be descriptive
         expect(result.feedback).toBeTruthy();
         expect(result.feedback.length).toBeGreaterThan(10);
       });
 
       it("should validate brief with brand agent context", async () => {
-        const brief = "Launch new eco-friendly product line to sustainability-focused consumers.";
+        const brief =
+          "Launch new eco-friendly product line to sustainability-focused consumers.";
 
         const request: BriefValidationRequest = {
+          brandAgentId: "brand-123",
           brief,
           threshold: 70,
-          brandAgentId: "brand-123",
         };
 
         const result = await service.validateBrief(request);
@@ -166,12 +172,17 @@ export function testBriefValidationServiceContract(
 
       it("should return consistent quality levels", async () => {
         const testCases = [
-          { brief: "", expectedMinScore: 0, expectedMaxScore: 29, expectedLevel: "No Brief" },
-          { 
-            brief: "Sell products to people with small budget.", 
-            expectedMinScore: 30, 
-            expectedMaxScore: 59, 
-            expectedLevel: "Minimal Brief" 
+          {
+            brief: "",
+            expectedLevel: "No Brief",
+            expectedMaxScore: 29,
+            expectedMinScore: 0,
+          },
+          {
+            brief: "Sell products to people with small budget.",
+            expectedLevel: "Minimal Brief",
+            expectedMaxScore: 59,
+            expectedMinScore: 30,
           },
         ];
 
@@ -183,7 +194,9 @@ export function testBriefValidationServiceContract(
 
           const result = await service.validateBrief(request);
 
-          expect(result.score).toBeGreaterThanOrEqual(testCase.expectedMinScore);
+          expect(result.score).toBeGreaterThanOrEqual(
+            testCase.expectedMinScore,
+          );
           expect(result.score).toBeLessThanOrEqual(testCase.expectedMaxScore);
           expect(result.qualityLevel).toBe(testCase.expectedLevel);
         }
@@ -201,21 +214,21 @@ export function testBriefValidationServiceContract(
         expect(typeof result.score).toBe("number");
         expect(result.score).toBeGreaterThanOrEqual(0);
         expect(result.score).toBeLessThanOrEqual(100);
-        
+
         expect(typeof result.meetsThreshold).toBe("boolean");
         expect(typeof result.threshold).toBe("number");
         expect(typeof result.feedback).toBe("string");
         expect(typeof result.qualityLevel).toBe("string");
-        
+
         expect(Array.isArray(result.suggestions)).toBe(true);
         expect(Array.isArray(result.missingElements)).toBe(true);
-        
+
         // Quality level should be one of the expected values
         expect(result.qualityLevel).toBeOneOf([
           "No Brief",
-          "Minimal Brief", 
+          "Minimal Brief",
           "Standard Brief",
-          "Comprehensive Brief"
+          "Comprehensive Brief",
         ]);
       });
     });

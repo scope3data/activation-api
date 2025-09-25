@@ -1,10 +1,10 @@
 import { z } from "zod";
 
-import type { 
-  ValidateBriefParams,
-  MCPToolExecuteContext,
-} from "../../types/mcp.js";
 import type { BriefValidationResult } from "../../types/brief-validation.js";
+import type {
+  MCPToolExecuteContext,
+  ValidateBriefParams,
+} from "../../types/mcp.js";
 
 import { BriefValidationService } from "../../services/brief-validation-service.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
@@ -23,23 +23,24 @@ export const validateBriefTool = () => ({
 
   execute: async (
     args: ValidateBriefParams,
-    context: MCPToolExecuteContext,
+    _context: MCPToolExecuteContext,
   ): Promise<string> => {
     try {
       const validationService = new BriefValidationService();
-      
-      const result: BriefValidationResult = await validationService.validateBrief({
-        brief: args.brief,
-        threshold: args.threshold ?? 70,
-        brandAgentId: args.brandAgentId,
-      });
+
+      const result: BriefValidationResult =
+        await validationService.validateBrief({
+          brandAgentId: args.brandAgentId,
+          brief: args.brief,
+          threshold: args.threshold ?? 70,
+        });
 
       let summary = `## Brief Validation Results\n\n`;
-      
+
       // Score and status
       const statusIcon = result.meetsThreshold ? "✅" : "❌";
       const statusText = result.meetsThreshold ? "PASSES" : "FAILS";
-      
+
       summary += `**Overall Score: ${result.score}/100** ${statusIcon}\n`;
       summary += `**Quality Level:** ${result.qualityLevel}\n`;
       summary += `**Threshold:** ${result.threshold}/100\n`;
@@ -96,11 +97,11 @@ export const validateBriefTool = () => ({
 
       return createMCPResponse({
         data: {
-          validation: result,
           briefAnalysis: {
-            wordCount: args.brief.split(/\s+/).length,
             characterCount: args.brief.length,
+            wordCount: args.brief.split(/\s+/).length,
           },
+          validation: result,
         },
         message: summary,
         success: true,
@@ -114,20 +115,24 @@ export const validateBriefTool = () => ({
 
   name: "campaign_validate_brief",
   parameters: z.object({
+    brandAgentId: z
+      .string()
+      .optional()
+      .describe("Optional brand agent ID for context-aware validation"),
     brief: z
       .string()
       .min(1)
-      .describe("The campaign brief text to validate against Ad Context Protocol standards"),
+      .describe(
+        "The campaign brief text to validate against Ad Context Protocol standards",
+      ),
     threshold: z
       .number()
       .min(0)
       .max(100)
       .default(70)
       .optional()
-      .describe("Minimum quality score required to pass validation (default: 70)"),
-    brandAgentId: z
-      .string()
-      .optional()
-      .describe("Optional brand agent ID for context-aware validation"),
+      .describe(
+        "Minimum quality score required to pass validation (default: 70)",
+      ),
   }),
 });

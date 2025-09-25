@@ -1,40 +1,42 @@
+export enum BriefQualityLevel {
+  COMPREHENSIVE = "Comprehensive Brief",
+  MINIMAL = "Minimal Brief",
+  NO_BRIEF = "No Brief",
+  STANDARD = "Standard Brief",
+}
+
 export interface BriefValidationRequest {
+  brandAgentId?: string;
   brief: string;
   threshold?: number;
-  brandAgentId?: string;
 }
 
 export interface BriefValidationResult {
-  score: number;
-  meetsThreshold: boolean;
-  threshold: number;
   feedback: string;
-  suggestions: string[];
+  meetsThreshold: boolean;
   missingElements: string[];
   qualityLevel: BriefQualityLevel;
+  score: number;
+  suggestions: string[];
+  threshold: number;
 }
 
 export interface IBriefValidationService {
-  validateBrief(request: BriefValidationRequest): Promise<BriefValidationResult>;
-}
-
-export enum BriefQualityLevel {
-  NO_BRIEF = "No Brief",
-  MINIMAL = "Minimal Brief", 
-  STANDARD = "Standard Brief",
-  COMPREHENSIVE = "Comprehensive Brief"
+  validateBrief(
+    request: BriefValidationRequest,
+  ): Promise<BriefValidationResult>;
 }
 
 export interface ValidateBriefParams {
+  brandAgentId?: string;
   brief: string;
   threshold?: number;
-  brandAgentId?: string;
 }
 
 // Add to existing MCP types
 declare module "./mcp.js" {
   interface CreateCampaignParams {
-    skipBriefValidation?: boolean;
     briefValidationThreshold?: number;
+    skipBriefValidation?: boolean;
   }
 }

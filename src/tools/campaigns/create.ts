@@ -1,11 +1,11 @@
 import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
+import type { BriefValidationResult } from "../../types/brief-validation.js";
 import type {
   CreateCampaignParams,
   MCPToolExecuteContext,
 } from "../../types/mcp.js";
-import type { BriefValidationResult } from "../../types/brief-validation.js";
 
 import { BriefValidationService } from "../../services/brief-validation-service.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
@@ -42,23 +42,23 @@ export const createCampaignTool = (client: Scope3ApiClient) => ({
     try {
       // Validate campaign brief unless explicitly skipped
       let briefValidation: BriefValidationResult | null = null;
-      
+
       if (!args.skipBriefValidation) {
         const validationService = new BriefValidationService();
         const threshold = args.briefValidationThreshold ?? 70;
-        
+
         briefValidation = await validationService.validateBrief({
+          brandAgentId: args.brandAgentId,
           brief: args.prompt,
           threshold,
-          brandAgentId: args.brandAgentId,
         });
-        
+
         // Block campaign creation if brief doesn't meet threshold
         if (!briefValidation.meetsThreshold) {
           let errorMessage = `❌ Campaign Creation Failed - Brief Quality Below Threshold\n\n`;
           errorMessage += `**Score:** ${briefValidation.score}/100 (Required: ${threshold}/100)\n`;
           errorMessage += `**Quality Level:** ${briefValidation.qualityLevel}\n\n`;
-          
+
           if (briefValidation.missingElements.length > 0) {
             errorMessage += `**Missing Critical Elements:**\n`;
             for (const element of briefValidation.missingElements) {
@@ -66,7 +66,7 @@ export const createCampaignTool = (client: Scope3ApiClient) => ({
             }
             errorMessage += `\n`;
           }
-          
+
           if (briefValidation.suggestions.length > 0) {
             errorMessage += `**Suggestions to Improve:**\n`;
             for (const suggestion of briefValidation.suggestions) {
@@ -74,12 +74,12 @@ export const createCampaignTool = (client: Scope3ApiClient) => ({
             }
             errorMessage += `\n`;
           }
-          
+
           errorMessage += `**Options:**\n`;
           errorMessage += `• Improve the brief based on suggestions above and try again\n`;
           errorMessage += `• Use campaign_validate_brief tool to check quality before creation\n`;
           errorMessage += `• Set skipBriefValidation: true to bypass validation (not recommended)`;
-          
+
           throw new Error(errorMessage);
         }
       }
@@ -98,7 +98,7 @@ export const createCampaignTool = (client: Scope3ApiClient) => ({
       });
 
       let summary = `✅ Campaign Created Successfully!\n\n`;
-      
+
       // Include brief validation results if validation was performed
       if (briefValidation) {
         summary += `**Brief Validation Results:**\n`;
@@ -109,7 +109,7 @@ export const createCampaignTool = (client: Scope3ApiClient) => ({
         }
         summary += `\n`;
       }
-      
+
       summary += `**Campaign Details:**\n`;
       summary += `• ID: ${campaign.id}\n`;
       summary += `• Name: ${campaign.name}\n`;
@@ -163,6 +163,7 @@ export const createCampaignTool = (client: Scope3ApiClient) => ({
 
       return createMCPResponse({
         data: {
+          briefValidation, // Include validation results in response data
           campaign,
           configuration: {
             brandAgentId: args.brandAgentId,
@@ -175,7 +176,6 @@ export const createCampaignTool = (client: Scope3ApiClient) => ({
             prompt: args.prompt,
             startDate: args.startDate,
           },
-          briefValidation, // Include validation results in response data
         },
         message: summary,
         success: true,
@@ -192,6 +192,15 @@ export const createCampaignTool = (client: Scope3ApiClient) => ({
     brandAgentId: z
       .string()
       .describe("ID of the brand agent that will own this campaign"),
+    briefValidationThreshold: z
+      .number()
+      .min(0)
+      .max(100)
+      .default(70)
+      .optional()
+      .describe(
+        "Minimum quality score required for brief validation (0-100, default: 70). Campaign creation will fail if brief scores below this threshold.",
+      ),
     budget: z
       .object({
         currency: z
@@ -231,12 +240,6 @@ export const createCampaignTool = (client: Scope3ApiClient) => ({
       .describe(
         "Natural language description of campaign objectives, targeting, and strategy",
       ),
-    startDate: z
-      .string()
-      .optional()
-      .describe(
-        "Campaign start date in UTC (ISO 8601 format, e.g., '2024-01-01T00:00:00Z')",
-      ),
     skipBriefValidation: z
       .boolean()
       .default(false)
@@ -244,14 +247,11 @@ export const createCampaignTool = (client: Scope3ApiClient) => ({
       .describe(
         "Skip AI-powered brief validation (default: false). When false, the campaign brief will be validated against Ad Context Protocol standards.",
       ),
-    briefValidationThreshold: z
-      .number()
-      .min(0)
-      .max(100)
-      .default(70)
+    startDate: z
+      .string()
       .optional()
       .describe(
-        "Minimum quality score required for brief validation (0-100, default: 70). Campaign creation will fail if brief scores below this threshold.",
+        "Campaign start date in UTC (ISO 8601 format, e.g., '2024-01-01T00:00:00Z')",
       ),
   }),
 });
