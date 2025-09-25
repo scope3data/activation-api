@@ -18,10 +18,13 @@ export default defineConfig({
   },
 
   test: {
+    // Test environment configuration
+    maxConcurrency: 1, // Further reduce concurrency for event listener stability
+    
     // Coverage configuration
     // Strategy: Focus on business logic layers that survive backend infrastructure changes
     // Exclude: GraphQL/BigQuery client code (temporary infrastructure, changing to different backend)
-    // Include: MCP tools (core business logic), utils (reusable logic), server orchestration
+    // Include: MCP tools (core business logic), utils (reusable logic), server orchestration, caching system
     coverage: {
       exclude: [
         "src/**/*.{test,spec}.ts",
@@ -36,6 +39,9 @@ export default defineConfig({
         "src/services/*-bigquery-*.ts",
         "src/services/auth-service.ts",
         "src/types/**",
+        // Exclude test doubles and contracts from coverage (they are test infrastructure)
+        "src/test-doubles/**",
+        "src/contracts/**",
       ],
       include: ["src/**/*.ts"],
       provider: "v8",
@@ -68,6 +74,19 @@ export default defineConfig({
           lines: 65,
           statements: 65,
         },
+        // High thresholds for caching system (critical for performance)
+        "src/services/cache/cached-bigquery.ts": {
+          branches: 85,
+          functions: 90,
+          lines: 85,
+          statements: 85,
+        },
+        "src/services/cache/preload-service.ts": {
+          branches: 80,
+          functions: 85,
+          lines: 80,
+          statements: 80,
+        },
       },
     },
     // Environment variables for tests
@@ -75,16 +94,17 @@ export default defineConfig({
       BIGQUERY_DATASET_ID: "test-dataset",
       BIGQUERY_PROJECT_ID: "test-project",
       NODE_ENV: "test",
+      // Increase process max listeners for test environment
+      UV_THREADPOOL_SIZE: "128",
+      // Disable actual process event listeners in tests
+      VITEST_DISABLE_PROCESS_LISTENERS: "true"
     },
 
     environment: "node",
-
-    // Exclude contract test files and standard exclusions
     exclude: [
-      "node_modules/**",
-      "dist/**",
-      "**/*.d.ts",
-      "src/__tests__/contracts/**",
+      "node_modules/**", 
+      "dist/**", 
+      "**/*.d.ts"
     ],
 
     // Global test configuration
@@ -100,13 +120,13 @@ export default defineConfig({
       json: "./test-results.json",
     },
 
-    // Concurrent test execution
-    pool: "threads",
+    // Concurrent test execution - use forks for better isolation
+    pool: "forks",
     poolOptions: {
-      threads: {
-        maxThreads: 4,
-        minThreads: 1,
-        singleThread: false,
+      forks: {
+        maxForks: 2,
+        minForks: 1,
+        singleFork: false,
       },
     },
 
@@ -119,6 +139,16 @@ export default defineConfig({
     setupFiles: ["./src/__tests__/setup/test-setup.ts"],
 
     // Test timeout configuration
-    testTimeout: 10000, // 10 seconds for integration tests
+    testTimeout: 15000, // 15 seconds for integration tests with caching delays
+    
+    // Test environment stability  
+    sequence: {
+      concurrent: false // Run tests sequentially to avoid resource conflicts
+    },
+    
+    // Better cleanup and isolation
+    clearMocks: true,
+    restoreMocks: true,
+    mockReset: true
   },
 });

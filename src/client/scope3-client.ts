@@ -171,16 +171,20 @@ export class Scope3ApiClient {
   private productDiscovery: ProductDiscoveryService;
   private tacticService: TacticBigQueryService;
 
-  constructor(graphqlUrl: string) {
+  constructor(
+    graphqlUrl: string,
+    campaignService?: CampaignBigQueryService,
+    authService?: AuthenticationService
+  ) {
     this.graphqlUrl = graphqlUrl;
     this.productDiscovery = new ProductDiscoveryService(graphqlUrl);
 
-    // Initialize shared authentication service
-    this.authService = new AuthenticationService(new BigQuery());
+    // Use injected services or create defaults
+    this.authService = authService || new AuthenticationService(new BigQuery());
+    this.campaignService = campaignService || new CampaignBigQueryService();
 
-    // Initialize specialized services
+    // Initialize other services
     this.brandAgentService = new BrandAgentService(this.authService);
-    this.campaignService = new CampaignBigQueryService();
     this.creativeService = new CreativeService(this.authService);
     this.tacticService = new TacticBigQueryService();
   }
