@@ -3,9 +3,27 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
+import { TacticBigQueryService } from "../../services/tactic-bigquery-service.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
 
-export const createTacticTool = (client: Scope3ApiClient) => ({
+const CreateTacticSchema = z.object({
+  brandStoryId: z.string().min(1, "Brand story ID is required"),
+  budgetAllocation: z.object({
+    amount: z.number().positive("Amount must be positive"),
+    currency: z.string().optional().default("USD"),
+    dailyCap: z.number().optional(),
+    pacing: z.enum(["asap", "even", "front_loaded"]).optional().default("even"),
+    percentage: z.number().optional(),
+  }),
+  campaignId: z.string().min(1, "Campaign ID is required"),
+  cpm: z.number().positive("CPM must be positive"),
+  description: z.string().optional(),
+  mediaProductId: z.string().min(1, "Media product ID is required"),
+  name: z.string().min(1, "Name is required"),
+  signalId: z.string().optional(),
+});
+
+export const createTacticTool = (_client: Scope3ApiClient) => ({
   annotations: {
     category: "Tactics",
     dangerLevel: "medium",
@@ -18,24 +36,11 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
     "Create a new tactic by combining a publisher media product with a brand story and signal. Simplified targeting approach focusing on the core components: media product + brand story + signal configuration. Includes budget allocation and effective pricing. Requires authentication.",
 
   execute: async (
-    args: {
-      brandStoryId: string;
-      budgetAllocation: {
-        amount: number;
-        currency?: string;
-        dailyCap?: number;
-        pacing?: "asap" | "even" | "front_loaded";
-        percentage?: number;
-      };
-      campaignId: string;
-      cpm: number;
-      description?: string;
-      mediaProductId: string;
-      name: string;
-      signalId?: string;
-    },
+    args: unknown,
     context: MCPToolExecuteContext,
   ): Promise<string> => {
+    // Validate input
+    const validatedArgs = CreateTacticSchema.parse(args);
     // Check session context first, then fall back to environment variable
     let apiKey = context.session?.scope3ApiKey;
 
@@ -51,23 +56,27 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
 
     try {
       const tacticInput = {
-        brandStoryId: args.brandStoryId,
+        brandStoryId: validatedArgs.brandStoryId,
         budgetAllocation: {
-          amount: args.budgetAllocation.amount,
-          currency: args.budgetAllocation.currency || "USD",
-          dailyCap: args.budgetAllocation.dailyCap,
-          pacing: args.budgetAllocation.pacing || "even",
-          percentage: args.budgetAllocation.percentage,
+          amount: validatedArgs.budgetAllocation.amount,
+          currency: validatedArgs.budgetAllocation.currency,
+          dailyCap: validatedArgs.budgetAllocation.dailyCap,
+          pacing: validatedArgs.budgetAllocation.pacing,
+          percentage: validatedArgs.budgetAllocation.percentage,
         },
-        campaignId: args.campaignId,
-        cpm: args.cpm,
-        description: args.description,
-        mediaProductId: args.mediaProductId,
-        name: args.name,
-        signalId: args.signalId,
+        campaignId: validatedArgs.campaignId,
+        cpm: validatedArgs.cpm,
+        description: validatedArgs.description,
+        mediaProductId: validatedArgs.mediaProductId,
+        name: validatedArgs.name,
+        signalId: validatedArgs.signalId,
       };
 
-      const tactic = await client.createTactic(apiKey, tacticInput);
+      // IMPORTANT: GraphQL doesn't have tactic mutations, so we use BigQuery-only approach
+      // This implements the full tactic creation functionality using BigQuery backend
+
+      const bigQueryService = new TacticBigQueryService();
+      const tactic = await bigQueryService.createTactic(tacticInput, apiKey);
 
       let summary = `✅ **Tactic Created Successfully!**\n\n`;
 
@@ -80,8 +89,13 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
 
       // Publisher product information
       const product = tactic.mediaProduct;
+      if (!product) {
+        throw new Error(
+          "Media product is required but was not found in tactic creation response",
+        );
+      }
       summary += `### 📦 **Publisher Product**\n`;
-      summary += `• **Publisher:** ${product.publisherName}\n`;
+      summary += `• **Publisher:** ${product.publisherName || "Unknown Publisher"}\n`;
       summary += `• **Product:** ${product.name}\n`;
       summary += `• **Type:** ${product.inventoryType.replace(/_/g, " ")} • ${product.deliveryType.replace(/_/g, " ")}\n`;
       summary += `• **Formats:** ${product.formats.join(", ")}\n`;
@@ -105,7 +119,7 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
       // Simplified targeting strategy
       summary += `### 🎯 **Targeting Strategy**\n`;
       summary += `• **Brand Story ID:** ${tactic.brandStoryId}\n`;
-      summary += `• **CPM:** $${args.cpm.toFixed(2)}\n`;
+      summary += `• **CPM:** $${validatedArgs.cpm.toFixed(2)}\n`;
 
       if (tactic.signalId) {
         summary += `• **Signal ID:** ${tactic.signalId}\n`;
@@ -177,14 +191,14 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
       return createMCPResponse({
         data: {
           configuration: {
-            brandStoryId: args.brandStoryId,
-            budgetAllocation: args.budgetAllocation,
-            campaignId: args.campaignId,
-            cpm: args.cpm,
-            description: args.description,
-            mediaProductId: args.mediaProductId,
-            name: args.name,
-            signalId: args.signalId,
+            brandStoryId: validatedArgs.brandStoryId,
+            budgetAllocation: validatedArgs.budgetAllocation,
+            campaignId: validatedArgs.campaignId,
+            cpm: validatedArgs.cpm,
+            description: validatedArgs.description,
+            mediaProductId: validatedArgs.mediaProductId,
+            name: validatedArgs.name,
+            signalId: validatedArgs.signalId,
           },
           effectivePricing: tactic.effectivePricing,
           mediaProduct: product,
@@ -208,51 +222,7 @@ export const createTacticTool = (client: Scope3ApiClient) => ({
       );
     }
   },
+  inputSchema: CreateTacticSchema,
 
-  name: "tactic_create",
-  parameters: z.object({
-    brandStoryId: z
-      .string()
-      .describe("ID of the brand story to use for this tactic"),
-    budgetAllocation: z
-      .object({
-        amount: z.number().min(0).describe("Budget amount for this tactic"),
-        currency: z
-          .string()
-          .default("USD")
-          .describe("Currency code (default: USD)"),
-        dailyCap: z
-          .number()
-          .min(0)
-          .optional()
-          .describe("Optional daily spending limit"),
-        pacing: z
-          .enum(["even", "asap", "front_loaded"])
-          .default("even")
-          .describe("Budget pacing strategy"),
-        percentage: z
-          .number()
-          .min(0)
-          .max(100)
-          .optional()
-          .describe("Percentage of total campaign budget"),
-      })
-      .describe("Budget allocation configuration"),
-    campaignId: z.string().describe("ID of the campaign to add this tactic to"),
-    cpm: z.number().min(0).describe("Cost per mille (CPM) for this tactic"),
-    description: z
-      .string()
-      .optional()
-      .describe("Optional description of the tactic"),
-    mediaProductId: z
-      .string()
-      .describe("ID of the publisher media product to use"),
-    name: z
-      .string()
-      .describe("Name for this tactic (e.g., 'Hulu Premium + Brand Story')"),
-    signalId: z
-      .string()
-      .optional()
-      .describe("Optional signal ID for enhanced targeting"),
-  }),
+  name: "create_tactic",
 });

@@ -49,6 +49,8 @@ import { listCreativeFormatsTool } from "./formats/list.js";
 import { createPMPTool } from "./pmps/create.js";
 import { listPMPsTool } from "./pmps/list.js";
 import { updatePMPTool } from "./pmps/update.js";
+// Prebid
+import { getPrebidSegmentsTool } from "./prebid/get-segments.js";
 // Products
 import { getProductsTool } from "./products/list.js";
 import { exportDataTool } from "./reporting/export-data.js";
@@ -77,8 +79,11 @@ import { listCustomSignalsTool } from "./signals/list.js";
 import { updateCustomSignalTool } from "./signals/update.js";
 // Tactics
 import { createTacticTool } from "./tactics/create.js";
+import { deleteTacticTool } from "./tactics/delete.js";
 import { discoverPublisherProductsTool } from "./tactics/discover-products.js";
+import { getTacticTool } from "./tactics/get.js";
 import { listTacticsTool } from "./tactics/list.js";
+import { updateTacticTool } from "./tactics/update.js";
 // Webhooks
 import { registerWebhookTool } from "./webhooks/register.js";
 
@@ -129,8 +134,14 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
 
   // Tactics (budget allocation merged into campaign/update)
   server.addTool(createTacticTool(client)); // tactic/create
-  server.addTool(discoverPublisherProductsTool(client)); // tactic/discover_products
+  server.addTool(getTacticTool(client)); // tactic/get
   server.addTool(listTacticsTool(client)); // tactic/list
+  server.addTool(updateTacticTool(client)); // tactic/update
+  server.addTool(deleteTacticTool(client)); // tactic/delete
+  server.addTool(discoverPublisherProductsTool(client)); // tactic/discover_products
+
+  // Prebid Integration
+  server.addTool(getPrebidSegmentsTool()); // prebid/get-segments
 
   // PMPs
   server.addTool(createPMPTool(client)); // pmp/create
@@ -217,6 +228,7 @@ export {
   // Campaign CRUD
   deleteCampaignTool,
   deleteCustomSignalTool,
+  deleteTacticTool,
   discoverPublisherProductsTool,
   exportDataTool,
   getBrandAgentTool,
@@ -225,11 +237,14 @@ export {
   // DSP
   getDSPSeatsTool,
   getPartnerSeatsTool,
+  // Prebid
+  getPrebidSegmentsTool,
   // Products
   getProductsTool,
   getSignalsAgentHistoryTool,
   getSignalsAgentTool,
   getSignalsTool,
+  getTacticTool,
   listBrandAgentBrandStoriesTool,
   listBrandAgentStandardsTool,
   listBrandAgentsTool,
@@ -256,5 +271,6 @@ export {
   updatePMPTool,
   updateSalesAgentTool,
   updateSignalsAgentTool,
+  updateTacticTool,
   validateBriefTool,
 };

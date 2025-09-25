@@ -2,10 +2,12 @@ import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
+import type { Tactic } from "../../types/tactics.js";
 
+import { TacticBigQueryService } from "../../services/tactic-bigquery-service.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
 
-export const listTacticsTool = (client: Scope3ApiClient) => ({
+export const listTacticsTool = (_client: Scope3ApiClient) => ({
   annotations: {
     category: "Tactics",
     dangerLevel: "low",
@@ -37,7 +39,82 @@ export const listTacticsTool = (client: Scope3ApiClient) => ({
     }
 
     try {
-      const tactics = await client.listTactics(apiKey, args.campaignId);
+      const bigQueryService = new TacticBigQueryService();
+      const tacticRecords = await bigQueryService.listTactics(
+        args.campaignId,
+        apiKey,
+      );
+
+      // Convert BigQuery records to Tactic objects
+      const tactics: Tactic[] = tacticRecords.map((record) => ({
+        brandStoryId: record.brand_story_id || undefined,
+        budgetAllocation: {
+          amount: record.budget_amount,
+          currency: record.budget_currency,
+          dailyCap: record.budget_daily_cap || undefined,
+          pacing: record.budget_pacing as "asap" | "even" | "front_loaded",
+          percentage: record.budget_percentage || undefined,
+        },
+        campaignId: record.campaign_id,
+        createdAt: new Date(record.created_at),
+        description: record.description,
+        effectivePricing: {
+          cpm: record.cpm,
+          currency: record.budget_currency,
+          signalCost: record.signal_cost || undefined,
+          totalCpm: record.total_cpm,
+        },
+        id: record.id,
+        mediaProduct: {
+          basePricing: {
+            fixedCpm: undefined,
+            floorCpm: record.cpm,
+            model: "auction" as "auction" | "fixed_cpm",
+            targetCpm: undefined,
+          },
+          createdAt: new Date(),
+          deliveryType: "non_guaranteed" as "guaranteed" | "non_guaranteed",
+          description: "Media product description",
+          formats: ["display", "video"] as (
+            | "audio"
+            | "display"
+            | "html5"
+            | "native"
+            | "video"
+          )[],
+          id: record.media_product_id,
+          inventoryType: "run_of_site" as
+            | "premium"
+            | "run_of_site"
+            | "targeted_package",
+          name: "Media Product",
+          productId: record.media_product_id,
+          publisherId: record.sales_agent_id,
+          publisherName: "Publisher", // Mock data since we don't have full media product in BigQuery yet
+          supportedTargeting: ["demographic", "geographic"],
+          updatedAt: new Date(),
+        },
+        name: record.name,
+        performance: undefined as undefined, // Performance data not available in tactics table
+        signalId: record.signal_id || undefined,
+        status: record.status as "active" | "completed" | "draft" | "paused",
+        targeting: {
+          inheritFromCampaign: !record.signal_id,
+          overrides: undefined,
+          signalConfiguration: record.signal_id
+            ? {
+                audienceIds: [],
+                customParameters: {},
+                segments: [record.signal_id],
+              }
+            : undefined,
+          signalProvider: record.signal_id ? "scope3" : undefined,
+          signalType: record.signal_id
+            ? "scope3"
+            : ("none" as "buyer" | "none" | "scope3" | "third_party"),
+        },
+        updatedAt: new Date(record.updated_at),
+      }));
 
       if (tactics.length === 0) {
         return createMCPResponse({
@@ -71,12 +148,12 @@ export const listTacticsTool = (client: Scope3ApiClient) => ({
       );
 
       const totalSpend = tactics.reduce(
-        (sum, tactic) => sum + (tactic.performance?.spend || 0),
+        (sum, tactic) => sum + (tactic.performance?.spend ?? 0),
         0,
       );
 
       const totalImpressions = tactics.reduce(
-        (sum, tactic) => sum + (tactic.performance?.impressions || 0),
+        (sum, tactic) => sum + (tactic.performance?.impressions ?? 0),
         0,
       );
 
@@ -162,32 +239,30 @@ export const listTacticsTool = (client: Scope3ApiClient) => ({
         summary += `• Pacing: ${tactic.budgetAllocation.pacing.replace(/_/g, " ")}\n`;
 
         // Performance metrics (if available)
-        if (tactic.performance && tactic.performance.impressions > 0) {
+        const perf = tactic.performance;
+        if (perf && perf.impressions > 0) {
           summary += `\n**📈 Performance:**\n`;
-          summary += `• Impressions: ${tactic.performance.impressions.toLocaleString()}\n`;
-          summary += `• Spend: $${tactic.performance.spend.toLocaleString()}\n`;
-          summary += `• Actual CPM: $${tactic.performance.cpm.toFixed(2)}\n`;
+          summary += `• Impressions: ${perf.impressions.toLocaleString()}\n`;
+          summary += `• Spend: $${perf.spend.toLocaleString()}\n`;
+          summary += `• Actual CPM: $${perf.cpm.toFixed(2)}\n`;
 
-          if (tactic.performance.clicks && tactic.performance.clicks > 0) {
-            summary += `• CTR: ${(tactic.performance.ctr! * 100).toFixed(2)}%\n`;
+          if (perf.clicks && perf.clicks > 0) {
+            summary += `• CTR: ${(perf.ctr! * 100).toFixed(2)}%\n`;
           }
 
-          if (
-            tactic.performance.conversions &&
-            tactic.performance.conversions > 0
-          ) {
-            summary += `• Conversions: ${tactic.performance.conversions}\n`;
-            summary += `• CPA: $${tactic.performance.cpa!.toFixed(2)}\n`;
+          if (perf.conversions && perf.conversions > 0) {
+            summary += `• Conversions: ${perf.conversions}\n`;
+            summary += `• CPA: $${perf.cpa!.toFixed(2)}\n`;
           }
 
           // Performance indicators
           const performanceWarnings = [];
-          if (tactic.performance.cpm > tactic.effectivePricing.totalCpm * 1.2) {
+          if (perf.cpm > tactic.effectivePricing.totalCpm * 1.2) {
             performanceWarnings.push(
               "⚠️ Actual CPM significantly higher than expected",
             );
           }
-          if (tactic.performance.ctr && tactic.performance.ctr < 0.001) {
+          if (perf.ctr && perf.ctr < 0.001) {
             performanceWarnings.push("⚠️ Low click-through rate");
           }
 

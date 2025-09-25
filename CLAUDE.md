@@ -306,7 +306,39 @@ export class CampaignRepositoryTestDouble implements CampaignRepository {
 
 1. **Contract Tests** (`src/__tests__/contracts/*.contract.test.ts`) - Validate service interfaces and behavior
 2. **Tool-Level Tests** (`*-tool-level.test.ts`) - Test complete MCP tool execution
-3. **Integration Tests** (`test-*.js`) - End-to-end validation with real backends (for verification)
+3. **Schema Validation Tests** (`schema-validation.test.ts`) - Prevent GraphQL client-server mismatches
+4. **Integration Tests** (`test-*.js`) - End-to-end validation with real backends (for verification)
+
+### GraphQL Schema Validation Strategy
+
+**Problem Solved**: Client code calling GraphQL mutations that don't exist in the backend schema, leading to runtime failures.
+
+**Solution**: Multi-layered testing approach with static schema validation, contract testing, and CI integration.
+
+**Implementation**:
+
+1. **Static Schema Validation** (`src/__tests__/schema-validation.test.ts`)
+   - Validates all client GraphQL operations against actual backend schema
+   - Uses GraphQL validation engine to check field existence and type compatibility
+   - Reports specific errors with line numbers and suggestions
+
+2. **Schema Validation Script** (`scripts/validate-graphql-schema.ts`)
+   - CLI tool for development and CI integration
+   - Scans TypeScript files for GraphQL operations
+   - Provides detailed error reports with suggestions
+
+3. **Prevention Strategy**:
+   - Pre-commit hooks run schema validation automatically
+   - CI/CD fails builds if schema mismatches detected
+   - Clear error messages with actionable suggestions
+
+**Key Commands**:
+
+```bash
+npm run validate:schema        # Check all operations
+npm run validate:schema:show   # See available operations
+npm test -- schema             # Run schema validation tests
+```
 
 ### Running Contract Tests
 

@@ -17,6 +17,7 @@ import type {
   TopTactic,
 } from "../../types/reporting.js";
 
+import { TacticBigQueryService } from "../../services/tactic-bigquery-service.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const getCampaignSummaryTool = (client: Scope3ApiClient) => ({
@@ -81,11 +82,23 @@ export const getCampaignSummaryTool = (client: Scope3ApiClient) => ({
       );
 
       // Get tactic breakdown
-      const tacticBreakdown = await client.getTacticBreakdown(
-        apiKey,
+      const tacticService = new TacticBigQueryService();
+      const tacticRecords = await tacticService.listTactics(
         args.campaignId,
-        dateRange,
+        apiKey,
       );
+
+      // Convert tactic records to breakdown format expected by the code
+      const tacticBreakdown = tacticRecords.map((record) => ({
+        budgetAllocated: record.budget_amount,
+        budgetSpent: 0, // Performance data not available in tactics table
+        cpm: record.total_cpm,
+        efficiency: record.total_cpm > 0 ? 1000 / record.total_cpm : 0,
+        impressions: 0,
+        status: record.status,
+        tacticId: record.id,
+        tacticName: record.name,
+      }));
 
       // Generate summary based on verbosity
       const summary = generateCampaignSummary(

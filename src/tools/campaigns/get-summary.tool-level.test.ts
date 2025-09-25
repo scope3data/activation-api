@@ -5,20 +5,19 @@ import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
 import { getCampaignSummaryTool } from "./get-summary.js";
 
-// Mock the CampaignBigQueryService
-const mockCampaignService = {
-  generateCampaignSummary: vi.fn(),
+// Mock the TacticBigQueryService
+const mockTacticService = {
+  listTactics: vi.fn(),
 };
 
-vi.mock("../../services/campaign-bigquery-service.js", () => ({
-  CampaignBigQueryService: vi.fn(() => mockCampaignService),
+vi.mock("../../services/tactic-bigquery-service.js", () => ({
+  TacticBigQueryService: vi.fn(() => mockTacticService),
 }));
 
 const mockClient = {
   getBrandAgent: vi.fn(),
   getBrandAgentCampaign: vi.fn(),
   getCampaignDeliveryData: vi.fn(),
-  getTacticBreakdown: vi.fn(),
 } as unknown as Scope3ApiClient;
 
 const mockContext: MCPToolExecuteContext = {
@@ -52,7 +51,7 @@ const sampleDeliveryDataResponse = {
   spend: 7500,
 };
 
-const sampleTacticBreakdownResponse = [
+const _sampleTacticBreakdownResponse = [
   {
     clicks: 300,
     impressions: 30000,
@@ -72,6 +71,8 @@ describe("getCampaignSummaryTool", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Mock empty tactic list by default
+    mockTacticService.listTactics.mockResolvedValue([]);
   });
 
   describe("tool metadata", () => {
@@ -97,9 +98,8 @@ describe("getCampaignSummaryTool", () => {
       mockClient.getCampaignDeliveryData = vi
         .fn()
         .mockResolvedValue(sampleDeliveryDataResponse);
-      mockClient.getTacticBreakdown = vi
-        .fn()
-        .mockResolvedValue(sampleTacticBreakdownResponse);
+      // Mock tactic service to return empty list (avoiding auth issues)
+      mockTacticService.listTactics.mockResolvedValue([]);
 
       const result = await tool.execute(
         {
@@ -117,7 +117,10 @@ describe("getCampaignSummaryTool", () => {
         "ba_456",
       );
       expect(mockClient.getCampaignDeliveryData).toHaveBeenCalled();
-      expect(mockClient.getTacticBreakdown).toHaveBeenCalled();
+      expect(mockTacticService.listTactics).toHaveBeenCalledWith(
+        "camp_123",
+        "test-api-key",
+      );
 
       // Parse the JSON response to check structured data
       const parsedResult = JSON.parse(result);
@@ -159,9 +162,8 @@ describe("getCampaignSummaryTool", () => {
       mockClient.getCampaignDeliveryData = vi
         .fn()
         .mockResolvedValue(sampleDeliveryDataResponse);
-      mockClient.getTacticBreakdown = vi
-        .fn()
-        .mockResolvedValue(sampleTacticBreakdownResponse);
+      // Mock tactic service for structured data tests
+      mockTacticService.listTactics.mockResolvedValue([]);
     });
 
     it("should include structured data with campaign summary", async () => {

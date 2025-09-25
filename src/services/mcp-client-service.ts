@@ -5,6 +5,7 @@ import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type {
   ADCPGetProductsRequest,
   ADCPGetProductsResponse,
+  ADCPProduct,
 } from "../types/adcp.js";
 import type { SalesAgent } from "./bigquery-service.js";
 
@@ -37,8 +38,7 @@ export class MCPClientService {
       // Parse the response - this might need adjustment based on actual response format
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const responseText = (result as any).content?.[0]?.text || "{}";
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let parsedResponse: any;
+      let parsedResponse: unknown;
 
       try {
         parsedResponse = JSON.parse(responseText);
@@ -50,9 +50,10 @@ export class MCPClientService {
         };
       }
 
+      const response = parsedResponse as Record<string, unknown>;
       return {
-        message: parsedResponse.message || responseText,
-        products: parsedResponse.products || [],
+        message: (response?.message as string) || responseText,
+        products: (response?.products as ADCPProduct[]) || [],
         sales_agent: {
           name: salesAgent.name,
           principal_id: salesAgent.principal_id,
