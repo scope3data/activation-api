@@ -60,6 +60,10 @@ export class SalesAgentService {
     this.bigquery = new BigQuery({ projectId });
     this.projectId = projectId;
     this.datasetId = datasetId;
+
+    // Initialize AuthHandlerFactory with BigQuery configuration
+    // Required for OAuth handlers that need to store client registrations
+    AuthHandlerFactory.initialize(projectId, datasetId);
   }
 
   /**
