@@ -28,6 +28,7 @@ import { deleteCampaignTool } from "./campaigns/delete.js";
 import { getCampaignSummaryTool } from "./campaigns/get-summary.js";
 import { listCampaignsTool } from "./campaigns/list.js";
 import { updateCampaignTool } from "./campaigns/update.js";
+import { validateBriefTool } from "./campaigns/validate-brief.js";
 // Creatives
 import {
   creativeAssignTool,
@@ -99,6 +100,7 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(updateCampaignTool(client)); // campaign/update
   server.addTool(deleteCampaignTool(client)); // campaign/delete
   server.addTool(createCampaignLegacyTool(client)); // campaign/create-legacy (backward compatibility)
+  server.addTool(validateBriefTool()); // campaign/validate-brief
 
   // Creatives
   server.addTool(creativeCreateTool(client)); // creative/create
@@ -254,4 +256,5 @@ export {
   updatePMPTool,
   updateSalesAgentTool,
   updateSignalsAgentTool,
+  validateBriefTool,
 };

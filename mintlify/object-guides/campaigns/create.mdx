@@ -1,0 +1,369 @@
+---
+title: "campaign_create"
+description: "Create campaigns with integrated AI-powered brief validation to ensure effective inventory matching and execution"
+icon: "plus"
+---
+
+## Overview
+
+The `campaign_create` tool creates new campaigns within a brand agent context with integrated AI-powered brief validation. By default, all campaign briefs are automatically validated against [Ad Context Protocol standards](https://adcontextprotocol.org/docs/media-buy/product-discovery/brief-expectations) to ensure they contain the essential information publishers need for effective inventory matching.
+
+<Warning>
+**Campaign Creation Blocked for Low-Quality Briefs**
+
+If your campaign brief scores below the quality threshold (default 70/100), creation will fail with detailed feedback. You must either improve the brief or explicitly skip validation using `skipBriefValidation: true`.
+</Warning>
+
+## Why Integrated Validation?
+
+Publishers require specific information to match campaigns with appropriate inventory:
+
+- **Geographic targeting** - Essential for finding relevant inventory locations
+- **Flight dates** - Critical for inventory availability and reservation
+- **Creative specifications** - Required for matching ad formats and placements  
+- **Audience details** - Needed for targeting optimization
+- **Measurable objectives** - Important for campaign scaling decisions
+
+The integrated validation prevents campaign creation failures by ensuring this essential information is present upfront.
+
+## Parameters
+
+### Required Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `brandAgentId` | string | ID of the brand agent that will own this campaign |
+| `name` | string | Name of the campaign |
+| `prompt` | string | Natural language description of campaign objectives, targeting, and strategy |
+| `budget` | object | Budget configuration with total amount in cents |
+
+### Budget Configuration
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `total` | number | Yes | Total campaign budget in cents (e.g., 5000000 = $50,000) |
+| `currency` | string | No | Budget currency (default: "USD") |
+| `dailyCap` | number | No | Daily spending limit in cents |
+| `pacing` | string | No | Pacing strategy: 'even', 'accelerated', or 'front_loaded' |
+
+### Optional Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `creativeIds` | string[] | Array of creative IDs to assign to this campaign |
+| `startDate` | string | Campaign start date in ISO 8601 UTC format |
+| `endDate` | string | Campaign end date in ISO 8601 UTC format |
+| `skipBriefValidation` | boolean | Skip AI-powered validation (default: false) |
+| `briefValidationThreshold` | number | Minimum quality score required (0-100, default: 70) |
+
+## Brief Validation Integration
+
+### Default Behavior: Automatic Validation
+By default, every campaign creation includes brief validation:
+
+```javascript
+{
+  "brandAgentId": "agent_nike_123",
+  "name": "Nike Air Max Spring Campaign",
+  "prompt": "Launch Nike Air Max campaign targeting urban millennials 25-35...",
+  "budget": {
+    "total": 25000000,  // $250,000
+    "currency": "USD",
+    "dailyCap": 1200000, // $12,000/day
+    "pacing": "even"
+  }
+  // Validation runs automatically with threshold: 70
+}
+```
+
+### Custom Validation Thresholds
+Set higher quality requirements for premium campaigns:
+
+```javascript
+{
+  "brandAgentId": "agent_nike_123",
+  "name": "Nike Premium CTV Campaign",
+  "prompt": "Premium campaign brief with detailed targeting...",
+  "budget": { "total": 50000000 },
+  "briefValidationThreshold": 85  // Higher standard
+}
+```
+
+### Skip Validation for Pre-Validated Briefs
+Avoid duplicate processing when you've already validated the brief:
+
+```javascript
+{
+  "brandAgentId": "agent_nike_123", 
+  "name": "Pre-Validated Campaign",
+  "prompt": "Already validated comprehensive brief...",
+  "budget": { "total": 25000000 },
+  "skipBriefValidation": true  // Skip to save processing time
+}
+```
+
+## Usage Examples
+
+### Standard Campaign Creation
+
+```javascript
+{
+  "brandAgentId": "agent_nike_123",
+  "name": "Nike Spring Athletic Campaign",
+  "prompt": "Launch athletic wear campaign targeting fitness enthusiasts 25-40 in major US cities. Run March-May 2025 with 15s/30s video for CTV and 300x250 display banners. Target $2.50 CPM with 20M impressions. Focus on urban markets: NYC, LA, Chicago, Seattle metro areas.",
+  "budget": {
+    "total": 5000000,  // $50,000
+    "currency": "USD",
+    "dailyCap": 200000,  // $2,000/day
+    "pacing": "even"
+  },
+  "startDate": "2025-03-01T00:00:00Z",
+  "endDate": "2025-05-31T23:59:59Z",
+  "creativeIds": ["creative_123", "creative_456"]
+}
+```
+
+### High-Quality Brief Example
+
+```javascript
+{
+  "brandAgentId": "agent_nike_123",
+  "name": "Nike Air Max Premium Launch",
+  "prompt": "Launch Nike Air Max campaign targeting urban millennials 25-35 with household income $50k+, focused on fitness/lifestyle interests in tier 1 US cities (NYC, LA, Chicago, SF metro areas). Campaign runs March 1 - April 15, 2025. Objectives: Achieve 30% brand awareness lift and 15M impressions. Success metrics: 2.5% CTR target, 40% video completion rate for CTV inventory. Creative requirements: 15s/30s video ads for CTV/YouTube plus 728x90 and 300x250 display banners with sustainability messaging. Total budget $250k with even pacing strategy.",
+  "budget": {
+    "total": 25000000,  // $250,000
+    "currency": "USD", 
+    "dailyCap": 1200000,  // $12,000/day
+    "pacing": "even"
+  },
+  "startDate": "2025-03-01T00:00:00Z",
+  "endDate": "2025-04-15T23:59:59Z",
+  "briefValidationThreshold": 80
+}
+```
+
+## Response Format
+
+### Successful Creation with Validation
+
+```json
+{
+  "success": true,
+  "data": {
+    "campaign": {
+      "id": "camp_abc123",
+      "name": "Nike Spring Athletic Campaign",
+      "brandAgentId": "agent_nike_123",
+      "status": "active",
+      "createdAt": "2024-12-01T10:30:00Z",
+      "budget": {
+        "total": 5000000,
+        "currency": "USD",
+        "dailyCap": 200000,
+        "pacing": "even"
+      }
+    },
+    "briefValidation": {
+      "score": 85,
+      "qualityLevel": "Comprehensive Brief",
+      "meetsThreshold": true,
+      "feedback": "Brief contains all critical elements for effective inventory matching."
+    }
+  },
+  "message": "✅ Campaign Created Successfully!\n\n**Brief Validation Results:**\n• Quality Score: 85/100 ✅\n• Quality Level: Comprehensive Brief..."
+}
+```
+
+### Failed Creation Due to Low Brief Quality
+
+```json
+{
+  "success": false,
+  "error": "❌ Campaign Creation Failed - Brief Quality Below Threshold\n\n**Score:** 45/100 (Required: 70/100)\n**Quality Level:** Minimal Brief\n\n**Missing Critical Elements:**\n• Geographic targeting not defined - CRITICAL for inventory matching\n• Campaign flight dates not specified - CRITICAL for inventory availability\n\n**Options:**\n• Improve the brief based on suggestions above and try again\n• Use campaign_validate_brief tool to check quality before creation\n• Set skipBriefValidation: true to bypass validation (not recommended)"
+}
+```
+
+## Best Practice Workflows
+
+### Recommended: Validate First, Create Second
+
+<Steps>
+  <Step title="Validate Brief Quality">
+    Use `campaign_validate_brief` to check completeness and get improvement suggestions
+  </Step>
+  <Step title="Improve Brief">
+    Address missing elements based on AI feedback
+  </Step>
+  <Step title="Create Campaign">
+    Use `campaign_create` with `skipBriefValidation: true` to avoid duplicate validation
+  </Step>
+</Steps>
+
+<Tip>
+**Efficiency Benefits**
+
+This approach saves processing time and reduces carbon footprint by avoiding duplicate AI evaluations. It also lets you iteratively improve briefs before committing to campaign creation.
+</Tip>
+
+### Alternative: Direct Creation with Retry
+
+<Steps>
+  <Step title="Attempt Campaign Creation">
+    Use `campaign_create` with automatic validation
+  </Step>
+  <Step title="Handle Validation Failures">
+    If brief quality is insufficient, improve based on error feedback
+  </Step>
+  <Step title="Retry Creation">
+    Create again with improved brief
+  </Step>
+</Steps>
+
+## Brief Quality Requirements
+
+### The 6 Critical Elements
+
+Publishers require these elements for successful inventory matching:
+
+<Accordion>
+  <AccordionItem title="1. Business Objectives">
+    **Required:** Clear, measurable goals
+    
+    **Good Example:** "Increase brand awareness by 30% among target demographic"  
+    **Poor Example:** "Build awareness" (not measurable)
+  </AccordionItem>
+  
+  <AccordionItem title="2. Success Metrics">
+    **Required:** Specific KPIs with targets
+    
+    **Good Example:** "Target 2.5% CTR with minimum 15M impressions"  
+    **Poor Example:** "Good engagement" (not specific)
+  </AccordionItem>
+  
+  <AccordionItem title="3. Target Audience">
+    **Required:** Detailed demographics and interests
+    
+    **Good Example:** "Urban millennials 25-35, income $50k+, sustainability-focused"  
+    **Poor Example:** "Young people" (too broad)
+  </AccordionItem>
+  
+  <AccordionItem title="4. Geographic Markets ⚠️ CRITICAL">
+    **Required:** Specific locations for inventory matching
+    
+    **Good Example:** "Tier 1 US cities: NYC, LA, Chicago, SF metro areas"  
+    **Poor Example:** "Major markets" (unclear)
+  </AccordionItem>
+  
+  <AccordionItem title="5. Flight Dates ⚠️ CRITICAL">
+    **Required:** Campaign timing for inventory availability
+    
+    **Good Example:** "March 1 - April 15, 2025 (6-week campaign)"  
+    **Poor Example:** "Next quarter" (too vague)
+  </AccordionItem>
+  
+  <AccordionItem title="6. Creative Requirements ⚠️ CRITICAL">
+    **Required:** Formats and specifications for inventory matching
+    
+    **Good Example:** "15s/30s video ads plus 728x90 display banners"  
+    **Poor Example:** "Creative content" (no specs)
+  </AccordionItem>
+</Accordion>
+
+### Quality Scoring
+
+- **Missing ANY critical requirement** = automatic score below 60
+- **Missing 2+ critical requirements** = score capped at 40  
+- **Missing 3+ critical requirements** = score capped at 30
+
+<Warning>
+**Campaign Creation Threshold**
+
+Default threshold is 70/100. Campaigns with lower scores will be rejected unless validation is explicitly skipped.
+</Warning>
+
+## Error Handling
+
+### Validation Failures
+When briefs don't meet quality standards:
+
+1. **Detailed Error Message** - Shows score, missing elements, and suggestions
+2. **Improvement Guidance** - Specific actions to address each gap
+3. **Bypass Option** - Ability to skip validation if needed
+
+### Authentication Errors
+- Missing or invalid API key results in authentication error
+- Check `SCOPE3_API_KEY` environment variable or session context
+
+### Parameter Validation Errors
+- Invalid budget amounts (must be positive integers in cents)
+- Invalid date formats (must be ISO 8601 UTC)
+- Invalid brand agent or creative IDs
+
+## Integration with Other Tools
+
+<CardGroup cols={2}>
+  <Card title="campaign_validate_brief" icon="magnifying-glass" href="/object-guides/campaigns/validate-brief">
+    Standalone brief validation for iterative improvement
+  </Card>
+  
+  <Card title="Brand Agent Creation" icon="building" href="/object-guides/brand-agent">
+    Create brand agents to own campaigns
+  </Card>
+  
+  <Card title="Creative Management" icon="palette" href="/object-guides/creative">
+    Manage creative assets for campaign assignment
+  </Card>
+  
+  <Card title="Campaign Reporting" icon="chart-line" href="/reporting-overview">
+    Monitor campaign performance after creation
+  </Card>
+</CardGroup>
+
+## Common Use Cases
+
+### Premium Campaign Creation
+```javascript
+// Higher validation standards for premium campaigns
+{
+  "name": "Premium Brand Campaign",
+  "prompt": "Comprehensive brief with all elements...",
+  "briefValidationThreshold": 85
+}
+```
+
+### Rapid Campaign Development
+```javascript
+// Pre-validate brief, then create quickly
+{
+  "name": "Pre-Validated Campaign", 
+  "prompt": "Already validated brief content...",
+  "skipBriefValidation": true
+}
+```
+
+### Scheduled Campaign Launch
+```javascript
+// Campaign with specific flight dates
+{
+  "name": "Q2 Product Launch",
+  "prompt": "Seasonal campaign brief...",
+  "startDate": "2025-04-01T00:00:00Z",
+  "endDate": "2025-06-30T23:59:59Z"
+}
+```
+
+## Next Steps
+
+<CardGroup cols={1}>
+  <Card title="Learn Brief Validation" icon="clipboard-check" href="/features/brief-validation">
+    Understand comprehensive brief quality standards
+  </Card>
+  
+  <Card title="Campaign Management" icon="bullseye-arrow" href="/object-guides/campaign">
+    Complete guide to campaign lifecycle and optimization
+  </Card>
+  
+  <Card title="Brand Agent Setup" icon="building" href="/object-guides/brand-agent">
+    Create brand agents to organize campaign resources
+  </Card>
+</CardGroup>

@@ -74,6 +74,7 @@ export interface CreateBrandAgentStoryParams {
 // Campaign MCP parameter types
 export interface CreateCampaignParams {
   brandAgentId: string;
+  briefValidationThreshold?: number;
   budget: {
     currency?: string;
     dailyCap?: number;
@@ -84,6 +85,7 @@ export interface CreateCampaignParams {
   endDate?: string;
   name: string;
   prompt: string;
+  skipBriefValidation?: boolean;
   startDate?: string;
 }
 
@@ -398,4 +400,11 @@ export interface UpdateSyntheticAudienceParams {
   audienceId: string;
   description?: string;
   name?: string;
+}
+
+// Brief Validation MCP parameter types
+export interface ValidateBriefParams {
+  brandAgentId?: string;
+  brief: string;
+  threshold?: number;
 }
