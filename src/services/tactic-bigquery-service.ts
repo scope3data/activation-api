@@ -180,11 +180,18 @@ export class TacticBigQueryService {
       );
 
       if (salesAgent) {
-        // Execute media buy
+        // Get sanitized brief from campaign for sales agent privacy
+        const sanitizedBrief = await this.getCampaignSanitizedBrief(
+          data.campaignId,
+          apiToken,
+        );
+
+        // Execute media buy with sanitized brief (no budget/price information)
         mediaBuyResult = await mediaBuyService.executeMediaBuy(
           tacticRecord,
           salesAgent,
-          data.description || `Campaign for ${data.name}`,
+          sanitizedBrief ||
+            `Tactic for ${data.name} - budget details managed separately`,
           customerId,
         );
 
@@ -290,6 +297,43 @@ export class TacticBigQueryService {
       query,
       types: { customerId: "INT64" },
     });
+  }
+
+  /**
+   * Get sanitized brief from campaign for sales agent privacy
+   */
+  async getCampaignSanitizedBrief(
+    campaignId: string,
+    apiToken?: string,
+  ): Promise<null | string> {
+    const customerId = await this.resolveCustomerId(apiToken);
+
+    const query = `
+      SELECT sanitized_brief, prompt, name
+      FROM \`${this.projectId}.${this.dataset}.campaigns\`
+      WHERE id = @campaignId AND customer_id = @customerId
+      LIMIT 1
+    `;
+
+    const [rows] = await this.bigquery.query({
+      params: { campaignId, customerId },
+      query,
+    });
+
+    if (rows.length === 0) {
+      return null; // Campaign not found
+    }
+
+    const row = rows[0] as Record<string, unknown>;
+
+    // Return sanitized brief if available, otherwise create fallback
+    if (row.sanitized_brief && typeof row.sanitized_brief === "string") {
+      return row.sanitized_brief;
+    }
+
+    // Fallback: create a generic brief without exposing campaign details
+    const campaignName = row.name ? String(row.name) : "Campaign";
+    return `${campaignName} - targeting and creative requirements as specified. Budget and pricing details managed separately for privacy.`;
   }
 
   /**
