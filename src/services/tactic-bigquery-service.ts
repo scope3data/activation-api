@@ -16,7 +16,7 @@ export interface PrebidSegment {
   max_cpm: number;
 }
 
-export interface TacticBigQueryRecord {
+export interface TacticBigQueryRecord extends Record<string, unknown> {
   axe_include_segment?: string;
   brand_story_id?: string;
   budget_amount: number;

@@ -21,15 +21,20 @@ export const getPrebidSegmentsTool = () => ({
   description:
     "Get AXE inclusion segments for a publisher organization ID. Used by prebid integration to determine which buyer campaigns are targeting this publisher's inventory. Returns segment IDs and maximum CPM for auction prioritization.",
 
+  inputSchema: GetPrebidSegmentsSchema,
+  name: "get_prebid_segments",
+
   execute: async (
-    args: z.infer<typeof GetPrebidSegmentsSchema>,
+    args: unknown,
     _context: MCPToolExecuteContext,
   ): Promise<string> => {
     try {
-      GetPrebidSegmentsSchema.parse(args);
+      const validatedArgs = GetPrebidSegmentsSchema.parse(args);
 
       const tacticService = new TacticBigQueryService();
-      const segments = await tacticService.getPrebidSegments(args.orgId);
+      const segments = await tacticService.getPrebidSegments(
+        validatedArgs.orgId,
+      );
 
       if (segments.length === 0) {
         return createMCPResponse({

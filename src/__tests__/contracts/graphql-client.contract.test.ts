@@ -1,4 +1,5 @@
 import { Scope3ApiClient } from "../../client/scope3-client.js";
+import type { BrandAgentCampaign, Tactic } from "../../types/index.js";
 
 /**
  * GraphQL Client Contract Tests
@@ -257,7 +258,7 @@ describe("GraphQL Client Integration", () => {
 describe("GraphQL Client Contract Validation", () => {
   // Create a mock client that implements the expected interface
   class MockGraphQLClient extends Scope3ApiClient {
-    async createTactic(_apiKey: string, _input: unknown) {
+    async createTactic(_apiKey: string, _input: unknown): Promise<Tactic> {
       throw new Error("Field 'createTactic' doesn't exist on type 'Mutation'");
     }
 
@@ -276,17 +277,27 @@ describe("GraphQL Client Contract Validation", () => {
       };
     }
 
-    async getTactic(_apiKey: string, _tacticId: string) {
+    async getTactic(
+      _apiKey: string,
+      _tacticId: string,
+    ): Promise<Tactic | null> {
       throw new Error("Field 'tactic' doesn't exist on type 'Query'");
     }
 
-    async listBrandAgentCampaigns(apiKey: string, brandAgentId: string) {
+    async listBrandAgentCampaigns(
+      apiKey: string,
+      brandAgentId: string,
+      status?: string,
+    ): Promise<BrandAgentCampaign[]> {
       return [
         {
+          audienceIds: [],
           brandAgentId: brandAgentId,
           createdAt: new Date().toISOString(),
+          creativeIds: [],
           id: "campaign_123",
           name: "Test Campaign",
+          prompt: "Test campaign prompt",
           status: "active",
           updatedAt: new Date().toISOString(),
         },
@@ -310,7 +321,7 @@ describe("GraphQL Client Contract Validation", () => {
       ];
     }
 
-    async listTactics(_apiKey: string, _campaignId: string) {
+    async listTactics(_apiKey: string, _campaignId: string): Promise<Tactic[]> {
       throw new Error("Field 'tactics' doesn't exist on type 'Query'");
     }
   }

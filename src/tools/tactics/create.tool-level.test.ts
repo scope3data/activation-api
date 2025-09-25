@@ -59,11 +59,10 @@ describe("create_tactic Tool", () => {
     MockedTacticBigQueryService.mockImplementation(() => mockBigQueryService);
 
     mockContext = {
-      request: { method: "tools/call", params: {} },
-      server: {} as Record<string, unknown>,
-    };
+      server: {} as any,
+    } as MCPToolExecuteContext;
 
-    createTactic = createTacticTool(mockClient);
+    createTactic = createTacticTool(mockClient as any);
   });
 
   describe("Authentication", () => {
@@ -406,11 +405,12 @@ describe("create_tactic Tool", () => {
     });
 
     it("should have comprehensive description", () => {
-      expect(createTactic.description).toContain("Create a new tactic");
-      expect(createTactic.description).toContain("media product");
-      expect(createTactic.description).toContain("brand story");
-      expect(createTactic.description).toContain("signal");
-      expect(createTactic.description).toContain("Requires authentication");
+      const description = (createTactic as any).description;
+      expect(description).toContain("Create a new tactic");
+      expect(description).toContain("media product");
+      expect(description).toContain("brand story");
+      expect(description).toContain("signal");
+      expect(description).toContain("Requires authentication");
     });
   });
 });

@@ -93,6 +93,7 @@ export const getCampaignSummaryTool = (client: Scope3ApiClient) => ({
         budgetAllocated: record.budget_amount,
         budgetSpent: 0, // Performance data not available in tactics table
         cpm: record.total_cpm,
+        efficiency: record.total_cpm > 0 ? 1000 / record.total_cpm : 0,
         impressions: 0,
         status: record.status,
         tacticId: record.id,

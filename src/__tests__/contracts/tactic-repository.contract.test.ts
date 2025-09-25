@@ -85,6 +85,7 @@ export function testTacticRepositoryContract(
 
         const effectivePricing = {
           cpm: 5.0,
+          currency: "USD",
           totalCpm: 5.0,
         };
 
@@ -112,6 +113,7 @@ export function testTacticRepositoryContract(
 
         const effectivePricing = {
           cpm: 5.0,
+          currency: "USD",
           totalCpm: 5.0,
         };
 
@@ -201,7 +203,7 @@ export function testTacticRepositoryContract(
             amount: 5000,
             currency: "EUR",
             dailyCap: 500,
-            pacing: "accelerated",
+            pacing: "asap",
             percentage: 25,
           },
           campaignId,
@@ -242,7 +244,7 @@ export function testTacticRepositoryContract(
       });
 
       it("should reject invalid input data", async () => {
-        const effectivePricing = { cpm: 5.0, totalCpm: 5.0 };
+        const effectivePricing = { cpm: 5.0, currency: "USD", totalCpm: 5.0 };
 
         const invalidInputs = [
           // Empty name
@@ -304,7 +306,7 @@ export function testTacticRepositoryContract(
               mediaProductId,
               name: `List Test Tactic ${i}`,
             },
-            { cpm: 5.0 + i, totalCpm: 5.0 + i },
+            { cpm: 5.0 + i, currency: "USD", totalCpm: 5.0 + i },
             salesAgentId,
           );
           testTacticIds.push(tactic.id);

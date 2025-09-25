@@ -40,8 +40,7 @@ describe("get_prebid_segments Tool", () => {
     MockedTacticBigQueryService.mockImplementation(() => mockService);
 
     mockContext = {
-      request: { method: "tools/call", params: {} },
-      server: {} as Record<string, unknown>,
+      server: {} as any,
     };
   });
 
