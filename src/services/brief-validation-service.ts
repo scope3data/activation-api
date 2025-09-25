@@ -106,8 +106,8 @@ Be specific and actionable in your feedback. Emphasize that publishers need geo,
    * This is a stub - would be implemented with actual AI service
    */
   private async callAIModel(prompt: string): Promise<string> {
-    // TODO: Implement actual AI model call (Gemini, OpenAI, etc.)
-    // For now, this is a placeholder that would need to be replaced with actual AI service integration
+    // Implementation note: This is a placeholder for actual AI service integration.
+    // In production, this would connect to services like Gemini, OpenAI, or Claude API.
 
     // Check for environment variables for AI service configuration
     const aiServiceUrl = process.env.AI_SERVICE_URL;
