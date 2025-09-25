@@ -73,7 +73,7 @@ export const createTacticTool = (_client: Scope3ApiClient) => ({
       };
 
       // IMPORTANT: GraphQL doesn't have tactic mutations, so we use BigQuery-only approach
-      // TODO: Implement tactic GraphQL mutations in backend when ready
+      // This implements the full tactic creation functionality using BigQuery backend
 
       const bigQueryService = new TacticBigQueryService();
       const tactic = await bigQueryService.createTactic(tacticInput, apiKey);
