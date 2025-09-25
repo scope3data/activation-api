@@ -1,7 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach, vi, MockedFunction } from "vitest";
-import { testCacheServiceContract } from "../contracts/cache-service.contract.test.js";
-import { CachedBigQuery, DEFAULT_CACHE_CONFIG } from "../../services/cache/cached-bigquery.js";
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
+import { afterEach, beforeEach, describe, expect, it, MockedFunction, vi } from "vitest";
+
 import type { CacheService, QueryOptions } from "../../contracts/cache-service.js";
+
+import { CachedBigQuery, DEFAULT_CACHE_CONFIG } from "../../services/cache/cached-bigquery.js";
+import { testCacheServiceContract } from "../contracts/cache-service.contract.test.js";
 
 // Mock the Google Cloud BigQuery
 vi.mock("@google-cloud/bigquery", () => {
@@ -25,8 +29,8 @@ vi.spyOn(process, 'off').mockImplementation(() => process);
 class CachedBigQueryAdapter implements CacheService {
   constructor(private cachedBigQuery: CachedBigQuery) {}
 
-  async query(options: QueryOptions): Promise<any> {
-    return this.cachedBigQuery.query(options);
+  clearCache(): void {
+    this.cachedBigQuery.clearCache();
   }
 
   getCacheStats() {
@@ -37,10 +41,6 @@ class CachedBigQueryAdapter implements CacheService {
     this.cachedBigQuery.invalidatePattern(pattern);
   }
 
-  clearCache(): void {
-    this.cachedBigQuery.clearCache();
-  }
-
   isCached(options: QueryOptions): boolean {
     const cacheKey = (this.cachedBigQuery as any).generateCacheKey(options);
     const entry = (this.cachedBigQuery as any).cache.get(cacheKey);
@@ -49,6 +49,10 @@ class CachedBigQueryAdapter implements CacheService {
     
     const age = Date.now() - entry.timestamp;
     return age <= entry.ttl;
+  }
+
+  async query(options: QueryOptions): Promise<any> {
+    return this.cachedBigQuery.query(options);
   }
 }
 
@@ -104,8 +108,8 @@ describe("CachedBigQuery Implementation", () => {
   // Run contract tests against the real implementation
   describe("Contract Compliance", () => {
     testCacheServiceContract(() => new CachedBigQueryAdapter(cachedBigQuery), {
-      skipMemoryTests: false, // CachedBigQuery supports memory tracking
-      skipConcurrencyTests: false // CachedBigQuery supports concurrency
+      skipConcurrencyTests: false, // CachedBigQuery supports concurrency
+      skipMemoryTests: false // CachedBigQuery supports memory tracking
     });
   });
 
@@ -113,8 +117,8 @@ describe("CachedBigQuery Implementation", () => {
   describe("CachedBigQuery Specific Behavior", () => {
     it("should call underlying BigQuery only once for identical queries", async () => {
       const queryOptions = {
-        query: "SELECT * FROM test_table WHERE id = @id",
-        params: { id: "test-123" }
+        params: { id: "test-123" },
+        query: "SELECT * FROM test_table WHERE id = @id"
       };
 
       // First call
@@ -128,8 +132,8 @@ describe("CachedBigQuery Implementation", () => {
 
     it("should handle BigQuery errors appropriately", async () => {
       const queryOptions = {
-        query: "SELECT * FROM invalid_table",
-        params: {}
+        params: {},
+        query: "SELECT * FROM invalid_table"
       };
 
       // Mock BigQuery to throw an error
@@ -145,13 +149,13 @@ describe("CachedBigQuery Implementation", () => {
 
     it("should apply correct TTL based on query type", async () => {
       const brandAgentQuery = {
-        query: "SELECT * FROM brand_agents WHERE customer_id = @id",
-        params: { id: 123 }
+        params: { id: 123 },
+        query: "SELECT * FROM brand_agents WHERE customer_id = @id"
       };
 
       const campaignQuery = {
-        query: "SELECT * FROM campaigns WHERE brand_agent_id = @id", 
-        params: { id: "brand-1" }
+        params: { id: "brand-1" }, 
+        query: "SELECT * FROM campaigns WHERE brand_agent_id = @id"
       };
 
       // Execute both queries
@@ -173,8 +177,8 @@ describe("CachedBigQuery Implementation", () => {
 
     it("should prevent race conditions with concurrent identical queries", async () => {
       const queryOptions = {
-        query: "SELECT * FROM expensive_table WHERE complex_operation = @param",
-        params: { param: "race-test" }
+        params: { param: "race-test" },
+        query: "SELECT * FROM expensive_table WHERE complex_operation = @param"
       };
 
       // Start 5 identical queries concurrently
@@ -192,18 +196,18 @@ describe("CachedBigQuery Implementation", () => {
 
     it("should generate different cache keys for different queries", async () => {
       const query1 = {
-        query: "SELECT * FROM table1 WHERE id = @id",
-        params: { id: 1 }
+        params: { id: 1 },
+        query: "SELECT * FROM table1 WHERE id = @id"
       };
 
       const query2 = {
-        query: "SELECT * FROM table1 WHERE id = @id", 
-        params: { id: 2 }
+        params: { id: 2 }, 
+        query: "SELECT * FROM table1 WHERE id = @id"
       };
 
       const query3 = {
-        query: "SELECT * FROM table2 WHERE id = @id",
-        params: { id: 1 }
+        params: { id: 1 },
+        query: "SELECT * FROM table2 WHERE id = @id"
       };
 
       // Clear the cache and mock to start fresh
@@ -235,20 +239,20 @@ describe("CachedBigQuery Implementation", () => {
 
     it("should normalize whitespace in queries for consistent caching", async () => {
       const query1 = {
-        query: "SELECT * FROM table WHERE id = @id",
-        params: { id: "test" }
+        params: { id: "test" },
+        query: "SELECT * FROM table WHERE id = @id"
       };
 
       const query2 = {
-        query: "SELECT   *   FROM   table   WHERE   id   =   @id", // Extra spaces
-        params: { id: "test" }
+        params: { id: "test" },
+        query: "SELECT   *   FROM   table   WHERE   id   =   @id" // Extra spaces
       };
 
       const query3 = {
+        params: { id: "test" },
         query: `SELECT * 
                 FROM table 
-                WHERE id = @id`, // Multiple lines
-        params: { id: "test" }
+                WHERE id = @id` // Multiple lines
       };
 
       // Clear cache and mock to start fresh
@@ -271,8 +275,8 @@ describe("CachedBigQuery Implementation", () => {
       );
 
       // Add some entries
-      await shortTtlCache.query({ query: "SELECT 1", params: {} });
-      await shortTtlCache.query({ query: "SELECT 2", params: {} });
+      await shortTtlCache.query({ params: {}, query: "SELECT 1" });
+      await shortTtlCache.query({ params: {}, query: "SELECT 2" });
 
       let stats = shortTtlCache.getCacheStats();
       expect(stats.size).toBe(2);
@@ -294,9 +298,9 @@ describe("CachedBigQuery Implementation", () => {
       // Clear cache to start fresh
       cachedBigQuery.clearCache();
       
-      await cachedBigQuery.query({ query: "SELECT * FROM brand_agents", params: {} });
-      await cachedBigQuery.query({ query: "SELECT * FROM campaigns", params: {} });
-      await cachedBigQuery.query({ query: "SELECT * FROM creatives", params: {} });
+      await cachedBigQuery.query({ params: {}, query: "SELECT * FROM brand_agents" });
+      await cachedBigQuery.query({ params: {}, query: "SELECT * FROM campaigns" });
+      await cachedBigQuery.query({ params: {}, query: "SELECT * FROM creatives" });
 
       let stats = cachedBigQuery.getCacheStats();
       expect(stats.size).toBe(3);
@@ -309,9 +313,9 @@ describe("CachedBigQuery Implementation", () => {
 
       // Verify specific entries are gone/remaining
       const adapter = new CachedBigQueryAdapter(cachedBigQuery);
-      expect(adapter.isCached({ query: "SELECT * FROM brand_agents", params: {} })).toBe(false);
-      expect(adapter.isCached({ query: "SELECT * FROM campaigns", params: {} })).toBe(true);
-      expect(adapter.isCached({ query: "SELECT * FROM creatives", params: {} })).toBe(true);
+      expect(adapter.isCached({ params: {}, query: "SELECT * FROM brand_agents" })).toBe(false);
+      expect(adapter.isCached({ params: {}, query: "SELECT * FROM campaigns" })).toBe(true);
+      expect(adapter.isCached({ params: {}, query: "SELECT * FROM creatives" })).toBe(true);
     });
   });
 
@@ -325,8 +329,8 @@ describe("CachedBigQuery Implementation", () => {
       expect(initialStats.memoryUsage).toBe(0);
 
       // Add some queries
-      await cachedBigQuery.query({ query: "SELECT * FROM table1", params: {} });
-      await cachedBigQuery.query({ query: "SELECT * FROM table2", params: {} });
+      await cachedBigQuery.query({ params: {}, query: "SELECT * FROM table1" });
+      await cachedBigQuery.query({ params: {}, query: "SELECT * FROM table2" });
 
       const afterStats = cachedBigQuery.getCacheStats();
       expect(afterStats.size).toBe(2);
@@ -340,17 +344,17 @@ describe("CachedBigQuery Implementation", () => {
       // Mock a large result
       mockQuery.mockResolvedValueOnce([
         Array.from({ length: 1000 }, (_, i) => ({
+          data: "x".repeat(100),
           id: i,
-          name: `Large Entry ${i}`,
-          data: "x".repeat(100)
+          name: `Large Entry ${i}`
         }))
       ]);
 
       const initialStats = cachedBigQuery.getCacheStats();
       
       await cachedBigQuery.query({
-        query: "SELECT * FROM large_table",
-        params: {}
+        params: {},
+        query: "SELECT * FROM large_table"
       });
 
       const finalStats = cachedBigQuery.getCacheStats();

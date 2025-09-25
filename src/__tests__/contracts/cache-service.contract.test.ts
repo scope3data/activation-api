@@ -1,4 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import type { CacheService, PreloadService, QueryOptions } from "../../contracts/cache-service.js";
 
 /**
@@ -13,8 +16,8 @@ import type { CacheService, PreloadService, QueryOptions } from "../../contracts
 export function testCacheServiceContract(
   cacheFactory: () => CacheService,
   options?: {
-    skipMemoryTests?: boolean;
     skipConcurrencyTests?: boolean;
+    skipMemoryTests?: boolean;
   }
 ) {
   describe("CacheService Contract", () => {
@@ -28,8 +31,8 @@ export function testCacheServiceContract(
     describe("Basic Caching Behavior", () => {
       it("should cache identical queries and return same results", async () => {
         const queryOptions: QueryOptions = {
-          query: "SELECT * FROM test_table WHERE id = @id",
-          params: { id: "test-123" }
+          params: { id: "test-123" },
+          query: "SELECT * FROM test_table WHERE id = @id"
         };
 
         // First call should be cache miss
@@ -46,13 +49,13 @@ export function testCacheServiceContract(
 
       it("should distinguish between different queries", async () => {
         const query1: QueryOptions = {
-          query: "SELECT * FROM table1",
-          params: {}
+          params: {},
+          query: "SELECT * FROM table1"
         };
         
         const query2: QueryOptions = {
-          query: "SELECT * FROM table2", 
-          params: {}
+          params: {}, 
+          query: "SELECT * FROM table2"
         };
 
         await cache.query(query1);
@@ -69,13 +72,13 @@ export function testCacheServiceContract(
         const baseQuery = "SELECT * FROM users WHERE id = @id";
         
         const query1: QueryOptions = {
-          query: baseQuery,
-          params: { id: 1 }
+          params: { id: 1 },
+          query: baseQuery
         };
         
         const query2: QueryOptions = {
-          query: baseQuery,
-          params: { id: 2 }
+          params: { id: 2 },
+          query: baseQuery
         };
 
         await cache.query(query1);
@@ -92,9 +95,9 @@ export function testCacheServiceContract(
     describe("Cache Invalidation", () => {
       it("should invalidate entries by pattern", async () => {
         // Cache some queries
-        await cache.query({ query: "SELECT * FROM brand_agents", params: {} });
-        await cache.query({ query: "SELECT * FROM campaigns", params: {} });
-        await cache.query({ query: "SELECT * FROM creatives", params: {} });
+        await cache.query({ params: {}, query: "SELECT * FROM brand_agents" });
+        await cache.query({ params: {}, query: "SELECT * FROM campaigns" });
+        await cache.query({ params: {}, query: "SELECT * FROM creatives" });
 
         const statsBeforeInvalidation = cache.getCacheStats();
         expect(statsBeforeInvalidation.size).toBeGreaterThan(0);
@@ -109,8 +112,8 @@ export function testCacheServiceContract(
 
       it("should clear all cache entries", async () => {
         // Cache some queries
-        await cache.query({ query: "SELECT * FROM table1", params: {} });
-        await cache.query({ query: "SELECT * FROM table2", params: {} });
+        await cache.query({ params: {}, query: "SELECT * FROM table1" });
+        await cache.query({ params: {}, query: "SELECT * FROM table2" });
 
         expect(cache.getCacheStats().size).toBeGreaterThan(0);
 
@@ -127,8 +130,8 @@ export function testCacheServiceContract(
         expect(initialStats.size).toBe(0);
 
         // Add some entries
-        await cache.query({ query: "SELECT 1", params: {} });
-        await cache.query({ query: "SELECT 2", params: {} });
+        await cache.query({ params: {}, query: "SELECT 1" });
+        await cache.query({ params: {}, query: "SELECT 2" });
 
         const statsAfterQueries = cache.getCacheStats();
         expect(statsAfterQueries.size).toBe(2);
@@ -136,7 +139,7 @@ export function testCacheServiceContract(
       });
 
       it("should track hit rates if supported", async () => {
-        const query: QueryOptions = { query: "SELECT * FROM test", params: {} };
+        const query: QueryOptions = { params: {}, query: "SELECT * FROM test" };
         
         // First call - miss
         await cache.query(query);
@@ -158,8 +161,8 @@ export function testCacheServiceContract(
       describe("Concurrency and Race Conditions", () => {
         it("should handle concurrent identical queries without race conditions", async () => {
           const query: QueryOptions = {
-            query: "SELECT * FROM test_table WHERE expensive_operation = @param",
-            params: { param: "test-value" }
+            params: { param: "test-value" },
+            query: "SELECT * FROM test_table WHERE expensive_operation = @param"
           };
 
           // Start multiple identical queries simultaneously
@@ -177,8 +180,8 @@ export function testCacheServiceContract(
 
         it("should handle concurrent different queries", async () => {
           const queries = Array.from({ length: 10 }, (_, i) => ({
-            query: `SELECT * FROM table_${i}`,
-            params: { id: i }
+            params: { id: i },
+            query: `SELECT * FROM table_${i}`
           }));
 
           const results = await Promise.all(
@@ -203,8 +206,8 @@ export function testCacheServiceContract(
 
           // Add a large query result
           await cache.query({
-            query: "SELECT * FROM large_table",
-            params: { data: "x".repeat(1000) } // Large parameter
+            params: { data: "x".repeat(1000) }, // Large parameter
+            query: "SELECT * FROM large_table"
           });
 
           const afterStats = cache.getCacheStats();

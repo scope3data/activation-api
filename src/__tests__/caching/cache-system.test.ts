@@ -1,8 +1,12 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { testCacheServiceContract, testPreloadServiceContract } from "../contracts/cache-service.contract.test.js";
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { QueryOptions } from "../../contracts/cache-service.js";
+
 import { CacheServiceTestDouble } from "../../test-doubles/cache-service-test-double.js";
 import { PreloadServiceTestDouble } from "../../test-doubles/preload-service-test-double.js";
-import type { QueryOptions } from "../../contracts/cache-service.js";
+import { testCacheServiceContract, testPreloadServiceContract } from "../contracts/cache-service.contract.test.js";
 
 describe("Cache System Integration", () => {
   // Run contract tests against test doubles
@@ -26,8 +30,8 @@ describe("Cache System Integration", () => {
 
     it("should demonstrate significant performance improvement from caching", async () => {
       const query: QueryOptions = {
-        query: "SELECT * FROM expensive_operation WHERE id = @id",
-        params: { id: "performance-test" }
+        params: { id: "performance-test" },
+        query: "SELECT * FROM expensive_operation WHERE id = @id"
       };
 
       // First call - should be slow (cache miss)
@@ -50,8 +54,8 @@ describe("Cache System Integration", () => {
 
     it("should handle burst traffic patterns efficiently", async () => {
       const queries = Array.from({ length: 100 }, (_, i) => ({
-        query: "SELECT * FROM popular_table WHERE category = @category",
-        params: { category: Math.floor(i / 10) } // 10 queries per category
+        params: { category: Math.floor(i / 10) }, // 10 queries per category
+        query: "SELECT * FROM popular_table WHERE category = @category"
       }));
 
       const start = Date.now();
@@ -78,13 +82,13 @@ describe("Cache System Integration", () => {
 
     it("should respect different TTL values for different query types", async () => {
       const brandAgentQuery: QueryOptions = {
-        query: "SELECT * FROM brand_agents WHERE customer_id = @id",
-        params: { id: 123 }
+        params: { id: 123 },
+        query: "SELECT * FROM brand_agents WHERE customer_id = @id"
       };
 
       const campaignQuery: QueryOptions = {
-        query: "SELECT * FROM campaigns WHERE brand_agent_id = @id",
-        params: { id: "brand-1" }
+        params: { id: "brand-1" },
+        query: "SELECT * FROM campaigns WHERE brand_agent_id = @id"
       };
 
       // Execute both queries
@@ -105,8 +109,8 @@ describe("Cache System Integration", () => {
 
     it("should handle cache expiration gracefully under load", async () => {
       const query: QueryOptions = {
-        query: "SELECT * FROM test_table WHERE id = @id",
-        params: { id: "expiration-test" }
+        params: { id: "expiration-test" },
+        query: "SELECT * FROM test_table WHERE id = @id"
       };
 
       // Initial query
@@ -142,8 +146,8 @@ describe("Cache System Integration", () => {
       });
 
       const query: QueryOptions = {
-        query: "SELECT * FROM problematic_table",
-        params: {}
+        params: {},
+        query: "SELECT * FROM problematic_table"
       };
 
       // Some queries may fail due to simulated errors
@@ -171,8 +175,8 @@ describe("Cache System Integration", () => {
 
     it("should not cache failed queries", async () => {
       const successQuery: QueryOptions = {
-        query: "SELECT * FROM success_table",
-        params: {}
+        params: {},
+        query: "SELECT * FROM success_table"
       };
 
       // Start with cache that doesn't simulate errors
@@ -197,8 +201,8 @@ describe("Cache System Integration", () => {
       for (let i = 0; i < 10; i++) {
         try {
           await errorCache.query({
-            query: "SELECT * FROM error_prone_table",
-            params: { attempt: i }
+            params: { attempt: i },
+            query: "SELECT * FROM error_prone_table"
           });
         } catch {
           errorOccurred = true;
@@ -283,13 +287,13 @@ describe("Cache System Integration", () => {
 
       // Add queries with varying data sizes
       await cache.query({
-        query: "SELECT * FROM small_table",
-        params: { data: "small" }
+        params: { data: "small" },
+        query: "SELECT * FROM small_table"
       });
 
       await cache.query({
-        query: "SELECT * FROM large_table",
-        params: { data: "x".repeat(10000) } // Large data
+        params: { data: "x".repeat(10000) }, // Large data
+        query: "SELECT * FROM large_table"
       });
 
       const finalStats = cache.getCacheStats();
@@ -301,8 +305,8 @@ describe("Cache System Integration", () => {
     it("should free memory when cache is cleared", async () => {
       // Add some data
       await cache.query({
-        query: "SELECT * FROM test_table",
-        params: { largeData: "x".repeat(5000) }
+        params: { largeData: "x".repeat(5000) },
+        query: "SELECT * FROM test_table"
       });
 
       const beforeClearStats = cache.getCacheStats();

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
 import { http, HttpResponse } from "msw";
 
 import { brandAgentFixtures } from "../fixtures/brand-agent-fixtures.js";

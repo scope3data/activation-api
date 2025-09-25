@@ -1,8 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach, vi, MockedFunction } from "vitest";
-import { testPreloadServiceContract } from "../contracts/cache-service.contract.test.js";
-import { PreloadService, DEFAULT_PRELOAD_CONFIG } from "../../services/cache/preload-service.js";
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
+import { afterEach, beforeEach, describe, expect, it, MockedFunction, vi } from "vitest";
+
 import type { AuthenticationService } from "../../services/auth-service.js";
 import type { CampaignBigQueryService } from "../../services/campaign-bigquery-service.js";
+
+import { DEFAULT_PRELOAD_CONFIG, PreloadService } from "../../services/cache/preload-service.js";
+import { testPreloadServiceContract } from "../contracts/cache-service.contract.test.js";
 
 // Mock setTimeout to avoid timing issues in tests
 const mockSetTimeout = vi.fn((callback: () => void, delay: number) => {
@@ -18,10 +22,10 @@ const mockAuthService = {
 } as Partial<AuthenticationService> as AuthenticationService;
 
 const mockCampaignService = {
-  listBrandAgents: vi.fn(),
-  listCampaigns: vi.fn(),
+  getBrandAgent: vi.fn(),
   getCampaign: vi.fn(),
-  getBrandAgent: vi.fn()
+  listBrandAgents: vi.fn(),
+  listCampaigns: vi.fn()
 } as Partial<CampaignBigQueryService> as CampaignBigQueryService;
 
 /**
@@ -30,12 +34,12 @@ const mockCampaignService = {
 class PreloadServiceAdapter {
   constructor(private preloadService: PreloadService) {}
 
-  triggerPreload(apiKey: string): void {
-    this.preloadService.triggerPreload(apiKey);
-  }
-
   getPreloadStatus(): { activePreloads: number; customerIds: number[] } {
     return this.preloadService.getPreloadStatus();
+  }
+
+  triggerPreload(apiKey: string): void {
+    this.preloadService.triggerPreload(apiKey);
   }
 
   async waitForPreload(customerId: number, timeoutMs: number = 5000): Promise<void> {
@@ -69,23 +73,23 @@ describe("PreloadService Implementation", () => {
     // Setup default mocks
     mockAuthService.getCustomerIdFromToken.mockResolvedValue(123);
     mockCampaignService.listBrandAgents.mockResolvedValue([
-      { id: "brand-1", name: "Brand 1", customer_id: 123 },
-      { id: "brand-2", name: "Brand 2", customer_id: 123 }
+      { customer_id: 123, id: "brand-1", name: "Brand 1" },
+      { customer_id: 123, id: "brand-2", name: "Brand 2" }
     ]);
     mockCampaignService.listCampaigns.mockResolvedValue([
-      { id: "campaign-1", name: "Campaign 1", brand_agent_id: "brand-1", status: "active" },
-      { id: "campaign-2", name: "Campaign 2", brand_agent_id: "brand-1", status: "paused" }
+      { brand_agent_id: "brand-1", id: "campaign-1", name: "Campaign 1", status: "active" },
+      { brand_agent_id: "brand-1", id: "campaign-2", name: "Campaign 2", status: "paused" }
     ]);
     mockCampaignService.getCampaign.mockResolvedValue({
+      brand_agent_id: "brand-1", 
       id: "campaign-1", 
-      name: "Campaign 1", 
-      brand_agent_id: "brand-1",
+      name: "Campaign 1",
       status: "active"
     });
     mockCampaignService.getBrandAgent.mockResolvedValue({
+      customer_id: 123,
       id: "brand-1",
-      name: "Brand 1",
-      customer_id: 123
+      name: "Brand 1"
     });
 
     preloadService = new PreloadService(
@@ -93,9 +97,9 @@ describe("PreloadService Implementation", () => {
       mockAuthService,
       {
         ...DEFAULT_PRELOAD_CONFIG,
+        concurrentRequests: 2,
         maxBrandAgents: 5,
-        maxCampaignsPerAgent: 10,
-        concurrentRequests: 2
+        maxCampaignsPerAgent: 10
       }
     );
     
@@ -181,9 +185,9 @@ describe("PreloadService Implementation", () => {
       );
 
       mockCampaignService.listBrandAgents.mockResolvedValue([
-        { id: "brand-1", name: "Brand 1", customer_id: 123 },
-        { id: "brand-2", name: "Brand 2", customer_id: 123 },
-        { id: "brand-3", name: "Brand 3", customer_id: 123 }
+        { customer_id: 123, id: "brand-1", name: "Brand 1" },
+        { customer_id: 123, id: "brand-2", name: "Brand 2" },
+        { customer_id: 123, id: "brand-3", name: "Brand 3" }
       ]);
 
       // Track order of campaign list calls
@@ -222,9 +226,9 @@ describe("PreloadService Implementation", () => {
 
     it("should load campaign details for recent campaigns", async () => {
       const campaigns = Array.from({ length: 25 }, (_, i) => ({
+        brand_agent_id: "brand-1",
         id: `campaign-${i}`,
         name: `Campaign ${i}`,
-        brand_agent_id: "brand-1",
         status: "active"
       }));
 
@@ -241,9 +245,9 @@ describe("PreloadService Implementation", () => {
 
     it("should load individual brand agent details", async () => {
       const brandAgents = Array.from({ length: 15 }, (_, i) => ({
+        customer_id: 123,
         id: `brand-${i}`,
-        name: `Brand ${i}`,
-        customer_id: 123
+        name: `Brand ${i}`
       }));
 
       mockCampaignService.listBrandAgents.mockResolvedValue(brandAgents);
@@ -261,8 +265,8 @@ describe("PreloadService Implementation", () => {
       // brand-1: all campaigns, active campaigns (success)
       // brand-2: all campaigns (fail), active campaigns (not called due to failure)
       mockCampaignService.listCampaigns
-        .mockResolvedValueOnce([{ id: "campaign-1", name: "Campaign 1", brand_agent_id: "brand-1", status: "active" }]) // brand-1 all campaigns
-        .mockResolvedValueOnce([{ id: "campaign-1", name: "Campaign 1", brand_agent_id: "brand-1", status: "active" }]) // brand-1 active campaigns
+        .mockResolvedValueOnce([{ brand_agent_id: "brand-1", id: "campaign-1", name: "Campaign 1", status: "active" }]) // brand-1 all campaigns
+        .mockResolvedValueOnce([{ brand_agent_id: "brand-1", id: "campaign-1", name: "Campaign 1", status: "active" }]) // brand-1 active campaigns
         .mockRejectedValueOnce(new Error("Failed to load campaigns for brand-2")) // brand-2 all campaigns - fails
         .mockResolvedValueOnce([]); // brand-2 active campaigns - may still be called depending on error handling
 
@@ -276,9 +280,9 @@ describe("PreloadService Implementation", () => {
 
     it("should respect maxBrandAgents configuration", async () => {
       const manyBrandAgents = Array.from({ length: 20 }, (_, i) => ({
+        customer_id: 123,
         id: `brand-${i}`,
-        name: `Brand ${i}`,
-        customer_id: 123
+        name: `Brand ${i}`
       }));
 
       mockCampaignService.listBrandAgents.mockResolvedValue(manyBrandAgents);
