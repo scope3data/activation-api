@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, vi } from "vitest";
 
@@ -39,41 +39,49 @@ const originalClearInterval = global.clearInterval;
 
 // Global test setup
 beforeAll(() => {
-  console.log('🧪 Setting up global test environment');
-  
+  console.log("🧪 Setting up global test environment");
+
   // Increase max listeners for test environment to handle multiple cache instances
   process.setMaxListeners(100);
-  
+
   // Mock process event listeners to prevent MaxListenersExceededWarning
-  if (process.env.VITEST_DISABLE_PROCESS_LISTENERS === 'true') {
-    vi.spyOn(process, 'on').mockImplementation(() => process);
-    vi.spyOn(process, 'off').mockImplementation(() => process);
-    vi.spyOn(process, 'removeListener').mockImplementation(() => process);
+  if (process.env.VITEST_DISABLE_PROCESS_LISTENERS === "true") {
+    vi.spyOn(process, "on").mockImplementation(() => process);
+    vi.spyOn(process, "off").mockImplementation(() => process);
+    vi.spyOn(process, "removeListener").mockImplementation(() => process);
   }
-  
+
   // Override timers to track them for cleanup
-  global.setTimeout = vi.fn((callback: (...args: any[]) => void, delay?: number) => {
-    const timer = originalSetTimeout(callback, delay);
-    activeTimers.add(timer);
-    return timer;
+  global.setTimeout = vi.fn(
+    (callback: (...args: any[]) => void, delay?: number) => {
+      const timer = originalSetTimeout(callback, delay);
+      activeTimers.add(timer);
+      return timer;
+    },
+  ) as any;
+
+  global.setInterval = vi.fn(
+    (callback: (...args: any[]) => void, delay?: number) => {
+      const timer = originalSetInterval(callback, delay);
+      activeTimers.add(timer);
+      return timer;
+    },
+  ) as any;
+
+  global.clearTimeout = vi.fn((timer?: NodeJS.Timeout | number | string) => {
+    if (timer && typeof timer === "object") {
+      activeTimers.delete(timer);
+    }
+    return originalClearTimeout(timer as NodeJS.Timeout);
   }) as any;
-  
-  global.setInterval = vi.fn((callback: (...args: any[]) => void, delay?: number) => {
-    const timer = originalSetInterval(callback, delay);
-    activeTimers.add(timer);
-    return timer;
+
+  global.clearInterval = vi.fn((timer?: NodeJS.Timeout | number | string) => {
+    if (timer && typeof timer === "object") {
+      activeTimers.delete(timer);
+    }
+    return originalClearInterval(timer as NodeJS.Timeout);
   }) as any;
-  
-  global.clearTimeout = vi.fn((timer: NodeJS.Timeout) => {
-    activeTimers.delete(timer);
-    return originalClearTimeout(timer);
-  });
-  
-  global.clearInterval = vi.fn((timer: NodeJS.Timeout) => {
-    activeTimers.delete(timer);
-    return originalClearInterval(timer);
-  });
-  
+
   // Start MSW server
   server.listen({ onUnhandledRequest: "error" });
 });
@@ -83,7 +91,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.clearAllTimers();
   server.resetHandlers();
-  
+
   // Clear timer tracking
   activeTimers.clear();
 });
@@ -91,7 +99,7 @@ beforeEach(() => {
 afterEach(() => {
   // Clean up any test state
   server.resetHandlers();
-  
+
   // Force cleanup of any remaining timers
   for (const timer of activeTimers) {
     try {
@@ -102,23 +110,23 @@ afterEach(() => {
     }
   }
   activeTimers.clear();
-  
+
   vi.clearAllMocks();
   vi.clearAllTimers();
 });
 
 afterAll(() => {
-  console.log('🧹 Cleaning up global test environment');
-  
+  console.log("🧹 Cleaning up global test environment");
+
   // Clean up after all tests
   server.close();
-  
+
   // Restore original timer functions
   global.setTimeout = originalSetTimeout;
   global.setInterval = originalSetInterval;
   global.clearTimeout = originalClearTimeout;
   global.clearInterval = originalClearInterval;
-  
+
   // Final cleanup of any remaining timers
   for (const timer of activeTimers) {
     try {
@@ -129,11 +137,11 @@ afterAll(() => {
     }
   }
   activeTimers.clear();
-  
+
   // Reset max listeners
   process.setMaxListeners(10);
-  
-  console.log('✅ Global test cleanup complete');
+
+  console.log("✅ Global test cleanup complete");
 });
 
 // Mock BigQuery client globally
