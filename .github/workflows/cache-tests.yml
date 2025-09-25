@@ -44,7 +44,7 @@ jobs:
         run: npm run test:contracts
 
       - name: Generate coverage report
-        run: npm run test:coverage -- src/__tests__/caching/
+        run: npm run test:coverage:cache
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3

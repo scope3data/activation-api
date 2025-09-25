@@ -13,6 +13,7 @@
     "test:integration": "vitest run src/__tests__/caching/ src/__tests__/examples/",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:coverage:cache": "vitest run --coverage --config vitest.cache.config.ts",
     "format": "prettier --write . && eslint --fix .",
     "generate:openapi": "tsx scripts/generate-openapi.ts",
     "validate:openapi": "node scripts/validate-openapi.js",
