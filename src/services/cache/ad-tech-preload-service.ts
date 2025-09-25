@@ -128,7 +128,7 @@ export class AdTechPreloadService {
       return brandAgents.slice(0, this.config.maxBrandAgents);
     }
 
-    // TODO: Add spend-based prioritization when spend data is available
+    // Future enhancement: Add spend-based prioritization when spend data is available
     // For now, return top agents by ID (could be enhanced with spend history)
     console.log(
       `[AdTechPreload] Prioritizing ${brandAgents.length} brand agents by activity`,
