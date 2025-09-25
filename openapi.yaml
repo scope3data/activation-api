@@ -844,9 +844,11 @@ paths:
                   description: Campaign start date in UTC (ISO 8601 format, e.g., '2024-01-01T00:00:00Z')
               required:
                 - brandAgentId
+                - briefValidationThreshold
                 - budget
                 - name
                 - prompt
+                - skipBriefValidation
               type: object
         required: true
       responses:
@@ -5237,6 +5239,7 @@ paths:
                   description: "Minimum quality score required to pass validation (default: 70)"
               required:
                 - brief
+                - threshold
               type: object
         required: true
       responses:
