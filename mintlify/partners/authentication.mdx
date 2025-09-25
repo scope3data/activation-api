@@ -161,7 +161,7 @@ Simple token-based authentication using HTTP Authorization headers.
 ```
 
 #### OAuth 2.0 Authentication
-Full OAuth 2.0 flow with automatic token refresh and caching.
+Automatic OAuth 2.0 authentication using publisher discovery and client registration.
 
 **Configuration Example:**
 ```json
@@ -172,14 +172,21 @@ Full OAuth 2.0 flow with automatic token refresh and caching.
     "endpoint_url": "https://publisher.com/adcp",
     "auth_config": {
       "type": "oauth",
-      "clientId": "your_client_id",
-      "clientSecret": "your_client_secret", 
-      "refreshToken": "your_refresh_token",
-      "tokenEndpoint": "https://publisher.com/oauth/token"
+      "issuer": "https://publisher.com",
+      "scope": "adcp.read adcp.write"
     }
   }
 }
 ```
+
+The system automatically:
+- Discovers OAuth endpoints via `.well-known` protocols
+- Registers Scope3 as an authorized client with the publisher
+- Manages token refresh and caching
+
+<Note>
+**Automatic OAuth Setup**: Scope3 handles all OAuth client registration and credential management. You only need to provide the publisher's OAuth issuer domain.
+</Note>
 
 #### Custom Headers Authentication
 Custom header-based authentication (e.g., API keys in custom headers).
@@ -207,18 +214,6 @@ Scope3 can build custom authentication integrations for specific publishers with
 **Custom Integration Development:**
 For publishers requiring specialized authentication flows (like proprietary JWT schemes), contact Scope3 to discuss custom integration development. These integrations are built on a case-by-case basis.
 </Note>
-
-### Agent Authentication Features
-
-**Automatic Token Management:**
-- Token caching and automatic refresh for OAuth flows
-- Environment-aware configuration (production vs staging)
-- Secure credential storage and handling
-
-**Multi-Environment Support:**
-- Production and staging endpoint configurations
-- Environment-specific authentication parameters
-- Separate credential management per environment
 
 ### Registration Process
 
@@ -254,7 +249,7 @@ Use the `signals_agent_register` tool with optional authentication in config:
     "description": "Automated audience signals from Publisher",
     "config": {
       "auth_type": "oauth",
-      "client_id": "signals_client_123"
+      "issuer": "https://publisher.com"
     }
   }
 }
@@ -270,24 +265,6 @@ All sales agents added by customers require Scope3 testing and approval before a
 
 Contact your Scope3 representative to initiate the approval process after registration.
 </Warning>
-
-### Security Best Practices
-
-**Credential Management:**
-- Store authentication credentials securely
-- Use environment variables for sensitive data
-- Rotate tokens and keys regularly
-- Never commit credentials to version control
-
-**Environment Separation:**
-- Use separate authentication for staging and production
-- Test authentication flows thoroughly before production
-- Monitor authentication failures and token expiry
-
-**Access Control:**
-- Limit authentication scope to required operations
-- Use least-privilege principle for API access
-- Monitor and audit authentication usage
 
 ## Next Steps
 
