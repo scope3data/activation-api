@@ -20,10 +20,7 @@ vi.mock("../../services/tactic-bigquery-service.js", () => ({
 import { TacticBigQueryService } from "../../services/tactic-bigquery-service.js";
 import { createTacticTool } from "./create.js";
 
-const MockedTacticBigQueryService =
-  TacticBigQueryService as unknown as vi.MockedClass<
-    typeof TacticBigQueryService
-  >;
+const MockedTacticBigQueryService = TacticBigQueryService as any;
 
 type CreateTacticTool = {
   annotations: Record<string, unknown>;
@@ -34,10 +31,10 @@ type CreateTacticTool = {
   name: string;
 };
 type MockBigQueryService = {
-  createTactic: vi.MockedFunction<(...args: unknown[]) => Promise<Tactic>>;
+  createTactic: ReturnType<typeof vi.fn>;
 };
 type MockClient = {
-  createTactic: vi.MockedFunction<(...args: unknown[]) => Promise<unknown>>;
+  createTactic: ReturnType<typeof vi.fn>;
 };
 
 describe("create_tactic Tool", () => {

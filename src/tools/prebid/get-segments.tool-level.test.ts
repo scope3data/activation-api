@@ -21,16 +21,11 @@ vi.mock("../../services/tactic-bigquery-service.js", () => ({
 
 import { TacticBigQueryService } from "../../services/tactic-bigquery-service.js";
 
-const MockedTacticBigQueryService =
-  TacticBigQueryService as unknown as vi.MockedClass<
-    typeof TacticBigQueryService
-  >;
+const MockedTacticBigQueryService = TacticBigQueryService as any;
 
 describe("get_prebid_segments Tool", () => {
   let mockService: {
-    getPrebidSegments: vi.MockedFunction<
-      (orgId: string) => Promise<PrebidSegment[]>
-    >;
+    getPrebidSegments: ReturnType<typeof vi.fn>;
   };
   let mockContext: MCPToolExecuteContext;
 
