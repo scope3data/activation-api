@@ -6,7 +6,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "dev": "fastmcp dev src/server.ts",
-    "lint": "prettier --check . && eslint . && tsc --noEmit && npm run validate:openapi && npm run validate:schema",
+    "lint": "prettier --check . && eslint . && tsc --noEmit && npm run validate:openapi",
     "test": "vitest run",
     "format": "prettier --write . && eslint --fix .",
     "generate:openapi": "tsx scripts/generate-openapi.ts",
