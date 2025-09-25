@@ -1,20 +1,18 @@
-import { z } from "zod";
 import { BigQuery } from "@google-cloud/bigquery";
+import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
+
+import { AuthenticationService } from "../../services/auth-service.js";
 import { CreativeSyncService } from "../../services/creative-sync-service.js";
 import { NotificationService } from "../../services/notification-service.js";
-import { AuthenticationService } from "../../services/auth-service.js";
-
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 /**
  * Schema for sync sales agents tool parameters
  */
 const SyncSalesAgentsSchema = z.object({
-  creativeId: z.string().min(1, "Creative ID is required"),
-
   autoDetect: z
     .object({
       daysBack: z
@@ -31,20 +29,22 @@ const SyncSalesAgentsSchema = z.object({
     .optional()
     .describe("Smart auto-detection settings (default behavior)"),
 
-  salesAgentIds: z
-    .array(z.string())
-    .optional()
-    .describe("Explicitly specify sales agent IDs (overrides auto-detection)"),
-
   campaignId: z
     .string()
     .optional()
     .describe("Sync to sales agents used by this campaign's tactics only"),
 
+  creativeId: z.string().min(1, "Creative ID is required"),
+
   preApproval: z
     .boolean()
     .optional()
     .describe("Request pre-approval before campaign launch (default: false)"),
+
+  salesAgentIds: z
+    .array(z.string())
+    .optional()
+    .describe("Explicitly specify sales agent IDs (overrides auto-detection)"),
 });
 
 export const creativeSyncSalesAgentsTool = (client: Scope3ApiClient) => ({
@@ -135,13 +135,13 @@ export const creativeSyncSalesAgentsTool = (client: Scope3ApiClient) => ({
         return createMCPResponse({
           data: {
             creative: {
+              format: creative.format?.formatId,
               id: creative.creativeId,
               name: creative.creativeName,
-              format: creative.format?.formatId,
             },
             salesAgents: [],
-            syncResults: { success: [], failed: [] },
-            smartSync: { method: syncMethod, agentsFound: 0 },
+            smartSync: { agentsFound: 0, method: syncMethod },
+            syncResults: { failed: [], success: [] },
           },
           message: `🔍 **No Relevant Sales Agents Found**
 
@@ -261,28 +261,28 @@ export const creativeSyncSalesAgentsTool = (client: Scope3ApiClient) => ({
       return createMCPResponse({
         data: {
           creative: {
+            format: creative.format?.formatId,
             id: creative.creativeId,
             name: creative.creativeName,
-            format: creative.format?.formatId,
-          },
-          salesAgents: syncStatus.map((agent) => ({
-            id: agent.salesAgentId,
-            name: agent.salesAgentName,
-            status: agent.status,
-            approvalStatus: agent.approvalStatus,
-            lastSyncAttempt: agent.lastSyncAttempt,
-          })),
-          syncResults,
-          smartSync: {
-            method: syncMethod,
-            agentsFound: salesAgentIds.length,
-            agentsTargeted: salesAgentIds,
           },
           nextSteps: {
-            readyForDeployment: approved.length,
             awaitingApproval: pending.length,
             needsAttention: failed.length,
+            readyForDeployment: approved.length,
           },
+          salesAgents: syncStatus.map((agent) => ({
+            approvalStatus: agent.approvalStatus,
+            id: agent.salesAgentId,
+            lastSyncAttempt: agent.lastSyncAttempt,
+            name: agent.salesAgentName,
+            status: agent.status,
+          })),
+          smartSync: {
+            agentsFound: salesAgentIds.length,
+            agentsTargeted: salesAgentIds,
+            method: syncMethod,
+          },
+          syncResults,
         },
         message,
         success: true,

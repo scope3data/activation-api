@@ -217,42 +217,33 @@ export interface Creative {
 
   lastModifiedDate: string;
 
+  // Publisher approval tracking
+  publisherApprovals?: Array<{
+    approvalStatus:
+      | "approved"
+      | "auto_approved"
+      | "changes_requested"
+      | "pending"
+      | "rejected";
+    approvedAt?: string;
+    feedback?: string;
+    publisherId: string;
+    publisherName?: string;
+    rejectionReason?: string;
+    requestedChanges?: string[];
+    reviewedBy?: string;
+    status: "approved" | "changes_requested" | "pending" | "rejected";
+  }>;
+
   // Sales agent sync status (simplified for agent workflows)
   salesAgentSyncStatus?: Array<{
-    salesAgentId: string;
-    salesAgentName: string;
-    status: "synced" | "failed" | "pending" | "not_applicable";
-    approvalStatus?: "approved" | "rejected" | "pending" | "changes_requested";
+    approvalStatus?: "approved" | "changes_requested" | "pending" | "rejected";
     lastSyncAttempt?: string;
     rejectionReason?: string;
     requestedChanges?: string[];
-  }>;
-
-  // Summary of sync status for quick overview
-  syncStatusSummary?: {
-    totalRelevantAgents: number; // Agents that can handle this format
-    synced: number;
-    approved: number;
-    rejected: number;
-    pending: number;
-  };
-
-  // Publisher approval tracking
-  publisherApprovals?: Array<{
-    publisherId: string;
-    publisherName?: string;
-    status: "approved" | "rejected" | "pending" | "changes_requested";
-    approvalStatus:
-      | "approved"
-      | "rejected"
-      | "pending"
-      | "changes_requested"
-      | "auto_approved";
-    feedback?: string;
-    rejectionReason?: string;
-    requestedChanges?: string[];
-    approvedAt?: string;
-    reviewedBy?: string;
+    salesAgentId: string;
+    salesAgentName: string;
+    status: "failed" | "not_applicable" | "pending" | "synced";
   }>;
 
   // Status and lifecycle
@@ -263,6 +254,15 @@ export interface Creative {
     | "paused"
     | "pending_review"
     | "rejected";
+
+  // Summary of sync status for quick overview
+  syncStatusSummary?: {
+    approved: number;
+    pending: number;
+    rejected: number;
+    synced: number;
+    totalRelevantAgents: number; // Agents that can handle this format
+  };
   targetAudience?: string; // Natural language description
   version: string;
 }

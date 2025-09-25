@@ -39,21 +39,6 @@ export type {
 export type { BrandAgentData as BrandAgentResponse } from "./brand-agent.js";
 export * from "./creative.js";
 
-// Notifications types - simplified agent-actionable notifications
-export type {
-  Notification,
-  NotificationData,
-  NotificationEventType,
-  NotificationWebhookPayload,
-  NotificationListResponse,
-  NotificationCreateRequest,
-  NotificationFilter,
-  CreativeSyncStatus,
-  SalesAgentCapabilities,
-  CampaignSyncHealth,
-  CampaignNotificationSummary,
-} from "./notifications.js";
-
 // Events types
 export type {
   OutcomeAggregationResult,
@@ -64,9 +49,24 @@ export type {
   ScoringOutcomesData,
   TacticDelivery,
 } from "./events.js";
+
 // Events DeliveryData
 export type { DeliveryData as EventDeliveryData } from "./events.js";
 export * from "./mcp.js";
+// Notifications types - simplified agent-actionable notifications
+export type {
+  CampaignNotificationSummary,
+  CampaignSyncHealth,
+  CreativeSyncStatus,
+  Notification,
+  NotificationCreateRequest,
+  NotificationData,
+  NotificationEventType,
+  NotificationFilter,
+  NotificationListResponse,
+  NotificationWebhookPayload,
+  SalesAgentCapabilities,
+} from "./notifications.js";
 export * from "./pmp.js";
 
 // Reporting types

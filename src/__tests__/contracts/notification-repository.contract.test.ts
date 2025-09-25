@@ -1,12 +1,12 @@
 // Contract test suite for NotificationRepository implementations
 // Tests ANY implementation against the defined behavioral contract
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import type { NotificationRepository } from "../../contracts/notification-repository.js";
-import type {
-  NotificationCreateRequest,
-} from "../../types/notifications.js";
+import type { NotificationCreateRequest } from "../../types/notifications.js";
+
+import { NotificationEventType } from "../../types/notifications.js";
 
 /**
  * Generic contract test suite for NotificationRepository
@@ -29,15 +29,15 @@ export function testNotificationRepositoryContract(
     describe("createNotification", () => {
       it("should create a new notification and return ID", async () => {
         const request: NotificationCreateRequest = {
-          type: "creative.sync_failed" as NotificationEventType,
-          customerId: 123,
           brandAgentId: 456,
+          customerId: 123,
           data: {
             creativeId: "creative_123",
-            salesAgentId: "agent_abc",
             message: "Creative sync failed",
             reason: "Network timeout",
+            salesAgentId: "agent_abc",
           },
+          type: NotificationEventType.CREATIVE_SYNC_FAILED,
         };
 
         const notificationId = await repository.createNotification(request);
@@ -49,12 +49,12 @@ export function testNotificationRepositoryContract(
 
       it("should create notification with minimal data", async () => {
         const request: NotificationCreateRequest = {
-          type: "campaign.healthy" as NotificationEventType,
           customerId: 123,
           data: {
             campaignId: "campaign_123",
             message: "Campaign is healthy",
           },
+          type: "campaign.healthy" as NotificationEventType,
         };
 
         const notificationId = await repository.createNotification(request);
@@ -64,14 +64,14 @@ export function testNotificationRepositoryContract(
 
       it("should handle duplicate detection", async () => {
         const request: NotificationCreateRequest = {
-          type: "creative.sync_failed" as NotificationEventType,
-          customerId: 123,
           brandAgentId: 456,
+          customerId: 123,
           data: {
             creativeId: "creative_123",
-            salesAgentId: "agent_abc",
             message: "Creative sync failed",
+            salesAgentId: "agent_abc",
           },
+          type: NotificationEventType.CREATIVE_SYNC_FAILED,
         };
 
         // Create first notification
@@ -89,23 +89,23 @@ export function testNotificationRepositoryContract(
       beforeEach(async () => {
         // Create test notifications
         await repository.createNotification({
-          type: "creative.sync_failed" as NotificationEventType,
-          customerId: 123,
           brandAgentId: 456,
+          customerId: 123,
           data: {
             creativeId: "creative_123",
             message: "Sync failed",
           },
+          type: NotificationEventType.CREATIVE_SYNC_FAILED,
         });
 
         await repository.createNotification({
-          type: "creative.approved" as NotificationEventType,
-          customerId: 123,
           brandAgentId: 456,
+          customerId: 123,
           data: {
             creativeId: "creative_456",
             message: "Creative approved",
           },
+          type: NotificationEventType.CREATIVE_APPROVED,
         });
       });
 
@@ -143,11 +143,13 @@ export function testNotificationRepositoryContract(
 
       it("should filter by notification types", async () => {
         const result = await repository.getNotifications({
-          types: ["creative.sync_failed" as NotificationEventType],
+          types: [NotificationEventType.CREATIVE_SYNC_FAILED],
         });
 
         result.notifications.forEach((notification) => {
-          expect(notification.type).toBe("creative.sync_failed");
+          expect(notification.type).toBe(
+            NotificationEventType.CREATIVE_SYNC_FAILED,
+          );
         });
       });
 
@@ -209,19 +211,21 @@ export function testNotificationRepositoryContract(
 
       it("should return notification by ID", async () => {
         const notificationId = await repository.createNotification({
-          type: "creative.approved" as NotificationEventType,
           customerId: 123,
           data: {
             creativeId: "creative_123",
             message: "Creative approved",
           },
+          type: NotificationEventType.CREATIVE_APPROVED,
         });
 
         const notification = await repository.getNotification(notificationId);
 
         if (notification) {
           expect(notification.id).toBe(notificationId);
-          expect(notification.type).toBe("creative.approved");
+          expect(notification.type).toBe(
+            NotificationEventType.CREATIVE_APPROVED,
+          );
           expect(notification.customerId).toBe(123);
           expect(notification.data.creativeId).toBe("creative_123");
         }
@@ -231,11 +235,11 @@ export function testNotificationRepositoryContract(
     describe("markAsRead", () => {
       it("should mark notifications as read", async () => {
         const notificationId = await repository.createNotification({
-          type: "creative.approved" as NotificationEventType,
           customerId: 123,
           data: {
             message: "Test notification",
           },
+          type: NotificationEventType.CREATIVE_APPROVED,
         });
 
         await repository.markAsRead([notificationId]);
@@ -260,11 +264,11 @@ export function testNotificationRepositoryContract(
     describe("markAsAcknowledged", () => {
       it("should mark notifications as acknowledged", async () => {
         const notificationId = await repository.createNotification({
-          type: "creative.rejected" as NotificationEventType,
           customerId: 123,
           data: {
             message: "Test notification",
           },
+          type: NotificationEventType.CREATIVE_REJECTED,
         });
 
         await repository.markAsAcknowledged([notificationId]);
@@ -285,17 +289,17 @@ export function testNotificationRepositoryContract(
       beforeEach(async () => {
         // Create test notifications with different types
         await repository.createNotification({
-          type: "creative.sync_failed" as NotificationEventType,
-          customerId: 123,
           brandAgentId: 456,
+          customerId: 123,
           data: { message: "Sync failed" },
+          type: NotificationEventType.CREATIVE_SYNC_FAILED,
         });
 
         await repository.createNotification({
-          type: "creative.approved" as NotificationEventType,
-          customerId: 123,
           brandAgentId: 456,
+          customerId: 123,
           data: { message: "Approved" },
+          type: NotificationEventType.CREATIVE_APPROVED,
         });
       });
 
@@ -326,12 +330,12 @@ export function testNotificationRepositoryContract(
     describe("getCampaignNotifications", () => {
       beforeEach(async () => {
         await repository.createNotification({
-          type: "campaign.unhealthy" as NotificationEventType,
           customerId: 123,
           data: {
             campaignId: "campaign_123",
             message: "Campaign has issues",
           },
+          type: "campaign.unhealthy" as NotificationEventType,
         });
       });
 
@@ -365,13 +369,13 @@ export function testNotificationRepositoryContract(
     describe("isDuplicateNotification", () => {
       it("should detect duplicates within time window", async () => {
         const request: NotificationCreateRequest = {
-          type: "creative.sync_failed" as NotificationEventType,
           customerId: 123,
           data: {
             creativeId: "creative_123",
-            salesAgentId: "agent_abc",
             message: "Sync failed",
+            salesAgentId: "agent_abc",
           },
+          type: NotificationEventType.CREATIVE_SYNC_FAILED,
         };
 
         // Create first notification
@@ -387,12 +391,12 @@ export function testNotificationRepositoryContract(
 
       it("should not detect duplicates outside time window", async () => {
         const request: NotificationCreateRequest = {
-          type: "creative.sync_failed" as NotificationEventType,
           customerId: 123,
           data: {
             creativeId: "creative_123",
             message: "Sync failed",
           },
+          type: NotificationEventType.CREATIVE_SYNC_FAILED,
         };
 
         // Check for non-existent duplicate
@@ -416,9 +420,10 @@ export function testNotificationRepositoryContract(
       it("should validate required fields", async () => {
         await expect(
           repository.createNotification({
-            type: "" as unknown,
             customerId: 123,
             data: { message: "test" },
+            // @ts-expect-error - Testing invalid type
+            type: "",
           }),
         ).rejects.toThrow();
       });
@@ -426,9 +431,9 @@ export function testNotificationRepositoryContract(
       it("should handle invalid customer IDs", async () => {
         await expect(
           repository.createNotification({
-            type: "creative.approved" as NotificationEventType,
             customerId: 0,
             data: { message: "test" },
+            type: NotificationEventType.CREATIVE_APPROVED,
           }),
         ).rejects.toThrow();
       });
@@ -436,9 +441,10 @@ export function testNotificationRepositoryContract(
       it("should handle malformed notification data", async () => {
         await expect(
           repository.createNotification({
-            type: "creative.approved" as NotificationEventType,
             customerId: 123,
-            data: {} as unknown,
+            // @ts-expect-error - Testing invalid data
+            data: {},
+            type: NotificationEventType.CREATIVE_APPROVED,
           }),
         ).rejects.toThrow();
       });
@@ -450,12 +456,12 @@ export function testNotificationRepositoryContract(
         const notificationIds: string[] = [];
         for (let i = 0; i < 10; i++) {
           const id = await repository.createNotification({
-            type: "creative.approved" as NotificationEventType,
             customerId: 123,
             data: {
               creativeId: `creative_${i}`,
               message: `Test notification ${i}`,
             },
+            type: NotificationEventType.CREATIVE_APPROVED,
           });
           notificationIds.push(id);
         }

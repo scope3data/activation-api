@@ -31,10 +31,10 @@ vi.mock("../../services/auth-service.js", () => ({
   AuthenticationService: vi.fn().mockImplementation(() => ({})),
 }));
 
-import { TacticBigQueryService } from "../../services/tactic-bigquery-service.js";
+import { AuthenticationService } from "../../services/auth-service.js";
 import { CreativeSyncService } from "../../services/creative-sync-service.js";
 import { NotificationService } from "../../services/notification-service.js";
-import { AuthenticationService } from "../../services/auth-service.js";
+import { TacticBigQueryService } from "../../services/tactic-bigquery-service.js";
 import { createTacticTool } from "./create.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -466,8 +466,11 @@ describe("create_tactic Tool", () => {
   });
 
   describe("Automatic Creative Sync", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let mockCreativeSyncService: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let mockNotificationService: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let mockAuthService: any;
 
     const validArgs = {
@@ -590,7 +593,7 @@ describe("create_tactic Tool", () => {
           inventoryType: "premium" as const,
           name: "Test Media Product",
           productId: "prod_123",
-          publisherId: undefined, // No publisher ID - should not trigger sync
+          publisherId: "", // Empty publisher ID - should not trigger sync
           publisherName: "Test Publisher",
           updatedAt: new Date("2024-01-01T00:00:00Z"),
         },
@@ -677,15 +680,15 @@ describe("create_tactic Tool", () => {
           inventoryType: "premium" as const,
           name: "Test Media Product",
           productId: "prod_123",
-          publisherId: undefined, // No publisher ID
+          publisherId: "", // Empty publisher ID
           publisherName: "Test Publisher",
           updatedAt: new Date("2024-01-01T00:00:00Z"),
         },
         name: "Sales Agent Test Tactic",
+        salesAgentId: "direct_sales_agent_456", // Sales agent from tactic
         signalId: undefined,
         status: "active",
         updatedAt: new Date("2024-01-01T00:00:00Z"),
-        salesAgentId: "direct_sales_agent_456", // Sales agent from tactic
       };
 
       mockBigQueryService.createTactic.mockResolvedValue(

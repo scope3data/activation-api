@@ -1,12 +1,12 @@
-import { z } from "zod";
 import { BigQuery } from "@google-cloud/bigquery";
+import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
+
+import { AuthenticationService } from "../../services/auth-service.js";
 import { CreativeSyncService } from "../../services/creative-sync-service.js";
 import { NotificationService } from "../../services/notification-service.js";
-import { AuthenticationService } from "../../services/auth-service.js";
-
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const listCampaignsTool = (client: Scope3ApiClient) => ({
@@ -117,7 +117,7 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
                       creativesWithIssues++;
                     }
                   }
-                } catch (error) {
+                } catch {
                   // Skip individual creative sync status errors
                   creativesNotSynced++;
                 }
@@ -125,7 +125,7 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
 
               // Determine overall health status
               const totalCreatives = campaign.creativeIds.length;
-              let healthStatus: "healthy" | "warning" | "critical" = "healthy";
+              let healthStatus: "critical" | "healthy" | "warning" = "healthy";
 
               if (
                 creativesWithIssues > 0 ||
@@ -141,6 +141,7 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
                 status: healthStatus,
                 summary: {
                   creativesFullySynced,
+                  creativesNotSynced,
                   creativesPartiallySynced: Math.max(
                     0,
                     totalCreatives -
@@ -148,7 +149,6 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
                       creativesWithIssues -
                       creativesNotSynced,
                   ),
-                  creativesNotSynced,
                   creativesWithIssues,
                 },
               };
@@ -291,27 +291,27 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
             status: args.status,
           },
           summary: {
-            statusCounts,
-            totalBudget,
-            totalSpend,
-            utilization: totalBudget > 0 ? (totalSpend / totalBudget) * 100 : 0,
             // Add health and notification summaries
             healthSummary: {
-              healthy: healthySummary,
-              warning: warningsSummary,
               critical: criticalSummary,
+              healthy: healthySummary,
               unknown:
                 campaigns.length -
                 healthySummary -
                 warningsSummary -
                 criticalSummary,
+              warning: warningsSummary,
             },
             notificationSummary: {
-              totalUnread: totalNotifications,
               campaignsWithNotifications: campaigns.filter(
                 (c) => (c.notifications?.unread || 0) > 0,
               ).length,
+              totalUnread: totalNotifications,
             },
+            statusCounts,
+            totalBudget,
+            totalSpend,
+            utilization: totalBudget > 0 ? (totalSpend / totalBudget) * 100 : 0,
           },
         },
         message: summary,

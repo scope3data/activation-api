@@ -2,10 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
+
+import { AuthenticationService } from "../../services/auth-service.js";
 import { CreativeSyncService } from "../../services/creative-sync-service.js";
 import { NotificationService } from "../../services/notification-service.js";
-import { AuthenticationService } from "../../services/auth-service.js";
-
 import { creativeAssignTool, creativeUnassignTool } from "./assign.js";
 
 // Mock the services
@@ -25,13 +25,13 @@ const mockContext: MCPToolExecuteContext = {
 };
 
 const successfulAssignmentResult = {
-  success: true,
   message: "Creative assigned successfully",
+  success: true,
 };
 
 const successfulUnassignmentResult = {
-  success: true,
   message: "Creative unassigned successfully",
+  success: true,
 };
 
 describe("creativeAssignTool", () => {
@@ -51,12 +51,15 @@ describe("creativeAssignTool", () => {
 
     // Setup service mocks
     vi.mocked(CreativeSyncService).mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       () => mockCreativeSyncService as any,
     );
     vi.mocked(NotificationService).mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       () => mockNotificationService as any,
     );
     vi.mocked(AuthenticationService).mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       () => mockAuthService as any,
     );
 
@@ -288,8 +291,8 @@ describe("creativeAssignTool", () => {
 
     it("should not trigger sync if assignment fails", async () => {
       mockClient.assignCreativeToCampaign = vi.fn().mockResolvedValue({
-        success: false,
         message: "Buyer agent validation failed",
+        success: false,
       });
 
       await expect(
@@ -314,8 +317,8 @@ describe("creativeAssignTool", () => {
   describe("error handling", () => {
     it("should handle assignment API failures", async () => {
       mockClient.assignCreativeToCampaign = vi.fn().mockResolvedValue({
-        success: false,
         message: "Creative not found",
+        success: false,
       });
 
       await expect(
@@ -529,8 +532,8 @@ describe("creativeUnassignTool", () => {
   describe("error handling", () => {
     it("should handle unassignment API failures", async () => {
       mockClient.unassignCreativeFromCampaign = vi.fn().mockResolvedValue({
-        success: false,
         message: "Assignment not found",
+        success: false,
       });
 
       await expect(

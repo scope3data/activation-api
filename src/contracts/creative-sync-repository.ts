@@ -3,7 +3,21 @@
 
 import type {
   CreativeSyncStatus,
+  SalesAgentCapabilities,
 } from "../types/notifications.js";
+
+/**
+ * Input interfaces for creative sync operations
+ */
+export interface CreateSyncStatusData {
+  approvalStatus?: "approved" | "changes_requested" | "pending" | "rejected";
+  brandAgentId: number;
+  campaignContext?: string;
+  creativeId: string;
+  salesAgentId: string;
+  syncStatus: "failed" | "pending" | "synced" | "syncing";
+  tacticContext?: string;
+}
 
 /**
  * Repository contract for creative sync operations
@@ -11,44 +25,9 @@ import type {
  */
 export interface CreativeSyncRepository {
   /**
-   * Update sync status for a creative-sales agent pair
+   * Clean up old sync status records
    */
-  updateSyncStatus(
-    creativeId: string,
-    salesAgentId: string,
-    brandAgentId: number,
-    updates: {
-      syncStatus?:
-        | "pending"
-        | "syncing"
-        | "synced"
-        | "failed"
-        | "not_applicable";
-      approvalStatus?:
-        | "pending"
-        | "approved"
-        | "rejected"
-        | "changes_requested";
-      syncError?: string | null;
-      lastSyncAttempt?: string;
-      rejectionReason?: string;
-      requestedChanges?: string[];
-      tacticContext?: string;
-      campaignContext?: string;
-    },
-  ): Promise<void>;
-
-  /**
-   * Get sync status for a creative across all sales agents
-   */
-  getCreativeSyncStatus(creativeId: string): Promise<CreativeSyncStatus[]>;
-
-  /**
-   * Get sync status for multiple creatives (batch operation)
-   */
-  getBatchCreativeSyncStatus(
-    creativeIds: string[],
-  ): Promise<Record<string, CreativeSyncStatus[]>>;
+  cleanupOldSyncStatus(olderThanDays: number): Promise<number>;
 
   /**
    * Find recent sales agents used by a brand agent with matching format
@@ -64,11 +43,11 @@ export interface CreativeSyncRepository {
   ): Promise<string[]>;
 
   /**
-   * Get sales agent capabilities for format matching
+   * Get sync status for multiple creatives (batch operation)
    */
-  getSalesAgentCapabilities(
-    salesAgentId: string,
-  ): Promise<SalesAgentCapabilities | null>;
+  getBatchCreativeSyncStatus(
+    creativeIds: string[],
+  ): Promise<Record<string, CreativeSyncStatus[]>>;
 
   /**
    * Batch get sales agent capabilities
@@ -76,6 +55,56 @@ export interface CreativeSyncRepository {
   getBatchSalesAgentCapabilities(
     salesAgentIds: string[],
   ): Promise<Record<string, SalesAgentCapabilities>>;
+
+  /**
+   * Get sync status for a creative across all sales agents
+   */
+  getCreativeSyncStatus(creativeId: string): Promise<CreativeSyncStatus[]>;
+
+  /**
+   * Get sales agent capabilities for format matching
+   */
+  getSalesAgentCapabilities(
+    salesAgentId: string,
+  ): Promise<null | SalesAgentCapabilities>;
+
+  /**
+   * Get sync statistics for reporting
+   */
+  getSyncStatistics(
+    brandAgentId: number,
+    options?: {
+      campaignId?: string;
+      dateRange?: {
+        end: string;
+        start: string;
+      };
+    },
+  ): Promise<{
+    approvedCreatives: number;
+    byFormat: Record<
+      string,
+      {
+        approved: number;
+        rejected: number;
+        synced: number;
+        total: number;
+      }
+    >;
+    bySalesAgent: Record<
+      string,
+      {
+        approved: number;
+        name: string;
+        rejected: number;
+        synced: number;
+      }
+    >;
+    failedSyncs: number;
+    rejectedCreatives: number;
+    syncedCreatives: number;
+    totalCreatives: number;
+  }>;
 
   /**
    * Check if a creative format is compatible with a sales agent
@@ -86,99 +115,71 @@ export interface CreativeSyncRepository {
   ): Promise<boolean>;
 
   /**
-   * Get sync statistics for reporting
+   * Update sync status for a creative-sales agent pair
    */
-  getSyncStatistics(
+  updateSyncStatus(
+    creativeId: string,
+    salesAgentId: string,
     brandAgentId: number,
-    options?: {
-      campaignId?: string;
-      dateRange?: {
-        start: string;
-        end: string;
-      };
+    updates: {
+      approvalStatus?:
+        | "approved"
+        | "changes_requested"
+        | "pending"
+        | "rejected";
+      campaignContext?: string;
+      lastSyncAttempt?: string;
+      rejectionReason?: string;
+      requestedChanges?: string[];
+      syncError?: null | string;
+      syncStatus?:
+        | "failed"
+        | "not_applicable"
+        | "pending"
+        | "synced"
+        | "syncing";
+      tacticContext?: string;
     },
-  ): Promise<{
-    totalCreatives: number;
-    syncedCreatives: number;
-    approvedCreatives: number;
-    rejectedCreatives: number;
-    failedSyncs: number;
-    byFormat: Record<
-      string,
-      {
-        total: number;
-        synced: number;
-        approved: number;
-        rejected: number;
-      }
-    >;
-    bySalesAgent: Record<
-      string,
-      {
-        name: string;
-        synced: number;
-        approved: number;
-        rejected: number;
-      }
-    >;
-  }>;
-
-  /**
-   * Clean up old sync status records
-   */
-  cleanupOldSyncStatus(olderThanDays: number): Promise<number>;
-}
-
-/**
- * Input interfaces for creative sync operations
- */
-export interface CreateSyncStatusData {
-  creativeId: string;
-  salesAgentId: string;
-  brandAgentId: number;
-  syncStatus: "pending" | "syncing" | "synced" | "failed";
-  approvalStatus?: "pending" | "approved" | "rejected" | "changes_requested";
-  tacticContext?: string;
-  campaignContext?: string;
-}
-
-export interface UpdateSyncStatusData {
-  syncStatus?: "pending" | "syncing" | "synced" | "failed" | "not_applicable";
-  approvalStatus?: "pending" | "approved" | "rejected" | "changes_requested";
-  syncError?: string | null;
-  rejectionReason?: string;
-  requestedChanges?: string[];
-  lastSyncAttempt?: string;
-}
-
-export interface SyncStatusFilter {
-  creativeIds?: string[];
-  salesAgentIds?: string[];
-  brandAgentId?: number;
-  syncStatus?: string[];
-  approvalStatus?: string[];
-  dateRange?: {
-    start: string;
-    end: string;
-  };
+  ): Promise<void>;
 }
 
 /**
  * Response types for sync operations
  */
 export interface SyncOperationResult {
-  success: boolean;
   error?: string;
-  syncedAgents: string[];
   failedAgents: Array<{
-    salesAgentId: string;
     error: string;
+    salesAgentId: string;
   }>;
   metadata?: {
-    totalAttempted: number;
-    totalSuccessful: number;
-    totalFailed: number;
     formatMatched: number;
     formatMismatched: number;
+    totalAttempted: number;
+    totalFailed: number;
+    totalSuccessful: number;
   };
+  success: boolean;
+  syncedAgents: string[];
+}
+
+export interface SyncStatusFilter {
+  approvalStatus?: string[];
+  brandAgentId?: number;
+  creativeIds?: string[];
+  dateRange?: {
+    end: string;
+    start: string;
+  };
+  salesAgentIds?: string[];
+  syncStatus?: string[];
+}
+
+export interface UpdateSyncStatusData {
+  approvalStatus?: "approved" | "changes_requested" | "pending" | "rejected";
+  lastSyncAttempt?: string;
+  rejectionReason?: string;
+  requestedChanges?: string[];
+  syncError?: null | string;
+  syncStatus?: "failed" | "not_applicable" | "pending" | "synced" | "syncing";
 }

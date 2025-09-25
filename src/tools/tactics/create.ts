@@ -1,13 +1,13 @@
-import { z } from "zod";
 import { BigQuery } from "@google-cloud/bigquery";
+import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
-import { TacticBigQueryService } from "../../services/tactic-bigquery-service.js";
+import { AuthenticationService } from "../../services/auth-service.js";
 import { CreativeSyncService } from "../../services/creative-sync-service.js";
 import { NotificationService } from "../../services/notification-service.js";
-import { AuthenticationService } from "../../services/auth-service.js";
+import { TacticBigQueryService } from "../../services/tactic-bigquery-service.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 const CreateTacticSchema = z.object({

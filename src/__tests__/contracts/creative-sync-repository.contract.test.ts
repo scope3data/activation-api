@@ -1,7 +1,7 @@
 // Contract test suite for CreativeSyncRepository implementations
 // Tests ANY implementation against the defined behavioral contract
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import type { CreativeSyncRepository } from "../../contracts/creative-sync-repository.js";
 
@@ -30,8 +30,8 @@ export function testCreativeSyncRepositoryContract(
           "sales_agent_abc",
           456,
           {
-            syncStatus: "pending",
             approvalStatus: "pending",
+            syncStatus: "pending",
           },
         );
 
@@ -39,9 +39,9 @@ export function testCreativeSyncRepositoryContract(
           await repository.getCreativeSyncStatus("creative_123");
         expect(syncStatus).toHaveLength(1);
         expect(syncStatus[0]).toMatchObject({
+          approvalStatus: "pending",
           salesAgentId: "sales_agent_abc",
           status: "pending",
-          approvalStatus: "pending",
         });
       });
 
@@ -62,8 +62,8 @@ export function testCreativeSyncRepositoryContract(
           "sales_agent_abc",
           456,
           {
-            syncStatus: "synced",
             approvalStatus: "approved",
+            syncStatus: "synced",
           },
         );
 
@@ -71,9 +71,9 @@ export function testCreativeSyncRepositoryContract(
           await repository.getCreativeSyncStatus("creative_123");
         expect(syncStatus).toHaveLength(1);
         expect(syncStatus[0]).toMatchObject({
+          approvalStatus: "approved",
           salesAgentId: "sales_agent_abc",
           status: "synced",
-          approvalStatus: "approved",
         });
       });
 
@@ -83,10 +83,10 @@ export function testCreativeSyncRepositoryContract(
           "sales_agent_abc",
           456,
           {
-            syncStatus: "synced",
             approvalStatus: "rejected",
             rejectionReason: "Format not supported",
             requestedChanges: ["Use 1080p resolution", "Add captions"],
+            syncStatus: "synced",
           },
         );
 
@@ -105,9 +105,9 @@ export function testCreativeSyncRepositoryContract(
           "sales_agent_abc",
           456,
           {
-            syncStatus: "failed",
-            syncError: "Network timeout",
             lastSyncAttempt: new Date().toISOString(),
+            syncError: "Network timeout",
+            syncStatus: "failed",
           },
         );
 
@@ -130,8 +130,8 @@ export function testCreativeSyncRepositoryContract(
       it("should return all sync statuses for a creative", async () => {
         // Create sync status with multiple agents
         await repository.updateSyncStatus("creative_123", "agent_1", 456, {
-          syncStatus: "synced",
           approvalStatus: "approved",
+          syncStatus: "synced",
         });
         await repository.updateSyncStatus("creative_123", "agent_2", 456, {
           syncStatus: "pending",
@@ -300,8 +300,8 @@ export function testCreativeSyncRepositoryContract(
       it("should filter by date range when specified", async () => {
         const stats = await repository.getSyncStatistics(456, {
           dateRange: {
-            start: "2024-01-01",
             end: "2024-01-31",
+            start: "2024-01-01",
           },
         });
 
@@ -349,7 +349,8 @@ export function testCreativeSyncRepositoryContract(
       it("should validate sync status values", async () => {
         await expect(
           repository.updateSyncStatus("creative_123", "agent_1", 456, {
-            syncStatus: "invalid_status" as unknown,
+            // @ts-expect-error - Testing invalid status
+            syncStatus: "invalid_status",
           }),
         ).rejects.toThrow();
       });
@@ -359,8 +360,8 @@ export function testCreativeSyncRepositoryContract(
       it("should handle concurrent updates to same creative-agent pair", async () => {
         const promises = Array.from({ length: 5 }, () =>
           repository.updateSyncStatus("creative_concurrent", "agent_1", 456, {
-            syncStatus: "synced",
             approvalStatus: "approved",
+            syncStatus: "synced",
           }),
         );
 
@@ -371,8 +372,8 @@ export function testCreativeSyncRepositoryContract(
         );
         expect(syncStatus).toHaveLength(1);
         expect(syncStatus[0]).toMatchObject({
-          status: "synced",
           approvalStatus: "approved",
+          status: "synced",
         });
       });
     });

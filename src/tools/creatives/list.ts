@@ -164,7 +164,7 @@ ${
           creative.salesAgentSyncStatus.length > 0
         ) {
           // Fallback to individual sync status if summary not available
-          const synced = creative.salesAgentSyncStatus.filter(
+          const _synced = creative.salesAgentSyncStatus.filter(
             (s) => s.status === "synced",
           ).length;
           const total = creative.salesAgentSyncStatus.length;

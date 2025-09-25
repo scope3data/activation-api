@@ -1,14 +1,13 @@
-import type {
-  CreativeSyncStatus,
-} from "../types/notifications.js";
 import type { Creative } from "../types/creative.js";
+import type { CreativeSyncStatus } from "../types/notifications.js";
+import type { NotificationService } from "./notification-service.js";
 
+import { NotificationEventType } from "../types/notifications.js";
 import {
   BigQueryTypes,
   createBigQueryParams,
 } from "../utils/bigquery-types.js";
 import { BigQueryBaseService } from "./base/bigquery-base-service.js";
-import type { NotificationService } from "./notification-service.js";
 
 /**
  * Service for managing creative sync operations with sales agents
@@ -22,13 +21,6 @@ export class CreativeSyncService extends BigQueryBaseService {
   private notificationService?: NotificationService;
 
   /**
-   * Set notification service for generating sync notifications
-   */
-  setNotificationService(notificationService: NotificationService): void {
-    this.notificationService = notificationService;
-  }
-
-  /**
    * Determine relevant sales agents for a creative based on format and recent history
    */
   async determineRelevantSalesAgents(
@@ -36,14 +28,14 @@ export class CreativeSyncService extends BigQueryBaseService {
     brandAgentId: number,
     options: {
       daysBack?: number;
-      includeActive?: boolean;
       forceIncludeAgents?: string[];
+      includeActive?: boolean;
     } = {},
   ): Promise<string[]> {
     const {
       daysBack = 30,
-      includeActive = true,
       forceIncludeAgents = [],
+      includeActive = true,
     } = options;
 
     // Get creative format information
@@ -90,11 +82,11 @@ export class CreativeSyncService extends BigQueryBaseService {
     const recentResults = await this.executeQuery<{
       sales_agent_id: string;
       sales_agent_name: string;
-      supports_video?: boolean;
-      supports_display?: boolean;
       supports_audio?: boolean;
-      supports_native?: boolean;
       supports_ctv?: boolean;
+      supports_display?: boolean;
+      supports_native?: boolean;
+      supports_video?: boolean;
     }>(recentQuery, params);
 
     // Filter by format compatibility
@@ -108,89 +100,6 @@ export class CreativeSyncService extends BigQueryBaseService {
     ];
 
     return allRelevantAgents;
-  }
-
-  /**
-   * Sync a creative to multiple sales agents with batch processing
-   */
-  async syncCreativeToSalesAgents(
-    creativeId: string,
-    salesAgentIds: string[],
-    context: {
-      campaignId?: string;
-      tacticId?: string;
-      triggeredBy:
-        | "manual"
-        | "campaign_assignment"
-        | "tactic_creation"
-        | "creative_update";
-    },
-  ): Promise<{
-    success: string[];
-    failed: Array<{ salesAgentId: string; error: string }>;
-  }> {
-    const results = {
-      success: [] as string[],
-      failed: [] as Array<{ salesAgentId: string; error: string }>,
-    };
-
-    // Get creative and brand agent info for notifications
-    const creative = await this.getCreative(creativeId);
-    if (!creative) {
-      throw new Error(`Creative ${creativeId} not found`);
-    }
-
-    // Process syncs in batches to avoid overwhelming APIs
-    const batchSize = 5;
-    for (let i = 0; i < salesAgentIds.length; i += batchSize) {
-      const batch = salesAgentIds.slice(i, i + batchSize);
-      const batchPromises = batch.map((salesAgentId) =>
-        this.syncCreativeToSingleAgent(creativeId, salesAgentId, context),
-      );
-
-      const batchResults = await Promise.allSettled(batchPromises);
-
-      batchResults.forEach((result, index) => {
-        const salesAgentId = batch[index];
-        if (result.status === "fulfilled") {
-          results.success.push(salesAgentId);
-        } else {
-          const error =
-            result.reason instanceof Error
-              ? result.reason.message
-              : String(result.reason);
-          results.failed.push({ salesAgentId, error });
-        }
-      });
-    }
-
-    // Generate notifications for failures
-    if (results.failed.length > 0 && this.notificationService) {
-      await this.generateSyncFailureNotifications(
-        creative,
-        results.failed,
-        context,
-      );
-    }
-
-    // Generate success notification if all succeeded
-    if (
-      results.success.length === salesAgentIds.length &&
-      this.notificationService
-    ) {
-      await this.notificationService.createNotification({
-        type: "creative.sync_completed" as NotificationEventType,
-        customerId: creative.customerId,
-        brandAgentId: parseInt(creative.buyerAgentId),
-        data: {
-          creativeId,
-          campaignId: context.campaignId,
-          message: `Creative "${creative.creativeName}" synced to ${results.success.length} sales agents`,
-        },
-      });
-    }
-
-    return results;
   }
 
   /**
@@ -225,32 +134,32 @@ export class CreativeSyncService extends BigQueryBaseService {
     );
 
     const results = await this.executeQuery<{
-      sales_agent_id: string;
-      sales_agent_name: string;
-      sync_status: string;
       approval_status?: string;
       last_sync_attempt?: string;
       rejection_reason?: string;
       requested_changes?: string[];
+      sales_agent_id: string;
+      sales_agent_name: string;
+      sync_status: string;
     }>(query, params);
 
     return results.map((result) => ({
-      salesAgentId: result.sales_agent_id,
-      salesAgentName: result.sales_agent_name || result.sales_agent_id,
-      status: result.sync_status as
-        | "synced"
-        | "failed"
-        | "pending"
-        | "not_applicable",
       approvalStatus: result.approval_status as
         | "approved"
-        | "rejected"
-        | "pending"
         | "changes_requested"
+        | "pending"
+        | "rejected"
         | undefined,
       lastSyncAttempt: result.last_sync_attempt,
       rejectionReason: result.rejection_reason,
       requestedChanges: result.requested_changes,
+      salesAgentId: result.sales_agent_id,
+      salesAgentName: result.sales_agent_name || result.sales_agent_id,
+      status: result.sync_status as
+        | "failed"
+        | "not_applicable"
+        | "pending"
+        | "synced",
     }));
   }
 
@@ -351,29 +260,125 @@ export class CreativeSyncService extends BigQueryBaseService {
     }
   }
 
+  /**
+   * Set notification service for generating sync notifications
+   */
+  setNotificationService(notificationService: NotificationService): void {
+    this.notificationService = notificationService;
+  }
+
+  /**
+   * Sync a creative to multiple sales agents with batch processing
+   */
+  async syncCreativeToSalesAgents(
+    creativeId: string,
+    salesAgentIds: string[],
+    context: {
+      campaignId?: string;
+      tacticId?: string;
+      triggeredBy:
+        | "campaign_assignment"
+        | "creative_update"
+        | "manual"
+        | "tactic_creation";
+    },
+  ): Promise<{
+    failed: Array<{ error: string; salesAgentId: string }>;
+    success: string[];
+  }> {
+    const results = {
+      failed: [] as Array<{ error: string; salesAgentId: string }>,
+      success: [] as string[],
+    };
+
+    // Get creative and brand agent info for notifications
+    const creative = await this.getCreative(creativeId);
+    if (!creative) {
+      throw new Error(`Creative ${creativeId} not found`);
+    }
+
+    // Process syncs in batches to avoid overwhelming APIs
+    const batchSize = 5;
+    for (let i = 0; i < salesAgentIds.length; i += batchSize) {
+      const batch = salesAgentIds.slice(i, i + batchSize);
+      const batchPromises = batch.map((salesAgentId) =>
+        this.syncCreativeToSingleAgent(creativeId, salesAgentId, context),
+      );
+
+      const batchResults = await Promise.allSettled(batchPromises);
+
+      batchResults.forEach((result, index) => {
+        const salesAgentId = batch[index];
+        if (result.status === "fulfilled") {
+          results.success.push(salesAgentId);
+        } else {
+          const error =
+            result.reason instanceof Error
+              ? result.reason.message
+              : String(result.reason);
+          results.failed.push({ error, salesAgentId });
+        }
+      });
+    }
+
+    // Generate notifications for failures
+    if (results.failed.length > 0 && this.notificationService) {
+      await this.generateSyncFailureNotifications(
+        creative,
+        results.failed,
+        context,
+      );
+    }
+
+    // Generate success notification if all succeeded
+    if (
+      results.success.length === salesAgentIds.length &&
+      this.notificationService
+    ) {
+      await this.notificationService.createNotification({
+        brandAgentId: parseInt(creative.buyerAgentId),
+        customerId: creative.customerId,
+        data: {
+          campaignId: context.campaignId,
+          creativeId,
+          message: `Creative "${creative.creativeName}" synced to ${results.success.length} sales agents`,
+        },
+        type: NotificationEventType.CREATIVE_SYNC_COMPLETED,
+      });
+    }
+
+    return results;
+  }
+
   // Private helper methods
 
-  private async getCreativeFormat(
-    creativeId: string,
-  ): Promise<{ format: string } | null> {
-    const query = `
-      SELECT format_id as format
-      FROM ${this.getTableRef("creatives")}
-      WHERE id = @creativeId
-      LIMIT 1
-    `;
+  protected getTableRef(table: string): string {
+    return `${this.projectId}.${this.dataset}.${table}`;
+  }
 
-    const { params } = createBigQueryParams(
-      {
-        creativeId: creativeId,
-      },
-      {
-        creativeId: BigQueryTypes.STRING,
-      },
-    );
+  private async generateSyncFailureNotifications(
+    creative: Creative,
+    failures: Array<{ error: string; salesAgentId: string }>,
+    context: { campaignId?: string; tacticId?: string },
+  ): Promise<void> {
+    if (!this.notificationService) return;
 
-    const results = await this.executeQuery<{ format: string }>(query, params);
-    return results[0] || null;
+    // Create individual notifications for each failure
+    for (const failure of failures) {
+      await this.notificationService.createNotification({
+        brandAgentId: parseInt(creative.buyerAgentId),
+        customerId: creative.customerId,
+        data: {
+          campaignId: context.campaignId,
+          creativeId: creative.creativeId,
+          message: `Creative "${creative.creativeName}" failed to sync`,
+          reason: failure.error,
+          salesAgentId: failure.salesAgentId,
+          tacticId: context.tacticId,
+        },
+        type: NotificationEventType.CREATIVE_SYNC_FAILED,
+      });
+    }
   }
 
   private async getCreative(creativeId: string): Promise<Creative | null> {
@@ -399,9 +404,9 @@ export class CreativeSyncService extends BigQueryBaseService {
     );
 
     const results = await this.executeQuery<{
+      buyerAgentId: string;
       creativeId: string;
       creativeName: string;
-      buyerAgentId: string;
       customerId: number;
       format: string;
     }>(query, params);
@@ -410,80 +415,62 @@ export class CreativeSyncService extends BigQueryBaseService {
 
     const result = results[0];
     return {
+      buyerAgentId: result.buyerAgentId,
       creativeId: result.creativeId,
       creativeName: result.creativeName,
-      buyerAgentId: result.buyerAgentId,
       customerId: result.customerId,
       format: { formatId: result.format, type: "adcp" },
     } as Creative;
   }
 
+  private async getCreativeFormat(
+    creativeId: string,
+  ): Promise<{ format: string } | null> {
+    const query = `
+      SELECT format_id as format
+      FROM ${this.getTableRef("creatives")}
+      WHERE id = @creativeId
+      LIMIT 1
+    `;
+
+    const { params } = createBigQueryParams(
+      {
+        creativeId: creativeId,
+      },
+      {
+        creativeId: BigQueryTypes.STRING,
+      },
+    );
+
+    const results = await this.executeQuery<{ format: string }>(query, params);
+    return results[0] || null;
+  }
+
   private isFormatCompatible(
     creativeFormat: string,
     salesAgent: {
-      supports_video?: boolean;
-      supports_display?: boolean;
       supports_audio?: boolean;
-      supports_native?: boolean;
       supports_ctv?: boolean;
+      supports_display?: boolean;
+      supports_native?: boolean;
+      supports_video?: boolean;
     },
   ): boolean {
     const formatType = creativeFormat.split("/")[0]?.toLowerCase();
 
     switch (formatType) {
-      case "video":
-        return salesAgent.supports_video === true;
-      case "display":
-        return salesAgent.supports_display !== false; // Default to true
       case "audio":
         return salesAgent.supports_audio === true;
-      case "native":
-        return salesAgent.supports_native === true;
       case "ctv":
         return salesAgent.supports_ctv === true;
+      case "display":
+        return salesAgent.supports_display !== false; // Default to true
+      case "native":
+        return salesAgent.supports_native === true;
+      case "video":
+        return salesAgent.supports_video === true;
       default:
         return salesAgent.supports_display !== false; // Default fallback
-    }
-  }
-
-  private async syncCreativeToSingleAgent(
-    creativeId: string,
-    salesAgentId: string,
-    context: {
-      campaignId?: string;
-      tacticId?: string;
-      triggeredBy: string;
-    },
-  ): Promise<void> {
-    // Update sync status to 'syncing'
-    await this.updateSyncStatus(creativeId, salesAgentId, {
-      sync_status: "syncing",
-      last_sync_attempt: new Date().toISOString(),
-      initially_synced_for_tactic_id: context.tacticId,
-      last_campaign_context: context.campaignId,
-    });
-
-    try {
-      // TODO: Implement actual sync logic with sales agent API
-      // This would call the sales agent's API to sync the creative
-
-      // Simulate sync operation
-      await this.simulateSyncOperation(creativeId, salesAgentId);
-
-      // Update sync status to 'synced'
-      await this.updateSyncStatus(creativeId, salesAgentId, {
-        sync_status: "synced",
-        approval_status: "pending", // Most sales agents require approval
-        sync_error: null,
-      });
-    } catch (error) {
-      // Update sync status to 'failed'
-      await this.updateSyncStatus(creativeId, salesAgentId, {
-        sync_status: "failed",
-        sync_error: error instanceof Error ? error.message : String(error),
-      });
-
-      throw error; // Re-throw for batch handling
     }
   }
 
@@ -503,16 +490,57 @@ export class CreativeSyncService extends BigQueryBaseService {
     }
   }
 
+  private async syncCreativeToSingleAgent(
+    creativeId: string,
+    salesAgentId: string,
+    context: {
+      campaignId?: string;
+      tacticId?: string;
+      triggeredBy: string;
+    },
+  ): Promise<void> {
+    // Update sync status to 'syncing'
+    await this.updateSyncStatus(creativeId, salesAgentId, {
+      initially_synced_for_tactic_id: context.tacticId,
+      last_campaign_context: context.campaignId,
+      last_sync_attempt: new Date().toISOString(),
+      sync_status: "syncing",
+    });
+
+    try {
+      // TODO: Implement actual sync logic with sales agent API
+      // This would call the sales agent's API to sync the creative
+
+      // Simulate sync operation
+      await this.simulateSyncOperation(creativeId, salesAgentId);
+
+      // Update sync status to 'synced'
+      await this.updateSyncStatus(creativeId, salesAgentId, {
+        approval_status: "pending", // Most sales agents require approval
+        sync_error: null,
+        sync_status: "synced",
+      });
+    } catch (error) {
+      // Update sync status to 'failed'
+      await this.updateSyncStatus(creativeId, salesAgentId, {
+        sync_error: error instanceof Error ? error.message : String(error),
+        sync_status: "failed",
+      });
+
+      throw error; // Re-throw for batch handling
+    }
+  }
+
   private async updateSyncStatus(
     creativeId: string,
     salesAgentId: string,
     updates: {
-      sync_status?: string;
       approval_status?: string;
-      sync_error?: string | null;
-      last_sync_attempt?: string;
       initially_synced_for_tactic_id?: string;
       last_campaign_context?: string;
+      last_sync_attempt?: string;
+      sync_error?: null | string;
+      sync_status?: string;
     },
   ): Promise<void> {
     // First, get brand agent ID
@@ -541,29 +569,29 @@ export class CreativeSyncService extends BigQueryBaseService {
 
     const { params } = createBigQueryParams(
       {
-        syncId: syncId,
-        creativeId: creativeId,
-        salesAgentId: salesAgentId,
-        brandAgentId: creative.buyerAgentId,
-        sync_status: updates.sync_status || "pending",
         approval_status: updates.approval_status || null,
-        sync_error: updates.sync_error || null,
-        last_sync_attempt: updates.last_sync_attempt || null,
+        brandAgentId: creative.buyerAgentId,
+        creativeId: creativeId,
         initially_synced_for_tactic_id:
           updates.initially_synced_for_tactic_id || null,
         last_campaign_context: updates.last_campaign_context || null,
+        last_sync_attempt: updates.last_sync_attempt || null,
+        salesAgentId: salesAgentId,
+        sync_error: updates.sync_error || null,
+        sync_status: updates.sync_status || "pending",
+        syncId: syncId,
       },
       {
-        syncId: BigQueryTypes.STRING,
-        creativeId: BigQueryTypes.STRING,
-        salesAgentId: BigQueryTypes.STRING,
-        brandAgentId: BigQueryTypes.STRING,
-        sync_status: BigQueryTypes.STRING,
         approval_status: BigQueryTypes.STRING,
-        sync_error: BigQueryTypes.STRING,
-        last_sync_attempt: BigQueryTypes.STRING,
+        brandAgentId: BigQueryTypes.STRING,
+        creativeId: BigQueryTypes.STRING,
         initially_synced_for_tactic_id: BigQueryTypes.STRING,
         last_campaign_context: BigQueryTypes.STRING,
+        last_sync_attempt: BigQueryTypes.STRING,
+        salesAgentId: BigQueryTypes.STRING,
+        sync_error: BigQueryTypes.STRING,
+        sync_status: BigQueryTypes.STRING,
+        syncId: BigQueryTypes.STRING,
       },
     );
 
@@ -586,34 +614,5 @@ export class CreativeSyncService extends BigQueryBaseService {
 
       await this.executeQuery(updateQuery, params);
     }
-  }
-
-  private async generateSyncFailureNotifications(
-    creative: Creative,
-    failures: Array<{ salesAgentId: string; error: string }>,
-    context: { campaignId?: string; tacticId?: string },
-  ): Promise<void> {
-    if (!this.notificationService) return;
-
-    // Create individual notifications for each failure
-    for (const failure of failures) {
-      await this.notificationService.createNotification({
-        type: "creative.sync_failed",
-        customerId: creative.customerId,
-        brandAgentId: parseInt(creative.buyerAgentId),
-        data: {
-          creativeId: creative.creativeId,
-          salesAgentId: failure.salesAgentId,
-          campaignId: context.campaignId,
-          tacticId: context.tacticId,
-          message: `Creative "${creative.creativeName}" failed to sync`,
-          reason: failure.error,
-        },
-      });
-    }
-  }
-
-  protected getTableRef(table: string): string {
-    return `${this.projectId}.${this.dataset}.${table}`;
   }
 }

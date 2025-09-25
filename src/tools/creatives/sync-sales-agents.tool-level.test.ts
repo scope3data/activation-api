@@ -2,10 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
+
+import { AuthenticationService } from "../../services/auth-service.js";
 import { CreativeSyncService } from "../../services/creative-sync-service.js";
 import { NotificationService } from "../../services/notification-service.js";
-import { AuthenticationService } from "../../services/auth-service.js";
-
 import { creativeSyncSalesAgentsTool } from "./sync-sales-agents.js";
 
 // Mock the services
@@ -14,8 +14,8 @@ vi.mock("../../services/notification-service.js");
 vi.mock("../../services/auth-service.js");
 
 const mockClient = {
-  getCreative: vi.fn(),
   getCampaign: vi.fn(),
+  getCreative: vi.fn(),
 } as unknown as Scope3ApiClient;
 
 const mockContext: MCPToolExecuteContext = {
@@ -25,9 +25,9 @@ const mockContext: MCPToolExecuteContext = {
 };
 
 const sampleCreativeResponse = {
+  buyerAgentId: "456",
   creativeId: "creative_123",
   creativeName: "Test Creative",
-  buyerAgentId: "456",
   format: {
     formatId: "video/mp4",
     type: "video",
@@ -38,28 +38,28 @@ const sampleCreativeResponse = {
 
 const sampleSyncStatus = [
   {
+    approvalStatus: "approved" as const,
     salesAgentId: "agent_1",
     salesAgentName: "Agent One",
     status: "synced" as const,
-    approvalStatus: "approved" as const,
   },
   {
+    approvalStatus: "pending" as const,
     salesAgentId: "agent_2",
     salesAgentName: "Agent Two",
     status: "synced" as const,
-    approvalStatus: "pending" as const,
   },
   {
+    rejectionReason: "Format not supported",
     salesAgentId: "agent_3",
     salesAgentName: "Agent Three",
     status: "failed" as const,
-    rejectionReason: "Format not supported",
   },
 ];
 
 const sampleSyncResults = {
-  success: ["agent_1", "agent_2"],
   failed: ["agent_3"],
+  success: ["agent_1", "agent_2"],
 };
 
 describe("creativeSyncSalesAgentsTool", () => {
@@ -68,9 +68,9 @@ describe("creativeSyncSalesAgentsTool", () => {
   // Mock service instances
   const mockCreativeSyncService = {
     determineRelevantSalesAgents: vi.fn(),
-    syncCreativeToSalesAgents: vi.fn(),
     getCreativeSyncStatus: vi.fn(),
     setNotificationService: vi.fn(),
+    syncCreativeToSalesAgents: vi.fn(),
   };
 
   const mockNotificationService = {};
@@ -84,19 +84,22 @@ describe("creativeSyncSalesAgentsTool", () => {
 
     // Setup service mocks
     vi.mocked(CreativeSyncService).mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       () => mockCreativeSyncService as any,
     );
     vi.mocked(NotificationService).mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       () => mockNotificationService as any,
     );
     vi.mocked(AuthenticationService).mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       () => mockAuthService as any,
     );
 
     // Default auth validation
     mockAuthService.validateApiKey.mockResolvedValue({
-      isValid: true,
       customerId: 123,
+      isValid: true,
     });
 
     // Default creative response
@@ -216,11 +219,11 @@ describe("creativeSyncSalesAgentsTool", () => {
     it("should respect custom auto-detect options", async () => {
       const result = await tool.execute(
         {
-          creativeId: "creative_123",
           autoDetect: {
             daysBack: 60,
             includeActive: true,
           },
+          creativeId: "creative_123",
         },
         mockContext,
       );
@@ -254,7 +257,7 @@ describe("creativeSyncSalesAgentsTool", () => {
       expect(parsedResult.message).toContain("No Relevant Sales Agents Found");
       expect(parsedResult.data.smartSync.agentsFound).toBe(0);
       expect(parsedResult.message).toContain(
-        "Use `salesAgentIds: [\"agent1\", \"agent2\"]` to manually specify agents",
+        'Use `salesAgentIds: ["agent1", "agent2"]` to manually specify agents',
       );
     });
   });
@@ -321,8 +324,8 @@ describe("creativeSyncSalesAgentsTool", () => {
         "agent_1",
       ]);
       mockCreativeSyncService.syncCreativeToSalesAgents.mockResolvedValue({
-        success: ["agent_1"],
         failed: [],
+        success: ["agent_1"],
       });
       mockCreativeSyncService.getCreativeSyncStatus.mockResolvedValue([
         sampleSyncStatus[0],
@@ -332,8 +335,8 @@ describe("creativeSyncSalesAgentsTool", () => {
     it("should sync to campaign tactics agents", async () => {
       const result = await tool.execute(
         {
-          creativeId: "creative_123",
           campaignId: "camp_123",
+          creativeId: "creative_123",
         },
         mockContext,
       );
@@ -354,8 +357,8 @@ describe("creativeSyncSalesAgentsTool", () => {
       await expect(
         tool.execute(
           {
-            creativeId: "creative_123",
             campaignId: "nonexistent_camp",
+            creativeId: "creative_123",
           },
           mockContext,
         ),
@@ -389,9 +392,9 @@ describe("creativeSyncSalesAgentsTool", () => {
       const parsedResult = JSON.parse(result);
 
       expect(parsedResult.data.nextSteps).toEqual({
-        readyForDeployment: 1,
         awaitingApproval: 1,
         needsAttention: 1,
+        readyForDeployment: 1,
       });
 
       expect(parsedResult.data.salesAgents).toHaveLength(3);
@@ -445,8 +448,8 @@ describe("creativeSyncSalesAgentsTool", () => {
         "agent_1",
       ]);
       mockCreativeSyncService.syncCreativeToSalesAgents.mockResolvedValue({
-        success: ["agent_1"],
         failed: [],
+        success: ["agent_1"],
       });
       mockCreativeSyncService.getCreativeSyncStatus.mockResolvedValue([
         sampleSyncStatus[0],
@@ -519,14 +522,14 @@ describe("creativeSyncSalesAgentsTool", () => {
   describe("parameter validation", () => {
     it("should accept valid parameters", () => {
       const validParams = {
-        creativeId: "creative_123",
         autoDetect: {
           daysBack: 30,
           includeActive: true,
         },
-        salesAgentIds: ["agent_1", "agent_2"],
         campaignId: "camp_123",
+        creativeId: "creative_123",
         preApproval: true,
+        salesAgentIds: ["agent_1", "agent_2"],
       };
 
       const result = tool.inputSchema.safeParse(validParams);
@@ -542,10 +545,10 @@ describe("creativeSyncSalesAgentsTool", () => {
 
     it("should validate daysBack range", () => {
       const invalidParams = {
-        creativeId: "creative_123",
         autoDetect: {
           daysBack: 100, // Over max of 90
         },
+        creativeId: "creative_123",
       };
 
       const result = tool.inputSchema.safeParse(invalidParams);
@@ -594,8 +597,8 @@ describe("creativeSyncSalesAgentsTool", () => {
         "agent_1",
       ]);
       mockCreativeSyncService.syncCreativeToSalesAgents.mockResolvedValue({
-        success: ["agent_1"],
         failed: [],
+        success: ["agent_1"],
       });
       mockCreativeSyncService.getCreativeSyncStatus.mockResolvedValue([
         sampleSyncStatus[0],
@@ -603,8 +606,8 @@ describe("creativeSyncSalesAgentsTool", () => {
 
       await tool.execute(
         {
-          creativeId: "creative_123",
           campaignId: "camp_123",
+          creativeId: "creative_123",
         },
         mockContext,
       );

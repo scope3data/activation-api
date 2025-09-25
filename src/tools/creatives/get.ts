@@ -1,11 +1,12 @@
-import { z } from "zod";
 import { BigQuery } from "@google-cloud/bigquery";
+import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
-import { CreativeSyncService } from "../../services/creative-sync-service.js";
-import { AuthenticationService } from "../../services/auth-service.js";
+import type { CreativeSyncStatus } from "../../types/notifications.js";
 
+import { AuthenticationService } from "../../services/auth-service.js";
+import { CreativeSyncService } from "../../services/creative-sync-service.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const creativeGetTool = (client: Scope3ApiClient) => ({
@@ -50,13 +51,13 @@ export const creativeGetTool = (client: Scope3ApiClient) => ({
       const authService = new AuthenticationService(new BigQuery());
       const creativeSyncService = new CreativeSyncService(authService);
 
-      let syncStatus: any[] = [];
+      let syncStatus: CreativeSyncStatus[] = [];
       let syncStatusSummary = {
-        totalRelevantAgents: 0,
-        synced: 0,
         approved: 0,
-        rejected: 0,
         pending: 0,
+        rejected: 0,
+        synced: 0,
+        totalRelevantAgents: 0,
       };
 
       try {
@@ -64,15 +65,15 @@ export const creativeGetTool = (client: Scope3ApiClient) => ({
           args.creativeId,
         );
         syncStatusSummary = {
-          totalRelevantAgents: syncStatus.length,
-          synced: syncStatus.filter((s) => s.status === "synced").length,
           approved: syncStatus.filter((s) => s.approvalStatus === "approved")
-            .length,
-          rejected: syncStatus.filter((s) => s.approvalStatus === "rejected")
             .length,
           pending: syncStatus.filter(
             (s) => !s.approvalStatus || s.approvalStatus === "pending",
           ).length,
+          rejected: syncStatus.filter((s) => s.approvalStatus === "rejected")
+            .length,
+          synced: syncStatus.filter((s) => s.status === "synced").length,
+          totalRelevantAgents: syncStatus.length,
         };
       } catch (syncError) {
         console.warn("Failed to fetch sync status:", syncError);
@@ -227,11 +228,6 @@ export const creativeGetTool = (client: Scope3ApiClient) => ({
             format: creative.format,
           },
           creative,
-          // Add sync status data
-          syncStatus: {
-            salesAgentSyncStatus: syncStatus,
-            syncStatusSummary: syncStatusSummary,
-          },
           metadata: {
             activeCampaignAssignments:
               creative.campaignAssignments?.filter((a) => a.isActive).length ||
@@ -243,15 +239,20 @@ export const creativeGetTool = (client: Scope3ApiClient) => ({
             hasAssets: creative.assetIds.length > 0,
             hasCampaignAssignments:
               (creative.campaignAssignments?.length || 0) > 0,
+            hasSyncStatus: syncStatus.length > 0,
             hasValidation: !!creative.assetValidation,
             invalidAssetCount:
               creative.assetValidation?.invalidAssets?.length || 0,
-            // Add sync status metadata
-            salesAgentsSynced: syncStatusSummary.synced,
             salesAgentsApproved: syncStatusSummary.approved,
             salesAgentsPending: syncStatusSummary.pending,
             salesAgentsRejected: syncStatusSummary.rejected,
-            hasSyncStatus: syncStatus.length > 0,
+            // Add sync status metadata
+            salesAgentsSynced: syncStatusSummary.synced,
+          },
+          // Add sync status data
+          syncStatus: {
+            salesAgentSyncStatus: syncStatus,
+            syncStatusSummary: syncStatusSummary,
           },
           validation: creative.assetValidation,
         },

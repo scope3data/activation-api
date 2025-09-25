@@ -2,10 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
+
+import { AuthenticationService } from "../../services/auth-service.js";
 import { CreativeSyncService } from "../../services/creative-sync-service.js";
 import { NotificationService } from "../../services/notification-service.js";
-import { AuthenticationService } from "../../services/auth-service.js";
-
 import { creativeUpdateTool } from "./update.js";
 
 // Mock the services
@@ -24,17 +24,9 @@ const mockContext: MCPToolExecuteContext = {
 };
 
 const sampleUpdatedCreativeResponse = {
-  creativeId: "creative_123",
-  creativeName: "Updated Creative",
-  version: 2,
-  status: "active",
-  buyerAgentId: "456",
-  format: {
-    type: "video",
-    formatId: "video/mp4",
-  },
   assemblyMethod: "external_tag",
   assetIds: ["asset_1", "asset_2"],
+  buyerAgentId: "456",
   campaignAssignments: [
     {
       campaignId: "camp_1",
@@ -43,20 +35,28 @@ const sampleUpdatedCreativeResponse = {
     },
   ],
   createdDate: "2024-01-15T10:30:00Z",
-  lastModifiedDate: "2024-01-16T15:45:00Z",
+  creativeId: "creative_123",
+  creativeName: "Updated Creative",
+  format: {
+    formatId: "video/mp4",
+    type: "video",
+  },
   lastModifiedBy: "test-user",
+  lastModifiedDate: "2024-01-16T15:45:00Z",
+  status: "active",
+  version: 2,
 };
 
 const sampleSyncStatus = [
   {
+    approvalStatus: "approved" as const,
     salesAgentId: "agent_1",
     status: "synced" as const,
-    approvalStatus: "approved" as const,
   },
   {
+    approvalStatus: "pending" as const,
     salesAgentId: "agent_2",
     status: "synced" as const,
-    approvalStatus: "pending" as const,
   },
 ];
 
@@ -66,8 +66,8 @@ describe("creativeUpdateTool", () => {
   // Mock service instances
   const mockCreativeSyncService = {
     getCreativeSyncStatus: vi.fn(),
-    syncCreativeToSalesAgents: vi.fn(),
     setNotificationService: vi.fn(),
+    syncCreativeToSalesAgents: vi.fn(),
   };
 
   const mockNotificationService = {};
@@ -78,12 +78,15 @@ describe("creativeUpdateTool", () => {
 
     // Setup service mocks
     vi.mocked(CreativeSyncService).mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       () => mockCreativeSyncService as any,
     );
     vi.mocked(NotificationService).mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       () => mockNotificationService as any,
     );
     vi.mocked(AuthenticationService).mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       () => mockAuthService as any,
     );
 
@@ -215,8 +218,8 @@ describe("creativeUpdateTool", () => {
         sampleSyncStatus,
       );
       mockCreativeSyncService.syncCreativeToSalesAgents.mockResolvedValue({
-        success: ["agent_1", "agent_2"],
         failed: [],
+        success: ["agent_1", "agent_2"],
       });
     });
 
@@ -388,9 +391,9 @@ describe("creativeUpdateTool", () => {
         {
           creativeId: "creative_123",
           updates: {
+            advertiserDomains: ["example.com"],
             name: "New Name",
             status: "active",
-            advertiserDomains: ["example.com"],
           },
         },
         mockContext,
@@ -419,11 +422,11 @@ describe("creativeUpdateTool", () => {
           creativeId: "creative_123",
           updates: {
             content: {
+              assetIds: ["asset_1", "asset_2", "asset_3"],
               htmlSnippet: "<div>HTML</div>",
               javascriptTag: "console.log('js');",
-              vastTag: "https://example.com/vast.xml",
               productUrl: "https://example.com/product",
-              assetIds: ["asset_1", "asset_2", "asset_3"],
+              vastTag: "https://example.com/vast.xml",
             },
           },
         },
@@ -443,12 +446,12 @@ describe("creativeUpdateTool", () => {
         {
           creativeId: "creative_123",
           updates: {
-            name: "Updated Name",
-            status: "active",
+            advertiserDomains: ["example.com"],
             content: {
               htmlSnippet: "<div>Updated</div>",
             },
-            advertiserDomains: ["example.com"],
+            name: "Updated Name",
+            status: "active",
           },
         },
         mockContext,
@@ -460,12 +463,12 @@ describe("creativeUpdateTool", () => {
         creativeId: "creative_123",
         updateDate: expect.any(String),
         updates: expect.objectContaining({
-          name: "Updated Name",
-          status: "active",
+          advertiserDomains: ["example.com"],
           content: expect.objectContaining({
             htmlSnippet: "<div>Updated</div>",
           }),
-          advertiserDomains: ["example.com"],
+          name: "Updated Name",
+          status: "active",
         }),
       });
 
@@ -524,16 +527,16 @@ describe("creativeUpdateTool", () => {
       const validParams = {
         creativeId: "creative_123",
         updates: {
-          name: "New Name",
-          status: "active" as const,
+          advertiserDomains: ["example.com", "brand.com"],
           content: {
+            assetIds: ["asset_1", "asset_2"],
             htmlSnippet: "<div>HTML</div>",
             javascriptTag: "console.log('js');",
-            vastTag: "https://example.com/vast.xml",
             productUrl: "https://example.com/product",
-            assetIds: ["asset_1", "asset_2"],
+            vastTag: "https://example.com/vast.xml",
           },
-          advertiserDomains: ["example.com", "brand.com"],
+          name: "New Name",
+          status: "active" as const,
         },
       };
 

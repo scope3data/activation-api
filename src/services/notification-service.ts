@@ -1,10 +1,10 @@
 import type {
   Notification,
+  NotificationCreateRequest,
   NotificationData,
   NotificationEventType,
-  NotificationCreateRequest,
-  NotificationListResponse,
   NotificationFilter,
+  NotificationListResponse,
 } from "../types/notifications.js";
 
 import {
@@ -22,6 +22,20 @@ import { BigQueryBaseService } from "./base/bigquery-base-service.js";
  * - Filtering and lifecycle management
  */
 export class NotificationService extends BigQueryBaseService {
+  /**
+   * Clean up old notifications (keep last 90 days)
+   */
+  async cleanupOldNotifications(): Promise<number> {
+    const query = `
+      DELETE FROM ${this.getTableRef("notifications")}
+      WHERE created_at < TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)
+    `;
+
+    await this.executeQuery(query);
+    // BigQuery doesn't return row count directly, so estimate cleanup success
+    return 1; // Indicates cleanup ran successfully
+  }
+
   /**
    * Create a new notification with automatic deduplication
    */
@@ -47,18 +61,18 @@ export class NotificationService extends BigQueryBaseService {
 
     const { params } = createBigQueryParams(
       {
+        brandAgentId: request.brandAgentId || null,
+        customerId: request.customerId,
+        data: request.data ? JSON.stringify(request.data) : null,
         notificationId: notificationId,
         type: request.type,
-        customerId: request.customerId,
-        brandAgentId: request.brandAgentId || null,
-        data: request.data ? JSON.stringify(request.data) : null,
       },
       {
+        brandAgentId: BigQueryTypes.INT64,
+        customerId: BigQueryTypes.INT64,
+        data: BigQueryTypes.JSON,
         notificationId: BigQueryTypes.STRING,
         type: BigQueryTypes.STRING,
-        customerId: BigQueryTypes.INT64,
-        brandAgentId: BigQueryTypes.INT64,
-        data: BigQueryTypes.JSON,
       },
     );
 
@@ -73,6 +87,102 @@ export class NotificationService extends BigQueryBaseService {
     });
 
     return notificationId;
+  }
+
+  /**
+   * Get campaign-specific notification summary
+   */
+  async getCampaignNotifications(
+    campaignId: string,
+    customerId: number,
+  ): Promise<{
+    types: NotificationEventType[];
+    unread: number;
+  }> {
+    const query = `
+      SELECT 
+        SUM(CASE WHEN read = false THEN 1 ELSE 0 END) as unread,
+        ARRAY_AGG(DISTINCT type) as types
+      FROM ${this.getTableRef("notifications")}
+      WHERE customer_id = @customerId
+      AND JSON_EXTRACT_SCALAR(data, '$.campaignId') = @campaignId
+      AND created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
+    `;
+
+    const { params } = createBigQueryParams(
+      {
+        campaignId: campaignId,
+        customerId: customerId,
+      },
+      {
+        campaignId: BigQueryTypes.STRING,
+        customerId: BigQueryTypes.INT64,
+      },
+    );
+
+    const results = await this.executeQuery<{
+      types: string[];
+      unread: number;
+    }>(query, params);
+
+    const result = results[0];
+    return {
+      types: (result?.types || []) as NotificationEventType[],
+      unread: result?.unread || 0,
+    };
+  }
+
+  /**
+   * Get notification counts for campaign overview
+   */
+  async getNotificationCounts(
+    customerId: number,
+    brandAgentId?: number,
+  ): Promise<{
+    byType: Record<string, number>;
+    total: number;
+    unread: number;
+  }> {
+    const conditions = ["customer_id = @customerId"];
+    const params: Record<string, unknown> = {
+      customerId: customerId,
+    };
+
+    if (brandAgentId) {
+      conditions.push("brand_agent_id = @brandAgentId");
+      params.brandAgentId = brandAgentId;
+    }
+
+    const whereClause = `WHERE ${conditions.join(" AND ")}`;
+
+    const query = `
+      SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN read = false THEN 1 ELSE 0 END) as unread,
+        type,
+        COUNT(*) as type_count
+      FROM ${this.getTableRef("notifications")}
+      ${whereClause}
+      AND created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)
+      GROUP BY type
+    `;
+
+    const results = await this.executeQuery<{
+      total: number;
+      type: string;
+      type_count: number;
+      unread: number;
+    }>(query, params);
+
+    const total = results.reduce((sum, row) => sum + row.type_count, 0);
+    const unread = results.reduce((sum, row) => sum + row.unread, 0);
+    const byType: Record<string, number> = {};
+
+    results.forEach((row) => {
+      byType[row.type] = row.type_count;
+    });
+
+    return { byType, total, unread };
   }
 
   /**
@@ -152,58 +262,34 @@ export class NotificationService extends BigQueryBaseService {
     const [countResults, dataResults] = await Promise.all([
       this.executeQuery<{ total_count: number }>(countQuery, params),
       this.executeQuery<{
-        id: string;
-        type: string;
-        customer_id: number;
-        brand_agent_id?: number;
-        data: NotificationData;
-        read: boolean;
         acknowledged: boolean;
+        brand_agent_id?: number;
         created_at: string;
+        customer_id: number;
+        data: NotificationData;
+        id: string;
+        read: boolean;
+        type: string;
       }>(dataQuery, queryParams),
     ]);
 
     const totalCount = countResults[0]?.total_count || 0;
     const notifications: Notification[] = dataResults.map((row) => ({
-      id: row.id,
-      type: row.type as NotificationEventType,
-      timestamp: row.created_at,
-      customerId: row.customer_id,
-      brandAgentId: row.brand_agent_id,
-      data: row.data,
-      read: row.read,
       acknowledged: row.acknowledged,
+      brandAgentId: row.brand_agent_id,
+      customerId: row.customer_id,
+      data: row.data,
+      id: row.id,
+      read: row.read,
+      timestamp: row.created_at,
+      type: row.type as NotificationEventType,
     }));
 
     return {
-      notifications,
       hasMore: offset + notifications.length < totalCount,
+      notifications,
       totalCount,
     };
-  }
-
-  /**
-   * Mark notifications as read
-   */
-  async markAsRead(notificationIds: string[]): Promise<void> {
-    if (notificationIds.length === 0) return;
-
-    const query = `
-      UPDATE ${this.getTableRef("notifications")}
-      SET read = true
-      WHERE id IN UNNEST(@notificationIds)
-    `;
-
-    const { params } = createBigQueryParams(
-      {
-        notificationIds: notificationIds,
-      },
-      {
-        notificationIds: BigQueryTypes.STRING,
-      },
-    );
-
-    await this.executeQuery(query, params);
   }
 
   /**
@@ -231,116 +317,44 @@ export class NotificationService extends BigQueryBaseService {
   }
 
   /**
-   * Get notification counts for campaign overview
+   * Mark notifications as read
    */
-  async getNotificationCounts(
-    customerId: number,
-    brandAgentId?: number,
-  ): Promise<{
-    total: number;
-    unread: number;
-    byType: Record<string, number>;
-  }> {
-    const conditions = ["customer_id = @customerId"];
-    const params: Record<string, unknown> = {
-      customerId: customerId,
-    };
-
-    if (brandAgentId) {
-      conditions.push("brand_agent_id = @brandAgentId");
-      params.brandAgentId = brandAgentId;
-    }
-
-    const whereClause = `WHERE ${conditions.join(" AND ")}`;
+  async markAsRead(notificationIds: string[]): Promise<void> {
+    if (notificationIds.length === 0) return;
 
     const query = `
-      SELECT 
-        COUNT(*) as total,
-        SUM(CASE WHEN read = false THEN 1 ELSE 0 END) as unread,
-        type,
-        COUNT(*) as type_count
-      FROM ${this.getTableRef("notifications")}
-      ${whereClause}
-      AND created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)
-      GROUP BY type
-    `;
-
-    const results = await this.executeQuery<{
-      total: number;
-      unread: number;
-      type: string;
-      type_count: number;
-    }>(query, params);
-
-    const total = results.reduce((sum, row) => sum + row.type_count, 0);
-    const unread = results.reduce((sum, row) => sum + row.unread, 0);
-    const byType: Record<string, number> = {};
-
-    results.forEach((row) => {
-      byType[row.type] = row.type_count;
-    });
-
-    return { total, unread, byType };
-  }
-
-  /**
-   * Get campaign-specific notification summary
-   */
-  async getCampaignNotifications(
-    campaignId: string,
-    customerId: number,
-  ): Promise<{
-    unread: number;
-    types: NotificationEventType[];
-  }> {
-    const query = `
-      SELECT 
-        SUM(CASE WHEN read = false THEN 1 ELSE 0 END) as unread,
-        ARRAY_AGG(DISTINCT type) as types
-      FROM ${this.getTableRef("notifications")}
-      WHERE customer_id = @customerId
-      AND JSON_EXTRACT_SCALAR(data, '$.campaignId') = @campaignId
-      AND created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
+      UPDATE ${this.getTableRef("notifications")}
+      SET read = true
+      WHERE id IN UNNEST(@notificationIds)
     `;
 
     const { params } = createBigQueryParams(
       {
-        customerId: customerId,
-        campaignId: campaignId,
+        notificationIds: notificationIds,
       },
       {
-        customerId: BigQueryTypes.INT64,
-        campaignId: BigQueryTypes.STRING,
+        notificationIds: BigQueryTypes.STRING,
       },
     );
 
-    const results = await this.executeQuery<{
-      unread: number;
-      types: string[];
-    }>(query, params);
-
-    const result = results[0];
-    return {
-      unread: result?.unread || 0,
-      types: (result?.types || []) as NotificationEventType[],
-    };
-  }
-
-  /**
-   * Clean up old notifications (keep last 90 days)
-   */
-  async cleanupOldNotifications(): Promise<number> {
-    const query = `
-      DELETE FROM ${this.getTableRef("notifications")}
-      WHERE created_at < TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)
-    `;
-
-    await this.executeQuery(query);
-    // BigQuery doesn't return row count directly, so estimate cleanup success
-    return 1; // Indicates cleanup ran successfully
+    await this.executeQuery(query, params);
   }
 
   // Private helper methods
+
+  private async deliverWebhook(notificationId: string): Promise<void> {
+    // TODO: Implement webhook delivery to external agent systems
+    // This would:
+    // 1. Get notification details
+    // 2. Find webhook subscriptions for the customer/brand agent
+    // 3. Generate HMAC signature for verification
+    // 4. POST to webhook URLs with retry logic
+    // 5. Log delivery results
+
+    console.log(
+      `Webhook delivery for notification ${notificationId} - TODO: Implement`,
+    );
+  }
 
   private async isDuplicateNotification(
     request: NotificationCreateRequest,
@@ -358,10 +372,10 @@ export class NotificationService extends BigQueryBaseService {
     `;
 
     const params: Record<string, unknown> = {
-      type: request.type,
-      customerId: request.customerId,
       creativeId: request.data.creativeId || "",
+      customerId: request.customerId,
       salesAgentId: request.data.salesAgentId || "",
+      type: request.type,
     };
 
     if (request.brandAgentId) {
@@ -373,19 +387,5 @@ export class NotificationService extends BigQueryBaseService {
       params,
     );
     return (results[0]?.duplicate_count || 0) > 0;
-  }
-
-  private async deliverWebhook(notificationId: string): Promise<void> {
-    // TODO: Implement webhook delivery to external agent systems
-    // This would:
-    // 1. Get notification details
-    // 2. Find webhook subscriptions for the customer/brand agent
-    // 3. Generate HMAC signature for verification
-    // 4. POST to webhook URLs with retry logic
-    // 5. Log delivery results
-
-    console.log(
-      `Webhook delivery for notification ${notificationId} - TODO: Implement`,
-    );
   }
 }
