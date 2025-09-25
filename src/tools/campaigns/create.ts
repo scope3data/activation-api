@@ -197,7 +197,6 @@ export const createCampaignTool = (client: Scope3ApiClient) => ({
       .min(0)
       .max(100)
       .default(70)
-      .optional()
       .describe(
         "Minimum quality score required for brief validation (0-100, default: 70). Campaign creation will fail if brief scores below this threshold.",
       ),
@@ -243,7 +242,6 @@ export const createCampaignTool = (client: Scope3ApiClient) => ({
     skipBriefValidation: z
       .boolean()
       .default(false)
-      .optional()
       .describe(
         "Skip AI-powered brief validation (default: false). When false, the campaign brief will be validated against Ad Context Protocol standards.",
       ),

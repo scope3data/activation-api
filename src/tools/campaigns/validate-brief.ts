@@ -130,7 +130,6 @@ export const validateBriefTool = () => ({
       .min(0)
       .max(100)
       .default(70)
-      .optional()
       .describe(
         "Minimum quality score required to pass validation (default: 70)",
       ),
