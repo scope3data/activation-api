@@ -59,7 +59,11 @@ describe("create_tactic Tool", () => {
     MockedTacticBigQueryService.mockImplementation(() => mockBigQueryService);
 
     mockContext = {
-      server: {} as any,
+      session: {
+        customerId: 123,
+        scope3ApiKey: "test-api-key",
+        userId: "test-user",
+      },
     } as MCPToolExecuteContext;
 
     createTactic = createTacticTool(mockClient as any);

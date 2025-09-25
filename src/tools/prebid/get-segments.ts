@@ -39,11 +39,11 @@ export const getPrebidSegmentsTool = () => ({
       if (segments.length === 0) {
         return createMCPResponse({
           data: {
-            orgId: args.orgId,
+            orgId: validatedArgs.orgId,
             segments: [],
             totalSegments: 0,
           },
-          message: `No active campaigns targeting publisher org ${args.orgId}`,
+          message: `No active campaigns targeting publisher org ${validatedArgs.orgId}`,
           success: true,
         });
       }
@@ -54,7 +54,7 @@ export const getPrebidSegmentsTool = () => ({
         segment: segment.axe_include_segment,
       }));
 
-      let summary = `🎯 **AXE Segments for Publisher ${args.orgId}**\n\n`;
+      let summary = `🎯 **AXE Segments for Publisher ${validatedArgs.orgId}**\n\n`;
 
       summary += `Found **${segments.length}** active campaign targeting segments:\n\n`;
 
@@ -72,7 +72,7 @@ export const getPrebidSegmentsTool = () => ({
 
       return createMCPResponse({
         data: {
-          orgId: args.orgId,
+          orgId: validatedArgs.orgId,
           segments: prebidResponse,
           totalSegments: segments.length,
         },
@@ -90,17 +90,4 @@ export const getPrebidSegmentsTool = () => ({
       );
     }
   },
-
-  inputSchema: {
-    properties: {
-      orgId: {
-        description: "Publisher organization ID (from prebid request)",
-        type: "string",
-      },
-    },
-    required: ["orgId"],
-    type: "object",
-  },
-
-  name: "get_prebid_segments",
 });

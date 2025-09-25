@@ -147,6 +147,7 @@ export function testTacticRepositoryContract(
 
         const effectivePricing = {
           cpm: 7.5,
+          currency: "USD",
           totalCpm: 8.0,
         };
 
@@ -215,6 +216,7 @@ export function testTacticRepositoryContract(
 
         const effectivePricing = {
           cpm: 12.5,
+          currency: "USD",
           signalCost: 2.5,
           totalCpm: 15.0,
         };
@@ -377,7 +379,7 @@ export function testTacticRepositoryContract(
             mediaProductId,
             name: "Get Test Tactic",
           },
-          { cpm: 6.0, totalCpm: 6.5 },
+          { cpm: 6.0, currency: "USD", totalCpm: 6.5 },
           salesAgentId,
         );
         testTacticId = tactic.id;
@@ -422,7 +424,7 @@ export function testTacticRepositoryContract(
             mediaProductId,
             name: "Update Test Tactic",
           },
-          { cpm: 8.0, totalCpm: 8.5 },
+          { cpm: 8.0, currency: "USD", totalCpm: 8.5 },
           salesAgentId,
         );
         testTacticId = tactic.id;
@@ -444,7 +446,7 @@ export function testTacticRepositoryContract(
           status: "paused" as const,
         };
 
-        const updatedPricing = { cpm: 10.0, totalCpm: 10.5 };
+        const updatedPricing = { cpm: 10.0, currency: "USD", totalCpm: 10.5 };
 
         const result = await repository.updateTactic(
           validApiKey,
@@ -483,7 +485,7 @@ export function testTacticRepositoryContract(
             mediaProductId,
             name: "Delete Test Tactic",
           },
-          { cpm: 4.0, totalCpm: 4.5 },
+          { cpm: 4.0, currency: "USD", totalCpm: 4.5 },
           salesAgentId,
         );
 

@@ -293,13 +293,13 @@ describe("GraphQL Client Contract Validation", () => {
         {
           audienceIds: [],
           brandAgentId: brandAgentId,
-          createdAt: new Date().toISOString(),
+          createdAt: new Date(),
           creativeIds: [],
           id: "campaign_123",
           name: "Test Campaign",
           prompt: "Test campaign prompt",
           status: "active",
-          updatedAt: new Date().toISOString(),
+          updatedAt: new Date(),
         },
       ];
     }

@@ -252,6 +252,7 @@ export class TacticRepositoryTestDouble implements TacticRepository {
             customerId: 1,
             effectivePricing: {
               cpm: 5.0 + Math.random() * 10, // Random CPM between 5-15
+              currency: "USD",
               totalCpm: 5.0 + Math.random() * 10,
             },
             id: this.generateId("tactic"),

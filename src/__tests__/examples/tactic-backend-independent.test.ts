@@ -133,7 +133,7 @@ describe("Tactic Repository Contract Validation with Test Double", () => {
           mediaProductId: "media_1",
           name: "Low CPM Tactic",
         },
-        { cpm: 5.0, totalCpm: 5.0 },
+        { cpm: 5.0, currency: "USD", totalCpm: 5.0 },
         salesAgentIds[0],
       );
 
@@ -145,7 +145,7 @@ describe("Tactic Repository Contract Validation with Test Double", () => {
           mediaProductId: "media_2",
           name: "High CPM Tactic",
         },
-        { cpm: 15.0, totalCpm: 15.0 },
+        { cpm: 15.0, currency: "USD", totalCpm: 15.0 },
         salesAgentIds[0],
       );
 

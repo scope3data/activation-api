@@ -230,7 +230,7 @@ describe("Prebid Integration Contract Tests", () => {
           mediaProductId: "test_media_product",
           name: "Known CPM Tactic",
         },
-        { cpm: 20.0, totalCpm: 20.0 }, // Higher than range from setupPrebidTestData
+        { cpm: 20.0, currency: "USD", totalCpm: 20.0 }, // Higher than range from setupPrebidTestData
         salesAgentIds[0],
       );
 

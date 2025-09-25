@@ -5,6 +5,7 @@ import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type {
   ADCPGetProductsRequest,
   ADCPGetProductsResponse,
+  ADCPProduct,
 } from "../types/adcp.js";
 import type { SalesAgent } from "./bigquery-service.js";
 
@@ -52,7 +53,7 @@ export class MCPClientService {
       const response = parsedResponse as Record<string, unknown>;
       return {
         message: (response?.message as string) || responseText,
-        products: (response?.products as unknown[]) || [],
+        products: (response?.products as ADCPProduct[]) || [],
         sales_agent: {
           name: salesAgent.name,
           principal_id: salesAgent.principal_id,

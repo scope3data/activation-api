@@ -8,6 +8,9 @@
 
 import type { BudgetAllocation, EffectivePricing } from "../types/tactics.js";
 
+// Re-export for test doubles
+export type { EffectivePricing };
+
 export interface PrebidSegment {
   axe_include_segment: string;
   max_cpm: number;

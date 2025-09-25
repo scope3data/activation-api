@@ -1087,59 +1087,7 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties:
-                brandStoryId:
-                  type: string
-                  description: ID of the brand story to use for this tactic
-                budgetAllocation:
-                  properties:
-                    amount:
-                      type: number
-                      description: Budget amount for this tactic
-                    currency:
-                      type: string
-                      description: "Currency code (default: USD)"
-                    dailyCap:
-                      type: number
-                      description: Optional daily spending limit
-                    pacing:
-                      type: string
-                      description: Budget pacing strategy
-                    percentage:
-                      type: number
-                      description: Percentage of total campaign budget
-                  required:
-                    - amount
-                    - currency
-                    - pacing
-                  type: object
-                  description: Budget allocation configuration
-                campaignId:
-                  type: string
-                  description: ID of the campaign to add this tactic to
-                cpm:
-                  type: number
-                  description: Cost per mille (CPM) for this tactic
-                description:
-                  type: string
-                  description: Optional description of the tactic
-                mediaProductId:
-                  type: string
-                  description: ID of the publisher media product to use
-                name:
-                  type: string
-                  description: Name for this tactic (e.g., 'Hulu Premium + Brand Story')
-                signalId:
-                  type: string
-                  description: Optional signal ID for enhanced targeting
-              required:
-                - brandStoryId
-                - budgetAllocation
-                - campaignId
-                - cpm
-                - mediaProductId
-                - name
-              type: object
+              type: string
         required: true
       responses:
         "200":
@@ -2377,15 +2325,15 @@ paths:
                 value: {}
             schema:
               properties:
-                tacticId:
-                  type: string
-                  description: ID of the tactic to delete
                 confirm:
                   type: boolean
                   description: Must be set to true to confirm deletion
+                tacticId:
+                  type: string
+                  description: ID of the tactic to delete
               required:
-                - tacticId
                 - confirm
+                - tacticId
               type: object
         required: true
       responses:
@@ -5512,18 +5460,6 @@ paths:
                 value: {}
             schema:
               properties:
-                tacticId:
-                  type: string
-                  description: ID of the tactic to update
-                name:
-                  type: string
-                  description: New name for the tactic
-                description:
-                  type: string
-                  description: New description for the tactic
-                status:
-                  type: string
-                  description: New status for the tactic
                 budgetAllocation:
                   properties:
                     amount:
@@ -5546,9 +5482,21 @@ paths:
                 cpm:
                   type: number
                   description: New cost per mille (CPM)
+                description:
+                  type: string
+                  description: New description for the tactic
+                name:
+                  type: string
+                  description: New name for the tactic
                 signalCost:
                   type: number
                   description: New signal cost to add to base CPM
+                status:
+                  type: string
+                  description: New status for the tactic
+                tacticId:
+                  type: string
+                  description: ID of the tactic to update
               required:
                 - tacticId
               type: object

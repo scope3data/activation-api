@@ -721,9 +721,9 @@ export class Scope3ApiClient {
 
     // Validate content sources
     const { assetIds, htmlSnippet, javascriptTag, productUrl, vastTag } =
-      input.content || {};
+      (input.content as Record<string, unknown>) || {};
     const hasContent =
-      htmlSnippet || javascriptTag || vastTag || assetIds?.length || productUrl;
+      htmlSnippet || javascriptTag || vastTag || (Array.isArray(assetIds) && assetIds.length > 0) || productUrl;
 
     if (!hasContent) {
       throw new Error("At least one content source required");
@@ -733,7 +733,7 @@ export class Scope3ApiClient {
       // Create creative in BigQuery
       const creativeId = await this.creativeService.createCreative({
         brandAgentId: input.buyerAgentId,
-        content: input.content || {},
+        content: (input.content as Record<string, unknown>) || {},
         creativeDescription: input.creativeDescription,
         creativeName: input.creativeName,
         format: input.format.formatId,
@@ -1918,21 +1918,32 @@ export class Scope3ApiClient {
         pacing: tacticRecord.budget_pacing as "asap" | "even" | "front_loaded",
       },
       campaignId: tacticRecord.campaign_id,
-      createdAt: tacticRecord.created_at,
+      createdAt: new Date(tacticRecord.created_at),
       description: tacticRecord.description,
       effectivePricing: {
         cpm: tacticRecord.cpm,
-        type: "cpm",
+        currency: "USD",
+        totalCpm: tacticRecord.cpm,
       },
       id: tacticRecord.id,
       mediaProduct: {
+        basePricing: {
+          fixedCpm: tacticRecord.cpm,
+          model: "fixed_cpm",
+        },
+        createdAt: new Date(),
+        deliveryType: "non_guaranteed",
+        description: `Media product ${tacticRecord.media_product_id}`,
         formats: [],
         id: tacticRecord.media_product_id,
+        inventoryType: "run_of_site",
         name:
-          tacticRecord.media_product_name ||
+          (tacticRecord.media_product_name as string) ||
           `Product ${tacticRecord.media_product_id}`,
-        pricing: { cpm: tacticRecord.cpm, type: "cpm" },
-        publisherName: tacticRecord.publisher_name || "Unknown Publisher",
+        productId: tacticRecord.media_product_id,
+        publisherId: "unknown",
+        publisherName: (tacticRecord.publisher_name as string) || "Unknown Publisher",
+        updatedAt: new Date(),
       },
       name: tacticRecord.name,
       signalId: tacticRecord.signal_id,
@@ -1941,7 +1952,7 @@ export class Scope3ApiClient {
         | "completed"
         | "draft"
         | "paused",
-      updatedAt: tacticRecord.updated_at,
+      updatedAt: new Date(tacticRecord.updated_at),
     };
   }
 
@@ -2077,7 +2088,7 @@ export class Scope3ApiClient {
       throw new Error(`GraphQL errors: ${JSON.stringify(result.errors)}`);
     }
 
-    return result.data?.tacticPerformance || {};
+    return (result.data?.tacticPerformance as Record<string, unknown>) || {};
   }
 
   // Targeting methods
