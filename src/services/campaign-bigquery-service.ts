@@ -20,7 +20,8 @@ export class CampaignBigQueryService {
     bigquery?: BigQuery, // Optional injection point for cached BigQuery
   ) {
     // Use injected BigQuery instance or create a new one
-    this.bigquery = bigquery || new BigQuery({ location: "us-central1", projectId });
+    this.bigquery =
+      bigquery || new BigQuery({ location: "us-central1", projectId });
     this.projectId = projectId;
     this.dataset = dataset;
     this.agentTableRef = agentTableRef;

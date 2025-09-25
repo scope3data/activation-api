@@ -53,6 +53,7 @@ The server uses a **GraphQL-primary with BigQuery enhancement approach**:
 The server implements a comprehensive in-memory caching system to reduce BigQuery costs and improve response times:
 
 **Architecture**:
+
 - **Transparent Caching**: Drop-in replacement for BigQuery with same interface
 - **TTL-Based Invalidation**: Configurable time-to-live for different data types
 - **Race Condition Prevention**: Promise deduplication prevents duplicate queries
@@ -60,18 +61,20 @@ The server implements a comprehensive in-memory caching system to reduce BigQuer
 - **Background Preloading**: Common queries preloaded on customer authentication
 
 **Cache Configuration** (`src/server.ts`):
+
 ```typescript
 const cacheConfig = {
   ttl: {
-    brandAgents: 300000,  // 5 minutes - static advertiser data
-    campaigns: 120000,    // 2 minutes - config data (no delivery metrics)
-    creatives: 300000,    // 5 minutes - asset metadata
-    default: 60000        // 1 minute - general queries
-  }
+    brandAgents: 300000, // 5 minutes - static advertiser data
+    campaigns: 120000, // 2 minutes - config data (no delivery metrics)
+    creatives: 300000, // 5 minutes - asset metadata
+    default: 60000, // 1 minute - general queries
+  },
 };
 ```
 
 **Performance Characteristics**:
+
 - **Cache Hits**: ~100% speed improvement (sub-millisecond response)
 - **Memory Management**: Automatic cleanup on TTL expiration
 - **Hit Rate Tracking**: Monitoring for cache effectiveness
@@ -392,7 +395,7 @@ describe("Cache Behavior", () => {
   it("should prevent race conditions with identical queries", async () => {
     // Test Promise deduplication
   });
-  
+
   it("should respect TTL for different data types", async () => {
     // Test TTL-based invalidation
   });

@@ -6,7 +6,10 @@ import type { QueryOptions } from "../../contracts/cache-service.js";
 
 import { CacheServiceTestDouble } from "../../test-doubles/cache-service-test-double.js";
 import { PreloadServiceTestDouble } from "../../test-doubles/preload-service-test-double.js";
-import { testCacheServiceContract, testPreloadServiceContract } from "../contracts/cache-service.contract.test.js";
+import {
+  testCacheServiceContract,
+  testPreloadServiceContract,
+} from "../contracts/cache-service.contract.test.js";
 
 describe("Cache System Integration", () => {
   // Run contract tests against test doubles
@@ -24,14 +27,14 @@ describe("Cache System Integration", () => {
 
     beforeEach(() => {
       cache = new CacheServiceTestDouble({
-        executionDelay: 100 // Simulate realistic query time
+        executionDelay: 100, // Simulate realistic query time
       });
     });
 
     it("should demonstrate significant performance improvement from caching", async () => {
       const query: QueryOptions = {
         params: { id: "performance-test" },
-        query: "SELECT * FROM expensive_operation WHERE id = @id"
+        query: "SELECT * FROM expensive_operation WHERE id = @id",
       };
 
       // First call - should be slow (cache miss)
@@ -46,8 +49,8 @@ describe("Cache System Integration", () => {
 
       // Cache hit should be significantly faster
       expect(duration1).toBeGreaterThan(50); // Should take time due to simulated delay
-      expect(duration2).toBeLessThan(20);    // Should be very fast (cache hit)
-      
+      expect(duration2).toBeLessThan(20); // Should be very fast (cache hit)
+
       const speedImprovement = ((duration1 - duration2) / duration1) * 100;
       expect(speedImprovement).toBeGreaterThan(70); // At least 70% improvement
     });
@@ -55,11 +58,11 @@ describe("Cache System Integration", () => {
     it("should handle burst traffic patterns efficiently", async () => {
       const queries = Array.from({ length: 100 }, (_, i) => ({
         params: { category: Math.floor(i / 10) }, // 10 queries per category
-        query: "SELECT * FROM popular_table WHERE category = @category"
+        query: "SELECT * FROM popular_table WHERE category = @category",
       }));
 
       const start = Date.now();
-      await Promise.all(queries.map(q => cache.query(q)));
+      await Promise.all(queries.map((q) => cache.query(q)));
       const duration = Date.now() - start;
 
       // Should complete much faster than if no caching (100 * 100ms = 10s without cache)
@@ -76,19 +79,19 @@ describe("Cache System Integration", () => {
 
     beforeEach(() => {
       cache = new CacheServiceTestDouble({
-        executionDelay: 50
+        executionDelay: 50,
       });
     });
 
     it("should respect different TTL values for different query types", async () => {
       const brandAgentQuery: QueryOptions = {
         params: { id: 123 },
-        query: "SELECT * FROM brand_agents WHERE customer_id = @id"
+        query: "SELECT * FROM brand_agents WHERE customer_id = @id",
       };
 
       const campaignQuery: QueryOptions = {
         params: { id: "brand-1" },
-        query: "SELECT * FROM campaigns WHERE brand_agent_id = @id"
+        query: "SELECT * FROM campaigns WHERE brand_agent_id = @id",
       };
 
       // Execute both queries
@@ -110,7 +113,7 @@ describe("Cache System Integration", () => {
     it("should handle cache expiration gracefully under load", async () => {
       const query: QueryOptions = {
         params: { id: "expiration-test" },
-        query: "SELECT * FROM test_table WHERE id = @id"
+        query: "SELECT * FROM test_table WHERE id = @id",
       };
 
       // Initial query
@@ -134,7 +137,7 @@ describe("Cache System Integration", () => {
     beforeEach(() => {
       cache = new CacheServiceTestDouble({
         executionDelay: 50,
-        simulateErrors: true
+        simulateErrors: true,
       });
     });
 
@@ -142,12 +145,12 @@ describe("Cache System Integration", () => {
       // Force errors to occur by creating a cache with high error rate
       const errorCache = new CacheServiceTestDouble({
         executionDelay: 50,
-        simulateErrors: true
+        simulateErrors: true,
       });
 
       const query: QueryOptions = {
         params: {},
-        query: "SELECT * FROM problematic_table"
+        query: "SELECT * FROM problematic_table",
       };
 
       // Some queries may fail due to simulated errors
@@ -176,13 +179,13 @@ describe("Cache System Integration", () => {
     it("should not cache failed queries", async () => {
       const successQuery: QueryOptions = {
         params: {},
-        query: "SELECT * FROM success_table"
+        query: "SELECT * FROM success_table",
       };
 
       // Start with cache that doesn't simulate errors
       const reliableCache = new CacheServiceTestDouble({
         executionDelay: 50,
-        simulateErrors: false
+        simulateErrors: false,
       });
 
       // First successful query
@@ -193,7 +196,7 @@ describe("Cache System Integration", () => {
       // Test that errors don't get cached using the error cache
       const errorCache = new CacheServiceTestDouble({
         executionDelay: 50,
-        simulateErrors: true
+        simulateErrors: true,
       });
 
       let errorOccurred = false;
@@ -202,7 +205,7 @@ describe("Cache System Integration", () => {
         try {
           await errorCache.query({
             params: { attempt: i },
-            query: "SELECT * FROM error_prone_table"
+            query: "SELECT * FROM error_prone_table",
           });
         } catch {
           errorOccurred = true;
@@ -212,7 +215,7 @@ describe("Cache System Integration", () => {
 
       // The error cache should not have cached anything if an error occurred
       // (This test verifies the concept rather than the specific cache state)
-      expect(typeof errorOccurred).toBe('boolean');
+      expect(typeof errorOccurred).toBe("boolean");
     });
   });
 
@@ -229,10 +232,10 @@ describe("Cache System Integration", () => {
       const apiKeys = ["key1", "key2", "key3", "key1", "key2"]; // Duplicate keys
 
       // Trigger preloads
-      apiKeys.forEach(key => preloadService.triggerPreload(key));
+      apiKeys.forEach((key) => preloadService.triggerPreload(key));
 
       const status = preloadService.getPreloadStatus();
-      
+
       // Should not exceed the number of unique customers
       expect(status.activePreloads).toBeLessThanOrEqual(3); // Only 3 unique API keys
       expect(status.customerIds).toBeDefined();
@@ -240,15 +243,15 @@ describe("Cache System Integration", () => {
 
     it("should complete preloads within reasonable time", async () => {
       const apiKey = "test-api-key";
-      
+
       preloadService.triggerPreload(apiKey);
-      
+
       const customerId = preloadService.getCustomerIdForApiKey(apiKey);
       expect(customerId).toBeDefined();
 
       // Should complete within timeout
       await expect(
-        preloadService.waitForPreload(customerId!, 1000)
+        preloadService.waitForPreload(customerId!, 1000),
       ).resolves.not.toThrow();
 
       // After completion, should not be active
@@ -258,16 +261,16 @@ describe("Cache System Integration", () => {
 
     it("should handle preload failures gracefully", async () => {
       preloadService.simulatePreloadFailure(true);
-      
+
       const apiKey = "failing-key";
       const customerId = 9999;
-      
+
       // Trigger preload (should fail internally but not throw)
       expect(() => preloadService.triggerPreload(apiKey)).not.toThrow();
-      
+
       // Wait for failure to complete
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
       // Should handle failure and clean up
       const status = preloadService.getPreloadStatus();
       expect(status.activePreloads).toBe(0);
@@ -288,16 +291,16 @@ describe("Cache System Integration", () => {
       // Add queries with varying data sizes
       await cache.query({
         params: { data: "small" },
-        query: "SELECT * FROM small_table"
+        query: "SELECT * FROM small_table",
       });
 
       await cache.query({
         params: { data: "x".repeat(10000) }, // Large data
-        query: "SELECT * FROM large_table"
+        query: "SELECT * FROM large_table",
       });
 
       const finalStats = cache.getCacheStats();
-      
+
       expect(finalStats.memoryUsage).toBeGreaterThan(initialMemory);
       expect(finalStats.size).toBe(2);
     });
@@ -306,7 +309,7 @@ describe("Cache System Integration", () => {
       // Add some data
       await cache.query({
         params: { largeData: "x".repeat(5000) },
-        query: "SELECT * FROM test_table"
+        query: "SELECT * FROM test_table",
       });
 
       const beforeClearStats = cache.getCacheStats();

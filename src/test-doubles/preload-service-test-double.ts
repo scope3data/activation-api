@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { PreloadService } from "../contracts/cache-service.js";
 
 /**
  * Test Double for Preload Service
- * 
+ *
  * Provides controllable preload simulation for testing without
  * external dependencies or network calls.
  */
@@ -12,29 +13,34 @@ export class PreloadServiceTestDouble implements PreloadService {
   private preloadDelay = 100; // Simulate preload work
   private customerIdCounter = 1000;
 
-  constructor(private config?: {
-    preloadDelay?: number;
-    shouldFail?: boolean;
-    maxConcurrentPreloads?: number;
-  }) {
+  constructor(
+    private config?: {
+      preloadDelay?: number;
+      shouldFail?: boolean;
+      maxConcurrentPreloads?: number;
+    },
+  ) {
     this.preloadDelay = config?.preloadDelay ?? 100;
   }
 
   triggerPreload(apiKey: string): void {
     // Non-blocking - start preload in background
-    this.startPreload(apiKey).catch(err => {
-      console.error('[TestDouble] Preload failed:', err);
+    this.startPreload(apiKey).catch((err) => {
+      console.error("[TestDouble] Preload failed:", err);
     });
   }
 
   getPreloadStatus(): { activePreloads: number; customerIds: number[] } {
     return {
       activePreloads: this.activePreloads.size,
-      customerIds: Array.from(this.activePreloads.keys())
+      customerIds: Array.from(this.activePreloads.keys()),
     };
   }
 
-  async waitForPreload(customerId: number, timeoutMs: number = 5000): Promise<void> {
+  async waitForPreload(
+    customerId: number,
+    timeoutMs: number = 5000,
+  ): Promise<void> {
     const preloadPromise = this.activePreloads.get(customerId);
     if (!preloadPromise) {
       throw new Error(`No active preload for customer ${customerId}`);
@@ -42,7 +48,10 @@ export class PreloadServiceTestDouble implements PreloadService {
 
     // Race between preload completion and timeout
     const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error(`Preload timeout for customer ${customerId}`)), timeoutMs)
+      setTimeout(
+        () => reject(new Error(`Preload timeout for customer ${customerId}`)),
+        timeoutMs,
+      ),
     );
 
     await Promise.race([preloadPromise, timeoutPromise]);
@@ -80,9 +89,11 @@ export class PreloadServiceTestDouble implements PreloadService {
     }
 
     // Check concurrent preload limit
-    if (this.config?.maxConcurrentPreloads && 
-        this.activePreloads.size >= this.config.maxConcurrentPreloads) {
-      throw new Error('Maximum concurrent preloads exceeded');
+    if (
+      this.config?.maxConcurrentPreloads &&
+      this.activePreloads.size >= this.config.maxConcurrentPreloads
+    ) {
+      throw new Error("Maximum concurrent preloads exceeded");
     }
 
     // Start preload
@@ -98,20 +109,24 @@ export class PreloadServiceTestDouble implements PreloadService {
 
   private async doPreload(customerId: number, apiKey: string): Promise<void> {
     if (this.config?.shouldFail) {
-      await new Promise(resolve => setTimeout(resolve, this.preloadDelay / 2));
+      await new Promise((resolve) =>
+        setTimeout(resolve, this.preloadDelay / 2),
+      );
       throw new Error(`Simulated preload failure for customer ${customerId}`);
     }
 
     // Simulate preload work phases
     const phases = [
-      'Loading brand agents',
-      'Loading campaigns',
-      'Loading campaign details',
-      'Loading brand agent details'
+      "Loading brand agents",
+      "Loading campaigns",
+      "Loading campaign details",
+      "Loading brand agent details",
     ];
 
     for (const phase of phases) {
-      await new Promise(resolve => setTimeout(resolve, this.preloadDelay / phases.length));
+      await new Promise((resolve) =>
+        setTimeout(resolve, this.preloadDelay / phases.length),
+      );
       // Could emit events or log progress here for testing
     }
   }

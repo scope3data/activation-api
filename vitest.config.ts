@@ -20,7 +20,7 @@ export default defineConfig({
   test: {
     // Test environment configuration
     maxConcurrency: 1, // Further reduce concurrency for event listener stability
-    
+
     // Coverage configuration
     // Strategy: Focus on business logic layers that survive backend infrastructure changes
     // Exclude: GraphQL/BigQuery client code (temporary infrastructure, changing to different backend)
@@ -97,15 +97,11 @@ export default defineConfig({
       // Increase process max listeners for test environment
       UV_THREADPOOL_SIZE: "128",
       // Disable actual process event listeners in tests
-      VITEST_DISABLE_PROCESS_LISTENERS: "true"
+      VITEST_DISABLE_PROCESS_LISTENERS: "true",
     },
 
     environment: "node",
-    exclude: [
-      "node_modules/**", 
-      "dist/**", 
-      "**/*.d.ts"
-    ],
+    exclude: ["node_modules/**", "dist/**", "**/*.d.ts"],
 
     // Global test configuration
     globals: true,
@@ -140,15 +136,15 @@ export default defineConfig({
 
     // Test timeout configuration
     testTimeout: 15000, // 15 seconds for integration tests with caching delays
-    
-    // Test environment stability  
+
+    // Test environment stability
     sequence: {
-      concurrent: false // Run tests sequentially to avoid resource conflicts
+      concurrent: false, // Run tests sequentially to avoid resource conflicts
     },
-    
+
     // Better cleanup and isolation
     clearMocks: true,
     restoreMocks: true,
-    mockReset: true
+    mockReset: true,
   },
 });

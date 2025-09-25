@@ -7,8 +7,14 @@ import { Scope3ApiClient } from "./client/scope3-client.js";
 import { posthogService } from "./services/posthog-service.js";
 import { AuthenticationService } from "./services/auth-service.js";
 import { CampaignBigQueryService } from "./services/campaign-bigquery-service.js";
-import { CachedBigQuery, DEFAULT_CACHE_CONFIG } from "./services/cache/cached-bigquery.js";
-import { PreloadService, DEFAULT_PRELOAD_CONFIG } from "./services/cache/preload-service.js";
+import {
+  CachedBigQuery,
+  DEFAULT_CACHE_CONFIG,
+} from "./services/cache/cached-bigquery.js";
+import {
+  PreloadService,
+  DEFAULT_PRELOAD_CONFIG,
+} from "./services/cache/preload-service.js";
 import { registerTools } from "./tools/index.js";
 import { config } from "./utils/config.js";
 
@@ -18,32 +24,40 @@ const cacheConfig = {
   // Override with environment variables if provided
   ttl: {
     brandAgents: parseInt(process.env.CACHE_TTL_BRAND_AGENTS || "300000"), // 5 minutes
-    campaigns: parseInt(process.env.CACHE_TTL_CAMPAIGNS || "120000"),     // 2 minutes
-    creatives: parseInt(process.env.CACHE_TTL_CREATIVES || "300000"),     // 5 minutes
-    default: parseInt(process.env.CACHE_TTL_DEFAULT || "60000")           // 1 minute
-  }
+    campaigns: parseInt(process.env.CACHE_TTL_CAMPAIGNS || "120000"), // 2 minutes
+    creatives: parseInt(process.env.CACHE_TTL_CREATIVES || "300000"), // 5 minutes
+    default: parseInt(process.env.CACHE_TTL_DEFAULT || "60000"), // 1 minute
+  },
 };
 
-console.log('[Cache] Initializing with config:', cacheConfig);
+console.log("[Cache] Initializing with config:", cacheConfig);
 const cachedBigQuery = new CachedBigQuery(
   { location: "us-central1", projectId: "bok-playground" },
-  cacheConfig
+  cacheConfig,
 );
 
 // Initialize services with cached BigQuery
 const authService = new AuthenticationService(cachedBigQuery);
 const campaignService = new CampaignBigQueryService(
   "bok-playground",
-  "agenticapi", 
+  "agenticapi",
   "swift-catfish-337215.postgres_datastream.public_agent",
-  cachedBigQuery // Inject cached BigQuery
+  cachedBigQuery, // Inject cached BigQuery
 );
 
 // Initialize preload service
-const preloadService = new PreloadService(campaignService, authService, DEFAULT_PRELOAD_CONFIG);
+const preloadService = new PreloadService(
+  campaignService,
+  authService,
+  DEFAULT_PRELOAD_CONFIG,
+);
 
 // Initialize client with cached services
-const scope3Client = new Scope3ApiClient(config.scope3GraphQLUrl, campaignService, authService);
+const scope3Client = new Scope3ApiClient(
+  config.scope3GraphQLUrl,
+  campaignService,
+  authService,
+);
 const server = new FastMCP<FastMCPSessionAuth>({
   authenticate: async (request: http.IncomingMessage) => {
     const canLog =

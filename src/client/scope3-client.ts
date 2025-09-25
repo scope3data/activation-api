@@ -174,7 +174,7 @@ export class Scope3ApiClient {
   constructor(
     graphqlUrl: string,
     campaignService?: CampaignBigQueryService,
-    authService?: AuthenticationService
+    authService?: AuthenticationService,
   ) {
     this.graphqlUrl = graphqlUrl;
     this.productDiscovery = new ProductDiscoveryService(graphqlUrl);

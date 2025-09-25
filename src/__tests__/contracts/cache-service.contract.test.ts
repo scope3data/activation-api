@@ -2,14 +2,18 @@
 /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { CacheService, PreloadService, QueryOptions } from "../../contracts/cache-service.js";
+import type {
+  CacheService,
+  PreloadService,
+  QueryOptions,
+} from "../../contracts/cache-service.js";
 
 /**
  * Contract Tests for Cache Service
- * 
+ *
  * These tests validate that any implementation of CacheService
  * behaves correctly regardless of the underlying technology.
- * 
+ *
  * Usage:
  * testCacheServiceContract(() => new MyCacheImplementation())
  */
@@ -18,11 +22,11 @@ export function testCacheServiceContract(
   options?: {
     skipConcurrencyTests?: boolean;
     skipMemoryTests?: boolean;
-  }
+  },
 ) {
   describe("CacheService Contract", () => {
     let cache: CacheService;
-    
+
     beforeEach(() => {
       cache = cacheFactory();
       cache.clearCache();
@@ -32,7 +36,7 @@ export function testCacheServiceContract(
       it("should cache identical queries and return same results", async () => {
         const queryOptions: QueryOptions = {
           params: { id: "test-123" },
-          query: "SELECT * FROM test_table WHERE id = @id"
+          query: "SELECT * FROM test_table WHERE id = @id",
         };
 
         // First call should be cache miss
@@ -42,7 +46,7 @@ export function testCacheServiceContract(
         // Second identical call should be cache hit
         const result2 = await cache.query(queryOptions);
         expect(result2).toEqual(result1);
-        
+
         // Should show cache hit in stats
         expect(cache.isCached(queryOptions)).toBe(true);
       });
@@ -50,12 +54,12 @@ export function testCacheServiceContract(
       it("should distinguish between different queries", async () => {
         const query1: QueryOptions = {
           params: {},
-          query: "SELECT * FROM table1"
+          query: "SELECT * FROM table1",
         };
-        
+
         const query2: QueryOptions = {
-          params: {}, 
-          query: "SELECT * FROM table2"
+          params: {},
+          query: "SELECT * FROM table2",
         };
 
         await cache.query(query1);
@@ -63,22 +67,22 @@ export function testCacheServiceContract(
 
         expect(cache.isCached(query1)).toBe(true);
         expect(cache.isCached(query2)).toBe(true);
-        
+
         const stats = cache.getCacheStats();
         expect(stats.size).toBeGreaterThanOrEqual(1); // At least one should be cached
       });
 
       it("should distinguish between different parameters", async () => {
         const baseQuery = "SELECT * FROM users WHERE id = @id";
-        
+
         const query1: QueryOptions = {
           params: { id: 1 },
-          query: baseQuery
+          query: baseQuery,
         };
-        
+
         const query2: QueryOptions = {
           params: { id: 2 },
-          query: baseQuery
+          query: baseQuery,
         };
 
         await cache.query(query1);
@@ -86,7 +90,7 @@ export function testCacheServiceContract(
 
         expect(cache.isCached(query1)).toBe(true);
         expect(cache.isCached(query2)).toBe(true);
-        
+
         const stats = cache.getCacheStats();
         expect(stats.size).toBeGreaterThanOrEqual(1); // At least one should be cached
       });
@@ -107,7 +111,9 @@ export function testCacheServiceContract(
 
         // Should still have non-matching entries
         const statsAfterInvalidation = cache.getCacheStats();
-        expect(statsAfterInvalidation.size).toBeLessThan(statsBeforeInvalidation.size);
+        expect(statsAfterInvalidation.size).toBeLessThan(
+          statsBeforeInvalidation.size,
+        );
       });
 
       it("should clear all cache entries", async () => {
@@ -140,13 +146,13 @@ export function testCacheServiceContract(
 
       it("should track hit rates if supported", async () => {
         const query: QueryOptions = { params: {}, query: "SELECT * FROM test" };
-        
+
         // First call - miss
         await cache.query(query);
-        
+
         // Second call - hit
         await cache.query(query);
-        
+
         const stats = cache.getCacheStats();
         // Hit rate tracking is optional but should be consistent if implemented
         if (stats.hits !== undefined && stats.misses !== undefined) {
@@ -162,11 +168,14 @@ export function testCacheServiceContract(
         it("should handle concurrent identical queries without race conditions", async () => {
           const query: QueryOptions = {
             params: { param: "test-value" },
-            query: "SELECT * FROM test_table WHERE expensive_operation = @param"
+            query:
+              "SELECT * FROM test_table WHERE expensive_operation = @param",
           };
 
           // Start multiple identical queries simultaneously
-          const promises = Array(5).fill(null).map(() => cache.query(query));
+          const promises = Array(5)
+            .fill(null)
+            .map(() => cache.query(query));
           const results = await Promise.all(promises);
 
           // All results should be identical (no race conditions)
@@ -181,17 +190,15 @@ export function testCacheServiceContract(
         it("should handle concurrent different queries", async () => {
           const queries = Array.from({ length: 10 }, (_, i) => ({
             params: { id: i },
-            query: `SELECT * FROM table_${i}`
+            query: `SELECT * FROM table_${i}`,
           }));
 
-          const results = await Promise.all(
-            queries.map(q => cache.query(q))
-          );
+          const results = await Promise.all(queries.map((q) => cache.query(q)));
 
           expect(results).toHaveLength(10);
-          
+
           // All queries should be cached
-          queries.forEach(q => {
+          queries.forEach((q) => {
             expect(cache.isCached(q)).toBe(true);
           });
         });
@@ -207,7 +214,7 @@ export function testCacheServiceContract(
           // Add a large query result
           await cache.query({
             params: { data: "x".repeat(1000) }, // Large parameter
-            query: "SELECT * FROM large_table"
+            query: "SELECT * FROM large_table",
           });
 
           const afterStats = cache.getCacheStats();
@@ -225,11 +232,11 @@ export function testPreloadServiceContract(
   preloadFactory: () => PreloadService,
   options?: {
     skipTimeoutTests?: boolean;
-  }
+  },
 ) {
   describe("PreloadService Contract", () => {
     let preloadService: PreloadService;
-    
+
     beforeEach(() => {
       preloadService = preloadFactory();
     });
@@ -237,9 +244,9 @@ export function testPreloadServiceContract(
     describe("Basic Preload Behavior", () => {
       it("should accept preload requests without blocking", async () => {
         const start = Date.now();
-        
+
         preloadService.triggerPreload("test-api-key");
-        
+
         const duration = Date.now() - start;
         // Should return immediately (within 100ms)
         expect(duration).toBeLessThan(100);
@@ -262,10 +269,10 @@ export function testPreloadServiceContract(
     describe("Concurrent Preloads", () => {
       it("should handle multiple simultaneous preload requests", async () => {
         const apiKeys = ["key1", "key2", "key3", "key4", "key5"];
-        
+
         // Trigger multiple preloads
-        apiKeys.forEach(key => preloadService.triggerPreload(key));
-        
+        apiKeys.forEach((key) => preloadService.triggerPreload(key));
+
         const status = preloadService.getPreloadStatus();
         expect(status.activePreloads).toBeGreaterThanOrEqual(0);
         expect(status.customerIds).toBeDefined();
