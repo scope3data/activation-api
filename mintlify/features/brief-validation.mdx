@@ -1,0 +1,276 @@
+---
+title: "Campaign Brief Validation"
+description: "AI-powered brief quality assessment using Ad Context Protocol standards to ensure effective campaign execution"
+icon: "clipboard-check"
+---
+
+## Overview
+
+The Scope3 Campaign API includes an AI-powered brief validation system that evaluates campaign briefs against [Ad Context Protocol standards](https://adcontextprotocol.org/docs/media-buy/product-discovery/brief-expectations) before campaign creation. This ensures campaigns have the essential information publishers need for effective inventory matching and execution.
+
+<Warning>
+**Publisher Inventory Matching Requirements**
+
+Publishers require specific information to match campaigns with appropriate inventory. Missing critical elements makes campaign execution impossible or significantly less effective. The validation system prevents campaign failures by identifying gaps upfront.
+</Warning>
+
+## Why Brief Validation Matters
+
+Publishers need detailed campaign information to:
+
+- **Match Inventory**: Find appropriate ad placements that align with targeting requirements
+- **Optimize Delivery**: Ensure campaigns reach the right audience at the right time
+- **Meet Creative Requirements**: Serve ads in formats that fit available inventory slots
+- **Reserve Capacity**: Block inventory for specific dates and geographic regions
+
+Without complete briefs, campaigns may fail to find suitable inventory or deliver suboptimal results.
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="AI-Powered Evaluation" icon="brain">
+    Uses advanced AI models to assess brief completeness against industry standards
+  </Card>
+  
+  <Card title="Quality Scoring" icon="star">
+    Provides 0-100 scores with specific quality level classifications
+  </Card>
+  
+  <Card title="Missing Element Detection" icon="magnifying-glass">
+    Identifies specific gaps and provides actionable improvement suggestions
+  </Card>
+  
+  <Card title="Flexible Thresholds" icon="sliders">
+    Configurable quality requirements with intelligent defaults
+  </Card>
+</CardGroup>
+
+## Quality Scoring System
+
+The validation system assigns scores from 0-100 based on brief completeness:
+
+### Quality Levels
+
+- **Comprehensive Brief (80-100)**: Complete information with all elements present
+- **Standard Brief (60-79)**: Good brief with most key elements, minor gaps
+- **Minimal Brief (30-59)**: Basic information but missing important details  
+- **No Brief (0-29)**: Insufficient information for effective campaigns
+
+### Scoring Logic
+
+<Note>
+**Critical Requirement Penalties**
+
+- Missing ANY critical requirement = automatic score below 60
+- Missing 2+ critical requirements = score capped at 40
+- Missing 3+ critical requirements = score capped at 30
+
+This reflects the reality that publishers cannot effectively match campaigns without core targeting and creative information.
+</Note>
+
+## The 6 Critical Requirements
+
+Publishers require these elements for successful inventory matching:
+
+### 1. Business Objectives
+**Clear, measurable goals that define campaign success**
+
+<Tabs>
+  <Tab title="Good Examples">
+    - "Increase brand awareness by 30% among target demographic"
+    - "Drive 5,000 qualified leads for new product launch"
+    - "Achieve 15% conversion rate improvement over Q3 baseline"
+  </Tab>
+  <Tab title="Poor Examples">
+    - "Build awareness" (not measurable)
+    - "Get more customers" (not specific)
+    - "Marketing campaign" (not a goal)
+  </Tab>
+</Tabs>
+
+### 2. Success Metrics
+**Specific KPIs with measurable targets**
+
+<Tabs>
+  <Tab title="Good Examples">
+    - "Target 2.5% CTR with minimum 15M impressions"
+    - "Achieve 40% brand lift measured via brand tracker"
+    - "Generate 500 form completions at $50 CPA or lower"
+  </Tab>
+  <Tab title="Poor Examples">
+    - "Good engagement rates" (not specific)
+    - "Lots of impressions" (no target)
+    - "Effective campaign" (not measurable)
+  </Tab>
+</Tabs>
+
+### 3. Target Audience
+**Detailed demographics, psychographics, and interests**
+
+<Tabs>
+  <Tab title="Good Examples">
+    - "Urban millennials 25-35, household income $50k+, sustainability-focused"
+    - "Small business owners 30-50 in retail/hospitality sectors"
+    - "Parents with children 5-12, interested in education technology"
+  </Tab>
+  <Tab title="Poor Examples">
+    - "Young people" (too broad)
+    - "Everyone" (not targeted)
+    - "Customers" (not descriptive)
+  </Tab>
+</Tabs>
+
+### 4. Geographic Markets **[CRITICAL for Inventory Matching]**
+**Specific locations, regions, or targeting areas**
+
+<Tabs>
+  <Tab title="Good Examples">
+    - "Tier 1 US cities: NYC, LA, Chicago, San Francisco metro areas"
+    - "United Kingdom and Germany, excluding rural areas"
+    - "California and Texas, focusing on urban centers 100k+ population"
+  </Tab>
+  <Tab title="Poor Examples">
+    - "Everywhere" (not specific)
+    - "Major markets" (unclear definition)
+    - "US" (too broad without specificity)
+  </Tab>
+</Tabs>
+
+### 5. Flight Dates **[CRITICAL for Inventory Availability]**
+**Campaign timing for inventory reservation**
+
+<Tabs>
+  <Tab title="Good Examples">
+    - "March 1 - April 15, 2025 (6-week campaign)"
+    - "Q2 2025 launch, 8-week flight starting May 1"
+    - "Black Friday push: November 15-30, 2024"
+  </Tab>
+  <Tab title="Poor Examples">
+    - "Soon" (no specific dates)
+    - "Next quarter" (too vague)
+    - "When ready" (no timeline)
+  </Tab>
+</Tabs>
+
+### 6. Creative Requirements **[CRITICAL for Inventory Matching]**
+**Formats, sizes, and specifications needed**
+
+<Tabs>
+  <Tab title="Good Examples">
+    - "15-second and 30-second video ads, plus 728x90 display banners"
+    - "Native content articles with accompanying social media assets"
+    - "HTML5 rich media units, mobile-optimized 320x50 and 300x250"
+  </Tab>
+  <Tab title="Poor Examples">
+    - "Ads" (no format specified)
+    - "Creative content" (no specifications)
+    - "Whatever works" (no requirements)
+  </Tab>
+</Tabs>
+
+## Validation Workflow
+
+### Best Practice: Validate First, Create Second
+
+<Steps>
+  <Step title="Validate Brief Quality">
+    Use `campaign_validate_brief` to check brief completeness and get improvement suggestions
+  </Step>
+  <Step title="Improve Brief Based on Feedback">
+    Address missing elements and implement suggestions from AI evaluation
+  </Step>
+  <Step title="Create Campaign with Skip Validation">
+    Use `campaign_create` with `skipBriefValidation: true` to avoid duplicate validation
+  </Step>
+</Steps>
+
+<Tip>
+**Efficiency & Carbon Impact**
+
+Validating first and then creating with `skipBriefValidation: true` saves processing time and reduces carbon footprint by avoiding duplicate AI evaluations.
+</Tip>
+
+### Alternative: Direct Campaign Creation
+
+<Steps>
+  <Step title="Create Campaign with Validation">
+    Use `campaign_create` without skip flags - validation runs automatically
+  </Step>
+  <Step title="Handle Validation Failures">
+    If brief quality is below threshold, improve and retry
+  </Step>
+</Steps>
+
+## Error Handling
+
+When validation fails, you'll receive detailed feedback:
+
+```json
+{
+  "score": 45,
+  "meetsThreshold": false,
+  "threshold": 70,
+  "qualityLevel": "Minimal Brief",
+  "missingElements": [
+    "Geographic targeting not defined - CRITICAL for inventory matching",
+    "Campaign flight dates not specified - CRITICAL for inventory availability"
+  ],
+  "suggestions": [
+    "Specify target locations (e.g., 'tier 1 US cities', 'NYC, LA, Chicago metro areas')",
+    "Include campaign timing (e.g., 'March 1 - April 15, 2025', '6-week campaign starting Q2')"
+  ]
+}
+```
+
+<Warning>
+**Campaign Creation Blocked**
+
+When a brief scores below the threshold (default 70/100), campaign creation will fail with a detailed error message. You must either improve the brief or explicitly skip validation.
+</Warning>
+
+## Integration with Campaign Creation
+
+The validation system is tightly integrated with the `campaign_create` tool:
+
+### Automatic Validation
+By default, all campaign creation attempts include brief validation
+
+### Configurable Thresholds
+Set custom quality requirements per campaign:
+```javascript
+briefValidationThreshold: 80  // Higher standard for premium campaigns
+```
+
+### Skip for Pre-Validated Briefs
+Avoid duplicate processing for already-validated content:
+```javascript
+skipBriefValidation: true  // Skip if already validated separately
+```
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="campaign_validate_brief" icon="magnifying-glass" href="/api-reference/campaigns/validate-brief">
+    Standalone brief validation with detailed feedback
+  </Card>
+  
+  <Card title="campaign_create" icon="plus" href="/api-reference/campaigns/create">
+    Campaign creation with integrated validation
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={1}>
+  <Card title="Try the Validation Tool" icon="play" href="/api-reference/campaigns/validate-brief">
+    Test brief validation with sample content
+  </Card>
+  
+  <Card title="Campaign Creation Guide" icon="rocket" href="/object-guides/campaigns">
+    Learn campaign creation best practices
+  </Card>
+  
+  <Card title="Ad Context Protocol" icon="external-link" href="https://adcontextprotocol.org/docs/media-buy/product-discovery/brief-expectations">
+    Understand industry brief standards
+  </Card>
+</CardGroup>

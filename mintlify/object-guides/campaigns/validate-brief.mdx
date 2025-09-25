@@ -1,0 +1,270 @@
+---
+title: "campaign_validate_brief"
+description: "Validate campaign briefs against Ad Context Protocol standards using AI evaluation before campaign creation"
+icon: "magnifying-glass"
+---
+
+## Overview
+
+The `campaign_validate_brief` tool provides AI-powered validation of campaign briefs against [Ad Context Protocol standards](https://adcontextprotocol.org/docs/media-buy/product-discovery/brief-expectations). This standalone validation tool helps ensure your campaign briefs contain the essential information publishers need for effective inventory matching and campaign execution.
+
+<Tip>
+**Best Practice Workflow**
+
+Use this tool to validate and improve your brief first, then create campaigns with `skipBriefValidation: true` to save processing time and reduce carbon footprint from duplicate AI evaluations.
+</Tip>
+
+## Why Validate Briefs?
+
+Publishers require specific information to effectively match campaigns with appropriate inventory:
+
+- **Geographic targeting** - Essential for inventory location matching
+- **Flight dates** - Critical for inventory availability and reservation  
+- **Creative specifications** - Required for format and placement matching
+- **Audience details** - Needed for targeting optimization
+- **Budget and objectives** - Important for campaign scaling and pacing
+
+Without complete briefs, campaigns may fail to find suitable inventory or deliver suboptimal results.
+
+## Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `brief` | string | Yes | The campaign brief text to validate against Ad Context Protocol standards |
+| `threshold` | number | No | Minimum quality score required to pass validation (0-100, default: 70) |
+| `brandAgentId` | string | No | Optional brand agent ID for context-aware validation |
+
+## Usage Examples
+
+### Basic Validation
+
+```javascript
+{
+  "brief": "Launch a premium athletic wear campaign targeting young adults interested in fitness and outdoor activities. Focus on urban markets with high disposable income. Creative should emphasize sustainability and performance.",
+  "threshold": 70
+}
+```
+
+### Comprehensive Brief Example
+
+```javascript
+{
+  "brief": "Launch Nike Air Max campaign targeting urban millennials 25-35 with household income $50k+, focused on fitness/lifestyle interests. Run March 1 - April 15, 2025 across tier 1 US cities (NYC, LA, Chicago, SF metro areas). Objectives: Achieve 30% brand awareness lift and 15M impressions. Success metrics: 2.5% CTR target, 40% video completion rate. Creative requirements: 15s/30s video ads for CTV/YouTube, plus 728x90 and 300x250 display banners. Total budget $250k with $12k daily cap, even pacing strategy.",
+  "threshold": 80,
+  "brandAgentId": "agent_nike_123"
+}
+```
+
+## Response Format
+
+The tool returns comprehensive validation results:
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "validation": {
+      "score": 85,
+      "meetsThreshold": true,
+      "threshold": 70,
+      "qualityLevel": "Comprehensive Brief",
+      "feedback": "This brief contains all critical elements publishers need for effective inventory matching. Geographic targeting, flight dates, and creative specifications are clearly defined, enabling optimal campaign execution.",
+      "missingElements": [],
+      "suggestions": [
+        "Consider specifying exact video completion rate targets for CTV inventory",
+        "Add brand safety requirements for premium inventory placement"
+      ]
+    },
+    "briefAnalysis": {
+      "wordCount": 67,
+      "characterCount": 423
+    }
+  },
+  "message": "✅ Brief Ready for Campaign Creation\n\n**Overall Score: 85/100** ✅\n**Quality Level:** Comprehensive Brief\n**Status:** PASSES validation requirements..."
+}
+```
+
+### Failure Response
+
+```json
+{
+  "success": false,
+  "error": "❌ Brief Needs Improvement\n\n**Score:** 45/100 (Required: 70/100)\n**Quality Level:** Minimal Brief\n\n**Missing Critical Elements:**\n• Geographic targeting not defined - CRITICAL for inventory matching\n• Campaign flight dates not specified - CRITICAL for inventory availability\n• Creative format requirements not defined - CRITICAL for inventory matching..."
+}
+```
+
+## Quality Scoring
+
+### Scoring Ranges
+
+- **80-100 (Comprehensive)**: Complete brief with all elements and detailed specifications
+- **60-79 (Standard)**: Good brief with most key elements, minor gaps acceptable
+- **30-59 (Minimal)**: Basic information but missing important details
+- **0-29 (No Brief)**: Insufficient information for effective campaigns
+
+### Critical Requirement Impact
+
+<Warning>
+**Score Capping Logic**
+
+- Missing ANY critical requirement = automatic score below 60
+- Missing 2+ critical requirements = score capped at 40  
+- Missing 3+ critical requirements = score capped at 30
+
+This reflects the reality that publishers cannot effectively match campaigns without essential targeting information.
+</Warning>
+
+## The 6 Critical Requirements
+
+### 1. Business Objectives ✅
+Clear, measurable goals that define campaign success.
+
+**Good:** "Increase brand awareness by 30% among target demographic"  
+**Poor:** "Build awareness" (not measurable)
+
+### 2. Success Metrics ✅ 
+Specific KPIs with measurable targets.
+
+**Good:** "Target 2.5% CTR with minimum 15M impressions"  
+**Poor:** "Good engagement rates" (not specific)
+
+### 3. Target Audience ✅
+Detailed demographics, psychographics, and interests.
+
+**Good:** "Urban millennials 25-35, household income $50k+, sustainability-focused"  
+**Poor:** "Young people" (too broad)
+
+### 4. Geographic Markets ⚠️ **CRITICAL**
+Specific locations, regions, or targeting areas for inventory matching.
+
+**Good:** "Tier 1 US cities: NYC, LA, Chicago, San Francisco metro areas"  
+**Poor:** "Major markets" (unclear definition)
+
+### 5. Flight Dates ⚠️ **CRITICAL** 
+Campaign timing for inventory reservation and availability.
+
+**Good:** "March 1 - April 15, 2025 (6-week campaign)"  
+**Poor:** "Next quarter" (too vague)
+
+### 6. Creative Requirements ⚠️ **CRITICAL**
+Formats, sizes, and specifications needed for inventory matching.
+
+**Good:** "15-second and 30-second video ads, plus 728x90 display banners"  
+**Poor:** "Creative content" (no specifications)
+
+## AI Evaluation Process
+
+The validation uses advanced AI models to:
+
+1. **Parse Brief Content** - Extract key information and requirements
+2. **Compare Against Standards** - Evaluate against Ad Context Protocol guidelines  
+3. **Identify Gaps** - Detect missing critical elements
+4. **Generate Suggestions** - Provide specific, actionable improvement recommendations
+5. **Assign Quality Score** - Calculate 0-100 score based on completeness
+
+## Error Handling
+
+### AI Service Unavailable
+If the AI evaluation service is unavailable, the tool falls back to pattern-based validation:
+
+- Searches for keywords indicating each requirement category
+- Provides basic scoring based on content analysis  
+- Returns general suggestions for improvement
+- Maintains core functionality during service outages
+
+### Invalid Input
+- Brief text cannot be empty
+- Threshold must be between 0-100
+- Brand agent ID must be valid format if provided
+
+## Integration with Campaign Creation
+
+This tool works seamlessly with the campaign creation workflow:
+
+<Steps>
+  <Step title="Validate Brief">
+    Use `campaign_validate_brief` to assess quality and get improvement suggestions
+  </Step>
+  <Step title="Improve Based on Feedback">
+    Address missing elements and implement AI suggestions
+  </Step>
+  <Step title="Create Campaign">
+    Use `campaign_create` with `skipBriefValidation: true` to avoid duplicate validation
+  </Step>
+</Steps>
+
+## Common Use Cases
+
+### Pre-Campaign Quality Check
+```javascript
+// Validate before any campaign creation
+{
+  "brief": "Your campaign description here...",
+  "threshold": 70
+}
+```
+
+### High-Quality Campaign Requirements
+```javascript
+// Higher standards for premium campaigns
+{
+  "brief": "Premium campaign brief...",
+  "threshold": 85
+}
+```
+
+### Brand-Specific Validation
+```javascript
+// Context-aware validation for specific advertisers
+{
+  "brief": "Brand-specific campaign brief...",
+  "threshold": 70,
+  "brandAgentId": "agent_nike_123"
+}
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Validate Early" icon="clock">
+    Run validation during brief development, not just before campaign creation
+  </Card>
+  
+  <Card title="Iterate Based on Feedback" icon="arrows-rotate">
+    Use AI suggestions to systematically improve brief quality
+  </Card>
+  
+  <Card title="Set Appropriate Thresholds" icon="target">
+    Use higher thresholds (80+) for premium campaigns, standard (70) for most use cases
+  </Card>
+  
+  <Card title="Address Critical Elements First" icon="exclamation-triangle">
+    Focus on geo, timing, and creative specs - these are essential for inventory matching
+  </Card>
+</CardGroup>
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="campaign_create" icon="plus" href="/object-guides/campaigns/create">
+    Create campaigns with integrated validation
+  </Card>
+  
+  <Card title="Campaign Overview" icon="bullseye-arrow" href="/object-guides/campaign">
+    Complete campaign management guide
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={1}>
+  <Card title="Try Campaign Creation" icon="rocket" href="/object-guides/campaigns/create">
+    Learn how validation integrates with campaign creation
+  </Card>
+  
+  <Card title="Brief Quality Guidelines" icon="clipboard-check" href="/features/brief-validation">
+    Understand detailed brief validation standards
+  </Card>
+</CardGroup>

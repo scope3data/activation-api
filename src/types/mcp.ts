@@ -85,6 +85,8 @@ export interface CreateCampaignParams {
   name: string;
   prompt: string;
   startDate?: string;
+  skipBriefValidation?: boolean;
+  briefValidationThreshold?: number;
 }
 
 // Custom Signal Definition MCP parameter types
@@ -375,6 +377,13 @@ export interface UpdateCustomSignalParams {
   description?: string;
   name?: string;
   signalId: string;
+}
+
+// Brief Validation MCP parameter types
+export interface ValidateBriefParams {
+  brief: string;
+  threshold?: number;
+  brandAgentId?: string;
 }
 
 export interface UpdateMeasurementSourceParams {

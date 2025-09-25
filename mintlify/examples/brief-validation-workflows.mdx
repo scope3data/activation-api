@@ -1,0 +1,367 @@
+---
+title: "Brief Validation Workflows"
+description: "Practical examples and best practices for using campaign brief validation in real-world scenarios"
+icon: "workflow"
+---
+
+## Overview
+
+This guide provides practical examples of how to use the campaign brief validation system effectively in different scenarios. Each workflow demonstrates best practices for ensuring high-quality campaigns while optimizing for efficiency and carbon impact.
+
+<Tip>
+**Carbon-Conscious Development**
+
+The recommended "validate first, create second" workflow saves processing time and reduces carbon footprint by avoiding duplicate AI evaluations. Always validate briefs separately when iterating on quality.
+</Tip>
+
+## Workflow 1: Comprehensive Brief Development
+
+**Use Case:** Developing a high-quality campaign brief from scratch with iterative improvement.
+
+### Step 1: Initial Brief Validation
+
+```javascript
+// Start with your initial brief draft
+{
+  "brief": "Launch Nike athletic wear campaign for young fitness enthusiasts. Focus on major cities and use video content. Target good engagement rates.",
+  "threshold": 70
+}
+```
+
+**Response - Low Quality Score:**
+```json
+{
+  "score": 35,
+  "meetsThreshold": false,
+  "qualityLevel": "Minimal Brief",
+  "missingElements": [
+    "Geographic targeting not defined - CRITICAL for inventory matching",
+    "Campaign flight dates not specified - CRITICAL for inventory availability", 
+    "Creative format requirements not defined - CRITICAL for inventory matching",
+    "Success metrics not defined",
+    "Target audience not specific enough"
+  ],
+  "suggestions": [
+    "Specify exact cities or metro areas (e.g., 'NYC, LA, Chicago metro areas')",
+    "Include campaign start/end dates or duration",
+    "Define video specifications (15s/30s for CTV, aspect ratios, etc.)",
+    "Set measurable KPI targets (CTR, impressions, completion rates)",
+    "Detail demographics beyond 'young fitness enthusiasts'"
+  ]
+}
+```
+
+### Step 2: Improved Brief Based on Feedback
+
+```javascript
+{
+  "brief": "Launch Nike athletic wear campaign targeting fitness enthusiasts 25-35 with household income $50k+ in tier 1 US cities (NYC, LA, Chicago, SF metro areas). Campaign runs March 1 - May 31, 2025. Objectives: Achieve 25% brand awareness lift and 20M impressions. Success metrics: 2.8% CTR target, 35% video completion rate. Creative requirements: 15s/30s video ads for CTV plus 300x250 and 728x90 display banners. Focus on sustainability messaging.",
+  "threshold": 70
+}
+```
+
+**Response - High Quality Score:**
+```json
+{
+  "score": 88,
+  "meetsThreshold": true,
+  "qualityLevel": "Comprehensive Brief",
+  "missingElements": [],
+  "suggestions": [
+    "Consider specifying daily budget caps for pacing control",
+    "Add competitive separation requirements for premium placements"
+  ]
+}
+```
+
+### Step 3: Campaign Creation with Skip Validation
+
+```javascript
+{
+  "brandAgentId": "agent_nike_123",
+  "name": "Nike Spring Athletic Campaign 2025",
+  "prompt": "Launch Nike athletic wear campaign targeting fitness enthusiasts 25-35 with household income $50k+ in tier 1 US cities (NYC, LA, Chicago, SF metro areas)...",
+  "budget": {
+    "total": 25000000,  // $250,000
+    "dailyCap": 1200000,  // $12,000/day
+    "pacing": "even"
+  },
+  "startDate": "2025-03-01T00:00:00Z",
+  "endDate": "2025-05-31T23:59:59Z",
+  "skipBriefValidation": true  // Already validated separately
+}
+```
+
+<Note>
+**Efficiency Benefit**: By validating first and then creating with `skipBriefValidation: true`, you avoid duplicate AI processing, saving time and reducing carbon impact.
+</Note>
+
+---
+
+## Workflow 2: Direct Campaign Creation with Retry
+
+**Use Case:** Quick campaign creation when you're confident in your brief quality, with fallback handling.
+
+### Step 1: Direct Campaign Creation Attempt
+
+```javascript
+{
+  "brandAgentId": "agent_adidas_456", 
+  "name": "Adidas Summer Running Campaign",
+  "prompt": "Summer running campaign for active lifestyle enthusiasts. Focus on performance and comfort messaging with engaging creative content.",
+  "budget": {
+    "total": 10000000,  // $100,000
+    "pacing": "accelerated"
+  }
+}
+```
+
+**Response - Validation Failure:**
+```text
+❌ Campaign Creation Failed - Brief Quality Below Threshold
+
+**Score:** 42/100 (Required: 70/100)
+**Quality Level:** Minimal Brief
+
+**Missing Critical Elements:**
+• Geographic targeting not defined - CRITICAL for inventory matching
+• Campaign flight dates not specified - CRITICAL for inventory availability  
+• Creative format requirements not defined - CRITICAL for inventory matching
+• Success metrics not defined
+
+**Suggestions to Improve:**
+• Specify target locations (e.g., 'tier 1 US cities', 'NYC, LA, Chicago metro areas')
+• Include campaign timing (e.g., 'March 1 - April 15, 2025')
+• Define creative formats needed (video specs, display sizes, etc.)
+• Set measurable KPI targets (CTR, impressions, completion rates)
+
+**Options:**
+• Improve the brief based on suggestions above and try again
+• Use campaign_validate_brief tool to check quality before creation
+• Set skipBriefValidation: true to bypass validation (not recommended)
+```
+
+### Step 2: Improved Brief and Retry
+
+```javascript
+{
+  "brandAgentId": "agent_adidas_456",
+  "name": "Adidas Summer Running Campaign", 
+  "prompt": "Summer running campaign targeting active adults 25-45 in warm-weather US markets (California, Texas, Florida, Arizona metro areas). Campaign runs June 1 - August 31, 2025 during peak running season. Objectives: Drive 15% increase in online sales and 12M impressions. Success metrics: 3.2% CTR, 8% conversion rate from clicks. Creative requirements: 15s/30s video for digital/CTV, 320x50 mobile banners, 300x250 display units. Focus on performance and comfort messaging.",
+  "budget": {
+    "total": 10000000,  // $100,000
+    "pacing": "accelerated"
+  },
+  "startDate": "2025-06-01T00:00:00Z",
+  "endDate": "2025-08-31T23:59:59Z"
+}
+```
+
+**Response - Successful Creation:**
+```text
+✅ Campaign Created Successfully!
+
+**Brief Validation Results:**
+• Quality Score: 82/100 ✅
+• Quality Level: Comprehensive Brief
+
+**Campaign Details:**
+• ID: camp_adidas_789
+• Name: Adidas Summer Running Campaign
+• Status: active
+• Created: 2024-12-01 10:30:00
+```
+
+---
+
+## Workflow 3: Premium Campaign with High Standards
+
+**Use Case:** Creating a high-budget campaign that requires exceptional brief quality.
+
+### Step 1: Validation with High Threshold
+
+```javascript
+{
+  "brief": "Launch premium Tesla Model S campaign targeting affluent professionals 35-55 with household income $150k+ in luxury markets (Manhattan, Beverly Hills, Palo Alto, Georgetown). Campaign runs during Q1 2025 earnings season (January 15 - March 31). Objectives: Generate 500 qualified test drive leads and achieve 45% brand consideration lift among luxury car shoppers. Success metrics: 4.5% CTR, 2% lead conversion rate, 60% video completion rate for 30s spots. Creative requirements: Premium 30s/60s video content for CTV/YouTube, high-impact 970x250 display units, native content integration. Budget $500k with sophisticated pacing algorithms and premium inventory prioritization.",
+  "threshold": 85,  // Higher standard for premium campaign
+  "brandAgentId": "agent_tesla_premium"
+}
+```
+
+**Response - Exceeds High Standards:**
+```json
+{
+  "score": 92,
+  "meetsThreshold": true,
+  "qualityLevel": "Comprehensive Brief",
+  "feedback": "Exceptional brief quality with comprehensive targeting, clear premium positioning, and detailed specifications that enable optimal inventory matching for luxury automotive campaigns.",
+  "suggestions": [
+    "Consider adding competitive exclusion requirements for adjacent automotive ads",
+    "Specify premium publisher whitelist for brand alignment"
+  ]
+}
+```
+
+### Step 2: Premium Campaign Creation
+
+```javascript
+{
+  "brandAgentId": "agent_tesla_premium",
+  "name": "Tesla Model S Q1 Premium Campaign",
+  "prompt": "Launch premium Tesla Model S campaign targeting affluent professionals 35-55...",
+  "budget": {
+    "total": 50000000,  // $500,000
+    "currency": "USD",
+    "dailyCap": 2500000,  // $25,000/day
+    "pacing": "front_loaded"  // Aggressive early delivery
+  },
+  "startDate": "2025-01-15T00:00:00Z",
+  "endDate": "2025-03-31T23:59:59Z",
+  "skipBriefValidation": true,  // Pre-validated at high threshold
+  "creativeIds": ["creative_tesla_premium_video", "creative_tesla_display"]
+}
+```
+
+---
+
+## Workflow 4: Rapid Campaign Development
+
+**Use Case:** Multiple campaigns need to be created quickly with consistent quality standards.
+
+### Step 1: Validate Multiple Brief Variations
+
+```javascript
+// Validate Campaign A
+{
+  "brief": "Back-to-school Apple iPad campaign for students 16-24 and parents 35-50 in college towns nationwide. August 1 - September 15, 2025. Target 18M impressions with 2.1% CTR. Use 15s video and 300x250 banners emphasizing productivity.",
+  "threshold": 70
+}
+
+// Validate Campaign B  
+{
+  "brief": "Holiday Apple AirPods campaign targeting music lovers 18-35 in major US cities. November 15 - December 24, 2025. Target 25M impressions with 2.8% CTR. Use 30s video and native content for discovery.",
+  "threshold": 70
+}
+```
+
+### Step 2: Batch Campaign Creation
+
+```javascript
+// Create Campaign A (validated separately)
+{
+  "brandAgentId": "agent_apple_education",
+  "name": "iPad Back-to-School 2025",
+  "prompt": "Back-to-school Apple iPad campaign for students 16-24...",
+  "skipBriefValidation": true
+}
+
+// Create Campaign B (validated separately)
+{
+  "brandAgentId": "agent_apple_consumer", 
+  "name": "AirPods Holiday 2025",
+  "prompt": "Holiday Apple AirPods campaign targeting music lovers...",
+  "skipBriefValidation": true
+}
+```
+
+---
+
+## Workflow 5: Handling Edge Cases
+
+### Low-Quality Brief with Business Override
+
+Sometimes business requirements necessitate launching with incomplete briefs:
+
+```javascript
+{
+  "brandAgentId": "agent_startup_123",
+  "name": "Emergency Brand Response Campaign",
+  "prompt": "Urgent campaign to address recent market developments. Target broad audience with flexible messaging. Launch ASAP.",
+  "budget": { "total": 500000 },  // $5,000 emergency budget
+  "skipBriefValidation": true  // Override quality gate for urgency
+}
+```
+
+<Warning>
+**Business Risk**: Campaigns with incomplete briefs may struggle to find appropriate inventory or achieve desired outcomes. Use this override judiciously and plan to iterate quickly based on early performance data.
+</Warning>
+
+### Testing Brief Quality Improvements
+
+```javascript
+// Test different threshold levels to understand brief quality
+{
+  "brief": "Your campaign brief content here...",
+  "threshold": 50  // Lower threshold to understand baseline quality
+}
+
+// Then test with standard threshold
+{
+  "brief": "Same brief content...",
+  "threshold": 70  // Standard threshold
+}
+
+// Finally test with premium threshold
+{
+  "brief": "Same brief content...",
+  "threshold": 85  // Premium threshold
+}
+```
+
+## Best Practices Summary
+
+<CardGroup cols={2}>
+  <Card title="Validate First" icon="magnifying-glass">
+    Always use `campaign_validate_brief` before `campaign_create` for iterative improvement
+  </Card>
+  
+  <Card title="Skip Duplicate Validation" icon="forward">
+    Use `skipBriefValidation: true` when creating after separate validation
+  </Card>
+  
+  <Card title="Address Critical Elements" icon="exclamation-triangle">
+    Focus on geo targeting, flight dates, and creative specs first
+  </Card>
+  
+  <Card title="Set Appropriate Thresholds" icon="target">
+    Use higher thresholds (80-85) for premium campaigns, standard (70) for most cases
+  </Card>
+</CardGroup>
+
+## Common Pitfalls to Avoid
+
+<Warning>
+**❌ Don't Do This**
+
+- Creating campaigns without validating briefs first
+- Using generic descriptions like "young people" or "major markets"  
+- Omitting flight dates or geographic targeting
+- Forgetting creative format specifications
+- Setting unrealistic quality thresholds that block all campaigns
+</Warning>
+
+<Tip>
+**✅ Do This Instead**
+
+- Validate briefs iteratively and improve based on AI feedback
+- Use specific, measurable language for all requirements
+- Always include the 6 critical elements publishers need
+- Test different threshold levels to find the right balance
+- Skip validation on pre-validated briefs to save resources
+</Tip>
+
+## Next Steps
+
+<CardGroup cols={1}>
+  <Card title="Campaign Creation Guide" icon="plus" href="/object-guides/campaigns/create">
+    Learn comprehensive campaign creation with validation
+  </Card>
+  
+  <Card title="Brief Quality Standards" icon="clipboard-check" href="/features/brief-validation">
+    Understand detailed validation criteria and scoring
+  </Card>
+  
+  <Card title="Brand Agent Setup" icon="building" href="/object-guides/brand-agent">
+    Set up brand agents to organize campaign resources
+  </Card>
+</CardGroup>
