@@ -4,9 +4,9 @@ import type { SupportedAuthConfig } from "./types.js";
 import {
   BearerAuthHandler,
   CustomHeaderAuthHandler,
-  OAuthHandler,
   LegacyOAuthHandler,
   ManualOAuthHandler,
+  OAuthHandler,
 } from "./simple-auth-handlers.js";
 import { YahooJWTHandler } from "./yahoo-jwt-handler.js";
 
@@ -14,18 +14,9 @@ import { YahooJWTHandler } from "./yahoo-jwt-handler.js";
  * Factory for creating authentication handlers based on auth type
  */
 export class AuthHandlerFactory {
+  private static datasetId?: string;
   private static handlers = new Map<string, AuthHandler>();
   private static projectId?: string;
-  private static datasetId?: string;
-
-  /**
-   * Initialize factory with BigQuery configuration
-   * Required for OAuth handlers that need to store client registrations
-   */
-  static initialize(projectId: string, datasetId: string): void {
-    this.projectId = projectId;
-    this.datasetId = datasetId;
-  }
 
   /**
    * Clear all cached handlers (for testing)
@@ -78,10 +69,10 @@ export class AuthHandlerFactory {
 
       case "oauth_manual":
         return {
-          tokenEndpoint: config.tokenEndpoint as string,
           clientId: config.clientId as string,
           clientSecret: config.clientSecret as string,
           scope: config.scope as string | undefined,
+          tokenEndpoint: config.tokenEndpoint as string,
           type: "oauth_manual",
         };
 
@@ -136,7 +127,7 @@ export class AuthHandlerFactory {
         if (!this.projectId || !this.datasetId) {
           throw new Error(
             "AuthHandlerFactory must be initialized with projectId and datasetId before creating OAuth handlers. " +
-            "Call AuthHandlerFactory.initialize(projectId, datasetId) first."
+              "Call AuthHandlerFactory.initialize(projectId, datasetId) first.",
           );
         }
         handler = new OAuthHandler(this.projectId, this.datasetId);
@@ -168,7 +159,23 @@ export class AuthHandlerFactory {
    * Get supported auth types
    */
   static getSupportedTypes(): string[] {
-    return ["bearer", "custom_header", "oauth", "oauth_legacy", "oauth_manual", "yahoo"];
+    return [
+      "bearer",
+      "custom_header",
+      "oauth",
+      "oauth_legacy",
+      "oauth_manual",
+      "yahoo",
+    ];
+  }
+
+  /**
+   * Initialize factory with BigQuery configuration
+   * Required for OAuth handlers that need to store client registrations
+   */
+  static initialize(projectId: string, datasetId: string): void {
+    this.projectId = projectId;
+    this.datasetId = datasetId;
   }
 
   /**
@@ -219,7 +226,7 @@ export class AuthHandlerFactory {
         if (!authConfig.issuer || typeof authConfig.issuer !== "string") {
           throw new Error("OAuth auth config must include 'issuer' field");
         }
-        
+
         // Validate issuer is a valid HTTPS URL
         try {
           const url = new URL(authConfig.issuer);
@@ -238,10 +245,17 @@ export class AuthHandlerFactory {
       }
 
       case "oauth_legacy": {
-        const requiredFields = ["clientId", "clientSecret", "refreshToken", "tokenEndpoint"];
+        const requiredFields = [
+          "clientId",
+          "clientSecret",
+          "refreshToken",
+          "tokenEndpoint",
+        ];
         for (const field of requiredFields) {
           if (!authConfig[field] || typeof authConfig[field] !== "string") {
-            throw new Error(`Legacy OAuth auth config must include '${field}' field`);
+            throw new Error(
+              `Legacy OAuth auth config must include '${field}' field`,
+            );
           }
         }
         break;
@@ -251,20 +265,22 @@ export class AuthHandlerFactory {
         const requiredFields = ["tokenEndpoint", "clientId", "clientSecret"];
         for (const field of requiredFields) {
           if (!authConfig[field] || typeof authConfig[field] !== "string") {
-            throw new Error(`Manual OAuth auth config must include '${field}' field`);
+            throw new Error(
+              `Manual OAuth auth config must include '${field}' field`,
+            );
           }
         }
-        
+
         // Validate tokenEndpoint is a valid HTTPS URL
         try {
-          const url = new URL(authConfig.tokenEndpoint);
+          const url = new URL(authConfig.tokenEndpoint as string);
           if (url.protocol !== "https:") {
             throw new Error("OAuth token endpoint must use HTTPS");
           }
         } catch {
           throw new Error("OAuth token endpoint must be a valid HTTPS URL");
         }
-        
+
         // Scope is optional but must be string if provided
         if (authConfig.scope && typeof authConfig.scope !== "string") {
           throw new Error("OAuth scope must be a string if provided");

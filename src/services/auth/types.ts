@@ -18,16 +18,6 @@ export interface CustomHeaderConfig extends AuthConfig {
 }
 
 /**
- * OAuth authentication configuration (RFC 8414 Discovery + RFC 7591 Dynamic Registration)
- * Uses OAuth issuer domain for automatic discovery and client registration
- */
-export interface OAuthConfig extends AuthConfig {
-  issuer: string;           // OAuth issuer domain (e.g., "https://publisher.com")
-  scope?: string;           // Optional requested scopes (e.g., "adcp.read adcp.write")
-  type: "oauth";
-}
-
-/**
  * Legacy OAuth configuration (deprecated)
  * @deprecated Use OAuthConfig with issuer-based discovery instead
  */
@@ -44,11 +34,21 @@ export interface LegacyOAuthConfig extends AuthConfig {
  * Use this when automatic discovery via .well-known endpoints fails
  */
 export interface ManualOAuthConfig extends AuthConfig {
-  tokenEndpoint: string;    // Direct token endpoint URL
-  clientId: string;         // Pre-registered client ID
-  clientSecret: string;     // Pre-registered client secret
-  scope?: string;          // Optional requested scopes
+  clientId: string; // Pre-registered client ID
+  clientSecret: string; // Pre-registered client secret
+  scope?: string; // Optional requested scopes
+  tokenEndpoint: string; // Direct token endpoint URL
   type: "oauth_manual";
+}
+
+/**
+ * OAuth authentication configuration (RFC 8414 Discovery + RFC 7591 Dynamic Registration)
+ * Uses OAuth issuer domain for automatic discovery and client registration
+ */
+export interface OAuthConfig extends AuthConfig {
+  issuer: string; // OAuth issuer domain (e.g., "https://publisher.com")
+  scope?: string; // Optional requested scopes (e.g., "adcp.read adcp.write")
+  type: "oauth";
 }
 
 /**
@@ -57,9 +57,9 @@ export interface ManualOAuthConfig extends AuthConfig {
 export type SupportedAuthConfig =
   | BearerConfig
   | CustomHeaderConfig
-  | OAuthConfig
   | LegacyOAuthConfig
   | ManualOAuthConfig
+  | OAuthConfig
   | YahooJWTConfig;
 
 /**
