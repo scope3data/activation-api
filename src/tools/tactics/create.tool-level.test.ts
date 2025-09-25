@@ -71,11 +71,19 @@ describe("create_tactic Tool", () => {
 
   describe("Authentication", () => {
     it("should require authentication", async () => {
+      // Remove API key from context and environment
+      mockContext.session = undefined;
+      delete process.env.SCOPE3_API_KEY;
+      
       await expect(
         createTactic.execute(
           {
             brandStoryId: "story_123",
-            budgetAllocation: { amount: 1000 },
+            budgetAllocation: { 
+              amount: 1000,
+              currency: "USD",
+              pacing: "even"
+            },
             campaignId: "campaign_123",
             cpm: 5.0,
             mediaProductId: "media_123",
@@ -125,7 +133,11 @@ describe("create_tactic Tool", () => {
       const result = await createTactic.execute(
         {
           brandStoryId: "story_123",
-          budgetAllocation: { amount: 1000 },
+          budgetAllocation: { 
+            amount: 1000,
+            currency: "USD",
+            pacing: "even"
+          },
           campaignId: "campaign_123",
           cpm: 5.0,
           mediaProductId: "media_123",
@@ -142,6 +154,8 @@ describe("create_tactic Tool", () => {
     });
 
     it("should accept API key from environment", async () => {
+      // Clear any session API key to ensure environment variable is used
+      mockContext.session = undefined;
       process.env.SCOPE3_API_KEY = "env_api_key";
 
       const mockTactic: Tactic = {
@@ -177,7 +191,11 @@ describe("create_tactic Tool", () => {
       const result = await createTactic.execute(
         {
           brandStoryId: "story_123",
-          budgetAllocation: { amount: 1000 },
+          budgetAllocation: { 
+            amount: 1000,
+            currency: "USD",
+            pacing: "even"
+          },
           campaignId: "campaign_123",
           cpm: 5.0,
           mediaProductId: "media_123",
@@ -199,7 +217,11 @@ describe("create_tactic Tool", () => {
   describe("Tactic Creation", () => {
     const _validArgs = {
       brandStoryId: "story_123",
-      budgetAllocation: { amount: 1000 },
+      budgetAllocation: { 
+        amount: 1000,
+        currency: "USD",
+        pacing: "even"
+      },
       campaignId: "campaign_123",
       cpm: 5.0,
       mediaProductId: "media_123",
@@ -248,7 +270,11 @@ describe("create_tactic Tool", () => {
       const result = await createTactic.execute(
         {
           brandStoryId: "story_123",
-          budgetAllocation: { amount: 1000 },
+          budgetAllocation: { 
+            amount: 1000,
+            currency: "USD",
+            pacing: "even"
+          },
           campaignId: "campaign_123",
           cpm: 5.0,
           mediaProductId: "media_123",
@@ -284,7 +310,7 @@ describe("create_tactic Tool", () => {
           amount: 5000,
           currency: "EUR",
           dailyCap: 500,
-          pacing: "accelerated" as const,
+          pacing: "asap" as const,
           percentage: 25,
         },
         campaignId: "campaign_456",
@@ -306,7 +332,7 @@ describe("create_tactic Tool", () => {
             amount: 5000,
             currency: "EUR",
             dailyCap: 500,
-            pacing: "accelerated",
+            pacing: "asap",
             percentage: 25,
           }),
           description: "Comprehensive tactic with all features",
@@ -320,7 +346,11 @@ describe("create_tactic Tool", () => {
   describe("BigQuery Integration", () => {
     const validArgs = {
       brandStoryId: "story_123",
-      budgetAllocation: { amount: 1000 },
+      budgetAllocation: { 
+        amount: 1000,
+        currency: "USD",
+        pacing: "even"
+      },
       campaignId: "campaign_123",
       cpm: 5.0,
       mediaProductId: "media_123",
