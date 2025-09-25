@@ -64,12 +64,8 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
       const creativeSyncService = new CreativeSyncService(authService);
       const notificationService = new NotificationService(authService);
 
-      // Validate API key to get customer info
-      const authResult = await client.validateApiKey(apiKey);
-      if (!authResult.isValid) {
-        throw new Error("Invalid API key");
-      }
-      const customerId = authResult.customerId!;
+      // Get customer info from auth service
+      const customerId = await authService.getCustomerIdFromToken(apiKey);
 
       // For now, use the basic method with brandAgentId
       const campaigns = await client.listBrandAgentCampaigns(
