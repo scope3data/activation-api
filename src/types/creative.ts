@@ -227,15 +227,34 @@ export interface Creative {
     rejectionReason?: string;
     requestedChanges?: string[];
   }>;
-  
+
   // Summary of sync status for quick overview
   syncStatusSummary?: {
-    totalRelevantAgents: number;  // Agents that can handle this format
+    totalRelevantAgents: number; // Agents that can handle this format
     synced: number;
-    approved: number; 
+    approved: number;
     rejected: number;
     pending: number;
   };
+
+  // Publisher approval tracking
+  publisherApprovals?: Array<{
+    publisherId: string;
+    publisherName?: string;
+    status: "approved" | "rejected" | "pending" | "changes_requested";
+    approvalStatus:
+      | "approved"
+      | "rejected"
+      | "pending"
+      | "changes_requested"
+      | "auto_approved";
+    feedback?: string;
+    rejectionReason?: string;
+    requestedChanges?: string[];
+    approvedAt?: string;
+    reviewedBy?: string;
+  }>;
+
   // Status and lifecycle
   status:
     | "active"

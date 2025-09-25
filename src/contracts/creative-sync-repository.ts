@@ -3,8 +3,6 @@
 
 import type {
   CreativeSyncStatus,
-  SalesAgentCapabilities,
-  NotificationEventType,
 } from "../types/notifications.js";
 
 /**
@@ -20,15 +18,24 @@ export interface CreativeSyncRepository {
     salesAgentId: string,
     brandAgentId: number,
     updates: {
-      syncStatus?: "pending" | "syncing" | "synced" | "failed" | "not_applicable";
-      approvalStatus?: "pending" | "approved" | "rejected" | "changes_requested";
+      syncStatus?:
+        | "pending"
+        | "syncing"
+        | "synced"
+        | "failed"
+        | "not_applicable";
+      approvalStatus?:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "changes_requested";
       syncError?: string | null;
       lastSyncAttempt?: string;
       rejectionReason?: string;
       requestedChanges?: string[];
       tacticContext?: string;
       campaignContext?: string;
-    }
+    },
   ): Promise<void>;
 
   /**
@@ -39,7 +46,9 @@ export interface CreativeSyncRepository {
   /**
    * Get sync status for multiple creatives (batch operation)
    */
-  getBatchCreativeSyncStatus(creativeIds: string[]): Promise<Record<string, CreativeSyncStatus[]>>;
+  getBatchCreativeSyncStatus(
+    creativeIds: string[],
+  ): Promise<Record<string, CreativeSyncStatus[]>>;
 
   /**
    * Find recent sales agents used by a brand agent with matching format
@@ -51,25 +60,29 @@ export interface CreativeSyncRepository {
       daysBack: number;
       includeActive: boolean;
       limit?: number;
-    }
+    },
   ): Promise<string[]>;
 
   /**
    * Get sales agent capabilities for format matching
    */
-  getSalesAgentCapabilities(salesAgentId: string): Promise<SalesAgentCapabilities | null>;
+  getSalesAgentCapabilities(
+    salesAgentId: string,
+  ): Promise<SalesAgentCapabilities | null>;
 
   /**
    * Batch get sales agent capabilities
    */
-  getBatchSalesAgentCapabilities(salesAgentIds: string[]): Promise<Record<string, SalesAgentCapabilities>>;
+  getBatchSalesAgentCapabilities(
+    salesAgentIds: string[],
+  ): Promise<Record<string, SalesAgentCapabilities>>;
 
   /**
    * Check if a creative format is compatible with a sales agent
    */
   isFormatCompatible(
     creativeFormat: string,
-    salesAgentId: string
+    salesAgentId: string,
   ): Promise<boolean>;
 
   /**
@@ -83,25 +96,31 @@ export interface CreativeSyncRepository {
         start: string;
         end: string;
       };
-    }
+    },
   ): Promise<{
     totalCreatives: number;
     syncedCreatives: number;
     approvedCreatives: number;
     rejectedCreatives: number;
     failedSyncs: number;
-    byFormat: Record<string, {
-      total: number;
-      synced: number;
-      approved: number;
-      rejected: number;
-    }>;
-    bySalesAgent: Record<string, {
-      name: string;
-      synced: number;
-      approved: number;
-      rejected: number;
-    }>;
+    byFormat: Record<
+      string,
+      {
+        total: number;
+        synced: number;
+        approved: number;
+        rejected: number;
+      }
+    >;
+    bySalesAgent: Record<
+      string,
+      {
+        name: string;
+        synced: number;
+        approved: number;
+        rejected: number;
+      }
+    >;
   }>;
 
   /**

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BigQuery } from "@google-cloud/bigquery";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
@@ -79,33 +80,43 @@ export const creativeUpdateTool = (client: Scope3ApiClient) => ({
       // Trigger automatic re-sync if content was updated
       if (args.updates.content) {
         try {
-          const authService = new AuthenticationService();
+          const authService = new AuthenticationService(new BigQuery());
           const creativeSyncService = new CreativeSyncService(authService);
           const notificationService = new NotificationService(authService);
           creativeSyncService.setNotificationService(notificationService);
 
           // Get current sync status to find previously synced sales agents
-          const syncStatus = await creativeSyncService.getCreativeSyncStatus(args.creativeId);
+          const syncStatus = await creativeSyncService.getCreativeSyncStatus(
+            args.creativeId,
+          );
           if (syncStatus.length > 0) {
             const previouslySyncedAgents = syncStatus
-              .filter(s => s.status === "synced")
-              .map(s => s.salesAgentId);
-            
+              .filter((s) => s.status === "synced")
+              .map((s) => s.salesAgentId);
+
             if (previouslySyncedAgents.length > 0) {
               // Re-sync to previously synced agents in background
-              creativeSyncService.syncCreativeToSalesAgents(
-                args.creativeId,
-                previouslySyncedAgents,
-                {
-                  triggeredBy: "creative_update",
-                }
-              ).catch((syncError) => {
-                console.warn(`Background re-sync failed for updated creative ${args.creativeId}:`, syncError);
-              });
+              creativeSyncService
+                .syncCreativeToSalesAgents(
+                  args.creativeId,
+                  previouslySyncedAgents,
+                  {
+                    triggeredBy: "creative_update",
+                  },
+                )
+                .catch((syncError) => {
+                  console.warn(
+                    `Background re-sync failed for updated creative ${args.creativeId}:`,
+                    syncError,
+                  );
+                });
             }
           }
         } catch (syncError) {
-          console.warn('Failed to initialize re-sync for creative update:', syncError);
+          console.warn(
+            "Failed to initialize re-sync for creative update:",
+            syncError,
+          );
           // Don't fail the update if sync setup fails
         }
       }
@@ -188,11 +199,15 @@ ${statusIcon} ${assignment.campaignName} (${assignment.campaignId})`;
 • Version bumped automatically (safe for active campaigns)
 • Campaign assignments preserved across update
 
-${args.updates.content ? `
+${
+  args.updates.content
+    ? `
 🔄 **Automatic Re-Sync in Progress:**
 • Creative content was updated - re-syncing to previously synced sales agents
 • Sales agents will receive the updated creative for re-approval
-• You'll receive notifications if any re-sync issues occur` : ""}
+• You'll receive notifications if any re-sync issues occur`
+    : ""
+}
 • Changes processed through appropriate ${updatedCreative.format.type} provider`;
 
       return createMCPResponse({

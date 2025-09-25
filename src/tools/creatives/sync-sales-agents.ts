@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BigQuery } from "@google-cloud/bigquery";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
@@ -9,44 +10,66 @@ import { AuthenticationService } from "../../services/auth-service.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 /**
- * Sync creative to sales agents with smart format matching and recent history
- * Enhanced version with intelligent defaults and simplified workflow
+ * Schema for sync sales agents tool parameters
  */
+const SyncSalesAgentsSchema = z.object({
+  creativeId: z.string().min(1, "Creative ID is required"),
+
+  autoDetect: z
+    .object({
+      daysBack: z
+        .number()
+        .min(1)
+        .max(90)
+        .optional()
+        .describe("Look at tactics from past N days (default: 30)"),
+      includeActive: z
+        .boolean()
+        .optional()
+        .describe("Include agents from active campaigns (default: true)"),
+    })
+    .optional()
+    .describe("Smart auto-detection settings (default behavior)"),
+
+  salesAgentIds: z
+    .array(z.string())
+    .optional()
+    .describe("Explicitly specify sales agent IDs (overrides auto-detection)"),
+
+  campaignId: z
+    .string()
+    .optional()
+    .describe("Sync to sales agents used by this campaign's tactics only"),
+
+  preApproval: z
+    .boolean()
+    .optional()
+    .describe("Request pre-approval before campaign launch (default: false)"),
+});
+
 export const creativeSyncSalesAgentsTool = (client: Scope3ApiClient) => ({
   annotations: {
-    category: "Creatives",
-    dangerLevel: "medium", 
+    category: "Creative Assets",
+    dangerLevel: "medium",
     openWorldHint: true,
     readOnlyHint: false,
     title: "Sync Creative to Sales Agents",
   },
 
   description:
-    "Sync a creative to sales agents with smart defaults. Auto-detects relevant sales agents based on creative format and recent brand agent history (past 30 days). Supports manual override for specific agents or campaigns.",
+    "Sync a creative to sales agents using smart auto-detection or manual specification. Features intelligent format matching (video creatives only sync to video-capable agents) and recent activity analysis (30-60 day lookback). Provides detailed sync status and actionable next steps. Requires authentication.",
 
   execute: async (
-    args: {
-      creativeId: string;
-      // Smart auto-detection (default behavior)
-      autoDetect?: {
-        daysBack?: number;        // Look at tactics from past N days (default: 30)
-        includeActive?: boolean;  // Include agents from active campaigns (default: true)
-      };
-      // Manual override options
-      salesAgentIds?: string[];   // Explicitly specify which agents
-      campaignId?: string;        // Sync to agents used by this campaign's tactics only
-      // Pre-sync option
-      preApproval?: boolean;      // Request pre-approval before campaign launch
-    },
+    args: unknown,
     context: MCPToolExecuteContext,
   ): Promise<string> => {
+    const validatedArgs = SyncSalesAgentsSchema.parse(args);
+
     // Check authentication
     let apiKey = context.session?.scope3ApiKey;
-
     if (!apiKey) {
       apiKey = process.env.SCOPE3_API_KEY;
     }
-
     if (!apiKey) {
       throw new Error(
         "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
@@ -55,106 +78,121 @@ export const creativeSyncSalesAgentsTool = (client: Scope3ApiClient) => ({
 
     try {
       // Initialize services
-      const authService = new AuthenticationService();
+      const authService = new AuthenticationService(new BigQuery());
+      await authService.validateApiKey(apiKey);
+
       const creativeSyncService = new CreativeSyncService(authService);
       const notificationService = new NotificationService(authService);
       creativeSyncService.setNotificationService(notificationService);
 
-      // Validate API key and get customer info
-      const authResult = await authService.validateApiKey(apiKey);
-      if (!authResult.isValid) {
-        throw new Error("Invalid API key");
-      }
-
-      const customerId = authResult.customerId!;
-
-      // Get creative info for brand agent ID
-      const creative = await client.getCreative(apiKey, args.creativeId);
+      // Get creative info
+      const creative = await client.getCreative(
+        apiKey,
+        validatedArgs.creativeId,
+      );
       if (!creative) {
-        throw new Error(`Creative ${args.creativeId} not found`);
+        throw new Error(`Creative ${validatedArgs.creativeId} not found`);
       }
 
-      let salesAgentIds: string[] = [];
-      let syncMethod = "unknown";
+      // Determine sales agents to sync to
+      let salesAgentIds: string[];
+      let syncMethod = "auto_detect_30days";
 
-      if (args.salesAgentIds && args.salesAgentIds.length > 0) {
-        // Manual override: use specified agents
-        salesAgentIds = args.salesAgentIds;
+      if (validatedArgs.salesAgentIds) {
+        salesAgentIds = validatedArgs.salesAgentIds;
         syncMethod = "manual_override";
-      } else if (args.campaignId) {
+      } else if (validatedArgs.campaignId) {
         // Campaign-specific: get agents from campaign tactics
-        const campaign = await client.getCampaign(apiKey, args.campaignId);
+        const campaign = await client.getCampaign(
+          apiKey,
+          validatedArgs.campaignId,
+        );
         if (!campaign) {
-          throw new Error(`Campaign ${args.campaignId} not found`);
+          throw new Error(`Campaign ${validatedArgs.campaignId} not found`);
         }
-        
+
         // TODO: Get tactics from campaign and extract sales agent IDs
         // For now, use auto-detection as fallback
         salesAgentIds = await creativeSyncService.determineRelevantSalesAgents(
-          args.creativeId,
+          validatedArgs.creativeId,
           parseInt(creative.buyerAgentId),
-          args.autoDetect || {}
+          validatedArgs.autoDetect || {},
         );
         syncMethod = "campaign_tactics";
       } else {
-        // Smart auto-detection (default behavior)
-        const autoDetectOptions = args.autoDetect || {};
+        // Auto-detection mode
         salesAgentIds = await creativeSyncService.determineRelevantSalesAgents(
-          args.creativeId,
-          parseInt(creative.buyerAgentId), 
-          autoDetectOptions
+          validatedArgs.creativeId,
+          parseInt(creative.buyerAgentId),
+          validatedArgs.autoDetect || {},
         );
-        syncMethod = `auto_detect_${autoDetectOptions.daysBack || 30}days`;
+
+        const daysBack = validatedArgs.autoDetect?.daysBack || 30;
+        syncMethod = `auto_detect_${daysBack}days`;
       }
 
       if (salesAgentIds.length === 0) {
         return createMCPResponse({
           data: {
-            creativeId: args.creativeId,
-            method: syncMethod,
-            salesAgentsFound: 0,
-            recommendation: "No compatible sales agents found in recent activity",
+            creative: {
+              id: creative.creativeId,
+              name: creative.creativeName,
+              format: creative.format?.formatId,
+            },
+            salesAgents: [],
+            syncResults: { success: [], failed: [] },
+            smartSync: { method: syncMethod, agentsFound: 0 },
           },
-          message: `🔍 **No Sales Agents Found**
+          message: `🔍 **No Relevant Sales Agents Found**
 
-📦 **Creative**: ${creative.creativeName} (${args.creativeId})
-🎯 **Format**: ${creative.format?.formatId || "Unknown"}
-📅 **Search Method**: ${syncMethod}
+📦 **Creative**: ${creative.creativeName} (${validatedArgs.creativeId})
+🎯 **Format**: ${creative.format?.formatId || "unknown"}
 
-⚠️ **No compatible sales agents found** in recent activity.
+**Why no agents were found:**
+• No recent activity in the last ${validatedArgs.autoDetect?.daysBack || 30} days
+• No format-compatible sales agents available  
+• Try manually specifying \`salesAgentIds\` or expanding \`daysBack\`
 
-💡 **Suggestions:**
-• Check if this brand agent has created any tactics recently
-• Try manual sync with specific sales agent IDs: \`salesAgentIds: ["agent_id"]\`
-• Ensure creative format is supported by target sales agents
-• Consider creating tactics first to establish sales agent relationships`,
+**Next Steps:**
+• Use \`salesAgentIds: ["agent1", "agent2"]\` to manually specify agents
+• Increase \`daysBack\` to 60-90 days for broader search
+• Check if sales agents support this creative format`,
           success: true,
         });
       }
 
-      // Execute sync operation
+      // Perform the sync
       const syncResults = await creativeSyncService.syncCreativeToSalesAgents(
-        args.creativeId,
+        validatedArgs.creativeId,
         salesAgentIds,
         {
-          campaignId: args.campaignId,
+          campaignId: validatedArgs.campaignId,
           triggeredBy: "manual",
-        }
+        },
       );
 
-      // Get updated sync status
-      const syncStatus = await creativeSyncService.getCreativeSyncStatus(args.creativeId);
-      const currentStatus = syncStatus.filter(s => 
-        salesAgentIds.includes(s.salesAgentId)
+      // Get detailed status for response
+      const syncStatus = await creativeSyncService.getCreativeSyncStatus(
+        validatedArgs.creativeId,
       );
 
-      // Create human-readable response
-      let response = `🔄 **Creative Sales Agent Sync Results**
+      // Categorize results for display
+      const approved = syncStatus.filter(
+        (s) => s.approvalStatus === "approved",
+      );
+      const pending = syncStatus.filter(
+        (s) => s.approvalStatus === "pending" && s.status === "synced",
+      );
+      const failed = syncStatus.filter((s) => s.status === "failed");
+      const synced = syncStatus.filter((s) => s.status === "synced");
 
-📦 **Creative**: ${creative.creativeName} (${args.creativeId})
-🎯 **Format**: ${creative.format?.formatId || "Unknown"}  
+      // Build response message
+      let message = `🔄 **Creative Sales Agent Sync Results**
+
+📦 **Creative**: ${creative.creativeName} (${validatedArgs.creativeId})
+🎯 **Format**: ${creative.format?.formatId || "unknown"}  
 📅 **Sync Method**: ${syncMethod}
-${args.preApproval ? "✅ **Pre-Approval Request**" : ""}
+
 
 📊 **Sync Summary**
 • Sales Agents Targeted: ${salesAgentIds.length}
@@ -163,172 +201,103 @@ ${args.preApproval ? "✅ **Pre-Approval Request**" : ""}
 
 ---
 
-## 🏢 **Sales Agent Status**`;
-
-      // Group by status
-      const synced = currentStatus.filter(s => s.status === "synced");
-      const failed = currentStatus.filter(s => s.status === "failed");
-      const pending = currentStatus.filter(s => s.status === "pending");
-
-      if (synced.length > 0) {
-        response += `
+## 🏢 **Sales Agent Status**
 
 ✅ **Successfully Synced** (${synced.length})`;
-        for (const agent of synced) {
-          const approvalEmoji = agent.approvalStatus === "approved" ? "✅" : 
-                               agent.approvalStatus === "rejected" ? "❌" : "⏳";
-          response += `
-• **${agent.salesAgentName}**: ${approvalEmoji} ${agent.approvalStatus || "Pending approval"}`;
-        }
-      }
 
-      if (pending.length > 0) {
-        response += `
-
-⏳ **Sync in Progress** (${pending.length})`;
-        for (const agent of pending) {
-          response += `
-• **${agent.salesAgentName}**: Sync in progress...`;
-        }
-      }
+      synced.forEach((agent) => {
+        const statusIcon =
+          agent.approvalStatus === "approved"
+            ? "✅"
+            : agent.approvalStatus === "rejected"
+              ? "❌"
+              : "⏳";
+        message += `\n• **${agent.salesAgentName}**: ${statusIcon} ${agent.approvalStatus || "synced"}`;
+      });
 
       if (failed.length > 0) {
-        response += `
-
-❌ **Sync Failed** (${failed.length})`;
-        for (const agent of failed) {
-          response += `
-• **${agent.salesAgentName}**: ${agent.rejectionReason || "Sync failed"}`;
-        }
+        message += `\n\n❌ **Sync Failed** (${failed.length})`;
+        failed.forEach((agent) => {
+          message += `\n• **${agent.salesAgentName}**: ${agent.rejectionReason || "Sync failed"}`;
+        });
       }
 
-      // Smart next steps based on results
-      response += `
-
----
+      message += `\n\n---
 
 ## 💡 **Next Steps**`;
 
-      if (synced.length > 0) {
-        const approvedCount = synced.filter(s => s.approvalStatus === "approved").length;
-        const pendingApproval = synced.filter(s => !s.approvalStatus || s.approvalStatus === "pending").length;
-        
-        if (approvedCount > 0) {
-          response += `
-
-**✅ Ready for Campaign Deployment** (${approvedCount} agents)
+      if (approved.length > 0) {
+        message += `\n\n**✅ Ready for Campaign Deployment** (${approved.length} agents)
 • Creative is approved and ready for immediate use
 • Can be assigned to campaigns targeting these sales agents`;
-        }
+      }
 
-        if (pendingApproval > 0) {
-          response += `
-
-**⏳ Awaiting Approval** (${pendingApproval} agents)  
+      if (pending.length > 0) {
+        message += `\n\n**⏳ Awaiting Approval** (${pending.length} agents)  
 • Sales agents will review based on their policies
 • You'll receive notifications when approvals are complete
 • Estimated review time: Within 24 hours`;
-        }
       }
 
       if (failed.length > 0) {
-        response += `
-
-**❌ Address Sync Failures** (${failed.length} agents)
+        message += `\n\n**❌ Address Sync Failures** (${failed.length} agents)
 • Check creative format compatibility with sales agent
 • Verify all required assets are valid and accessible
 • Consider using alternative creative formats
 • Use \`creative/revise\` if changes are needed`;
       }
 
-      // Smart recommendations
-      if (syncMethod.includes("auto_detect")) {
-        response += `
-
-**🎯 Smart Sync Info**
-• Auto-detected agents based on recent ${args.autoDetect?.daysBack || 30}-day activity
+      message += `\n\n**🎯 Smart Sync Info**
+• Auto-detected agents based on recent ${validatedArgs.autoDetect?.daysBack || 30}-day activity
 • Only format-compatible agents were selected
 • Use \`salesAgentIds: []\` to manually override if needed`;
+
+      if (validatedArgs.preApproval) {
+        message += `\n\n**⏰ Pre-Approval Requested**
+• Creative will be reviewed before campaign launch
+• Faster campaign activation when you're ready to go live`;
       }
 
       return createMCPResponse({
         data: {
-          configuration: {
-            creativeId: args.creativeId,
-            campaignId: args.campaignId,
-            syncMethod,
-            autoDetectOptions: args.autoDetect,
-            preApproval: args.preApproval || false,
-            syncDate: new Date().toISOString(),
+          creative: {
+            id: creative.creativeId,
+            name: creative.creativeName,
+            format: creative.format?.formatId,
           },
-          metadata: {
-            action: "sync-sales-agents",
-            creativeType: "creative", 
-            readyForCampaigns: synced.filter(s => s.approvalStatus === "approved").length > 0,
-            requiresFollowUp: failed.length > 0 || synced.filter(s => !s.approvalStatus || s.approvalStatus === "pending").length > 0,
-          },
-          salesAgentBreakdown: {
-            synced: synced.map(s => ({
-              salesAgentId: s.salesAgentId,
-              salesAgentName: s.salesAgentName,
-              approvalStatus: s.approvalStatus,
-            })),
-            failed: failed.map(s => ({
-              salesAgentId: s.salesAgentId,
-              salesAgentName: s.salesAgentName, 
-              error: s.rejectionReason,
-            })),
-            pending: pending.map(s => ({
-              salesAgentId: s.salesAgentId,
-              salesAgentName: s.salesAgentName,
-            })),
-          },
-          summary: {
-            salesAgentsTargeted: salesAgentIds.length,
-            successfulSyncs: syncResults.success.length,
-            failedSyncs: syncResults.failed.length,
-            approved: synced.filter(s => s.approvalStatus === "approved").length,
-            pendingApproval: synced.filter(s => !s.approvalStatus || s.approvalStatus === "pending").length,
-            rejected: synced.filter(s => s.approvalStatus === "rejected").length,
-          },
+          salesAgents: syncStatus.map((agent) => ({
+            id: agent.salesAgentId,
+            name: agent.salesAgentName,
+            status: agent.status,
+            approvalStatus: agent.approvalStatus,
+            lastSyncAttempt: agent.lastSyncAttempt,
+          })),
+          syncResults,
           smartSync: {
             method: syncMethod,
-            formatMatching: true,
-            historicalAnalysis: syncMethod.includes("auto_detect"),
-            daysAnalyzed: args.autoDetect?.daysBack || 30,
+            agentsFound: salesAgentIds.length,
+            agentsTargeted: salesAgentIds,
           },
-          syncStatus: currentStatus,
+          nextSteps: {
+            readyForDeployment: approved.length,
+            awaitingApproval: pending.length,
+            needsAttention: failed.length,
+          },
         },
-        message: response,
+        message,
         success: true,
       });
     } catch (error) {
+      if (error instanceof Error && error.message.includes("not found")) {
+        throw error; // Re-throw "not found" errors as-is for better UX
+      }
+
       throw new Error(
         `Failed to sync creative to sales agents: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   },
 
+  inputSchema: SyncSalesAgentsSchema,
   name: "creative_sync_sales_agents",
-
-  parameters: z.object({
-    creativeId: z.string().describe("ID of the creative to sync"),
-    
-    autoDetect: z.object({
-      daysBack: z.number().min(1).max(90).optional()
-        .describe("Look at tactics from past N days (default: 30)"),
-      includeActive: z.boolean().optional()
-        .describe("Include agents from active campaigns (default: true)"),
-    }).optional()
-      .describe("Smart auto-detection settings (default behavior)"),
-    
-    salesAgentIds: z.array(z.string()).optional()
-      .describe("Explicitly specify sales agent IDs (overrides auto-detection)"),
-      
-    campaignId: z.string().optional()
-      .describe("Sync to sales agents used by this campaign's tactics only"),
-      
-    preApproval: z.boolean().optional()
-      .describe("Request pre-approval before campaign launch (default: false)"),
-  }),
 });

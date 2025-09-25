@@ -18,9 +18,18 @@ vi.mock("../../services/tactic-bigquery-service.js", () => ({
 }));
 
 // Mock the sync services
-vi.mock("../../services/creative-sync-service.js");
-vi.mock("../../services/notification-service.js");
-vi.mock("../../services/auth-service.js");
+vi.mock("../../services/creative-sync-service.js", () => ({
+  CreativeSyncService: vi.fn().mockImplementation(() => ({
+    onTacticCreated: vi.fn().mockResolvedValue(undefined),
+    setNotificationService: vi.fn(),
+  })),
+}));
+vi.mock("../../services/notification-service.js", () => ({
+  NotificationService: vi.fn().mockImplementation(() => ({})),
+}));
+vi.mock("../../services/auth-service.js", () => ({
+  AuthenticationService: vi.fn().mockImplementation(() => ({})),
+}));
 
 import { TacticBigQueryService } from "../../services/tactic-bigquery-service.js";
 import { CreativeSyncService } from "../../services/creative-sync-service.js";
@@ -489,9 +498,15 @@ describe("create_tactic Tool", () => {
       mockNotificationService = {};
       mockAuthService = {};
 
-      vi.mocked(CreativeSyncService).mockImplementation(() => mockCreativeSyncService);
-      vi.mocked(NotificationService).mockImplementation(() => mockNotificationService);
-      vi.mocked(AuthenticationService).mockImplementation(() => mockAuthService);
+      vi.mocked(CreativeSyncService).mockImplementation(
+        () => mockCreativeSyncService,
+      );
+      vi.mocked(NotificationService).mockImplementation(
+        () => mockNotificationService,
+      );
+      vi.mocked(AuthenticationService).mockImplementation(
+        () => mockAuthService,
+      );
 
       // Mock tactic creation with sales agent
       const mockTactic: Tactic = {
@@ -534,19 +549,25 @@ describe("create_tactic Tool", () => {
       // Verify sync services were initialized
       expect(CreativeSyncService).toHaveBeenCalledWith(mockAuthService);
       expect(NotificationService).toHaveBeenCalledWith(mockAuthService);
-      expect(mockCreativeSyncService.setNotificationService).toHaveBeenCalledWith(mockNotificationService);
+      expect(
+        mockCreativeSyncService.setNotificationService,
+      ).toHaveBeenCalledWith(mockNotificationService);
 
       // Verify automatic sync was triggered
       expect(mockCreativeSyncService.onTacticCreated).toHaveBeenCalledWith(
         "tactic_sync_123",
         "campaign_123",
-        "sales_agent_123"
+        "sales_agent_123",
       );
 
       // Verify response mentions automatic sync
       expect(result).toContain("Automatic Creative Sync");
-      expect(result).toContain("Campaign creatives are being synced to this tactic's sales agent");
-      expect(result).toContain("Only format-compatible creatives will be synced");
+      expect(result).toContain(
+        "Campaign creatives are being synced to this tactic's sales agent",
+      );
+      expect(result).toContain(
+        "Only format-compatible creatives will be synced",
+      );
     });
 
     it("should handle tactic without sales agent ID", async () => {
@@ -569,7 +590,7 @@ describe("create_tactic Tool", () => {
           inventoryType: "premium" as const,
           name: "Test Media Product",
           productId: "prod_123",
-          publisherId: undefined, // No sales agent
+          publisherId: undefined, // No publisher ID - should not trigger sync
           publisherName: "Test Publisher",
           updatedAt: new Date("2024-01-01T00:00:00Z"),
         },
@@ -591,11 +612,13 @@ describe("create_tactic Tool", () => {
     });
 
     it("should handle sync service failures gracefully", async () => {
-      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-      
+      const consoleWarnSpy = vi
+        .spyOn(console, "warn")
+        .mockImplementation(() => {});
+
       // Mock sync to fail
       mockCreativeSyncService.onTacticCreated.mockRejectedValue(
-        new Error("Sync service unavailable")
+        new Error("Sync service unavailable"),
       );
 
       const result = await createTactic.execute(validArgs, contextWithAuth);
@@ -603,16 +626,20 @@ describe("create_tactic Tool", () => {
       // Tactic creation should still succeed even if sync fails
       expect(result).toContain("✅ **Tactic Created Successfully!**");
       expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Background creative sync failed for new tactic tactic_sync_123"),
-        expect.any(Error)
+        expect.stringContaining(
+          "Background creative sync failed for new tactic tactic_sync_123",
+        ),
+        expect.any(Error),
       );
 
       consoleWarnSpy.mockRestore();
     });
 
     it("should handle sync service initialization failures gracefully", async () => {
-      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-      
+      const consoleWarnSpy = vi
+        .spyOn(console, "warn")
+        .mockImplementation(() => {});
+
       // Mock service initialization to fail
       vi.mocked(CreativeSyncService).mockImplementation(() => {
         throw new Error("Service initialization failed");
@@ -624,7 +651,7 @@ describe("create_tactic Tool", () => {
       expect(result).toContain("✅ **Tactic Created Successfully!**");
       expect(consoleWarnSpy).toHaveBeenCalledWith(
         "Failed to initialize sync services for tactic creation:",
-        expect.any(Error)
+        expect.any(Error),
       );
 
       consoleWarnSpy.mockRestore();
@@ -650,7 +677,7 @@ describe("create_tactic Tool", () => {
           inventoryType: "premium" as const,
           name: "Test Media Product",
           productId: "prod_123",
-          publisherId: undefined, // No publisherId
+          publisherId: undefined, // No publisher ID
           publisherName: "Test Publisher",
           updatedAt: new Date("2024-01-01T00:00:00Z"),
         },
@@ -661,15 +688,17 @@ describe("create_tactic Tool", () => {
         salesAgentId: "direct_sales_agent_456", // Sales agent from tactic
       };
 
-      mockBigQueryService.createTactic.mockResolvedValue(mockTacticWithSalesAgent);
+      mockBigQueryService.createTactic.mockResolvedValue(
+        mockTacticWithSalesAgent,
+      );
 
       await createTactic.execute(validArgs, contextWithAuth);
 
       // Should use salesAgentId from tactic when publisherId not available
       expect(mockCreativeSyncService.onTacticCreated).toHaveBeenCalledWith(
         "tactic_sales_agent_123",
-        "campaign_123", 
-        "direct_sales_agent_456"
+        "campaign_123",
+        "direct_sales_agent_456",
       );
     });
   });

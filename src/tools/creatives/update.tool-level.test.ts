@@ -75,14 +75,22 @@ describe("creativeUpdateTool", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Setup service mocks
-    vi.mocked(CreativeSyncService).mockImplementation(() => mockCreativeSyncService as any);
-    vi.mocked(NotificationService).mockImplementation(() => mockNotificationService as any);
-    vi.mocked(AuthenticationService).mockImplementation(() => mockAuthService as any);
+    vi.mocked(CreativeSyncService).mockImplementation(
+      () => mockCreativeSyncService as any,
+    );
+    vi.mocked(NotificationService).mockImplementation(
+      () => mockNotificationService as any,
+    );
+    vi.mocked(AuthenticationService).mockImplementation(
+      () => mockAuthService as any,
+    );
 
     // Default creative update response
-    mockClient.updateCreative = vi.fn().mockResolvedValue(sampleUpdatedCreativeResponse);
+    mockClient.updateCreative = vi
+      .fn()
+      .mockResolvedValue(sampleUpdatedCreativeResponse);
   });
 
   describe("tool metadata", () => {
@@ -97,12 +105,15 @@ describe("creativeUpdateTool", () => {
 
   describe("authentication", () => {
     it("should use session API key when provided", async () => {
-      const result = await tool.execute({
-        creativeId: "creative_123",
-        updates: {
-          name: "Updated Name",
+      const result = await tool.execute(
+        {
+          creativeId: "creative_123",
+          updates: {
+            name: "Updated Name",
+          },
         },
-      }, mockContext);
+        mockContext,
+      );
 
       expect(mockClient.updateCreative).toHaveBeenCalledWith("test-api-key", {
         creativeId: "creative_123",
@@ -121,10 +132,13 @@ describe("creativeUpdateTool", () => {
 
       try {
         await expect(
-          tool.execute({
-            creativeId: "creative_123",
-            updates: { name: "Updated Name" },
-          }, { session: {} }),
+          tool.execute(
+            {
+              creativeId: "creative_123",
+              updates: { name: "Updated Name" },
+            },
+            { session: {} },
+          ),
         ).rejects.toThrow("Authentication required");
       } finally {
         if (originalEnv) {
@@ -136,29 +150,39 @@ describe("creativeUpdateTool", () => {
 
   describe("basic updates", () => {
     it("should update creative name", async () => {
-      const result = await tool.execute({
-        creativeId: "creative_123",
-        updates: {
-          name: "New Creative Name",
+      const result = await tool.execute(
+        {
+          creativeId: "creative_123",
+          updates: {
+            name: "New Creative Name",
+          },
         },
-      }, mockContext);
+        mockContext,
+      );
 
       const parsedResult = JSON.parse(result);
       expect(parsedResult.success).toBe(true);
       expect(parsedResult.message).toContain("Creative updated successfully");
-      expect(parsedResult.message).toContain("Name updated to: New Creative Name");
-      
-      expect(parsedResult.data.updatedCreative.creativeName).toBe("Updated Creative");
+      expect(parsedResult.message).toContain(
+        "Name updated to: New Creative Name",
+      );
+
+      expect(parsedResult.data.updatedCreative.creativeName).toBe(
+        "Updated Creative",
+      );
       expect(parsedResult.data.updateSummary.nameChanged).toBe(true);
     });
 
     it("should update creative status", async () => {
-      const result = await tool.execute({
-        creativeId: "creative_123", 
-        updates: {
-          status: "paused",
+      const result = await tool.execute(
+        {
+          creativeId: "creative_123",
+          updates: {
+            status: "paused",
+          },
         },
-      }, mockContext);
+        mockContext,
+      );
 
       const parsedResult = JSON.parse(result);
       expect(parsedResult.message).toContain("Status changed to: paused");
@@ -166,15 +190,20 @@ describe("creativeUpdateTool", () => {
     });
 
     it("should update advertiser domains", async () => {
-      const result = await tool.execute({
-        creativeId: "creative_123",
-        updates: {
-          advertiserDomains: ["example.com", "brand.com"],
+      const result = await tool.execute(
+        {
+          creativeId: "creative_123",
+          updates: {
+            advertiserDomains: ["example.com", "brand.com"],
+          },
         },
-      }, mockContext);
+        mockContext,
+      );
 
       const parsedResult = JSON.parse(result);
-      expect(parsedResult.message).toContain("Advertiser Domains updated: example.com, brand.com");
+      expect(parsedResult.message).toContain(
+        "Advertiser Domains updated: example.com, brand.com",
+      );
       expect(parsedResult.data.updateSummary.domainsChanged).toBe(true);
     });
   });
@@ -182,7 +211,9 @@ describe("creativeUpdateTool", () => {
   describe("content updates with automatic re-sync", () => {
     beforeEach(() => {
       // Setup for content update scenarios
-      mockCreativeSyncService.getCreativeSyncStatus.mockResolvedValue(sampleSyncStatus);
+      mockCreativeSyncService.getCreativeSyncStatus.mockResolvedValue(
+        sampleSyncStatus,
+      );
       mockCreativeSyncService.syncCreativeToSalesAgents.mockResolvedValue({
         success: ["agent_1", "agent_2"],
         failed: [],
@@ -190,52 +221,64 @@ describe("creativeUpdateTool", () => {
     });
 
     it("should trigger automatic re-sync when content is updated", async () => {
-      const result = await tool.execute({
-        creativeId: "creative_123",
-        updates: {
-          content: {
-            htmlSnippet: "<div>Updated HTML</div>",
-            vastTag: "https://example.com/vast.xml",
+      const result = await tool.execute(
+        {
+          creativeId: "creative_123",
+          updates: {
+            content: {
+              htmlSnippet: "<div>Updated HTML</div>",
+              vastTag: "https://example.com/vast.xml",
+            },
           },
         },
-      }, mockContext);
+        mockContext,
+      );
 
       const parsedResult = JSON.parse(result);
-      
-      expect(parsedResult.message).toContain("Content updated: HTML Snippet, VAST Tag");
+
+      expect(parsedResult.message).toContain(
+        "Content updated: HTML Snippet, VAST Tag",
+      );
       expect(parsedResult.message).toContain("Automatic Re-Sync in Progress");
-      expect(parsedResult.message).toContain("re-syncing to previously synced sales agents");
-      
+      expect(parsedResult.message).toContain(
+        "re-syncing to previously synced sales agents",
+      );
+
       expect(parsedResult.data.updateSummary.contentChanged).toBe(true);
 
       // Verify re-sync was triggered
-      expect(mockCreativeSyncService.getCreativeSyncStatus).toHaveBeenCalledWith("creative_123");
-      expect(mockCreativeSyncService.syncCreativeToSalesAgents).toHaveBeenCalledWith(
-        "creative_123",
-        ["agent_1", "agent_2"],
-        {
-          triggeredBy: "creative_update",
-        }
-      );
+      expect(
+        mockCreativeSyncService.getCreativeSyncStatus,
+      ).toHaveBeenCalledWith("creative_123");
+      expect(
+        mockCreativeSyncService.syncCreativeToSalesAgents,
+      ).toHaveBeenCalledWith("creative_123", ["agent_1", "agent_2"], {
+        triggeredBy: "creative_update",
+      });
     });
 
     it("should handle case with no previous sync status", async () => {
       mockCreativeSyncService.getCreativeSyncStatus.mockResolvedValue([]);
 
-      const result = await tool.execute({
-        creativeId: "creative_123",
-        updates: {
-          content: {
-            productUrl: "https://example.com/product",
+      const result = await tool.execute(
+        {
+          creativeId: "creative_123",
+          updates: {
+            content: {
+              productUrl: "https://example.com/product",
+            },
           },
         },
-      }, mockContext);
+        mockContext,
+      );
 
       const parsedResult = JSON.parse(result);
       expect(parsedResult.success).toBe(true);
-      
+
       // Should not trigger re-sync when no previous sync exists
-      expect(mockCreativeSyncService.syncCreativeToSalesAgents).not.toHaveBeenCalled();
+      expect(
+        mockCreativeSyncService.syncCreativeToSalesAgents,
+      ).not.toHaveBeenCalled();
     });
 
     it("should only re-sync to previously synced agents", async () => {
@@ -244,80 +287,95 @@ describe("creativeUpdateTool", () => {
         { salesAgentId: "agent_2", status: "failed" as const },
         { salesAgentId: "agent_3", status: "synced" as const },
       ];
-      
-      mockCreativeSyncService.getCreativeSyncStatus.mockResolvedValue(mixedSyncStatus);
 
-      await tool.execute({
-        creativeId: "creative_123",
-        updates: {
-          content: {
-            assetIds: ["new_asset_1", "new_asset_2"],
+      mockCreativeSyncService.getCreativeSyncStatus.mockResolvedValue(
+        mixedSyncStatus,
+      );
+
+      await tool.execute(
+        {
+          creativeId: "creative_123",
+          updates: {
+            content: {
+              assetIds: ["new_asset_1", "new_asset_2"],
+            },
           },
         },
-      }, mockContext);
+        mockContext,
+      );
 
       // Should only sync to agents with "synced" status
-      expect(mockCreativeSyncService.syncCreativeToSalesAgents).toHaveBeenCalledWith(
-        "creative_123",
-        ["agent_1", "agent_3"],
-        {
-          triggeredBy: "creative_update",
-        }
-      );
+      expect(
+        mockCreativeSyncService.syncCreativeToSalesAgents,
+      ).toHaveBeenCalledWith("creative_123", ["agent_1", "agent_3"], {
+        triggeredBy: "creative_update",
+      });
     });
 
     it("should handle re-sync failures gracefully", async () => {
       // Mock re-sync to fail
-      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const consoleWarnSpy = vi
+        .spyOn(console, "warn")
+        .mockImplementation(() => {});
       mockCreativeSyncService.syncCreativeToSalesAgents.mockRejectedValue(
-        new Error("Sync service unavailable")
+        new Error("Sync service unavailable"),
       );
 
-      const result = await tool.execute({
-        creativeId: "creative_123",
-        updates: {
-          content: {
-            javascriptTag: "console.log('updated');",
+      const result = await tool.execute(
+        {
+          creativeId: "creative_123",
+          updates: {
+            content: {
+              javascriptTag: "console.log('updated');",
+            },
           },
         },
-      }, mockContext);
+        mockContext,
+      );
 
       const parsedResult = JSON.parse(result);
-      
+
       // Update should still succeed even if re-sync fails
       expect(parsedResult.success).toBe(true);
       expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Background re-sync failed for updated creative creative_123"),
-        expect.any(Error)
+        expect.stringContaining(
+          "Background re-sync failed for updated creative creative_123",
+        ),
+        expect.any(Error),
       );
 
       consoleWarnSpy.mockRestore();
     });
 
     it("should handle sync service initialization failures gracefully", async () => {
-      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-      
+      const consoleWarnSpy = vi
+        .spyOn(console, "warn")
+        .mockImplementation(() => {});
+
       // Mock service initialization to fail
       vi.mocked(CreativeSyncService).mockImplementation(() => {
         throw new Error("Service initialization failed");
       });
 
-      const result = await tool.execute({
-        creativeId: "creative_123",
-        updates: {
-          content: {
-            htmlSnippet: "<div>Updated content</div>",
+      const result = await tool.execute(
+        {
+          creativeId: "creative_123",
+          updates: {
+            content: {
+              htmlSnippet: "<div>Updated content</div>",
+            },
           },
         },
-      }, mockContext);
+        mockContext,
+      );
 
       const parsedResult = JSON.parse(result);
-      
+
       // Update should still succeed even if sync setup fails
       expect(parsedResult.success).toBe(true);
       expect(consoleWarnSpy).toHaveBeenCalledWith(
         "Failed to initialize re-sync for creative update:",
-        expect.any(Error)
+        expect.any(Error),
       );
 
       consoleWarnSpy.mockRestore();
@@ -326,65 +384,78 @@ describe("creativeUpdateTool", () => {
 
   describe("non-content updates", () => {
     it("should not trigger re-sync for metadata-only updates", async () => {
-      const result = await tool.execute({
-        creativeId: "creative_123",
-        updates: {
-          name: "New Name",
-          status: "active",
-          advertiserDomains: ["example.com"],
+      const result = await tool.execute(
+        {
+          creativeId: "creative_123",
+          updates: {
+            name: "New Name",
+            status: "active",
+            advertiserDomains: ["example.com"],
+          },
         },
-      }, mockContext);
+        mockContext,
+      );
 
       const parsedResult = JSON.parse(result);
       expect(parsedResult.success).toBe(true);
-      
+
       // Should not mention automatic re-sync
       expect(parsedResult.message).not.toContain("Automatic Re-Sync");
-      
+
       // Should not trigger sync service calls
-      expect(mockCreativeSyncService.getCreativeSyncStatus).not.toHaveBeenCalled();
-      expect(mockCreativeSyncService.syncCreativeToSalesAgents).not.toHaveBeenCalled();
+      expect(
+        mockCreativeSyncService.getCreativeSyncStatus,
+      ).not.toHaveBeenCalled();
+      expect(
+        mockCreativeSyncService.syncCreativeToSalesAgents,
+      ).not.toHaveBeenCalled();
     });
   });
 
   describe("comprehensive content updates", () => {
     it("should display all content types being updated", async () => {
-      const result = await tool.execute({
-        creativeId: "creative_123",
-        updates: {
-          content: {
-            htmlSnippet: "<div>HTML</div>",
-            javascriptTag: "console.log('js');",
-            vastTag: "https://example.com/vast.xml",
-            productUrl: "https://example.com/product",
-            assetIds: ["asset_1", "asset_2", "asset_3"],
+      const result = await tool.execute(
+        {
+          creativeId: "creative_123",
+          updates: {
+            content: {
+              htmlSnippet: "<div>HTML</div>",
+              javascriptTag: "console.log('js');",
+              vastTag: "https://example.com/vast.xml",
+              productUrl: "https://example.com/product",
+              assetIds: ["asset_1", "asset_2", "asset_3"],
+            },
           },
         },
-      }, mockContext);
+        mockContext,
+      );
 
       const parsedResult = JSON.parse(result);
       expect(parsedResult.message).toContain(
-        "Content updated: HTML Snippet, JavaScript Tag, VAST Tag, 3 Asset References, Product URL"
+        "Content updated: HTML Snippet, JavaScript Tag, VAST Tag, 3 Asset References, Product URL",
       );
     });
   });
 
   describe("structured response", () => {
     it("should include comprehensive update metadata", async () => {
-      const result = await tool.execute({
-        creativeId: "creative_123",
-        updates: {
-          name: "Updated Name",
-          status: "active",
-          content: {
-            htmlSnippet: "<div>Updated</div>",
+      const result = await tool.execute(
+        {
+          creativeId: "creative_123",
+          updates: {
+            name: "Updated Name",
+            status: "active",
+            content: {
+              htmlSnippet: "<div>Updated</div>",
+            },
+            advertiserDomains: ["example.com"],
           },
-          advertiserDomains: ["example.com"],
         },
-      }, mockContext);
+        mockContext,
+      );
 
       const parsedResult = JSON.parse(result);
-      
+
       expect(parsedResult.data.configuration).toEqual({
         creativeId: "creative_123",
         updateDate: expect.any(String),
@@ -413,7 +484,7 @@ describe("creativeUpdateTool", () => {
           orchestrationComplete: true,
           preservesCampaignAssignments: true,
           safeForActiveCampaigns: true,
-        })
+        }),
       );
     });
   });
@@ -425,19 +496,25 @@ describe("creativeUpdateTool", () => {
         .mockRejectedValue(new Error("Creative not found"));
 
       await expect(
-        tool.execute({
-          creativeId: "nonexistent_id",
-          updates: { name: "New Name" },
-        }, mockContext),
+        tool.execute(
+          {
+            creativeId: "nonexistent_id",
+            updates: { name: "New Name" },
+          },
+          mockContext,
+        ),
       ).rejects.toThrow("Failed to update creative: Creative not found");
     });
 
     it("should require at least one update field", async () => {
       await expect(
-        tool.execute({
-          creativeId: "creative_123",
-          updates: {},
-        }, mockContext),
+        tool.execute(
+          {
+            creativeId: "creative_123",
+            updates: {},
+          },
+          mockContext,
+        ),
       ).rejects.toThrow("At least one update field must be provided");
     });
   });
@@ -498,17 +575,22 @@ describe("creativeUpdateTool", () => {
 
   describe("campaign preservation", () => {
     it("should display campaign assignments preservation message", async () => {
-      const result = await tool.execute({
-        creativeId: "creative_123",
-        updates: {
-          name: "Updated Name",
+      const result = await tool.execute(
+        {
+          creativeId: "creative_123",
+          updates: {
+            name: "Updated Name",
+          },
         },
-      }, mockContext);
+        mockContext,
+      );
 
       const parsedResult = JSON.parse(result);
       expect(parsedResult.message).toContain("Campaign Assignments (1)");
       expect(parsedResult.message).toContain("🟢 Summer Campaign (camp_1)");
-      expect(parsedResult.message).toContain("Campaign assignments preserved across update");
+      expect(parsedResult.message).toContain(
+        "Campaign assignments preserved across update",
+      );
       expect(parsedResult.message).toContain("safe for active campaigns");
     });
   });

@@ -116,6 +116,30 @@ export interface BrandAgentCampaign {
   tacticManagement?: TacticManagement;
 
   updatedAt: Date;
+
+  // NEW: Creative sync health status for this campaign
+  creativeSyncHealth?: {
+    status: "healthy" | "warning" | "critical";
+    summary: {
+      creativesFullySynced: number;
+      creativesPartiallySynced: number;
+      creativesNotSynced: number;
+      creativesWithIssues: number;
+    };
+    issues?: Array<{
+      creativeId: string;
+      creativeName: string;
+      issue: string;
+      salesAgentName: string;
+      suggestedAction: string;
+    }>;
+  };
+
+  // NEW: Notification summary for this campaign
+  notifications?: {
+    unread: number;
+    types: import("./notifications.js").NotificationEventType[];
+  };
 }
 
 export interface BrandAgentCampaignInput {

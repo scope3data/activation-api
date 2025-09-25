@@ -1,9 +1,10 @@
 import { z } from "zod";
+import { BigQuery } from "@google-cloud/bigquery";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 import { CreativeSyncService } from "../../services/creative-sync-service.js";
-import { NotificationService } from "../../services/notification-service.js"; 
+import { NotificationService } from "../../services/notification-service.js";
 import { AuthenticationService } from "../../services/auth-service.js";
 
 import { createMCPResponse } from "../../utils/error-handling.js";
@@ -59,12 +60,12 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
 
     try {
       // Initialize services for sync health and notifications
-      const authService = new AuthenticationService();
+      const authService = new AuthenticationService(new BigQuery());
       const creativeSyncService = new CreativeSyncService(authService);
       const notificationService = new NotificationService(authService);
-      
+
       // Validate API key to get customer info
-      const authResult = await authService.validateApiKey(apiKey);
+      const authResult = await client.validateApiKey(apiKey);
       if (!authResult.isValid) {
         throw new Error("Invalid API key");
       }
@@ -81,10 +82,11 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
         for (const campaign of campaigns) {
           try {
             // Get notification summary for this campaign
-            const notifications = await notificationService.getCampaignNotifications(
-              campaign.id,
-              customerId
-            );
+            const notifications =
+              await notificationService.getCampaignNotifications(
+                campaign.id,
+                customerId,
+              );
             campaign.notifications = notifications;
 
             // Calculate creative sync health (simplified for list view)
@@ -94,19 +96,25 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
               let creativesWithIssues = 0;
               let creativesNotSynced = 0;
 
-              for (const creativeId of campaign.creativeIds.slice(0, 10)) { // Limit for performance
+              for (const creativeId of campaign.creativeIds.slice(0, 10)) {
+                // Limit for performance
                 try {
-                  const syncStatus = await creativeSyncService.getCreativeSyncStatus(creativeId);
+                  const syncStatus =
+                    await creativeSyncService.getCreativeSyncStatus(creativeId);
                   if (syncStatus.length === 0) {
                     creativesNotSynced++;
                   } else {
-                    const approved = syncStatus.filter(s => s.approvalStatus === "approved").length;
-                    const rejected = syncStatus.filter(s => s.approvalStatus === "rejected").length;
-                    
+                    const approved = syncStatus.filter(
+                      (s) => s.approvalStatus === "approved",
+                    ).length;
+                    const rejected = syncStatus.filter(
+                      (s) => s.approvalStatus === "rejected",
+                    ).length;
+
                     if (approved === syncStatus.length) {
                       creativesFullySynced++;
                     } else if (rejected > 0) {
-                      creativesWithIssues++;  
+                      creativesWithIssues++;
                     }
                   }
                 } catch (error) {
@@ -118,23 +126,38 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
               // Determine overall health status
               const totalCreatives = campaign.creativeIds.length;
               let healthStatus: "healthy" | "warning" | "critical" = "healthy";
-              
-              if (creativesWithIssues > 0 || creativesNotSynced > totalCreatives / 2) {
-                healthStatus = creativesWithIssues > totalCreatives / 2 ? "critical" : "warning";
+
+              if (
+                creativesWithIssues > 0 ||
+                creativesNotSynced > totalCreatives / 2
+              ) {
+                healthStatus =
+                  creativesWithIssues > totalCreatives / 2
+                    ? "critical"
+                    : "warning";
               }
 
               campaign.creativeSyncHealth = {
                 status: healthStatus,
                 summary: {
                   creativesFullySynced,
-                  creativesPartiallySynced: Math.max(0, totalCreatives - creativesFullySynced - creativesWithIssues - creativesNotSynced),
+                  creativesPartiallySynced: Math.max(
+                    0,
+                    totalCreatives -
+                      creativesFullySynced -
+                      creativesWithIssues -
+                      creativesNotSynced,
+                  ),
                   creativesNotSynced,
                   creativesWithIssues,
                 },
               };
             }
           } catch (error) {
-            console.warn(`Failed to get sync health for campaign ${campaign.id}:`, error);
+            console.warn(
+              `Failed to get sync health for campaign ${campaign.id}:`,
+              error,
+            );
             // Continue without sync health - not critical for campaign list
           }
         }
@@ -190,10 +213,19 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
       );
 
       // Calculate health and notification summary
-      const healthySummary = campaigns.filter(c => c.creativeSyncHealth?.status === "healthy").length;
-      const warningsSummary = campaigns.filter(c => c.creativeSyncHealth?.status === "warning").length;
-      const criticalSummary = campaigns.filter(c => c.creativeSyncHealth?.status === "critical").length;
-      const totalNotifications = campaigns.reduce((sum, c) => sum + (c.notifications?.unread || 0), 0);
+      const healthySummary = campaigns.filter(
+        (c) => c.creativeSyncHealth?.status === "healthy",
+      ).length;
+      const warningsSummary = campaigns.filter(
+        (c) => c.creativeSyncHealth?.status === "warning",
+      ).length;
+      const criticalSummary = campaigns.filter(
+        (c) => c.creativeSyncHealth?.status === "critical",
+      ).length;
+      const totalNotifications = campaigns.reduce(
+        (sum, c) => sum + (c.notifications?.unread || 0),
+        0,
+      );
 
       let summary = `📊 **Found ${campaigns.length} campaigns**
 
@@ -204,25 +236,32 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
       if (healthySummary > 0) summary += ` ✅ ${healthySummary} healthy`;
       if (warningsSummary > 0) summary += ` ⚠️ ${warningsSummary} warnings`;
       if (criticalSummary > 0) summary += ` 🔴 ${criticalSummary} critical`;
-      
+
       if (totalNotifications > 0) {
         summary += `\n🔔 **${totalNotifications} unread notifications** across campaigns`;
       }
 
       // Add individual campaign details
       summary += `\n\n---\n\n`;
-      
+
       campaigns.forEach((campaign, index) => {
-        const healthEmoji = campaign.creativeSyncHealth?.status === "healthy" ? "✅" : 
-                           campaign.creativeSyncHealth?.status === "warning" ? "⚠️" : 
-                           campaign.creativeSyncHealth?.status === "critical" ? "🔴" : "⚫";
-        
-        const notificationBadge = campaign.notifications?.unread && campaign.notifications.unread > 0 
-          ? ` 🔔${campaign.notifications.unread}` : "";
-          
+        const healthEmoji =
+          campaign.creativeSyncHealth?.status === "healthy"
+            ? "✅"
+            : campaign.creativeSyncHealth?.status === "warning"
+              ? "⚠️"
+              : campaign.creativeSyncHealth?.status === "critical"
+                ? "🔴"
+                : "⚫";
+
+        const notificationBadge =
+          campaign.notifications?.unread && campaign.notifications.unread > 0
+            ? ` 🔔${campaign.notifications.unread}`
+            : "";
+
         summary += `${index + 1}. ${healthEmoji} **${campaign.name}**${notificationBadge}\n`;
         summary += `   💰 $${((campaign.budget?.total || 0) / 100).toLocaleString()} | Status: ${campaign.status}\n`;
-        
+
         if (campaign.creativeSyncHealth) {
           const health = campaign.creativeSyncHealth;
           summary += `   🎨 Creatives: ${health.summary.creativesFullySynced} synced`;
@@ -234,7 +273,7 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
           }
           summary += `\n`;
         }
-        
+
         summary += `\n`;
       });
 
@@ -261,11 +300,17 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
               healthy: healthySummary,
               warning: warningsSummary,
               critical: criticalSummary,
-              unknown: campaigns.length - healthySummary - warningsSummary - criticalSummary,
+              unknown:
+                campaigns.length -
+                healthySummary -
+                warningsSummary -
+                criticalSummary,
             },
             notificationSummary: {
               totalUnread: totalNotifications,
-              campaignsWithNotifications: campaigns.filter(c => (c.notifications?.unread || 0) > 0).length,
+              campaignsWithNotifications: campaigns.filter(
+                (c) => (c.notifications?.unread || 0) > 0,
+              ).length,
             },
           },
         },

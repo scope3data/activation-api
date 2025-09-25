@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BigQuery } from "@google-cloud/bigquery";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
@@ -83,23 +84,31 @@ export const createTacticTool = (_client: Scope3ApiClient) => ({
 
       // Trigger automatic sync of campaign creatives to this new tactic's sales agent
       try {
-        const authService = new AuthenticationService();
+        const authService = new AuthenticationService(new BigQuery());
         const creativeSyncService = new CreativeSyncService(authService);
         const notificationService = new NotificationService(authService);
         creativeSyncService.setNotificationService(notificationService);
 
         // Get sales agent ID from the media product (assuming it's available in the response)
-        const salesAgentId = tactic.mediaProduct?.publisherId || tactic.salesAgentId;
-        
+        const salesAgentId =
+          tactic.mediaProduct?.publisherId || tactic.salesAgentId;
+
         if (salesAgentId) {
           // Trigger sync in background - don't wait for completion
-          creativeSyncService.onTacticCreated(tactic.id, validatedArgs.campaignId, salesAgentId)
+          creativeSyncService
+            .onTacticCreated(tactic.id, validatedArgs.campaignId, salesAgentId)
             .catch((syncError) => {
-              console.warn(`Background creative sync failed for new tactic ${tactic.id}:`, syncError);
+              console.warn(
+                `Background creative sync failed for new tactic ${tactic.id}:`,
+                syncError,
+              );
             });
         }
       } catch (syncError) {
-        console.warn('Failed to initialize sync services for tactic creation:', syncError);
+        console.warn(
+          "Failed to initialize sync services for tactic creation:",
+          syncError,
+        );
         // Don't fail tactic creation if sync setup fails
       }
 
@@ -199,7 +208,7 @@ export const createTacticTool = (_client: Scope3ApiClient) => ({
       summary += `• Review and activate the tactic when ready\n`;
       summary += `• Monitor performance using analyze_tactic_performance\n`;
       summary += `• Adjust budget allocation with adjust_tactic_allocation as needed\n`;
-      
+
       // Add info about automatic creative sync
       summary += `\n🔄 **Automatic Creative Sync:**\n`;
       summary += `• Campaign creatives are being synced to this tactic's sales agent\n`;

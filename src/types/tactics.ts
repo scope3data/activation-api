@@ -143,6 +143,7 @@ export interface Tactic {
   name: string; // e.g., "Hulu Premium + Scope3 Signals"
 
   performance?: TacticPerformance;
+  salesAgentId?: string; // Sales agent handling this tactic
   signalId?: string; // Simplified targeting - optional signal ID
   // Status and performance
   status: "active" | "completed" | "draft" | "paused";

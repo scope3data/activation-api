@@ -45,15 +45,15 @@ export interface Campaign {
   creativeSyncHealth?: {
     status: "healthy" | "warning" | "critical";
     summary: {
-      creativesFullySynced: number;    // Synced to all relevant sales agents
-      creativesPartiallySynced: number; // Some agents missing  
-      creativesNotSynced: number;       // No sync yet
-      creativesWithIssues: number;      // Rejections or failures
+      creativesFullySynced: number; // Synced to all relevant sales agents
+      creativesPartiallySynced: number; // Some agents missing
+      creativesNotSynced: number; // No sync yet
+      creativesWithIssues: number; // Rejections or failures
     };
     issues?: Array<{
       creativeId: string;
       creativeName: string;
-      issue: string; 
+      issue: string;
       salesAgentName: string;
       suggestedAction: string;
     }>;

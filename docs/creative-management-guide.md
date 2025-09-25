@@ -174,7 +174,7 @@ Creative sync automatically distributes creatives to relevant sales agents (publ
 
 Behind the scenes:
 1. Creative updated with new content
-2. System identifies previously synced sales agents  
+2. System identifies previously synced sales agents
 3. Automatically re-syncs to those agents for re-approval
 4. Notifications sent if any issues occur
 
@@ -187,6 +187,7 @@ Behind the scenes:
 The system automatically triggers sync in these scenarios:
 
 **Creative Assignment**
+
 ```
 👤 "Assign creative cr_123 to campaign camp_456"
 🤖 Uses: creative/assign
@@ -200,7 +201,8 @@ The system automatically triggers sync in these scenarios:
 ✅ Creative assigned and syncing to 3 campaign sales agents
 ```
 
-**Content Updates**  
+**Content Updates**
+
 ```
 👤 "Update the creative with a new headline and video"
 🤖 Uses: creative/update
@@ -215,6 +217,7 @@ The system automatically triggers sync in these scenarios:
 ```
 
 **New Tactic Creation**
+
 ```
 👤 "Create a mobile video tactic for the campaign"
 🤖 Uses: create_tactic
@@ -233,6 +236,7 @@ The system automatically triggers sync in these scenarios:
 Use the dedicated sync tool for full control:
 
 **Smart Auto-Detection (Recommended)**
+
 ```
 👤 "Sync creative cr_123 to relevant sales agents"
 🤖 Uses: creative/sync_sales_agents
@@ -244,12 +248,13 @@ Use the dedicated sync tool for full control:
 - Provides detailed approval status
 
 ✅ Creative synced to 6 relevant sales agents based on recent activity:
-• Premium Video Agent: ✅ Approved  
+• Premium Video Agent: ✅ Approved
 • Mobile Display Agent: ⏳ Pending approval
 • CTV Premium Agent: ❌ Rejected (format incompatible)
 ```
 
 **Manual Override**
+
 ```
 👤 "Sync creative cr_123 to specific agents: agent_1, agent_2, agent_3"
 🤖 Uses: creative/sync_sales_agents with explicit agents
@@ -260,6 +265,7 @@ Direct sync to specified agents (skips auto-detection)
 ```
 
 **Campaign-Specific Sync**
+
 ```
 👤 "Sync creative cr_123 to only the sales agents used by campaign camp_456"
 🤖 Uses: creative/sync_sales_agents with campaignId
@@ -274,19 +280,21 @@ Syncs only to sales agents actively used by the campaign's tactics
 Enhanced tools now show sync health across campaigns and creatives:
 
 **Campaign Health**
+
 ```
 👤 "Show me campaign status"
 🤖 Uses: campaign/list
 
 📊 **Campaign Summary**
 ✅ Summer Sale Campaign - Healthy (8/8 tactics synced, 12/15 creatives approved)
-⚠️  Holiday Campaign - Warning (3/5 tactics synced, sync issues detected)  
+⚠️  Holiday Campaign - Warning (3/5 tactics synced, sync issues detected)
 ❌ Spring Launch - Critical (0/3 tactics synced, missing creative approvals)
 
 Each campaign shows sync health and notification counts
 ```
 
 **Creative Sync Details**
+
 ```
 👤 "Show me details for creative cr_123"
 🤖 Uses: creative/get
@@ -296,7 +304,7 @@ Each campaign shows sync health and notification counts
 
 📋 **Detailed Status**:
 • Premium Video Agent: ✅ Approved (ready for campaigns)
-• Mobile Video Agent: ✅ Approved (ready for campaigns)  
+• Mobile Video Agent: ✅ Approved (ready for campaigns)
 • CTV Agent: ⏳ Pending approval (under review)
 • Display Agent: ❌ Rejected (video format not supported)
 
@@ -313,7 +321,7 @@ Type: creative.sync_failed
 Message: "Creative sync failed: format not supported"
 Action Required: "Update creative format or exclude this sales agent"
 
-🔔 **Campaign Health Alert**  
+🔔 **Campaign Health Alert**
 Type: campaign.creative_sync_unhealthy
 Message: "Campaign has 3 tactics with sync failures"
 Urgency: High
@@ -334,7 +342,7 @@ Creative Format: video/mp4
 ✅ Video-capable sales agents: Will sync
 ❌ Display-only sales agents: Will be skipped
 
-Creative Format: image/jpeg  
+Creative Format: image/jpeg
 ✅ Display and video agents: Will sync
 ✅ All format-compatible agents receive it
 
@@ -344,16 +352,19 @@ This prevents incompatible sync attempts and reduces rejection rates
 ### Sync Best Practices
 
 **For Campaign Managers:**
+
 - Monitor campaign health dashboards regularly
-- Address sync issues before campaign launch  
+- Address sync issues before campaign launch
 - Use pre-sync for critical campaigns well in advance
 
 **For Creative Operations:**
+
 - Design creatives for maximum sales agent compatibility
 - Monitor approval rates to identify problematic sales agents
 - Use batch content updates to minimize re-sync overhead
 
-**For Performance Optimization:**  
+**For Performance Optimization:**
+
 - Track sync success rates across different creative formats
 - Analyze rejection patterns to improve creative strategy
 - Use campaign health data to prioritize optimization efforts

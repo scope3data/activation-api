@@ -12,26 +12,26 @@ The notification system uses a clear `resource.action` taxonomy that enables age
 enum NotificationEventType {
   // Creative Sync Lifecycle
   CREATIVE_SYNC_STARTED = "creative.sync_started",
-  CREATIVE_SYNC_COMPLETED = "creative.sync_completed", 
+  CREATIVE_SYNC_COMPLETED = "creative.sync_completed",
   CREATIVE_SYNC_FAILED = "creative.sync_failed",
-  
+
   // Creative Approval Lifecycle
   CREATIVE_APPROVED = "creative.approved",
   CREATIVE_REJECTED = "creative.rejected",
   CREATIVE_NEEDS_REVISION = "creative.needs_revision",
-  
+
   // Campaign Health Events
   CAMPAIGN_CREATIVE_SYNC_UNHEALTHY = "campaign.creative_sync_unhealthy",
   CAMPAIGN_CREATIVE_SYNC_HEALTHY = "campaign.creative_sync_healthy",
   CAMPAIGN_MISSING_CREATIVES = "campaign.missing_creatives",
-  
+
   // Tactic Events
   TACTIC_CREATIVE_SYNC_COMPLETED = "tactic.creative_sync_completed",
   TACTIC_CREATIVE_SYNC_FAILED = "tactic.creative_sync_failed",
-  
-  // Sales Agent Events  
+
+  // Sales Agent Events
   SALES_AGENT_APPROVAL_TIMEOUT = "sales_agent.approval_timeout",
-  SALES_AGENT_UNHEALTHY = "sales_agent.unhealthy"
+  SALES_AGENT_UNHEALTHY = "sales_agent.unhealthy",
 }
 ```
 
@@ -52,13 +52,13 @@ interface Notification {
 }
 
 interface NotificationData {
-  message: string;              // Human-readable summary
-  creativeId?: string;          // Relevant creative
-  campaignId?: string;          // Relevant campaign  
-  salesAgentId?: string;        // Relevant sales agent
-  tacticId?: string;            // Relevant tactic
-  rejectionReason?: string;     // Why something was rejected
-  actionRequired?: string;      // What the agent should do
+  message: string; // Human-readable summary
+  creativeId?: string; // Relevant creative
+  campaignId?: string; // Relevant campaign
+  salesAgentId?: string; // Relevant sales agent
+  tacticId?: string; // Relevant tactic
+  rejectionReason?: string; // Why something was rejected
+  actionRequired?: string; // What the agent should do
   urgency?: "low" | "medium" | "high";
 }
 ```
@@ -68,6 +68,7 @@ interface NotificationData {
 ### 1. Creative Sync Workflows
 
 #### Pattern: Handle Sync Failures
+
 ```typescript
 // Agent receives: creative.sync_failed
 notification = {
@@ -75,11 +76,11 @@ notification = {
   data: {
     message: "Creative failed to sync to Video Sales Agent",
     creativeId: "creative_123",
-    salesAgentId: "video_agent_456", 
+    salesAgentId: "video_agent_456",
     rejectionReason: "Format not supported",
-    actionRequired: "Update creative format or exclude this sales agent"
-  }
-}
+    actionRequired: "Update creative format or exclude this sales agent",
+  },
+};
 
 // Agentic Response Options:
 // 1. Check creative format compatibility
@@ -89,17 +90,18 @@ notification = {
 ```
 
 #### Pattern: Monitor Approval Status
+
 ```typescript
 // Agent receives: creative.approved
 notification = {
-  type: "creative.approved", 
+  type: "creative.approved",
   data: {
     message: "Creative approved by Premium Display Agent",
     creativeId: "creative_123",
     salesAgentId: "display_agent_789",
-    actionRequired: "Creative ready for campaign deployment"
-  }
-}
+    actionRequired: "Creative ready for campaign deployment",
+  },
+};
 
 // Agentic Response:
 // 1. Update campaign health metrics
@@ -110,6 +112,7 @@ notification = {
 ### 2. Campaign Health Workflows
 
 #### Pattern: Detect Unhealthy Campaigns
+
 ```typescript
 // Agent receives: campaign.creative_sync_unhealthy
 notification = {
@@ -118,9 +121,9 @@ notification = {
     message: "Campaign has 3 of 5 tactics with sync issues",
     campaignId: "campaign_456",
     actionRequired: "Review and resolve creative sync failures",
-    urgency: "high"
-  }
-}
+    urgency: "high",
+  },
+};
 
 // Agentic Response:
 // 1. Query detailed sync status for campaign
@@ -130,6 +133,7 @@ notification = {
 ```
 
 #### Pattern: Missing Creatives Alert
+
 ```typescript
 // Agent receives: campaign.missing_creatives
 notification = {
@@ -138,9 +142,9 @@ notification = {
     message: "Campaign launching in 2 days with 0 approved creatives",
     campaignId: "campaign_789",
     actionRequired: "Assign and sync creatives before launch",
-    urgency: "high"
-  }
-}
+    urgency: "high",
+  },
+};
 
 // Agentic Response:
 // 1. Identify suitable existing creatives
@@ -152,17 +156,18 @@ notification = {
 ### 3. Proactive Monitoring Workflows
 
 #### Pattern: Sales Agent Health Monitoring
+
 ```typescript
 // Agent receives: sales_agent.unhealthy
 notification = {
-  type: "sales_agent.unhealthy", 
+  type: "sales_agent.unhealthy",
   data: {
     message: "Mobile Video Agent has 80% rejection rate (last 7 days)",
     salesAgentId: "mobile_video_123",
     actionRequired: "Investigate rejection patterns and adjust targeting",
-    urgency: "medium"
-  }
-}
+    urgency: "medium",
+  },
+};
 
 // Agentic Response:
 // 1. Analyze recent rejections for patterns
@@ -181,17 +186,17 @@ Enhanced tools automatically generate notifications:
 // creative/update with content changes
 await creativeUpdateTool.execute({
   creativeId: "creative_123",
-  updates: { content: { htmlSnippet: "<updated>" } }
+  updates: { content: { htmlSnippet: "<updated>" } },
 });
 // → Triggers automatic re-sync
 // → Generates creative.sync_started notifications
 ```
 
-```typescript  
+```typescript
 // creative/assign to campaign
 await creativeAssignTool.execute({
-  creativeId: "creative_123", 
-  campaignId: "campaign_456"
+  creativeId: "creative_123",
+  campaignId: "campaign_456",
 });
 // → Triggers sync to campaign's sales agents
 // → Generates tactic.creative_sync_completed notifications
@@ -208,13 +213,13 @@ response = {
   healthMetrics: {
     healthyCount: 5,
     warningCount: 2,    // Has unresolved notifications
-    criticalCount: 1    // Has high-urgency notifications  
+    criticalCount: 1    // Has high-urgency notifications
   }
 }
 ```
 
 ```typescript
-// creative/get includes sync status summary  
+// creative/get includes sync status summary
 response = {
   creative: {...},
   syncStatusSummary: {
@@ -238,7 +243,7 @@ response = {
 ### For Integration
 
 1. **Use Structured Data**: Always include relevant IDs (creativeId, campaignId, etc.)
-2. **Provide Clear Actions**: Specify exactly what the agent should do  
+2. **Provide Clear Actions**: Specify exactly what the agent should do
 3. **Include Context**: Add rejection reasons, error details for debugging
 4. **Set Appropriate Urgency**: Reserve "high" for launch-blocking issues
 
@@ -250,16 +255,16 @@ const notifications = await getNotifications({
   campaignId: "campaign_123",
   types: [
     "campaign.creative_sync_unhealthy",
-    "creative.sync_failed", 
-    "creative.rejected"
+    "creative.sync_failed",
+    "creative.rejected",
   ],
-  unreadOnly: true
+  unreadOnly: true,
 });
 
 // Get high-priority cross-campaign notifications
 const urgent = await getNotifications({
   urgency: "high",
-  acknowledged: false
+  acknowledged: false,
 });
 ```
 

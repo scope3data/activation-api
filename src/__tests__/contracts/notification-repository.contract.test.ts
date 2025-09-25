@@ -5,8 +5,6 @@ import { describe, it, expect, beforeEach } from "vitest";
 
 import type { NotificationRepository } from "../../contracts/notification-repository.js";
 import type {
-  Notification,
-  NotificationEventType,
   NotificationCreateRequest,
 } from "../../types/notifications.js";
 
@@ -16,7 +14,7 @@ import type {
  */
 export function testNotificationRepositoryContract(
   repositoryFactory: () => NotificationRepository,
-  cleanup?: () => Promise<void>
+  cleanup?: () => Promise<void>,
 ) {
   describe("NotificationRepository Contract", () => {
     let repository: NotificationRepository;
@@ -43,7 +41,7 @@ export function testNotificationRepositoryContract(
         };
 
         const notificationId = await repository.createNotification(request);
-        
+
         expect(typeof notificationId).toBe("string");
         expect(notificationId.length).toBeGreaterThan(0);
         expect(notificationId).not.toBe("duplicate-skipped");
@@ -113,7 +111,7 @@ export function testNotificationRepositoryContract(
 
       it("should return notifications without filter", async () => {
         const result = await repository.getNotifications();
-        
+
         expect(result).toHaveProperty("notifications");
         expect(result).toHaveProperty("hasMore");
         expect(result).toHaveProperty("totalCount");
@@ -126,9 +124,9 @@ export function testNotificationRepositoryContract(
         const result = await repository.getNotifications({
           customerId: 123,
         });
-        
+
         expect(result.notifications.length).toBeGreaterThan(0);
-        result.notifications.forEach(notification => {
+        result.notifications.forEach((notification) => {
           expect(notification.customerId).toBe(123);
         });
       });
@@ -137,8 +135,8 @@ export function testNotificationRepositoryContract(
         const result = await repository.getNotifications({
           brandAgentId: 456,
         });
-        
-        result.notifications.forEach(notification => {
+
+        result.notifications.forEach((notification) => {
           expect(notification.brandAgentId).toBe(456);
         });
       });
@@ -147,8 +145,8 @@ export function testNotificationRepositoryContract(
         const result = await repository.getNotifications({
           types: ["creative.sync_failed" as NotificationEventType],
         });
-        
-        result.notifications.forEach(notification => {
+
+        result.notifications.forEach((notification) => {
           expect(notification.type).toBe("creative.sync_failed");
         });
       });
@@ -157,8 +155,8 @@ export function testNotificationRepositoryContract(
         const result = await repository.getNotifications({
           creativeId: "creative_123",
         });
-        
-        result.notifications.forEach(notification => {
+
+        result.notifications.forEach((notification) => {
           expect(notification.data.creativeId).toBe("creative_123");
         });
       });
@@ -167,8 +165,8 @@ export function testNotificationRepositoryContract(
         const result = await repository.getNotifications({
           unreadOnly: true,
         });
-        
-        result.notifications.forEach(notification => {
+
+        result.notifications.forEach((notification) => {
           expect(notification.read).toBe(false);
         });
       });
@@ -177,7 +175,7 @@ export function testNotificationRepositoryContract(
         const result = await repository.getNotifications({
           limit: 1,
         });
-        
+
         expect(result.notifications.length).toBeLessThanOrEqual(1);
       });
 
@@ -186,14 +184,19 @@ export function testNotificationRepositoryContract(
           limit: 1,
           offset: 0,
         });
-        
+
         const secondPage = await repository.getNotifications({
           limit: 1,
           offset: 1,
         });
-        
-        if (firstPage.notifications.length > 0 && secondPage.notifications.length > 0) {
-          expect(firstPage.notifications[0].id).not.toBe(secondPage.notifications[0].id);
+
+        if (
+          firstPage.notifications.length > 0 &&
+          secondPage.notifications.length > 0
+        ) {
+          expect(firstPage.notifications[0].id).not.toBe(
+            secondPage.notifications[0].id,
+          );
         }
       });
     });
@@ -215,7 +218,7 @@ export function testNotificationRepositoryContract(
         });
 
         const notification = await repository.getNotification(notificationId);
-        
+
         if (notification) {
           expect(notification.id).toBe(notificationId);
           expect(notification.type).toBe("creative.approved");
@@ -249,7 +252,7 @@ export function testNotificationRepositoryContract(
 
       it("should handle non-existent notification IDs", async () => {
         await expect(
-          repository.markAsRead(["non_existent"])
+          repository.markAsRead(["non_existent"]),
         ).resolves.not.toThrow();
       });
     });
@@ -298,17 +301,17 @@ export function testNotificationRepositoryContract(
 
       it("should return notification counts structure", async () => {
         const counts = await repository.getNotificationCounts(123);
-        
+
         expect(counts).toHaveProperty("total");
         expect(counts).toHaveProperty("unread");
         expect(counts).toHaveProperty("byType");
         expect(counts).toHaveProperty("bySeverity");
-        
+
         expect(typeof counts.total).toBe("number");
         expect(typeof counts.unread).toBe("number");
         expect(typeof counts.byType).toBe("object");
         expect(typeof counts.bySeverity).toBe("object");
-        
+
         expect(counts.total).toBeGreaterThanOrEqual(0);
         expect(counts.unread).toBeGreaterThanOrEqual(0);
         expect(counts.unread).toBeLessThanOrEqual(counts.total);
@@ -333,20 +336,26 @@ export function testNotificationRepositoryContract(
       });
 
       it("should return campaign notification summary", async () => {
-        const summary = await repository.getCampaignNotifications("campaign_123", 123);
-        
+        const summary = await repository.getCampaignNotifications(
+          "campaign_123",
+          123,
+        );
+
         expect(summary).toHaveProperty("unread");
         expect(summary).toHaveProperty("types");
         expect(summary).toHaveProperty("recent");
-        
+
         expect(typeof summary.unread).toBe("number");
         expect(Array.isArray(summary.types)).toBe(true);
         expect(Array.isArray(summary.recent)).toBe(true);
       });
 
       it("should return empty summary for unknown campaign", async () => {
-        const summary = await repository.getCampaignNotifications("unknown", 123);
-        
+        const summary = await repository.getCampaignNotifications(
+          "unknown",
+          123,
+        );
+
         expect(summary.unread).toBe(0);
         expect(summary.types).toEqual([]);
         expect(summary.recent).toEqual([]);
@@ -369,7 +378,10 @@ export function testNotificationRepositoryContract(
         await repository.createNotification(request);
 
         // Check for duplicate immediately
-        const isDuplicate = await repository.isDuplicateNotification(request, 5);
+        const isDuplicate = await repository.isDuplicateNotification(
+          request,
+          5,
+        );
         expect(typeof isDuplicate).toBe("boolean");
       });
 
@@ -384,7 +396,10 @@ export function testNotificationRepositoryContract(
         };
 
         // Check for non-existent duplicate
-        const isDuplicate = await repository.isDuplicateNotification(request, 0);
+        const isDuplicate = await repository.isDuplicateNotification(
+          request,
+          0,
+        );
         expect(isDuplicate).toBe(false);
       });
     });
@@ -401,10 +416,10 @@ export function testNotificationRepositoryContract(
       it("should validate required fields", async () => {
         await expect(
           repository.createNotification({
-            type: "" as any,
+            type: "" as unknown,
             customerId: 123,
             data: { message: "test" },
-          })
+          }),
         ).rejects.toThrow();
       });
 
@@ -414,7 +429,7 @@ export function testNotificationRepositoryContract(
             type: "creative.approved" as NotificationEventType,
             customerId: 0,
             data: { message: "test" },
-          })
+          }),
         ).rejects.toThrow();
       });
 
@@ -423,8 +438,8 @@ export function testNotificationRepositoryContract(
           repository.createNotification({
             type: "creative.approved" as NotificationEventType,
             customerId: 123,
-            data: {} as any,
-          })
+            data: {} as unknown,
+          }),
         ).rejects.toThrow();
       });
     });

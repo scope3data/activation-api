@@ -4,7 +4,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 
 import type { CreativeSyncRepository } from "../../contracts/creative-sync-repository.js";
-import type { CreativeSyncStatus } from "../../types/notifications.js";
 
 /**
  * Generic contract test suite for CreativeSyncRepository
@@ -12,7 +11,7 @@ import type { CreativeSyncStatus } from "../../types/notifications.js";
  */
 export function testCreativeSyncRepositoryContract(
   repositoryFactory: () => CreativeSyncRepository,
-  cleanup?: () => Promise<void>
+  cleanup?: () => Promise<void>,
 ) {
   describe("CreativeSyncRepository Contract", () => {
     let repository: CreativeSyncRepository;
@@ -33,10 +32,11 @@ export function testCreativeSyncRepositoryContract(
           {
             syncStatus: "pending",
             approvalStatus: "pending",
-          }
+          },
         );
 
-        const syncStatus = await repository.getCreativeSyncStatus("creative_123");
+        const syncStatus =
+          await repository.getCreativeSyncStatus("creative_123");
         expect(syncStatus).toHaveLength(1);
         expect(syncStatus[0]).toMatchObject({
           salesAgentId: "sales_agent_abc",
@@ -47,17 +47,28 @@ export function testCreativeSyncRepositoryContract(
 
       it("should update existing sync status record", async () => {
         // Create initial record
-        await repository.updateSyncStatus("creative_123", "sales_agent_abc", 456, {
-          syncStatus: "pending",
-        });
+        await repository.updateSyncStatus(
+          "creative_123",
+          "sales_agent_abc",
+          456,
+          {
+            syncStatus: "pending",
+          },
+        );
 
         // Update the record
-        await repository.updateSyncStatus("creative_123", "sales_agent_abc", 456, {
-          syncStatus: "synced",
-          approvalStatus: "approved",
-        });
+        await repository.updateSyncStatus(
+          "creative_123",
+          "sales_agent_abc",
+          456,
+          {
+            syncStatus: "synced",
+            approvalStatus: "approved",
+          },
+        );
 
-        const syncStatus = await repository.getCreativeSyncStatus("creative_123");
+        const syncStatus =
+          await repository.getCreativeSyncStatus("creative_123");
         expect(syncStatus).toHaveLength(1);
         expect(syncStatus[0]).toMatchObject({
           salesAgentId: "sales_agent_abc",
@@ -67,14 +78,20 @@ export function testCreativeSyncRepositoryContract(
       });
 
       it("should handle rejection with reason", async () => {
-        await repository.updateSyncStatus("creative_123", "sales_agent_abc", 456, {
-          syncStatus: "synced",
-          approvalStatus: "rejected",
-          rejectionReason: "Format not supported",
-          requestedChanges: ["Use 1080p resolution", "Add captions"],
-        });
+        await repository.updateSyncStatus(
+          "creative_123",
+          "sales_agent_abc",
+          456,
+          {
+            syncStatus: "synced",
+            approvalStatus: "rejected",
+            rejectionReason: "Format not supported",
+            requestedChanges: ["Use 1080p resolution", "Add captions"],
+          },
+        );
 
-        const syncStatus = await repository.getCreativeSyncStatus("creative_123");
+        const syncStatus =
+          await repository.getCreativeSyncStatus("creative_123");
         expect(syncStatus[0]).toMatchObject({
           approvalStatus: "rejected",
           rejectionReason: "Format not supported",
@@ -83,13 +100,19 @@ export function testCreativeSyncRepositoryContract(
       });
 
       it("should handle sync errors", async () => {
-        await repository.updateSyncStatus("creative_123", "sales_agent_abc", 456, {
-          syncStatus: "failed",
-          syncError: "Network timeout",
-          lastSyncAttempt: new Date().toISOString(),
-        });
+        await repository.updateSyncStatus(
+          "creative_123",
+          "sales_agent_abc",
+          456,
+          {
+            syncStatus: "failed",
+            syncError: "Network timeout",
+            lastSyncAttempt: new Date().toISOString(),
+          },
+        );
 
-        const syncStatus = await repository.getCreativeSyncStatus("creative_123");
+        const syncStatus =
+          await repository.getCreativeSyncStatus("creative_123");
         expect(syncStatus[0]).toMatchObject({
           status: "failed",
         });
@@ -98,7 +121,9 @@ export function testCreativeSyncRepositoryContract(
 
     describe("getCreativeSyncStatus", () => {
       it("should return empty array for creative with no sync status", async () => {
-        const syncStatus = await repository.getCreativeSyncStatus("nonexistent_creative");
+        const syncStatus = await repository.getCreativeSyncStatus(
+          "nonexistent_creative",
+        );
         expect(syncStatus).toEqual([]);
       });
 
@@ -112,10 +137,11 @@ export function testCreativeSyncRepositoryContract(
           syncStatus: "pending",
         });
 
-        const syncStatus = await repository.getCreativeSyncStatus("creative_123");
+        const syncStatus =
+          await repository.getCreativeSyncStatus("creative_123");
         expect(syncStatus).toHaveLength(2);
-        
-        const agentIds = syncStatus.map(s => s.salesAgentId).sort();
+
+        const agentIds = syncStatus.map((s) => s.salesAgentId).sort();
         expect(agentIds).toEqual(["agent_1", "agent_2"]);
       });
 
@@ -124,7 +150,8 @@ export function testCreativeSyncRepositoryContract(
           syncStatus: "synced",
         });
 
-        const syncStatus = await repository.getCreativeSyncStatus("creative_123");
+        const syncStatus =
+          await repository.getCreativeSyncStatus("creative_123");
         expect(syncStatus[0]).toHaveProperty("salesAgentName");
         expect(typeof syncStatus[0].salesAgentName).toBe("string");
       });
@@ -141,15 +168,15 @@ export function testCreativeSyncRepositoryContract(
         });
 
         const batchStatus = await repository.getBatchCreativeSyncStatus([
-          "creative_1", 
-          "creative_2", 
-          "creative_3"
+          "creative_1",
+          "creative_2",
+          "creative_3",
         ]);
 
         expect(batchStatus).toHaveProperty("creative_1");
         expect(batchStatus).toHaveProperty("creative_2");
         expect(batchStatus).toHaveProperty("creative_3");
-        
+
         expect(batchStatus.creative_1).toHaveLength(1);
         expect(batchStatus.creative_2).toHaveLength(1);
         expect(batchStatus.creative_3).toHaveLength(0);
@@ -163,43 +190,57 @@ export function testCreativeSyncRepositoryContract(
 
     describe("findRecentSalesAgents", () => {
       it("should return empty array when no recent activity", async () => {
-        const agents = await repository.findRecentSalesAgents(456, "video/standard", {
-          daysBack: 30,
-          includeActive: true,
-        });
+        const agents = await repository.findRecentSalesAgents(
+          456,
+          "video/standard",
+          {
+            daysBack: 30,
+            includeActive: true,
+          },
+        );
         expect(agents).toEqual([]);
       });
 
       it("should respect daysBack parameter", async () => {
         // This test would require setting up tactics data
         // Implementation depends on having tactic creation in the test setup
-        const agents = await repository.findRecentSalesAgents(456, "video/standard", {
-          daysBack: 7,
-          includeActive: true,
-        });
+        const agents = await repository.findRecentSalesAgents(
+          456,
+          "video/standard",
+          {
+            daysBack: 7,
+            includeActive: true,
+          },
+        );
         expect(Array.isArray(agents)).toBe(true);
       });
 
       it("should limit results when specified", async () => {
-        const agents = await repository.findRecentSalesAgents(456, "video/standard", {
-          daysBack: 30,
-          includeActive: true,
-          limit: 5,
-        });
+        const agents = await repository.findRecentSalesAgents(
+          456,
+          "video/standard",
+          {
+            daysBack: 30,
+            includeActive: true,
+            limit: 5,
+          },
+        );
         expect(agents.length).toBeLessThanOrEqual(5);
       });
     });
 
     describe("getSalesAgentCapabilities", () => {
       it("should return null for unknown sales agent", async () => {
-        const capabilities = await repository.getSalesAgentCapabilities("unknown_agent");
+        const capabilities =
+          await repository.getSalesAgentCapabilities("unknown_agent");
         expect(capabilities).toBeNull();
       });
 
       it("should return capabilities when available", async () => {
         // This test depends on having sales agent capabilities data
         // In a real implementation, this would be seeded or created
-        const capabilities = await repository.getSalesAgentCapabilities("known_agent");
+        const capabilities =
+          await repository.getSalesAgentCapabilities("known_agent");
         if (capabilities) {
           expect(capabilities).toHaveProperty("salesAgentId");
           expect(capabilities).toHaveProperty("supportsVideo");
@@ -214,7 +255,7 @@ export function testCreativeSyncRepositoryContract(
       it("should return false for unknown sales agent", async () => {
         const compatible = await repository.isFormatCompatible(
           "video/standard",
-          "unknown_agent"
+          "unknown_agent",
         );
         expect(compatible).toBe(false);
       });
@@ -223,7 +264,7 @@ export function testCreativeSyncRepositoryContract(
         // This test requires sales agent capabilities to be set up
         const compatible = await repository.isFormatCompatible(
           "display/banner",
-          "display_agent"
+          "display_agent",
         );
         expect(typeof compatible).toBe("boolean");
       });
@@ -232,7 +273,7 @@ export function testCreativeSyncRepositoryContract(
     describe("getSyncStatistics", () => {
       it("should return statistics structure", async () => {
         const stats = await repository.getSyncStatistics(456);
-        
+
         expect(stats).toHaveProperty("totalCreatives");
         expect(stats).toHaveProperty("syncedCreatives");
         expect(stats).toHaveProperty("approvedCreatives");
@@ -240,7 +281,7 @@ export function testCreativeSyncRepositoryContract(
         expect(stats).toHaveProperty("failedSyncs");
         expect(stats).toHaveProperty("byFormat");
         expect(stats).toHaveProperty("bySalesAgent");
-        
+
         expect(typeof stats.totalCreatives).toBe("number");
         expect(typeof stats.syncedCreatives).toBe("number");
         expect(typeof stats.byFormat).toBe("object");
@@ -251,7 +292,7 @@ export function testCreativeSyncRepositoryContract(
         const stats = await repository.getSyncStatistics(456, {
           campaignId: "campaign_123",
         });
-        
+
         expect(stats).toHaveProperty("totalCreatives");
         expect(typeof stats.totalCreatives).toBe("number");
       });
@@ -263,7 +304,7 @@ export function testCreativeSyncRepositoryContract(
             end: "2024-01-31",
           },
         });
-        
+
         expect(stats).toHaveProperty("totalCreatives");
         expect(typeof stats.totalCreatives).toBe("number");
       });
@@ -286,47 +327,48 @@ export function testCreativeSyncRepositoryContract(
         await repository.cleanupOldSyncStatus(1);
 
         // Recent record should still exist
-        const syncStatus = await repository.getCreativeSyncStatus("creative_recent");
+        const syncStatus =
+          await repository.getCreativeSyncStatus("creative_recent");
         expect(syncStatus).toHaveLength(1);
       });
     });
 
     describe("error handling", () => {
       it("should handle malformed creative IDs gracefully", async () => {
-        await expect(
-          repository.getCreativeSyncStatus("")
-        ).resolves.toEqual([]);
+        await expect(repository.getCreativeSyncStatus("")).resolves.toEqual([]);
       });
 
       it("should handle malformed brand agent IDs", async () => {
         await expect(
           repository.updateSyncStatus("creative_123", "agent_1", 0, {
             syncStatus: "pending",
-          })
+          }),
         ).rejects.toThrow();
       });
 
       it("should validate sync status values", async () => {
         await expect(
           repository.updateSyncStatus("creative_123", "agent_1", 456, {
-            syncStatus: "invalid_status" as any,
-          })
+            syncStatus: "invalid_status" as unknown,
+          }),
         ).rejects.toThrow();
       });
     });
 
     describe("concurrent access", () => {
       it("should handle concurrent updates to same creative-agent pair", async () => {
-        const promises = Array.from({ length: 5 }, (_, i) =>
+        const promises = Array.from({ length: 5 }, () =>
           repository.updateSyncStatus("creative_concurrent", "agent_1", 456, {
             syncStatus: "synced",
             approvalStatus: "approved",
-          })
+          }),
         );
 
         await Promise.all(promises);
 
-        const syncStatus = await repository.getCreativeSyncStatus("creative_concurrent");
+        const syncStatus = await repository.getCreativeSyncStatus(
+          "creative_concurrent",
+        );
         expect(syncStatus).toHaveLength(1);
         expect(syncStatus[0]).toMatchObject({
           status: "synced",

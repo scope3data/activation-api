@@ -3649,6 +3649,16 @@ export class Scope3ApiClient {
     }
   }
 
+  /**
+   * Get campaign by ID (alias for getBrandAgentCampaign for backward compatibility)
+   */
+  async getCampaign(
+    apiKey: string,
+    campaignId: string,
+  ): Promise<BrandAgentCampaign> {
+    return this.getBrandAgentCampaign(apiKey, campaignId);
+  }
+
   // Removed parseCreativePrompt - AI generation handled by creative agents
   // Removed detectFileFormat - handled by REST upload layer
 }

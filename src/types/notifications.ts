@@ -8,12 +8,12 @@
 export enum NotificationEventType {
   // Creative sync events
   CREATIVE_SYNC_STARTED = "creative.sync_started",
-  CREATIVE_SYNC_COMPLETED = "creative.sync_completed", 
+  CREATIVE_SYNC_COMPLETED = "creative.sync_completed",
   CREATIVE_SYNC_FAILED = "creative.sync_failed",
 
   // Creative approval events
   CREATIVE_APPROVED = "creative.approved",
-  CREATIVE_REJECTED = "creative.rejected", 
+  CREATIVE_REJECTED = "creative.rejected",
   CREATIVE_CHANGES_REQUESTED = "creative.changes_requested",
 
   // Campaign health events
@@ -24,7 +24,7 @@ export enum NotificationEventType {
   SALESAGENT_UNAVAILABLE = "salesagent.unavailable",
   SALESAGENT_AVAILABLE = "salesagent.available",
 
-  // Tactic events  
+  // Tactic events
   TACTIC_MISSING_CREATIVES = "tactic.missing_creatives",
   TACTIC_READY = "tactic.ready",
 }
@@ -37,7 +37,7 @@ export interface Notification {
   type: NotificationEventType;
   timestamp: string; // ISO 8601
 
-  // Context for routing  
+  // Context for routing
   customerId: number;
   brandAgentId?: number;
 
@@ -55,7 +55,7 @@ export interface Notification {
 export interface NotificationData {
   // Resource IDs for action
   creativeId?: string;
-  campaignId?: string; 
+  campaignId?: string;
   salesAgentId?: string;
   tacticId?: string;
 
@@ -75,7 +75,7 @@ export interface NotificationData {
 export interface CreativeSyncStatus {
   salesAgentId: string;
   salesAgentName: string;
-  status: "synced" | "failed" | "pending" | "not_applicable";
+  status: "synced" | "failed" | "pending" | "not_applicable" | "syncing";
   approvalStatus?: "approved" | "rejected" | "pending" | "changes_requested";
   lastSyncAttempt?: string;
   rejectionReason?: string;
@@ -87,7 +87,7 @@ export interface CreativeSyncStatus {
  */
 export interface SalesAgentCapabilities {
   salesAgentId: string;
-  
+
   // Format support
   supportsVideo: boolean;
   supportsDisplay: boolean;
@@ -114,17 +114,17 @@ export interface SalesAgentCapabilities {
  */
 export interface CampaignSyncHealth {
   status: "healthy" | "warning" | "critical";
-  
+
   summary: {
-    creativesFullySynced: number;    // Synced to all relevant sales agents
+    creativesFullySynced: number; // Synced to all relevant sales agents
     creativesPartiallySynced: number; // Some agents missing
-    creativesNotSynced: number;       // No sync yet
-    creativesWithIssues: number;      // Rejections or failures
+    creativesNotSynced: number; // No sync yet
+    creativesWithIssues: number; // Rejections or failures
   };
 
   issues?: Array<{
     creativeId: string;
-    creativeName: string; 
+    creativeName: string;
     issue: string;
     salesAgentName: string;
     suggestedAction: string;
@@ -171,6 +171,7 @@ export interface NotificationFilter {
   brandAgentId?: number;
   campaignId?: string;
   creativeId?: string;
+  customerId?: number;
   unreadOnly?: boolean;
   limit?: number;
   offset?: number;

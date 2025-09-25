@@ -98,6 +98,16 @@ export class AuthenticationService {
   }
 
   /**
+   * Validate API key format and existence
+   */
+  async validateApiKey(apiKey: string): Promise<void> {
+    const context = await this.resolveCustomerContext(apiKey);
+    if (!context) {
+      throw new Error("Invalid API key");
+    }
+  }
+
+  /**
    * Validate token permissions for specific operations
    * Currently all valid tokens have full access
    */

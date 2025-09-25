@@ -5,15 +5,11 @@ import type {
   NotificationCreateRequest,
   NotificationListResponse,
   NotificationFilter,
-  NotificationWebhookPayload,
 } from "../types/notifications.js";
 
 import {
   BigQueryTypes,
   createBigQueryParams,
-  toBigQueryInt64,
-  toBigQueryString,
-  toBigQueryJson,
 } from "../utils/bigquery-types.js";
 import { BigQueryBaseService } from "./base/bigquery-base-service.js";
 
@@ -26,11 +22,12 @@ import { BigQueryBaseService } from "./base/bigquery-base-service.js";
  * - Filtering and lifecycle management
  */
 export class NotificationService extends BigQueryBaseService {
-  
   /**
    * Create a new notification with automatic deduplication
    */
-  async createNotification(request: NotificationCreateRequest): Promise<string> {
+  async createNotification(
+    request: NotificationCreateRequest,
+  ): Promise<string> {
     // Check for recent duplicate notifications (same type, same resources, within 5 minutes)
     const isDuplicate = await this.isDuplicateNotification(request);
     if (isDuplicate) {
@@ -48,19 +45,31 @@ export class NotificationService extends BigQueryBaseService {
       )
     `;
 
-    const { params, types } = createBigQueryParams({
-      notificationId: toBigQueryString(notificationId),
-      type: toBigQueryString(request.type),
-      customerId: toBigQueryInt64(request.customerId),
-      brandAgentId: request.brandAgentId ? toBigQueryInt64(request.brandAgentId) : null,
-      data: toBigQueryJson(request.data),
-    }, BigQueryTypes);
+    const { params } = createBigQueryParams(
+      {
+        notificationId: notificationId,
+        type: request.type,
+        customerId: request.customerId,
+        brandAgentId: request.brandAgentId || null,
+        data: request.data ? JSON.stringify(request.data) : null,
+      },
+      {
+        notificationId: BigQueryTypes.STRING,
+        type: BigQueryTypes.STRING,
+        customerId: BigQueryTypes.INT64,
+        brandAgentId: BigQueryTypes.INT64,
+        data: BigQueryTypes.JSON,
+      },
+    );
 
     await this.executeQuery(query, params);
 
     // Trigger webhook delivery for external agents (async, don't wait)
     this.deliverWebhook(notificationId).catch((error) => {
-      console.error(`Webhook delivery failed for notification ${notificationId}:`, error);
+      console.error(
+        `Webhook delivery failed for notification ${notificationId}:`,
+        error,
+      );
     });
 
     return notificationId;
@@ -69,7 +78,9 @@ export class NotificationService extends BigQueryBaseService {
   /**
    * Get notifications with filtering options
    */
-  async getNotifications(filter: NotificationFilter = {}): Promise<NotificationListResponse> {
+  async getNotifications(
+    filter: NotificationFilter = {},
+  ): Promise<NotificationListResponse> {
     const conditions: string[] = [];
     const params: Record<string, unknown> = {};
 
@@ -81,24 +92,29 @@ export class NotificationService extends BigQueryBaseService {
 
     if (filter.brandAgentId) {
       conditions.push("brand_agent_id = @brandAgentId");
-      params.brandAgentId = toBigQueryInt64(filter.brandAgentId);
+      params.brandAgentId = filter.brandAgentId;
     }
 
     if (filter.campaignId) {
-      conditions.push("JSON_EXTRACT_SCALAR(data, '$.campaignId') = @campaignId");
-      params.campaignId = toBigQueryString(filter.campaignId);
+      conditions.push(
+        "JSON_EXTRACT_SCALAR(data, '$.campaignId') = @campaignId",
+      );
+      params.campaignId = filter.campaignId;
     }
 
     if (filter.creativeId) {
-      conditions.push("JSON_EXTRACT_SCALAR(data, '$.creativeId') = @creativeId");  
-      params.creativeId = toBigQueryString(filter.creativeId);
+      conditions.push(
+        "JSON_EXTRACT_SCALAR(data, '$.creativeId') = @creativeId",
+      );
+      params.creativeId = filter.creativeId;
     }
 
     if (filter.unreadOnly) {
       conditions.push("read = false");
     }
 
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+    const whereClause =
+      conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
     const limit = filter.limit || 50;
     const offset = filter.offset || 0;
 
@@ -109,7 +125,7 @@ export class NotificationService extends BigQueryBaseService {
       ${whereClause}
     `;
 
-    // Data query  
+    // Data query
     const dataQuery = `
       SELECT 
         id,
@@ -128,8 +144,8 @@ export class NotificationService extends BigQueryBaseService {
 
     const queryParams = {
       ...params,
-      limit: toBigQueryInt64(limit),
-      offset: toBigQueryInt64(offset),
+      limit: limit,
+      offset: offset,
     };
 
     // Execute both queries
@@ -178,9 +194,14 @@ export class NotificationService extends BigQueryBaseService {
       WHERE id IN UNNEST(@notificationIds)
     `;
 
-    const { params } = createBigQueryParams({
-      notificationIds: notificationIds.map(toBigQueryString),
-    }, BigQueryTypes);
+    const { params } = createBigQueryParams(
+      {
+        notificationIds: notificationIds,
+      },
+      {
+        notificationIds: BigQueryTypes.STRING,
+      },
+    );
 
     await this.executeQuery(query, params);
   }
@@ -197,9 +218,14 @@ export class NotificationService extends BigQueryBaseService {
       WHERE id IN UNNEST(@notificationIds)
     `;
 
-    const { params } = createBigQueryParams({
-      notificationIds: notificationIds.map(toBigQueryString),
-    }, BigQueryTypes);
+    const { params } = createBigQueryParams(
+      {
+        notificationIds: notificationIds,
+      },
+      {
+        notificationIds: BigQueryTypes.STRING,
+      },
+    );
 
     await this.executeQuery(query, params);
   }
@@ -217,12 +243,12 @@ export class NotificationService extends BigQueryBaseService {
   }> {
     const conditions = ["customer_id = @customerId"];
     const params: Record<string, unknown> = {
-      customerId: toBigQueryInt64(customerId),
+      customerId: customerId,
     };
 
     if (brandAgentId) {
       conditions.push("brand_agent_id = @brandAgentId");
-      params.brandAgentId = toBigQueryInt64(brandAgentId);
+      params.brandAgentId = brandAgentId;
     }
 
     const whereClause = `WHERE ${conditions.join(" AND ")}`;
@@ -277,10 +303,16 @@ export class NotificationService extends BigQueryBaseService {
       AND created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
     `;
 
-    const { params } = createBigQueryParams({
-      customerId: toBigQueryInt64(customerId),
-      campaignId: toBigQueryString(campaignId),
-    }, BigQueryTypes);
+    const { params } = createBigQueryParams(
+      {
+        customerId: customerId,
+        campaignId: campaignId,
+      },
+      {
+        customerId: BigQueryTypes.INT64,
+        campaignId: BigQueryTypes.STRING,
+      },
+    );
 
     const results = await this.executeQuery<{
       unread: number;
@@ -303,14 +335,16 @@ export class NotificationService extends BigQueryBaseService {
       WHERE created_at < TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)
     `;
 
-    const results = await this.executeQuery(query);
+    await this.executeQuery(query);
     // BigQuery doesn't return row count directly, so estimate cleanup success
     return 1; // Indicates cleanup ran successfully
   }
 
   // Private helper methods
 
-  private async isDuplicateNotification(request: NotificationCreateRequest): Promise<boolean> {
+  private async isDuplicateNotification(
+    request: NotificationCreateRequest,
+  ): Promise<boolean> {
     const query = `
       SELECT COUNT(*) as duplicate_count
       FROM ${this.getTableRef("notifications")}
@@ -324,17 +358,20 @@ export class NotificationService extends BigQueryBaseService {
     `;
 
     const params: Record<string, unknown> = {
-      type: toBigQueryString(request.type),
-      customerId: toBigQueryInt64(request.customerId),
-      creativeId: toBigQueryString(request.data.creativeId || ""),
-      salesAgentId: toBigQueryString(request.data.salesAgentId || ""),
+      type: request.type,
+      customerId: request.customerId,
+      creativeId: request.data.creativeId || "",
+      salesAgentId: request.data.salesAgentId || "",
     };
 
     if (request.brandAgentId) {
-      params.brandAgentId = toBigQueryInt64(request.brandAgentId);
+      params.brandAgentId = request.brandAgentId;
     }
 
-    const results = await this.executeQuery<{ duplicate_count: number }>(query, params);
+    const results = await this.executeQuery<{ duplicate_count: number }>(
+      query,
+      params,
+    );
     return (results[0]?.duplicate_count || 0) > 0;
   }
 
@@ -343,14 +380,12 @@ export class NotificationService extends BigQueryBaseService {
     // This would:
     // 1. Get notification details
     // 2. Find webhook subscriptions for the customer/brand agent
-    // 3. Generate HMAC signature for verification  
+    // 3. Generate HMAC signature for verification
     // 4. POST to webhook URLs with retry logic
     // 5. Log delivery results
-    
-    console.log(`Webhook delivery for notification ${notificationId} - TODO: Implement`);
-  }
 
-  private getTableRef(table: string): string {
-    return `${this.projectId}.${this.dataset}.${table}`;
+    console.log(
+      `Webhook delivery for notification ${notificationId} - TODO: Implement`,
+    );
   }
 }

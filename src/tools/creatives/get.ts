@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BigQuery } from "@google-cloud/bigquery";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
@@ -46,9 +47,9 @@ export const creativeGetTool = (client: Scope3ApiClient) => ({
       }
 
       // Get sync status with sales agents
-      const authService = new AuthenticationService();
+      const authService = new AuthenticationService(new BigQuery());
       const creativeSyncService = new CreativeSyncService(authService);
-      
+
       let syncStatus: any[] = [];
       let syncStatusSummary = {
         totalRelevantAgents: 0,
@@ -59,13 +60,19 @@ export const creativeGetTool = (client: Scope3ApiClient) => ({
       };
 
       try {
-        syncStatus = await creativeSyncService.getCreativeSyncStatus(args.creativeId);
+        syncStatus = await creativeSyncService.getCreativeSyncStatus(
+          args.creativeId,
+        );
         syncStatusSummary = {
           totalRelevantAgents: syncStatus.length,
-          synced: syncStatus.filter(s => s.status === "synced").length,
-          approved: syncStatus.filter(s => s.approvalStatus === "approved").length,
-          rejected: syncStatus.filter(s => s.approvalStatus === "rejected").length,
-          pending: syncStatus.filter(s => !s.approvalStatus || s.approvalStatus === "pending").length,
+          synced: syncStatus.filter((s) => s.status === "synced").length,
+          approved: syncStatus.filter((s) => s.approvalStatus === "approved")
+            .length,
+          rejected: syncStatus.filter((s) => s.approvalStatus === "rejected")
+            .length,
+          pending: syncStatus.filter(
+            (s) => !s.approvalStatus || s.approvalStatus === "pending",
+          ).length,
         };
       } catch (syncError) {
         console.warn("Failed to fetch sync status:", syncError);
@@ -144,17 +151,21 @@ export const creativeGetTool = (client: Scope3ApiClient) => ({
       // Sales agent sync status
       if (syncStatus.length > 0) {
         summary += `**Sales Agent Sync Status** (${syncStatus.length} agents):\n`;
-        
+
         // Group by status for better display
-        const synced = syncStatus.filter(s => s.status === "synced");
-        const failed = syncStatus.filter(s => s.status === "failed");
-        const pending = syncStatus.filter(s => s.status === "pending");
+        const synced = syncStatus.filter((s) => s.status === "synced");
+        const failed = syncStatus.filter((s) => s.status === "failed");
+        const pending = syncStatus.filter((s) => s.status === "pending");
 
         if (synced.length > 0) {
           summary += `• ✅ **Synced** (${synced.length}):\n`;
-          synced.forEach(agent => {
-            const approvalEmoji = agent.approvalStatus === "approved" ? "✅" : 
-                                agent.approvalStatus === "rejected" ? "❌" : "⏳";
+          synced.forEach((agent) => {
+            const approvalEmoji =
+              agent.approvalStatus === "approved"
+                ? "✅"
+                : agent.approvalStatus === "rejected"
+                  ? "❌"
+                  : "⏳";
             summary += `  - ${agent.salesAgentName}: ${approvalEmoji} ${agent.approvalStatus || "Pending approval"}\n`;
             if (agent.approvalStatus === "rejected" && agent.rejectionReason) {
               summary += `    Reason: ${agent.rejectionReason}\n`;
@@ -164,14 +175,14 @@ export const creativeGetTool = (client: Scope3ApiClient) => ({
 
         if (pending.length > 0) {
           summary += `• ⏳ **Sync in Progress** (${pending.length}):\n`;
-          pending.forEach(agent => {
+          pending.forEach((agent) => {
             summary += `  - ${agent.salesAgentName}: Syncing...\n`;
           });
         }
 
         if (failed.length > 0) {
           summary += `• ❌ **Sync Failed** (${failed.length}):\n`;
-          failed.forEach(agent => {
+          failed.forEach((agent) => {
             summary += `  - ${agent.salesAgentName}: ${agent.rejectionReason || "Sync failed"}\n`;
           });
         }

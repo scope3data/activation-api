@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BigQuery } from "@google-cloud/bigquery";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
@@ -57,18 +58,22 @@ export const creativeAssignTool = (client: Scope3ApiClient) => ({
       if (result.success) {
         // Trigger automatic sync to sales agents used by this campaign
         try {
-          const authService = new AuthenticationService();
+          const authService = new AuthenticationService(new BigQuery());
           const creativeSyncService = new CreativeSyncService(authService);
           const notificationService = new NotificationService(authService);
           creativeSyncService.setNotificationService(notificationService);
 
           // Trigger sync in background - don't wait for completion
-          creativeSyncService.onCreativeAssignedToCampaign(args.creativeId, args.campaignId)
+          creativeSyncService
+            .onCreativeAssignedToCampaign(args.creativeId, args.campaignId)
             .catch((syncError) => {
-              console.warn(`Background sync failed for creative ${args.creativeId} in campaign ${args.campaignId}:`, syncError);
+              console.warn(
+                `Background sync failed for creative ${args.creativeId} in campaign ${args.campaignId}:`,
+                syncError,
+              );
             });
         } catch (syncError) {
-          console.warn('Failed to initialize sync services:', syncError);
+          console.warn("Failed to initialize sync services:", syncError);
           // Don't fail the assignment if sync setup fails
         }
         const response = `✅ **Creative assigned successfully!**

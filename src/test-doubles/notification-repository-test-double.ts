@@ -11,7 +11,6 @@ import type {
 } from "../contracts/notification-repository.js";
 import type {
   Notification,
-  NotificationData,
   NotificationEventType,
   NotificationCreateRequest,
   NotificationFilter,
@@ -38,7 +37,9 @@ interface NotificationRecord {
  * In-memory implementation of NotificationRepository for testing
  * Provides fast, predictable behavior for unit tests and development
  */
-export class NotificationRepositoryTestDouble implements NotificationRepository {
+export class NotificationRepositoryTestDouble
+  implements NotificationRepository
+{
   private notifications: Map<string, NotificationRecord> = new Map();
   private nextId = 1;
 
@@ -46,7 +47,9 @@ export class NotificationRepositoryTestDouble implements NotificationRepository 
     return `notif_${Date.now()}_${this.nextId++}`;
   }
 
-  async createNotification(request: NotificationCreateRequest): Promise<string> {
+  async createNotification(
+    request: NotificationCreateRequest,
+  ): Promise<string> {
     if (!request.type || !request.customerId) {
       throw new Error("type and customerId are required");
     }
@@ -85,56 +88,75 @@ export class NotificationRepositoryTestDouble implements NotificationRepository 
     return notificationId;
   }
 
-  async getNotifications(filter?: NotificationFilter): Promise<NotificationListResponse> {
+  async getNotifications(
+    filter?: NotificationFilter,
+  ): Promise<NotificationListResponse> {
     let filteredNotifications = Array.from(this.notifications.values());
 
     // Apply filters
     if (filter?.customerId) {
-      filteredNotifications = filteredNotifications.filter(n => n.customerId === filter.customerId);
+      filteredNotifications = filteredNotifications.filter(
+        (n) => n.customerId === filter.customerId,
+      );
     }
 
     if (filter?.brandAgentId) {
-      filteredNotifications = filteredNotifications.filter(n => n.brandAgentId === filter.brandAgentId);
+      filteredNotifications = filteredNotifications.filter(
+        (n) => n.brandAgentId === filter.brandAgentId,
+      );
     }
 
     if (filter?.types && filter.types.length > 0) {
-      filteredNotifications = filteredNotifications.filter(n => filter.types!.includes(n.type));
+      filteredNotifications = filteredNotifications.filter((n) =>
+        filter.types!.includes(n.type),
+      );
     }
 
     if (filter?.creativeId) {
-      filteredNotifications = filteredNotifications.filter(n => n.data.creativeId === filter.creativeId);
+      filteredNotifications = filteredNotifications.filter(
+        (n) => n.data.creativeId === filter.creativeId,
+      );
     }
 
     if (filter?.campaignId) {
-      filteredNotifications = filteredNotifications.filter(n => n.data.campaignId === filter.campaignId);
+      filteredNotifications = filteredNotifications.filter(
+        (n) => n.data.campaignId === filter.campaignId,
+      );
     }
 
     if (filter?.unreadOnly) {
-      filteredNotifications = filteredNotifications.filter(n => !n.read);
+      filteredNotifications = filteredNotifications.filter((n) => !n.read);
     }
 
     // Sort by creation date (newest first)
-    filteredNotifications.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    filteredNotifications.sort((a, b) =>
+      b.createdAt.localeCompare(a.createdAt),
+    );
 
     const totalCount = filteredNotifications.length;
     const offset = filter?.offset || 0;
     const limit = filter?.limit || 50;
 
     // Apply pagination
-    const paginatedNotifications = filteredNotifications.slice(offset, offset + limit);
+    const paginatedNotifications = filteredNotifications.slice(
+      offset,
+      offset + limit,
+    );
     const hasMore = offset + limit < totalCount;
 
     // Convert to response format
-    const notifications: Notification[] = paginatedNotifications.map(record => ({
-      id: record.id,
-      type: record.type,
-      timestamp: record.createdAt,
-      customerId: record.customerId,
-      brandAgentId: record.brandAgentId,
-      data: record.data,
-      read: record.read,
-      acknowledged: record.acknowledged,
-    }));
+    const notifications: Notification[] = paginatedNotifications.map(
+      (record) => ({
+        id: record.id,
+        type: record.type,
+        timestamp: record.createdAt,
+        customerId: record.customerId,
+        brandAgentId: record.brandAgentId,
+        data: record.data,
+        read: record.read,
+        acknowledged: record.acknowledged,
+      }),
+    );
 
     return {
       notifications,
@@ -163,7 +185,7 @@ export class NotificationRepositoryTestDouble implements NotificationRepository 
 
   async markAsRead(notificationIds: string[]): Promise<void> {
     const now = new Date().toISOString();
-    
+
     for (const id of notificationIds) {
       const notification = this.notifications.get(id);
       if (notification) {
@@ -175,7 +197,7 @@ export class NotificationRepositoryTestDouble implements NotificationRepository 
 
   async markAsAcknowledged(notificationIds: string[]): Promise<void> {
     const now = new Date().toISOString();
-    
+
     for (const id of notificationIds) {
       const notification = this.notifications.get(id);
       if (notification) {
@@ -189,7 +211,7 @@ export class NotificationRepositoryTestDouble implements NotificationRepository 
 
   async getNotificationCounts(
     customerId: number,
-    brandAgentId?: number
+    brandAgentId?: number,
   ): Promise<{
     total: number;
     unread: number;
@@ -197,15 +219,17 @@ export class NotificationRepositoryTestDouble implements NotificationRepository 
     bySeverity: Record<string, number>;
   }> {
     let filteredNotifications = Array.from(this.notifications.values()).filter(
-      n => n.customerId === customerId
+      (n) => n.customerId === customerId,
     );
 
     if (brandAgentId) {
-      filteredNotifications = filteredNotifications.filter(n => n.brandAgentId === brandAgentId);
+      filteredNotifications = filteredNotifications.filter(
+        (n) => n.brandAgentId === brandAgentId,
+      );
     }
 
     const total = filteredNotifications.length;
-    const unread = filteredNotifications.filter(n => !n.read).length;
+    const unread = filteredNotifications.filter((n) => !n.read).length;
 
     const byType: Record<string, number> = {};
     const bySeverity: Record<string, number> = {};
@@ -213,7 +237,7 @@ export class NotificationRepositoryTestDouble implements NotificationRepository 
     for (const notification of filteredNotifications) {
       // Count by type
       byType[notification.type] = (byType[notification.type] || 0) + 1;
-      
+
       // Count by severity (simplified mapping)
       const severity = this.getSeverityFromType(notification.type);
       bySeverity[severity] = (bySeverity[severity] || 0) + 1;
@@ -229,24 +253,26 @@ export class NotificationRepositoryTestDouble implements NotificationRepository 
 
   async getCampaignNotifications(
     campaignId: string,
-    customerId: number
+    customerId: number,
   ): Promise<{
     unread: number;
     types: NotificationEventType[];
     recent: Notification[];
   }> {
-    const campaignNotifications = Array.from(this.notifications.values()).filter(
-      n => n.customerId === customerId && n.data.campaignId === campaignId
+    const campaignNotifications = Array.from(
+      this.notifications.values(),
+    ).filter(
+      (n) => n.customerId === customerId && n.data.campaignId === campaignId,
     );
 
-    const unread = campaignNotifications.filter(n => !n.read).length;
-    const types = [...new Set(campaignNotifications.map(n => n.type))];
-    
+    const unread = campaignNotifications.filter((n) => !n.read).length;
+    const types = [...new Set(campaignNotifications.map((n) => n.type))];
+
     // Get 5 most recent notifications
     const recent: Notification[] = campaignNotifications
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .slice(0, 5)
-      .map(record => ({
+      .map((record) => ({
         id: record.id,
         type: record.type,
         timestamp: record.createdAt,
@@ -266,7 +292,7 @@ export class NotificationRepositoryTestDouble implements NotificationRepository 
 
   async isDuplicateNotification(
     request: NotificationCreateRequest,
-    windowMinutes: number = 5
+    windowMinutes: number = 5,
   ): Promise<boolean> {
     const cutoffTime = new Date();
     cutoffTime.setMinutes(cutoffTime.getMinutes() - windowMinutes);
@@ -296,17 +322,20 @@ export class NotificationRepositoryTestDouble implements NotificationRepository 
         start: string;
         end: string;
       };
-    }
+    },
   ): Promise<{
     totalNotifications: number;
     readRate: number;
     acknowledgmentRate: number;
-    byType: Record<string, {
-      count: number;
-      readRate: number;
-      avgTimeToRead: number;
-      avgTimeToAcknowledge: number;
-    }>;
+    byType: Record<
+      string,
+      {
+        count: number;
+        readRate: number;
+        avgTimeToRead: number;
+        avgTimeToAcknowledge: number;
+      }
+    >;
     byDay: Array<{
       date: string;
       count: number;
@@ -314,33 +343,48 @@ export class NotificationRepositoryTestDouble implements NotificationRepository 
     }>;
   }> {
     let filteredNotifications = Array.from(this.notifications.values()).filter(
-      n => n.customerId === customerId
+      (n) => n.customerId === customerId,
     );
 
     if (options?.brandAgentId) {
-      filteredNotifications = filteredNotifications.filter(n => n.brandAgentId === options.brandAgentId);
+      filteredNotifications = filteredNotifications.filter(
+        (n) => n.brandAgentId === options.brandAgentId,
+      );
     }
 
     if (options?.dateRange) {
       filteredNotifications = filteredNotifications.filter(
-        n => n.createdAt >= options.dateRange!.start && n.createdAt <= options.dateRange!.end
+        (n) =>
+          n.createdAt >= options.dateRange!.start &&
+          n.createdAt <= options.dateRange!.end,
       );
     }
 
     const totalNotifications = filteredNotifications.length;
-    const readNotifications = filteredNotifications.filter(n => n.read).length;
-    const acknowledgedNotifications = filteredNotifications.filter(n => n.acknowledged).length;
+    const readNotifications = filteredNotifications.filter(
+      (n) => n.read,
+    ).length;
+    const acknowledgedNotifications = filteredNotifications.filter(
+      (n) => n.acknowledged,
+    ).length;
 
-    const readRate = totalNotifications > 0 ? readNotifications / totalNotifications : 0;
-    const acknowledgmentRate = totalNotifications > 0 ? acknowledgedNotifications / totalNotifications : 0;
+    const readRate =
+      totalNotifications > 0 ? readNotifications / totalNotifications : 0;
+    const acknowledgmentRate =
+      totalNotifications > 0
+        ? acknowledgedNotifications / totalNotifications
+        : 0;
 
     // Build type statistics
-    const byType: Record<string, {
-      count: number;
-      readRate: number;
-      avgTimeToRead: number;
-      avgTimeToAcknowledge: number;
-    }> = {};
+    const byType: Record<
+      string,
+      {
+        count: number;
+        readRate: number;
+        avgTimeToRead: number;
+        avgTimeToAcknowledge: number;
+      }
+    > = {};
 
     const typeGroups: Record<string, NotificationRecord[]> = {};
     for (const notification of filteredNotifications) {
@@ -352,7 +396,7 @@ export class NotificationRepositoryTestDouble implements NotificationRepository 
 
     for (const [type, notifications] of Object.entries(typeGroups)) {
       const count = notifications.length;
-      const readCount = notifications.filter(n => n.read).length;
+      const readCount = notifications.filter((n) => n.read).length;
       const readRate = count > 0 ? readCount / count : 0;
 
       byType[type] = {
@@ -372,7 +416,7 @@ export class NotificationRepositoryTestDouble implements NotificationRepository 
 
     const dailyGroups: Record<string, NotificationRecord[]> = {};
     for (const notification of filteredNotifications) {
-      const date = notification.createdAt.split('T')[0];
+      const date = notification.createdAt.split("T")[0];
       if (!dailyGroups[date]) {
         dailyGroups[date] = [];
       }
@@ -425,7 +469,7 @@ export class NotificationRepositoryTestDouble implements NotificationRepository 
       notificationId: string;
       read?: boolean;
       acknowledged?: boolean;
-    }>
+    }>,
   ): Promise<void> {
     const now = new Date().toISOString();
 
@@ -450,9 +494,11 @@ export class NotificationRepositoryTestDouble implements NotificationRepository 
   async getNotificationsByResource(
     resourceType: "creative" | "campaign" | "sales_agent" | "tactic",
     resourceId: string,
-    customerId: number
+    customerId: number,
   ): Promise<Notification[]> {
-    const resourceNotifications = Array.from(this.notifications.values()).filter(n => {
+    const resourceNotifications = Array.from(
+      this.notifications.values(),
+    ).filter((n) => {
       if (n.customerId !== customerId) return false;
 
       switch (resourceType) {
@@ -469,7 +515,7 @@ export class NotificationRepositoryTestDouble implements NotificationRepository 
       }
     });
 
-    return resourceNotifications.map(record => ({
+    return resourceNotifications.map((record) => ({
       id: record.id,
       type: record.type,
       timestamp: record.createdAt,
@@ -515,11 +561,13 @@ export class NotificationRepositoryTestDouble implements NotificationRepository 
   /**
    * Add a notification directly (for test setup)
    */
-  addNotification(notification: Partial<NotificationRecord> & {
-    type: NotificationEventType;
-    customerId: number;
-    data: NotificationData;
-  }): string {
+  addNotification(
+    notification: Partial<NotificationRecord> & {
+      type: NotificationEventType;
+      customerId: number;
+      data: NotificationData;
+    },
+  ): string {
     const id = notification.id || this.generateId();
     const now = new Date().toISOString();
 

@@ -23,7 +23,9 @@ export interface NotificationRepository {
   /**
    * Get notifications with filtering and pagination
    */
-  getNotifications(filter?: NotificationFilter): Promise<NotificationListResponse>;
+  getNotifications(
+    filter?: NotificationFilter,
+  ): Promise<NotificationListResponse>;
 
   /**
    * Get a single notification by ID
@@ -45,7 +47,7 @@ export interface NotificationRepository {
    */
   getNotificationCounts(
     customerId: number,
-    brandAgentId?: number
+    brandAgentId?: number,
   ): Promise<{
     total: number;
     unread: number;
@@ -58,7 +60,7 @@ export interface NotificationRepository {
    */
   getCampaignNotifications(
     campaignId: string,
-    customerId: number
+    customerId: number,
   ): Promise<{
     unread: number;
     types: NotificationEventType[];
@@ -70,7 +72,7 @@ export interface NotificationRepository {
    */
   isDuplicateNotification(
     request: NotificationCreateRequest,
-    windowMinutes?: number
+    windowMinutes?: number,
   ): Promise<boolean>;
 
   /**
@@ -84,17 +86,20 @@ export interface NotificationRepository {
         start: string;
         end: string;
       };
-    }
+    },
   ): Promise<{
     totalNotifications: number;
     readRate: number;
     acknowledgmentRate: number;
-    byType: Record<string, {
-      count: number;
-      readRate: number;
-      avgTimeToRead: number; // minutes
-      avgTimeToAcknowledge: number; // minutes
-    }>;
+    byType: Record<
+      string,
+      {
+        count: number;
+        readRate: number;
+        avgTimeToRead: number; // minutes
+        avgTimeToAcknowledge: number; // minutes
+      }
+    >;
     byDay: Array<{
       date: string;
       count: number;
@@ -115,7 +120,7 @@ export interface NotificationRepository {
       notificationId: string;
       read?: boolean;
       acknowledged?: boolean;
-    }>
+    }>,
   ): Promise<void>;
 
   /**
@@ -124,7 +129,7 @@ export interface NotificationRepository {
   getNotificationsByResource(
     resourceType: "creative" | "campaign" | "sales_agent" | "tactic",
     resourceId: string,
-    customerId: number
+    customerId: number,
   ): Promise<Notification[]>;
 }
 
@@ -187,21 +192,24 @@ export interface NotificationAnalytics {
   acknowledgedNotifications: number;
   averageReadTime: number; // minutes
   averageAcknowledgeTime: number; // minutes
-  
-  typeBreakdown: Record<NotificationEventType, {
-    count: number;
-    percentage: number;
-    averageReadTime: number;
-    averageAcknowledgeTime: number;
-  }>;
-  
+
+  typeBreakdown: Record<
+    NotificationEventType,
+    {
+      count: number;
+      percentage: number;
+      averageReadTime: number;
+      averageAcknowledgeTime: number;
+    }
+  >;
+
   timeSeriesData: Array<{
     date: string;
     count: number;
     unread: number;
     acknowledged: number;
   }>;
-  
+
   actionableInsights: Array<{
     type: "high_unread_rate" | "delayed_acknowledgment" | "notification_flood";
     description: string;
