@@ -117,8 +117,8 @@ export class CampaignBigQueryService {
         const sanitizationService = new BriefSanitizationService();
         const result = await sanitizationService.sanitizeBrief(
           data.prompt,
-          undefined, // No tactic budget at campaign creation time
-          data.budgetTotal,
+          undefined, // No allocation amount at campaign creation time
+          "USD", // Default currency
         );
         sanitizedBrief = result.sanitized_brief;
       } catch (error) {
