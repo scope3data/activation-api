@@ -16,7 +16,7 @@ import {
   DEFAULT_PRELOAD_CONFIG,
   PreloadService,
 } from "../../services/cache/preload-service.js";
-import { testPreloadServiceContract } from "../contracts/cache-service.contract.test.js";
+import { testPreloadServiceContract } from "../contracts/cache-service.contracts.js";
 
 // Mock setTimeout to avoid timing issues in tests
 const mockSetTimeout = vi.fn((callback: () => void, delay: number) => {

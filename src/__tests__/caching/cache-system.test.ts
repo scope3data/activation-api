@@ -8,7 +8,7 @@ import { PreloadServiceTestDouble } from "../../test-doubles/preload-service-tes
 import {
   testCacheServiceContract,
   testPreloadServiceContract,
-} from "../contracts/cache-service.contract.test.js";
+} from "../contracts/cache-service.contracts.js";
 
 describe("Cache System Integration", () => {
   // Run contract tests against test doubles

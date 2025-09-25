@@ -18,7 +18,7 @@ import {
   CachedBigQuery,
   DEFAULT_CACHE_CONFIG,
 } from "../../services/cache/cached-bigquery.js";
-import { testCacheServiceContract } from "../contracts/cache-service.contract.test.js";
+import { testCacheServiceContract } from "../contracts/cache-service.contracts.js";
 
 // Mock the Google Cloud BigQuery
 vi.mock("@google-cloud/bigquery", () => {
