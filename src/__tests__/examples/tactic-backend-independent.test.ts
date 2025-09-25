@@ -5,13 +5,13 @@
  * (BigQuery, PostgreSQL, etc.) satisfies the same behavioral requirements.
  */
 
-import { testTacticRepositoryContract } from "../contracts/tactic-repository.contract.test.js";
 import { TacticRepositoryTestDouble } from "../../test-doubles/tactic-repository-test-double.js";
+import { testTacticRepositoryContract } from "../contracts/tactic-repository.contract.test.js";
 
 describe("Tactic Repository Contract Validation with Test Double", () => {
   // Share the same test double instance across repository factory and setup
-  let sharedTestDouble: TacticRepositoryTestDouble | null = null;
-  
+  let sharedTestDouble: null | TacticRepositoryTestDouble = null;
+
   testTacticRepositoryContract(
     // Repository factory - return the shared instance
     () => {
@@ -26,7 +26,7 @@ describe("Tactic Repository Contract Validation with Test Double", () => {
       if (!sharedTestDouble) {
         sharedTestDouble = new TacticRepositoryTestDouble();
       }
-      
+
       const validApiKey = "test_api_key_valid";
       const invalidApiKey = "test_api_key_invalid";
 
@@ -35,12 +35,13 @@ describe("Tactic Repository Contract Validation with Test Double", () => {
 
       // Set up prebid test data
       const orgId = "test_org_123";
-      const { campaignIds, salesAgentIds } = sharedTestDouble.setupPrebidTestData(
-        orgId,
-        2, // 2 sales agents
-        2, // 2 campaigns per agent
-        3, // 3 tactics per campaign
-      );
+      const { campaignIds, salesAgentIds } =
+        sharedTestDouble.setupPrebidTestData(
+          orgId,
+          2, // 2 sales agents
+          2, // 2 campaigns per agent
+          3, // 3 tactics per campaign
+        );
 
       return {
         campaignId: campaignIds[0],

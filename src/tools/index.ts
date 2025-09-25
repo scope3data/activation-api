@@ -45,12 +45,12 @@ import { creativeUpdateTool } from "./creatives/update.js";
 import { getDSPSeatsTool } from "./dsp/get-seats.js";
 // Formats
 import { listCreativeFormatsTool } from "./formats/list.js";
-// Prebid
-import { getPrebidSegmentsTool } from "./prebid/get-segments.js";
 // PMPs
 import { createPMPTool } from "./pmps/create.js";
 import { listPMPsTool } from "./pmps/list.js";
 import { updatePMPTool } from "./pmps/update.js";
+// Prebid
+import { getPrebidSegmentsTool } from "./prebid/get-segments.js";
 // Products
 import { getProductsTool } from "./products/list.js";
 import { exportDataTool } from "./reporting/export-data.js";
@@ -212,7 +212,6 @@ export {
   createPMPTool,
   // Audiences
   createTacticTool,
-  deleteTacticTool,
   // Creatives
   creativeAssignTool,
   creativeCreateTool,
@@ -229,6 +228,7 @@ export {
   // Campaign CRUD
   deleteCampaignTool,
   deleteCustomSignalTool,
+  deleteTacticTool,
   discoverPublisherProductsTool,
   exportDataTool,
   getBrandAgentTool,
@@ -237,7 +237,6 @@ export {
   // DSP
   getDSPSeatsTool,
   getPartnerSeatsTool,
-  getTacticTool,
   // Prebid
   getPrebidSegmentsTool,
   // Products
@@ -245,6 +244,7 @@ export {
   getSignalsAgentHistoryTool,
   getSignalsAgentTool,
   getSignalsTool,
+  getTacticTool,
   listBrandAgentBrandStoriesTool,
   listBrandAgentStandardsTool,
   listBrandAgentsTool,

@@ -70,7 +70,7 @@ export const createTacticTool = (_client: Scope3ApiClient) => ({
 
       // IMPORTANT: GraphQL doesn't have tactic mutations, so we use BigQuery-only approach
       // TODO: Implement tactic GraphQL mutations in backend when ready
-      
+
       const bigQueryService = new TacticBigQueryService();
       const tactic = await bigQueryService.createTactic(tacticInput, apiKey);
 
@@ -86,10 +86,12 @@ export const createTacticTool = (_client: Scope3ApiClient) => ({
       // Publisher product information
       const product = tactic.mediaProduct;
       if (!product) {
-        throw new Error("Media product is required but was not found in tactic creation response");
+        throw new Error(
+          "Media product is required but was not found in tactic creation response",
+        );
       }
       summary += `### 📦 **Publisher Product**\n`;
-      summary += `• **Publisher:** ${product.publisherName || 'Unknown Publisher'}\n`;
+      summary += `• **Publisher:** ${product.publisherName || "Unknown Publisher"}\n`;
       summary += `• **Product:** ${product.name}\n`;
       summary += `• **Type:** ${product.inventoryType.replace(/_/g, " ")} • ${product.deliveryType.replace(/_/g, " ")}\n`;
       summary += `• **Formats:** ${product.formats.join(", ")}\n`;

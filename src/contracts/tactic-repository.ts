@@ -8,6 +8,11 @@
 
 import type { BudgetAllocation, EffectivePricing } from "../types/tactics.js";
 
+export interface PrebidSegment {
+  axe_include_segment: string;
+  max_cpm: number;
+}
+
 export interface Tactic {
   axeIncludeSegment?: string;
   brandStoryId?: string;
@@ -34,18 +39,6 @@ export interface TacticInput {
   mediaProductId: string;
   name: string;
   signalId?: string;
-}
-
-export interface TacticUpdateInput {
-  budgetAllocation?: Partial<BudgetAllocation>;
-  description?: string;
-  name?: string;
-  status?: "active" | "inactive" | "paused";
-}
-
-export interface PrebidSegment {
-  axe_include_segment: string;
-  max_cpm: number;
 }
 
 export interface TacticListOptions {
@@ -94,21 +87,21 @@ export interface TacticRepository {
   deleteTactic(apiKey: string, tacticId: string): Promise<void>;
 
   /**
-   * Get a specific tactic by ID
-   * @param apiKey - Authentication token
-   * @param tacticId - Tactic identifier
-   * @returns Promise resolving to tactic or null if not found
-   * @throws Error if authentication fails
-   */
-  getTactic(apiKey: string, tacticId: string): Promise<Tactic | null>;
-
-  /**
    * Get prebid segments for a publisher organization
    * @param orgId - Publisher organization ID
    * @returns Promise resolving to array of AXE segments with max CPM
    * @throws Error if query fails
    */
   getPrebidSegments(orgId: string): Promise<PrebidSegment[]>;
+
+  /**
+   * Get a specific tactic by ID
+   * @param apiKey - Authentication token
+   * @param tacticId - Tactic identifier
+   * @returns Promise resolving to tactic or null if not found
+   * @throws Error if authentication fails
+   */
+  getTactic(apiKey: string, tacticId: string): Promise<null | Tactic>;
 
   /**
    * Health check for the backend service
@@ -143,4 +136,11 @@ export interface TacticRepository {
     updates: TacticUpdateInput,
     effectivePricing?: EffectivePricing,
   ): Promise<Tactic>;
+}
+
+export interface TacticUpdateInput {
+  budgetAllocation?: Partial<BudgetAllocation>;
+  description?: string;
+  name?: string;
+  status?: "active" | "inactive" | "paused";
 }

@@ -78,11 +78,11 @@ export default defineConfig({
     },
 
     environment: "node",
-    
+
     // Exclude contract test files and standard exclusions
     exclude: [
       "node_modules/**",
-      "dist/**", 
+      "dist/**",
       "**/*.d.ts",
       "src/__tests__/contracts/**",
     ],

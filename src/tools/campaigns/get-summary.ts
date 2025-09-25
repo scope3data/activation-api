@@ -83,17 +83,20 @@ export const getCampaignSummaryTool = (client: Scope3ApiClient) => ({
 
       // Get tactic breakdown
       const tacticService = new TacticBigQueryService();
-      const tacticRecords = await tacticService.listTactics(args.campaignId, apiKey);
-      
+      const tacticRecords = await tacticService.listTactics(
+        args.campaignId,
+        apiKey,
+      );
+
       // Convert tactic records to breakdown format expected by the code
-      const tacticBreakdown = tacticRecords.map(record => ({
-        tacticId: record.id,
-        tacticName: record.name,
+      const tacticBreakdown = tacticRecords.map((record) => ({
         budgetAllocated: record.budget_amount,
         budgetSpent: 0, // Performance data not available in tactics table
-        impressions: 0,
         cpm: record.total_cpm,
+        impressions: 0,
         status: record.status,
+        tacticId: record.id,
+        tacticName: record.name,
       }));
 
       // Generate summary based on verbosity

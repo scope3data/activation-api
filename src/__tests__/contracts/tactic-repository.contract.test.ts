@@ -167,13 +167,21 @@ export function testTacticRepositoryContract(
         expect(result.updatedAt).toBeDefined();
 
         // Budget allocation should match
-        expect(result.budgetAllocation.amount).toBe(input.budgetAllocation.amount);
-        expect(result.budgetAllocation.currency).toBe(input.budgetAllocation.currency);
-        expect(result.budgetAllocation.pacing).toBe(input.budgetAllocation.pacing);
+        expect(result.budgetAllocation.amount).toBe(
+          input.budgetAllocation.amount,
+        );
+        expect(result.budgetAllocation.currency).toBe(
+          input.budgetAllocation.currency,
+        );
+        expect(result.budgetAllocation.pacing).toBe(
+          input.budgetAllocation.pacing,
+        );
 
         // Effective pricing should match
         expect(result.effectivePricing.cpm).toBe(effectivePricing.cpm);
-        expect(result.effectivePricing.totalCpm).toBe(effectivePricing.totalCpm);
+        expect(result.effectivePricing.totalCpm).toBe(
+          effectivePricing.totalCpm,
+        );
 
         // AXE segment should be generated
         expect(result.axeIncludeSegment).toBeDefined();
@@ -219,9 +227,15 @@ export function testTacticRepositoryContract(
         expect(result.brandStoryId).toBe(input.brandStoryId);
         expect(result.description).toBe(input.description);
         expect(result.signalId).toBe(input.signalId);
-        expect(result.budgetAllocation.dailyCap).toBe(input.budgetAllocation.dailyCap);
-        expect(result.budgetAllocation.percentage).toBe(input.budgetAllocation.percentage);
-        expect(result.effectivePricing.signalCost).toBe(effectivePricing.signalCost);
+        expect(result.budgetAllocation.dailyCap).toBe(
+          input.budgetAllocation.dailyCap,
+        );
+        expect(result.budgetAllocation.percentage).toBe(
+          input.budgetAllocation.percentage,
+        );
+        expect(result.effectivePricing.signalCost).toBe(
+          effectivePricing.signalCost,
+        );
 
         // Cleanup
         await repository.deleteTactic(validApiKey, result.id);
@@ -281,7 +295,11 @@ export function testTacticRepositoryContract(
           const tactic = await repository.createTactic(
             validApiKey,
             {
-              budgetAllocation: { amount: 1000 * i, currency: "USD", pacing: "even" },
+              budgetAllocation: {
+                amount: 1000 * i,
+                currency: "USD",
+                pacing: "even",
+              },
               campaignId,
               mediaProductId,
               name: `List Test Tactic ${i}`,
@@ -306,7 +324,9 @@ export function testTacticRepositoryContract(
       });
 
       it("should list tactics for campaign", async () => {
-        const result = await repository.listTactics(validApiKey, { campaignId });
+        const result = await repository.listTactics(validApiKey, {
+          campaignId,
+        });
 
         expect(result.tactics).toBeDefined();
         expect(Array.isArray(result.tactics)).toBe(true);
@@ -378,7 +398,10 @@ export function testTacticRepositoryContract(
       });
 
       it("should return null for non-existent tactic", async () => {
-        const result = await repository.getTactic(validApiKey, "tactic_nonexistent");
+        const result = await repository.getTactic(
+          validApiKey,
+          "tactic_nonexistent",
+        );
 
         expect(result).toBeNull();
       });
@@ -465,10 +488,13 @@ export function testTacticRepositoryContract(
         await repository.deleteTactic(validApiKey, tactic.id);
 
         // Verify tactic is marked inactive or deleted
-        const retrievedTactic = await repository.getTactic(validApiKey, tactic.id);
+        const retrievedTactic = await repository.getTactic(
+          validApiKey,
+          tactic.id,
+        );
         // Contract allows either soft deletion (inactive status) or hard deletion (null)
         expect(
-          retrievedTactic === null || retrievedTactic?.status === "inactive"
+          retrievedTactic === null || retrievedTactic?.status === "inactive",
         ).toBe(true);
       });
 

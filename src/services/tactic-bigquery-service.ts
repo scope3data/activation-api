@@ -1,36 +1,43 @@
 import { BigQuery } from "@google-cloud/bigquery";
 
-import type { BudgetAllocation, EffectivePricing, PublisherMediaProduct, Tactic, TacticInput, TacticUpdateInput } from "../types/tactics.js";
+import type {
+  BudgetAllocation,
+  EffectivePricing,
+  PublisherMediaProduct,
+  Tactic,
+  TacticInput,
+  TacticUpdateInput,
+} from "../types/tactics.js";
 
 import { AuthenticationService } from "./auth-service.js";
 
+export interface PrebidSegment {
+  axe_include_segment: string;
+  max_cpm: number;
+}
+
 export interface TacticBigQueryRecord {
-  id: string;
-  campaign_id: string;
-  sales_agent_id: string;
-  media_product_id: string;
-  name: string;
-  description?: string;
+  axe_include_segment?: string;
+  brand_story_id?: string;
   budget_amount: number;
   budget_currency: string;
   budget_daily_cap?: number;
   budget_pacing: string;
   budget_percentage?: number;
+  campaign_id: string;
   cpm: number;
-  total_cpm: number;
+  created_at: string;
+  customer_id: number;
+  description?: string;
+  id: string;
+  media_product_id: string;
+  name: string;
+  sales_agent_id: string;
   signal_cost?: number;
-  axe_include_segment?: string;
-  brand_story_id?: string;
   signal_id?: string;
   status: string;
-  customer_id: number;
-  created_at: string;
+  total_cpm: number;
   updated_at: string;
-}
-
-export interface PrebidSegment {
-  axe_include_segment: string;
-  max_cpm: number;
 }
 
 export class TacticBigQueryService {
@@ -52,19 +59,16 @@ export class TacticBigQueryService {
   /**
    * Create a new tactic in BigQuery
    */
-  async createTactic(
-    data: TacticInput,
-    apiToken?: string,
-  ): Promise<Tactic> {
+  async createTactic(data: TacticInput, apiToken?: string): Promise<Tactic> {
     const customerId = await this.resolveCustomerId(apiToken);
-    
+
     // Generate tactic ID and calculate pricing
     const tacticId = `tactic_${Date.now()}_${Math.random().toString(36).substring(2)}`;
     const effectivePricing = this.calculateEffectivePricing(data);
-    
+
     // Mock media product data (since we can't get it from GraphQL)
     const mediaProduct = this.getMockMediaProduct(data.mediaProductId);
-    
+
     // Ensure BudgetAllocation type is properly recognized by TypeScript/ESLint
     const budgetAllocation: BudgetAllocation = data.budgetAllocation;
 
@@ -116,35 +120,39 @@ export class TacticBigQueryService {
 
     // Return full tactic object matching expected interface
     return {
-      id: tacticId,
-      campaignId: data.campaignId,
-      name: data.name,
-      description: data.description,
-      mediaProduct,
-      targeting: {
-        signalType: data.signalId ? "scope3" : "none" as "buyer" | "none" | "scope3" | "third_party",
-        signalProvider: data.signalId ? "scope3" : undefined,
-        signalConfiguration: data.signalId ? { 
-          segments: [data.signalId],
-          audienceIds: [],
-          customParameters: {}
-        } : undefined,
-        inheritFromCampaign: !data.signalId,
-        overrides: undefined
-      },
-      effectivePricing,
+      brandStoryId: data.brandStoryId,
       budgetAllocation: {
         amount: budgetAllocation.amount,
         currency: budgetAllocation.currency || "USD",
         dailyCap: budgetAllocation.dailyCap,
         pacing: budgetAllocation.pacing || "even",
-        percentage: budgetAllocation.percentage
+        percentage: budgetAllocation.percentage,
       },
-      status: "active",
-      brandStoryId: data.brandStoryId,
-      signalId: data.signalId,
+      campaignId: data.campaignId,
       createdAt: new Date(),
-      updatedAt: new Date()
+      description: data.description,
+      effectivePricing,
+      id: tacticId,
+      mediaProduct,
+      name: data.name,
+      signalId: data.signalId,
+      status: "active",
+      targeting: {
+        inheritFromCampaign: !data.signalId,
+        overrides: undefined,
+        signalConfiguration: data.signalId
+          ? {
+              audienceIds: [],
+              customParameters: {},
+              segments: [data.signalId],
+            }
+          : undefined,
+        signalProvider: data.signalId ? "scope3" : undefined,
+        signalType: data.signalId
+          ? "scope3"
+          : ("none" as "buyer" | "none" | "scope3" | "third_party"),
+      },
+      updatedAt: new Date(),
     };
   }
 
@@ -213,7 +221,9 @@ export class TacticBigQueryService {
         query,
       });
 
-      return (rows as Array<{ axe_include_segment: string; max_cpm: number }>).map(row => ({
+      return (
+        rows as Array<{ axe_include_segment: string; max_cpm: number }>
+      ).map((row) => ({
         axe_include_segment: row.axe_include_segment,
         max_cpm: row.max_cpm,
       }));
@@ -227,7 +237,10 @@ export class TacticBigQueryService {
   /**
    * Get a specific tactic by ID
    */
-  async getTactic(tacticId: string, apiToken?: string): Promise<TacticBigQueryRecord | null> {
+  async getTactic(
+    tacticId: string,
+    apiToken?: string,
+  ): Promise<null | TacticBigQueryRecord> {
     const customerId = await this.resolveCustomerId(apiToken);
 
     const query = `
@@ -254,7 +267,10 @@ export class TacticBigQueryService {
   /**
    * List tactics for a campaign
    */
-  async listTactics(campaignId: string, apiToken?: string): Promise<TacticBigQueryRecord[]> {
+  async listTactics(
+    campaignId: string,
+    apiToken?: string,
+  ): Promise<TacticBigQueryRecord[]> {
     const customerId = await this.resolveCustomerId(apiToken);
 
     const query = `
@@ -286,7 +302,7 @@ export class TacticBigQueryService {
    */
   async updateTactic(
     tacticId: string,
-    updates: TacticUpdateInput & { effectivePricing?: EffectivePricing },
+    updates: { effectivePricing?: EffectivePricing } & TacticUpdateInput,
     apiToken?: string,
   ): Promise<void> {
     const customerId = await this.resolveCustomerId(apiToken);
@@ -377,6 +393,23 @@ export class TacticBigQueryService {
   }
 
   /**
+   * Calculate effective pricing for a tactic based on input CPM and signal costs
+   */
+  private calculateEffectivePricing(data: TacticInput): EffectivePricing {
+    const baseCpm = data.cpm || 0; // Default to 0 if no CPM provided
+    // For now, assume no additional signal cost since we can't look up actual signal pricing
+    const signalCost = data.signalId ? 0.25 : 0; // Mock signal cost
+    const totalCpm = baseCpm + signalCost;
+
+    return {
+      cpm: baseCpm,
+      currency: data.budgetAllocation.currency || "USD",
+      signalCost: signalCost > 0 ? signalCost : undefined,
+      totalCpm,
+    };
+  }
+
+  /**
    * Generate a unique AXE segment ID for a tactic
    */
   private generateAxeSegment(tacticId: string): string {
@@ -387,116 +420,106 @@ export class TacticBigQueryService {
   }
 
   /**
-   * Calculate effective pricing for a tactic based on input CPM and signal costs
-   */
-  private calculateEffectivePricing(data: TacticInput): EffectivePricing {
-    const baseCpm = data.cpm || 0; // Default to 0 if no CPM provided
-    // For now, assume no additional signal cost since we can't look up actual signal pricing
-    const signalCost = data.signalId ? 0.25 : 0; // Mock signal cost
-    const totalCpm = baseCpm + signalCost;
-    
-    return {
-      cpm: baseCpm,
-      signalCost: signalCost > 0 ? signalCost : undefined,
-      totalCpm,
-      currency: data.budgetAllocation.currency || "USD"
-    };
-  }
-
-  /**
    * Generate mock media product data since GraphQL doesn't have tactic operations
    * In a real implementation, this would fetch from a media product API
    */
   private getMockMediaProduct(mediaProductId: string): PublisherMediaProduct {
     // Extract potential publisher info from ID or use defaults
-    const isHulu = mediaProductId.toLowerCase().includes('hulu');
-    const isNetflix = mediaProductId.toLowerCase().includes('netflix');
-    const isYouTube = mediaProductId.toLowerCase().includes('youtube') || mediaProductId.toLowerCase().includes('google');
-    
+    const isHulu = mediaProductId.toLowerCase().includes("hulu");
+    const isNetflix = mediaProductId.toLowerCase().includes("netflix");
+    const isYouTube =
+      mediaProductId.toLowerCase().includes("youtube") ||
+      mediaProductId.toLowerCase().includes("google");
+
     if (isHulu) {
       return {
-        id: mediaProductId,
-        publisherId: "hulu_sales_001",
-        publisherName: "Hulu",
-        productId: "hulu_premium_video",
-        name: "Hulu Premium Video Inventory",
+        basePricing: {
+          fixedCpm: 15.0,
+          floorCpm: null,
+          model: "fixed_cpm",
+          targetCpm: null,
+        },
+        createdAt: new Date(),
+        deliveryType: "streaming",
         description: "Premium video advertising on Hulu streaming platform",
         formats: ["video", "display"],
-        deliveryType: "streaming",
+        id: mediaProductId,
         inventoryType: "premium_video",
-        basePricing: {
-          model: "fixed_cpm",
-          fixedCpm: 15.00,
-          floorCpm: null,
-          targetCpm: null
-        },
+        name: "Hulu Premium Video Inventory",
+        productId: "hulu_premium_video",
+        publisherId: "hulu_sales_001",
+        publisherName: "Hulu",
         supportedTargeting: ["demographic", "geographic", "behavioral"],
-        createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
     } else if (isNetflix) {
       return {
-        id: mediaProductId,
-        publisherId: "netflix_sales_001", 
-        publisherName: "Netflix",
-        productId: "netflix_premium_video",
-        name: "Netflix Premium Video Advertising",
+        basePricing: {
+          fixedCpm: 25.0,
+          floorCpm: null,
+          model: "fixed_cpm",
+          targetCpm: null,
+        },
+        createdAt: new Date(),
+        deliveryType: "streaming",
         description: "Premium video advertising on Netflix streaming platform",
         formats: ["video"],
-        deliveryType: "streaming", 
+        id: mediaProductId,
         inventoryType: "premium_video",
-        basePricing: {
-          model: "fixed_cpm",
-          fixedCpm: 25.00,
-          floorCpm: null,
-          targetCpm: null
-        },
+        name: "Netflix Premium Video Advertising",
+        productId: "netflix_premium_video",
+        publisherId: "netflix_sales_001",
+        publisherName: "Netflix",
         supportedTargeting: ["demographic", "geographic", "interest"],
-        createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
     } else if (isYouTube) {
       return {
-        id: mediaProductId,
-        publisherId: "google_sales_001",
-        publisherName: "Google/YouTube", 
-        productId: "youtube_video_ads",
-        name: "YouTube Video Advertising",
+        basePricing: {
+          fixedCpm: null,
+          floorCpm: 5.0,
+          model: "auction",
+          targetCpm: 12.0,
+        },
+        createdAt: new Date(),
+        deliveryType: "streaming",
         description: "Video advertising across YouTube platform",
         formats: ["video", "display"],
-        deliveryType: "streaming",
-        inventoryType: "video_advertising", 
-        basePricing: {
-          model: "auction",
-          fixedCpm: null,
-          floorCpm: 5.00,
-          targetCpm: 12.00
-        },
-        supportedTargeting: ["demographic", "interest", "behavioral", "contextual"],
-        createdAt: new Date(),
-        updatedAt: new Date()
+        id: mediaProductId,
+        inventoryType: "video_advertising",
+        name: "YouTube Video Advertising",
+        productId: "youtube_video_ads",
+        publisherId: "google_sales_001",
+        publisherName: "Google/YouTube",
+        supportedTargeting: [
+          "demographic",
+          "interest",
+          "behavioral",
+          "contextual",
+        ],
+        updatedAt: new Date(),
       };
     } else {
       // Generic media product
       return {
-        id: mediaProductId,
-        publisherId: "publisher_001", 
-        publisherName: "Generic Publisher",
-        productId: "generic_display_video",
-        name: "Display & Video Inventory",
+        basePricing: {
+          fixedCpm: null,
+          floorCpm: 2.5,
+          model: "auction",
+          targetCpm: 8.0,
+        },
+        createdAt: new Date(),
+        deliveryType: "programmatic",
         description: "Mixed display and video advertising inventory",
         formats: ["display", "video"],
-        deliveryType: "programmatic",
+        id: mediaProductId,
         inventoryType: "mixed_inventory",
-        basePricing: {
-          model: "auction",
-          fixedCpm: null,
-          floorCpm: 2.50,
-          targetCpm: 8.00
-        },
+        name: "Display & Video Inventory",
+        productId: "generic_display_video",
+        publisherId: "publisher_001",
+        publisherName: "Generic Publisher",
         supportedTargeting: ["demographic", "geographic"],
-        createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
     }
   }
@@ -505,7 +528,9 @@ export class TacticBigQueryService {
    * Resolve customer ID from API token using auth service
    */
   private async resolveCustomerId(apiToken?: string): Promise<number> {
-    const customerId = await this.authService.getCustomerIdFromToken(apiToken || "");
+    const customerId = await this.authService.getCustomerIdFromToken(
+      apiToken || "",
+    );
     if (!customerId) {
       throw new Error("Unable to resolve customer ID from API token");
     }

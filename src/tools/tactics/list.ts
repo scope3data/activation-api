@@ -40,40 +40,14 @@ export const listTacticsTool = (_client: Scope3ApiClient) => ({
 
     try {
       const bigQueryService = new TacticBigQueryService();
-      const tacticRecords = await bigQueryService.listTactics(args.campaignId, apiKey);
-      
+      const tacticRecords = await bigQueryService.listTactics(
+        args.campaignId,
+        apiKey,
+      );
+
       // Convert BigQuery records to Tactic objects
-      const tactics: Tactic[] = tacticRecords.map(record => ({
-        id: record.id,
-        campaignId: record.campaign_id,
-        name: record.name,
-        description: record.description,
-        mediaProduct: {
-          id: record.media_product_id,
-          publisherId: record.sales_agent_id,
-          publisherName: "Publisher", // Mock data since we don't have full media product in BigQuery yet
-          productId: record.media_product_id,
-          name: "Media Product",
-          description: "Media product description",
-          formats: ["display", "video"] as ("audio" | "display" | "html5" | "native" | "video")[],
-          deliveryType: "non_guaranteed" as "guaranteed" | "non_guaranteed",
-          inventoryType: "run_of_site" as "premium" | "run_of_site" | "targeted_package",
-          basePricing: {
-            model: "auction" as "auction" | "fixed_cpm",
-            fixedCpm: undefined,
-            floorCpm: record.cpm,
-            targetCpm: undefined,
-          },
-          supportedTargeting: ["demographic", "geographic"],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        effectivePricing: {
-          cpm: record.cpm,
-          signalCost: record.signal_cost || undefined,
-          totalCpm: record.total_cpm,
-          currency: record.budget_currency,
-        },
+      const tactics: Tactic[] = tacticRecords.map((record) => ({
+        brandStoryId: record.brand_story_id || undefined,
         budgetAllocation: {
           amount: record.budget_amount,
           currency: record.budget_currency,
@@ -81,23 +55,65 @@ export const listTacticsTool = (_client: Scope3ApiClient) => ({
           pacing: record.budget_pacing as "asap" | "even" | "front_loaded",
           percentage: record.budget_percentage || undefined,
         },
-        status: record.status as "active" | "completed" | "draft" | "paused",
-        brandStoryId: record.brand_story_id || undefined,
-        signalId: record.signal_id || undefined,
+        campaignId: record.campaign_id,
         createdAt: new Date(record.created_at),
-        updatedAt: new Date(record.updated_at),
+        description: record.description,
+        effectivePricing: {
+          cpm: record.cpm,
+          currency: record.budget_currency,
+          signalCost: record.signal_cost || undefined,
+          totalCpm: record.total_cpm,
+        },
+        id: record.id,
+        mediaProduct: {
+          basePricing: {
+            fixedCpm: undefined,
+            floorCpm: record.cpm,
+            model: "auction" as "auction" | "fixed_cpm",
+            targetCpm: undefined,
+          },
+          createdAt: new Date(),
+          deliveryType: "non_guaranteed" as "guaranteed" | "non_guaranteed",
+          description: "Media product description",
+          formats: ["display", "video"] as (
+            | "audio"
+            | "display"
+            | "html5"
+            | "native"
+            | "video"
+          )[],
+          id: record.media_product_id,
+          inventoryType: "run_of_site" as
+            | "premium"
+            | "run_of_site"
+            | "targeted_package",
+          name: "Media Product",
+          productId: record.media_product_id,
+          publisherId: record.sales_agent_id,
+          publisherName: "Publisher", // Mock data since we don't have full media product in BigQuery yet
+          supportedTargeting: ["demographic", "geographic"],
+          updatedAt: new Date(),
+        },
+        name: record.name,
         performance: undefined as undefined, // Performance data not available in tactics table
+        signalId: record.signal_id || undefined,
+        status: record.status as "active" | "completed" | "draft" | "paused",
         targeting: {
-          signalType: record.signal_id ? "scope3" : "none" as "buyer" | "none" | "scope3" | "third_party",
-          signalProvider: record.signal_id ? "scope3" : undefined,
-          signalConfiguration: record.signal_id ? {
-            segments: [record.signal_id],
-            audienceIds: [],
-            customParameters: {}
-          } : undefined,
           inheritFromCampaign: !record.signal_id,
-          overrides: undefined
-        }
+          overrides: undefined,
+          signalConfiguration: record.signal_id
+            ? {
+                audienceIds: [],
+                customParameters: {},
+                segments: [record.signal_id],
+              }
+            : undefined,
+          signalProvider: record.signal_id ? "scope3" : undefined,
+          signalType: record.signal_id
+            ? "scope3"
+            : ("none" as "buyer" | "none" | "scope3" | "third_party"),
+        },
+        updatedAt: new Date(record.updated_at),
       }));
 
       if (tactics.length === 0) {

@@ -5,7 +5,7 @@
  * and BigQuery prebid integration storage.
  */
 
-import { vi, describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 import type { Tactic } from "../../types/tactics.js";
@@ -20,11 +20,25 @@ vi.mock("../../services/tactic-bigquery-service.js", () => ({
 import { TacticBigQueryService } from "../../services/tactic-bigquery-service.js";
 import { createTacticTool } from "./create.js";
 
-const MockedTacticBigQueryService = TacticBigQueryService as unknown as vi.MockedClass<typeof TacticBigQueryService>;
+const MockedTacticBigQueryService =
+  TacticBigQueryService as unknown as vi.MockedClass<
+    typeof TacticBigQueryService
+  >;
 
-type MockClient = { createTactic: vi.MockedFunction<(...args: unknown[]) => Promise<unknown>> };
-type MockBigQueryService = { createTactic: vi.MockedFunction<(...args: unknown[]) => Promise<Tactic>> };
-type CreateTacticTool = { execute: (args: Record<string, unknown>, context: MCPToolExecuteContext) => Promise<unknown>; name: string; annotations: Record<string, unknown> };
+type CreateTacticTool = {
+  annotations: Record<string, unknown>;
+  execute: (
+    args: Record<string, unknown>,
+    context: MCPToolExecuteContext,
+  ) => Promise<unknown>;
+  name: string;
+};
+type MockBigQueryService = {
+  createTactic: vi.MockedFunction<(...args: unknown[]) => Promise<Tactic>>;
+};
+type MockClient = {
+  createTactic: vi.MockedFunction<(...args: unknown[]) => Promise<unknown>>;
+};
 
 describe("create_tactic Tool", () => {
   let mockClient: MockClient;
@@ -76,12 +90,10 @@ describe("create_tactic Tool", () => {
         campaignId: "campaign_123",
         createdAt: new Date("2024-01-01T00:00:00Z"),
         description: undefined,
-        effectivePricing: { cpm: 5.0, totalCpm: 5.0, currency: "USD" },
+        effectivePricing: { cpm: 5.0, currency: "USD", totalCpm: 5.0 },
         id: "tactic_created_123",
         mediaProduct: {
-          publisherId: "sales_agent_456",
-          publisherName: "Test Publisher",
-          basePricing: { model: "fixed_cpm" as const, fixedCpm: 5.0 },
+          basePricing: { fixedCpm: 5.0, model: "fixed_cpm" as const },
           createdAt: new Date("2024-01-01T00:00:00Z"),
           deliveryType: "guaranteed" as const,
           description: "Test media product",
@@ -90,7 +102,9 @@ describe("create_tactic Tool", () => {
           inventoryType: "premium" as const,
           name: "Test Media Product",
           productId: "prod_123",
-          updatedAt: new Date("2024-01-01T00:00:00Z")
+          publisherId: "sales_agent_456",
+          publisherName: "Test Publisher",
+          updatedAt: new Date("2024-01-01T00:00:00Z"),
         },
         name: "Test Tactic",
         signalId: undefined,
@@ -118,7 +132,10 @@ describe("create_tactic Tool", () => {
       );
 
       expect(result).toContain("✅ **Tactic Created Successfully!**");
-      expect(mockBigQueryService.createTactic).toHaveBeenCalledWith(expect.any(Object), "test_api_key");
+      expect(mockBigQueryService.createTactic).toHaveBeenCalledWith(
+        expect.any(Object),
+        "test_api_key",
+      );
     });
 
     it("should accept API key from environment", async () => {
@@ -130,12 +147,10 @@ describe("create_tactic Tool", () => {
         campaignId: "campaign_123",
         createdAt: new Date("2024-01-01T00:00:00Z"),
         description: undefined,
-        effectivePricing: { cpm: 5.0, totalCpm: 5.0, currency: "USD" },
+        effectivePricing: { cpm: 5.0, currency: "USD", totalCpm: 5.0 },
         id: "tactic_env_123",
         mediaProduct: {
-          publisherId: "sales_agent_789",
-          publisherName: "Test Publisher",
-          basePricing: { model: "fixed_cpm" as const, fixedCpm: 5.0 },
+          basePricing: { fixedCpm: 5.0, model: "fixed_cpm" as const },
           createdAt: new Date("2024-01-01T00:00:00Z"),
           deliveryType: "guaranteed" as const,
           description: "Test media product",
@@ -144,7 +159,9 @@ describe("create_tactic Tool", () => {
           inventoryType: "premium" as const,
           name: "Test Media Product",
           productId: "prod_123",
-          updatedAt: new Date("2024-01-01T00:00:00Z")
+          publisherId: "sales_agent_789",
+          publisherName: "Test Publisher",
+          updatedAt: new Date("2024-01-01T00:00:00Z"),
         },
         name: "Env Test Tactic",
         signalId: undefined,
@@ -167,7 +184,10 @@ describe("create_tactic Tool", () => {
       );
 
       expect(result).toContain("✅ **Tactic Created Successfully!**");
-      expect(mockBigQueryService.createTactic).toHaveBeenCalledWith(expect.any(Object), "env_api_key");
+      expect(mockBigQueryService.createTactic).toHaveBeenCalledWith(
+        expect.any(Object),
+        "env_api_key",
+      );
 
       delete process.env.SCOPE3_API_KEY;
     });
@@ -196,12 +216,10 @@ describe("create_tactic Tool", () => {
         campaignId: "campaign_123",
         createdAt: new Date("2024-01-01T00:00:00Z"),
         description: undefined,
-        effectivePricing: { cpm: 5.0, totalCpm: 5.0, currency: "USD" },
+        effectivePricing: { cpm: 5.0, currency: "USD", totalCpm: 5.0 },
         id: "tactic_success_123",
         mediaProduct: {
-          publisherId: "sales_agent_success",
-          publisherName: "Test Publisher",
-          basePricing: { model: "fixed_cpm" as const, fixedCpm: 5.0 },
+          basePricing: { fixedCpm: 5.0, model: "fixed_cpm" as const },
           createdAt: new Date("2024-01-01T00:00:00Z"),
           deliveryType: "guaranteed" as const,
           description: "Test media product",
@@ -210,7 +228,9 @@ describe("create_tactic Tool", () => {
           inventoryType: "premium" as const,
           name: "Test Media Product",
           productId: "prod_123",
-          updatedAt: new Date("2024-01-01T00:00:00Z")
+          publisherId: "sales_agent_success",
+          publisherName: "Test Publisher",
+          updatedAt: new Date("2024-01-01T00:00:00Z"),
         },
         name: "Valid Test Tactic",
         signalId: undefined,
@@ -243,7 +263,7 @@ describe("create_tactic Tool", () => {
           budgetAllocation: expect.objectContaining({
             amount: 1000,
             currency: "USD", // Default
-            pacing: "even",   // Default
+            pacing: "even", // Default
           }),
           campaignId: "campaign_123",
           cpm: 5.0,
@@ -317,12 +337,10 @@ describe("create_tactic Tool", () => {
         campaignId: "campaign_123",
         createdAt: new Date("2024-01-01T00:00:00Z"),
         description: undefined,
-        effectivePricing: { cpm: 5.0, totalCpm: 5.5, currency: "USD" },
+        effectivePricing: { cpm: 5.0, currency: "USD", totalCpm: 5.5 },
         id: "tactic_bigquery_123",
         mediaProduct: {
-          publisherId: "sales_agent_bigquery",
-          publisherName: "Test Publisher",
-          basePricing: { model: "fixed_cpm" as const, fixedCpm: 5.0 },
+          basePricing: { fixedCpm: 5.0, model: "fixed_cpm" as const },
           createdAt: new Date("2024-01-01T00:00:00Z"),
           deliveryType: "guaranteed" as const,
           description: "Test media product",
@@ -331,7 +349,9 @@ describe("create_tactic Tool", () => {
           inventoryType: "premium" as const,
           name: "Test Media Product",
           productId: "prod_123",
-          updatedAt: new Date("2024-01-01T00:00:00Z")
+          publisherId: "sales_agent_bigquery",
+          publisherName: "Test Publisher",
+          updatedAt: new Date("2024-01-01T00:00:00Z"),
         },
         name: "BigQuery Test Tactic",
         signalId: undefined,
@@ -361,17 +381,20 @@ describe("create_tactic Tool", () => {
     });
 
     it("should fail when BigQuery service fails", async () => {
-      mockBigQueryService.createTactic.mockRejectedValue(new Error("BigQuery connection failed"));
+      mockBigQueryService.createTactic.mockRejectedValue(
+        new Error("BigQuery connection failed"),
+      );
 
       // Should throw when BigQuery fails since it's the only storage backend
-      await expect(createTactic.execute(validArgs, contextWithAuth))
-        .rejects.toThrow("Failed to create tactic: BigQuery connection failed");
+      await expect(
+        createTactic.execute(validArgs, contextWithAuth),
+      ).rejects.toThrow("Failed to create tactic: BigQuery connection failed");
 
       expect(mockBigQueryService.createTactic).toHaveBeenCalled();
     });
   });
 
-  // Error Handling is covered in the BigQuery Integration section 
+  // Error Handling is covered in the BigQuery Integration section
   // since the implementation now uses BigQuery as the only storage backend
 
   describe("Tool Metadata", () => {

@@ -46,7 +46,10 @@ export const updateCampaignTool = (client: Scope3ApiClient) => ({
 
     try {
       let summary = `✅ Campaign ${args.name ? `"${args.name}"` : args.campaignId} updated successfully\n\n`;
-      const updatedTactics: (import('../../services/tactic-bigquery-service.js').TacticBigQueryRecord | null)[] = [];
+      const updatedTactics: (
+        | import("../../services/tactic-bigquery-service.js").TacticBigQueryRecord
+        | null
+      )[] = [];
       const errors: Record<string, unknown>[] = [];
 
       if (args.reason) {
@@ -207,7 +210,7 @@ export const updateCampaignTool = (client: Scope3ApiClient) => ({
               updateInput,
               apiKey!,
             );
-            
+
             // Get the updated tactic for response
             const updatedTactic = await bigQueryService.getTactic(
               adjustment.tacticId,

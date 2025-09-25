@@ -16,18 +16,18 @@ import type {
   TacticUpdateInput,
 } from "../contracts/tactic-repository.js";
 
+interface TestCampaign {
+  endDate?: string;
+  id: string;
+  startDate?: string;
+  status: "active" | "draft" | "inactive" | "paused";
+}
+
 interface TestSalesAgent {
   id: string;
   name: string;
   orgId: string;
   status: "active" | "inactive";
-}
-
-interface TestCampaign {
-  endDate?: string;
-  id: string;
-  startDate?: string;
-  status: "active" | "inactive" | "draft" | "paused";
 }
 
 export class TacticRepositoryTestDouble implements TacticRepository {
@@ -140,7 +140,10 @@ export class TacticRepositoryTestDouble implements TacticRepository {
     for (const tactic of activeTactics) {
       const segment = tactic.axeIncludeSegment!;
       const maxCpm = segmentMap.get(segment) || 0;
-      segmentMap.set(segment, Math.max(maxCpm, tactic.effectivePricing.totalCpm));
+      segmentMap.set(
+        segment,
+        Math.max(maxCpm, tactic.effectivePricing.totalCpm),
+      );
     }
 
     // Convert to array and sort by CPM descending
@@ -152,7 +155,7 @@ export class TacticRepositoryTestDouble implements TacticRepository {
       .sort((a, b) => b.max_cpm - a.max_cpm);
   }
 
-  async getTactic(apiKey: string, tacticId: string): Promise<Tactic | null> {
+  async getTactic(apiKey: string, tacticId: string): Promise<null | Tactic> {
     this.validateAuth(apiKey);
     const tactic = this.tactics.get(tacticId);
     return tactic ? structuredClone(tactic) : null;

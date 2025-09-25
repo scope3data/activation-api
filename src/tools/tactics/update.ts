@@ -2,7 +2,10 @@ import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
-import type { TacticUpdateInput, EffectivePricing } from "../../types/tactics.js";
+import type {
+  EffectivePricing,
+  TacticUpdateInput,
+} from "../../types/tactics.js";
 
 import { TacticBigQueryService } from "../../services/tactic-bigquery-service.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
@@ -21,10 +24,6 @@ export const updateTacticTool = (_client: Scope3ApiClient) => ({
 
   execute: async (
     args: {
-      tacticId: string;
-      name?: string;
-      description?: string;
-      status?: "active" | "completed" | "draft" | "paused";
       budgetAllocation?: {
         amount?: number;
         currency?: string;
@@ -33,7 +32,11 @@ export const updateTacticTool = (_client: Scope3ApiClient) => ({
         percentage?: number;
       };
       cpm?: number;
+      description?: string;
+      name?: string;
       signalCost?: number;
+      status?: "active" | "completed" | "draft" | "paused";
+      tacticId: string;
     },
     context: MCPToolExecuteContext,
   ): Promise<string> => {
@@ -52,33 +55,43 @@ export const updateTacticTool = (_client: Scope3ApiClient) => ({
 
     try {
       const bigQueryService = new TacticBigQueryService();
-      
+
       // First verify the tactic exists
-      const existingTactic = await bigQueryService.getTactic(args.tacticId, apiKey);
+      const existingTactic = await bigQueryService.getTactic(
+        args.tacticId,
+        apiKey,
+      );
       if (!existingTactic) {
         throw new Error(`Tactic with ID ${args.tacticId} not found`);
       }
 
       // Prepare update object
-      const updates: TacticUpdateInput & { effectivePricing?: EffectivePricing } = {};
-      
+      const updates: {
+        effectivePricing?: EffectivePricing;
+      } & TacticUpdateInput = {};
+
       if (args.name !== undefined) {
         updates.name = args.name;
       }
-      
+
       if (args.description !== undefined) {
         updates.description = args.description;
       }
-      
+
       if (args.status !== undefined) {
         updates.status = args.status;
       }
-      
+
       if (args.budgetAllocation) {
         updates.budgetAllocation = {};
-        Object.keys(args.budgetAllocation).forEach(key => {
-          if (args.budgetAllocation![key as keyof typeof args.budgetAllocation] !== undefined) {
-            (updates.budgetAllocation as any)[key] = args.budgetAllocation![key as keyof typeof args.budgetAllocation];
+        Object.keys(args.budgetAllocation).forEach((key) => {
+          if (
+            args.budgetAllocation![
+              key as keyof typeof args.budgetAllocation
+            ] !== undefined
+          ) {
+            (updates.budgetAllocation as Record<string, unknown>)[key] =
+              args.budgetAllocation![key as keyof typeof args.budgetAllocation];
           }
         });
       }
@@ -86,14 +99,17 @@ export const updateTacticTool = (_client: Scope3ApiClient) => ({
       // Handle pricing updates
       if (args.cpm !== undefined || args.signalCost !== undefined) {
         const newCpm = args.cpm !== undefined ? args.cpm : existingTactic.cpm;
-        const newSignalCost = args.signalCost !== undefined ? args.signalCost : (existingTactic.signal_cost || 0);
+        const newSignalCost =
+          args.signalCost !== undefined
+            ? args.signalCost
+            : existingTactic.signal_cost || 0;
         const newTotalCpm = newCpm + newSignalCost;
-        
+
         updates.effectivePricing = {
           cpm: newCpm,
+          currency: existingTactic.budget_currency,
           signalCost: newSignalCost > 0 ? newSignalCost : undefined,
           totalCpm: newTotalCpm,
-          currency: existingTactic.budget_currency,
         };
       }
 
@@ -101,7 +117,10 @@ export const updateTacticTool = (_client: Scope3ApiClient) => ({
       await bigQueryService.updateTactic(args.tacticId, updates, apiKey);
 
       // Get the updated tactic for response
-      const updatedTactic = await bigQueryService.getTactic(args.tacticId, apiKey);
+      const updatedTactic = await bigQueryService.getTactic(
+        args.tacticId,
+        apiKey,
+      );
       if (!updatedTactic) {
         throw new Error("Failed to retrieve updated tactic");
       }
@@ -110,19 +129,21 @@ export const updateTacticTool = (_client: Scope3ApiClient) => ({
 
       // Show what was changed
       summary += `## 🎯 **${updatedTactic.name}**\n\n`;
-      
+
       if (updatedTactic.description) {
         summary += `**Description:** ${updatedTactic.description}\n\n`;
       }
 
       summary += `### 📝 **Changes Applied**\n`;
-      
+
       const changedFields = [];
       if (args.name !== undefined) {
         changedFields.push(`• **Name:** Updated to "${args.name}"`);
       }
       if (args.description !== undefined) {
-        changedFields.push(`• **Description:** ${args.description ? 'Updated' : 'Cleared'}`);
+        changedFields.push(
+          `• **Description:** ${args.description ? "Updated" : "Cleared"}`,
+        );
       }
       if (args.status !== undefined) {
         changedFields.push(`• **Status:** Changed to ${args.status}`);
@@ -138,13 +159,15 @@ export const updateTacticTool = (_client: Scope3ApiClient) => ({
         changedFields.push(`• **CPM:** Updated to $${args.cpm.toFixed(2)}`);
       }
       if (args.signalCost !== undefined) {
-        changedFields.push(`• **Signal Cost:** Updated to $${args.signalCost.toFixed(2)}`);
+        changedFields.push(
+          `• **Signal Cost:** Updated to $${args.signalCost.toFixed(2)}`,
+        );
       }
 
       if (changedFields.length === 0) {
         summary += `• No changes were specified\n`;
       } else {
-        summary += changedFields.join('\n') + '\n';
+        summary += changedFields.join("\n") + "\n";
       }
       summary += `\n`;
 
@@ -198,18 +221,21 @@ export const updateTacticTool = (_client: Scope3ApiClient) => ({
 
       // Recommendations
       summary += `### 💡 **Recommendations**\n`;
-      
+
       if (args.status === "draft") {
         summary += `• ⚠️ Tactic is now in draft status - remember to activate when ready\n`;
       } else if (args.status === "active") {
         summary += `• ✅ Tactic is now active and will participate in campaign delivery\n`;
       }
-      
+
       if (updatedTactic.total_cpm > 50) {
         summary += `• 💰 High CPM detected ($${updatedTactic.total_cpm.toFixed(2)}) - monitor performance closely\n`;
       }
-      
-      if (updates.budgetAllocation?.amount && updates.budgetAllocation.amount > 50000) {
+
+      if (
+        updates.budgetAllocation?.amount &&
+        updates.budgetAllocation.amount > 50000
+      ) {
         summary += `• 📈 Large budget allocation - consider gradual scaling for optimization\n`;
       }
 
@@ -220,17 +246,21 @@ export const updateTacticTool = (_client: Scope3ApiClient) => ({
 
       return createMCPResponse({
         data: {
+          currentState: {
+            budgetAmount: updatedTactic.budget_amount,
+            effectiveCpm: updatedTactic.total_cpm,
+            name: updatedTactic.name,
+            projectedImpressions,
+            status: updatedTactic.status,
+          },
           tacticId: args.tacticId,
           updates: {
             applied: changedFields.length,
-            fields: Object.keys(args).filter(key => args[key as keyof typeof args] !== undefined && key !== 'tacticId'),
-          },
-          currentState: {
-            name: updatedTactic.name,
-            status: updatedTactic.status,
-            budgetAmount: updatedTactic.budget_amount,
-            effectiveCpm: updatedTactic.total_cpm,
-            projectedImpressions,
+            fields: Object.keys(args).filter(
+              (key) =>
+                args[key as keyof typeof args] !== undefined &&
+                key !== "tacticId",
+            ),
           },
         },
         message: summary,
@@ -245,18 +275,43 @@ export const updateTacticTool = (_client: Scope3ApiClient) => ({
 
   name: "tactic_update",
   parameters: z.object({
-    tacticId: z.string().describe("ID of the tactic to update"),
-    name: z.string().optional().describe("New name for the tactic"),
-    description: z.string().optional().describe("New description for the tactic"),
-    status: z.enum(["active", "completed", "draft", "paused"]).optional().describe("New status for the tactic"),
-    budgetAllocation: z.object({
-      amount: z.number().min(0).optional().describe("New budget amount"),
-      currency: z.string().optional().describe("Currency code"),
-      dailyCap: z.number().min(0).optional().describe("New daily spending limit"),
-      pacing: z.enum(["even", "asap", "front_loaded"]).optional().describe("New budget pacing strategy"),
-      percentage: z.number().min(0).max(100).optional().describe("New percentage of campaign budget"),
-    }).optional().describe("Budget allocation updates"),
+    budgetAllocation: z
+      .object({
+        amount: z.number().min(0).optional().describe("New budget amount"),
+        currency: z.string().optional().describe("Currency code"),
+        dailyCap: z
+          .number()
+          .min(0)
+          .optional()
+          .describe("New daily spending limit"),
+        pacing: z
+          .enum(["even", "asap", "front_loaded"])
+          .optional()
+          .describe("New budget pacing strategy"),
+        percentage: z
+          .number()
+          .min(0)
+          .max(100)
+          .optional()
+          .describe("New percentage of campaign budget"),
+      })
+      .optional()
+      .describe("Budget allocation updates"),
     cpm: z.number().min(0).optional().describe("New cost per mille (CPM)"),
-    signalCost: z.number().min(0).optional().describe("New signal cost to add to base CPM"),
+    description: z
+      .string()
+      .optional()
+      .describe("New description for the tactic"),
+    name: z.string().optional().describe("New name for the tactic"),
+    signalCost: z
+      .number()
+      .min(0)
+      .optional()
+      .describe("New signal cost to add to base CPM"),
+    status: z
+      .enum(["active", "completed", "draft", "paused"])
+      .optional()
+      .describe("New status for the tactic"),
+    tacticId: z.string().describe("ID of the tactic to update"),
   }),
 });

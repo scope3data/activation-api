@@ -333,9 +333,10 @@ export class CampaignRepositoryTestDouble implements CampaignRepository {
    - Clear error messages with actionable suggestions
 
 **Key Commands**:
+
 ```bash
 npm run validate:schema        # Check all operations
-npm run validate:schema:show   # See available operations  
+npm run validate:schema:show   # See available operations
 npm test -- schema             # Run schema validation tests
 ```
 

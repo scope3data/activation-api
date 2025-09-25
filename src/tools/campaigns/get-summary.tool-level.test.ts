@@ -117,7 +117,10 @@ describe("getCampaignSummaryTool", () => {
         "ba_456",
       );
       expect(mockClient.getCampaignDeliveryData).toHaveBeenCalled();
-      expect(mockTacticService.listTactics).toHaveBeenCalledWith("camp_123", "test-api-key");
+      expect(mockTacticService.listTactics).toHaveBeenCalledWith(
+        "camp_123",
+        "test-api-key",
+      );
 
       // Parse the JSON response to check structured data
       const parsedResult = JSON.parse(result);

@@ -379,33 +379,35 @@ async function exportTacticData(
   for (const campaignId of campaignIds) {
     const tacticService = new TacticBigQueryService();
     const tacticRecords = await tacticService.listTactics(campaignId, apiKey);
-    
+
     // Convert BigQuery records to expected tactic format
-    const tactics = tacticRecords.map(record => ({
+    const tactics = tacticRecords.map((record) => ({
+      cpm: record.total_cpm,
+      dailyBudget: record.budget_daily_cap,
+      endDate: null, // End date not stored in tactics table
       id: record.id,
       name: record.name,
-      dailyBudget: record.budget_daily_cap,
-      totalBudget: record.budget_amount,
-      cpm: record.total_cpm,
-      status: record.status,
-      targetPrice: record.total_cpm, // Use total CPM as target price
-      endDate: null, // End date not stored in tactics table
-      startDate: null, // Start date not stored in tactics table
       publisherProducts: [record.media_product_id], // Media product ID
       signals: record.signal_id ? [record.signal_id] : [], // Signal ID if available
+      startDate: null, // Start date not stored in tactics table
+      status: record.status,
       stories: record.brand_story_id ? [record.brand_story_id] : [], // Brand story ID if available
+      targetPrice: record.total_cpm, // Use total CPM as target price
+      totalBudget: record.budget_amount,
     }));
 
     for (const tactic of tactics || []) {
       rows.push({
         campaign_id: campaignId,
         daily_budget: tactic.dailyBudget || null,
-        end_date: (tactic.endDate as Date | null)?.toISOString().split("T")[0] || null,
+        end_date:
+          (tactic.endDate as Date | null)?.toISOString().split("T")[0] || null,
         publisher_products:
           (tactic.publisherProducts as string[])?.join(",") || null,
         signals: (tactic.signals as string[])?.join(",") || null,
         start_date:
-          (tactic.startDate as Date | null)?.toISOString().split("T")[0] || null,
+          (tactic.startDate as Date | null)?.toISOString().split("T")[0] ||
+          null,
         status: tactic.status,
         stories: (tactic.stories as string[])?.join(",") || null,
         tactic_id: tactic.id as string,

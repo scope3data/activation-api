@@ -998,44 +998,6 @@ export class Scope3ApiClient {
     return result.data.createTactic;
   }
 
-  // Get tactic by ID (BigQuery implementation)
-  async getTactic(apiKey: string, tacticId: string): Promise<Tactic | null> {
-    const tacticRecord = await this.tacticService.getTactic(tacticId, apiKey);
-    
-    if (!tacticRecord) {
-      return null;
-    }
-
-    // Convert BigQuery record to Tactic interface
-    return {
-      id: tacticRecord.id,
-      name: tacticRecord.name,
-      campaignId: tacticRecord.campaign_id,
-      brandStoryId: tacticRecord.brand_story_id,
-      signalId: tacticRecord.signal_id,
-      description: tacticRecord.description,
-      status: tacticRecord.status as "active" | "completed" | "draft" | "paused",
-      budgetAllocation: {
-        amount: tacticRecord.budget_amount,
-        currency: tacticRecord.budget_currency || "USD",
-        pacing: tacticRecord.budget_pacing as any
-      },
-      effectivePricing: {
-        cpm: tacticRecord.cpm,
-        type: "cpm"
-      },
-      mediaProduct: {
-        id: tacticRecord.media_product_id,
-        name: tacticRecord.media_product_name || `Product ${tacticRecord.media_product_id}`,
-        publisherName: tacticRecord.publisher_name || "Unknown Publisher",
-        formats: [],
-        pricing: { cpm: tacticRecord.cpm, type: "cpm" }
-      },
-      createdAt: tacticRecord.created_at,
-      updatedAt: tacticRecord.updated_at
-    };
-  }
-
   async createWebhookSubscription(
     apiKey: string,
     input: WebhookSubscriptionInput,
@@ -1583,8 +1545,6 @@ export class Scope3ApiClient {
     return [];
   }
 
-  // Inventory Option Management Methods
-
   async getCampaignDeliveryData(
     apiKey: string,
     campaignId: string,
@@ -1649,6 +1609,8 @@ export class Scope3ApiClient {
 
     return result.data?.campaignTactics || [];
   }
+
+  // Inventory Option Management Methods
 
   /**
    * Get a creative by ID with BigQuery implementation
@@ -1862,8 +1824,6 @@ export class Scope3ApiClient {
     return result.data.optimizationRecommendations;
   }
 
-  // Inventory Option Management Methods
-
   // Get product recommendations
   async getProductRecommendations(
     apiKey: string,
@@ -1906,6 +1866,8 @@ export class Scope3ApiClient {
     ];
   }
 
+  // Inventory Option Management Methods
+
   async getScoringOutcomes(
     apiKey: string,
     campaignId: string,
@@ -1937,6 +1899,50 @@ export class Scope3ApiClient {
     }
 
     return result.data?.scoringOutcomes || [];
+  }
+
+  // Get tactic by ID (BigQuery implementation)
+  async getTactic(apiKey: string, tacticId: string): Promise<null | Tactic> {
+    const tacticRecord = await this.tacticService.getTactic(tacticId, apiKey);
+
+    if (!tacticRecord) {
+      return null;
+    }
+
+    // Convert BigQuery record to Tactic interface
+    return {
+      brandStoryId: tacticRecord.brand_story_id,
+      budgetAllocation: {
+        amount: tacticRecord.budget_amount,
+        currency: tacticRecord.budget_currency || "USD",
+        pacing: tacticRecord.budget_pacing as "asap" | "even" | "front_loaded",
+      },
+      campaignId: tacticRecord.campaign_id,
+      createdAt: tacticRecord.created_at,
+      description: tacticRecord.description,
+      effectivePricing: {
+        cpm: tacticRecord.cpm,
+        type: "cpm",
+      },
+      id: tacticRecord.id,
+      mediaProduct: {
+        formats: [],
+        id: tacticRecord.media_product_id,
+        name:
+          tacticRecord.media_product_name ||
+          `Product ${tacticRecord.media_product_id}`,
+        pricing: { cpm: tacticRecord.cpm, type: "cpm" },
+        publisherName: tacticRecord.publisher_name || "Unknown Publisher",
+      },
+      name: tacticRecord.name,
+      signalId: tacticRecord.signal_id,
+      status: tacticRecord.status as
+        | "active"
+        | "completed"
+        | "draft"
+        | "paused",
+      updatedAt: tacticRecord.updated_at,
+    };
   }
 
   async getTacticBreakdown(

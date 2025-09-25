@@ -20,8 +20,8 @@ export const deleteTacticTool = (_client: Scope3ApiClient) => ({
 
   execute: async (
     args: {
-      tacticId: string;
       confirm: boolean;
+      tacticId: string;
     },
     context: MCPToolExecuteContext,
   ): Promise<string> => {
@@ -41,8 +41,8 @@ export const deleteTacticTool = (_client: Scope3ApiClient) => ({
     if (!args.confirm) {
       return createMCPResponse({
         data: {
-          tacticId: args.tacticId,
           requiresConfirmation: true,
+          tacticId: args.tacticId,
         },
         message: `⚠️ **Confirmation Required**\n\nYou are about to delete tactic: **${args.tacticId}**\n\n**This action will:**\n• Mark the tactic as inactive\n• Stop it from participating in campaign delivery\n• Remove it from active tactic listings\n• Preserve data for historical reporting\n\n**To confirm deletion, call this tool again with:**\n\`\`\`json\n{\n  "tacticId": "${args.tacticId}",\n  "confirm": true\n}\n\`\`\`\n\n**Alternatives:**\n• Use tactic_update to pause instead of delete\n• Use tactic_get to review details before deletion`,
         success: false,
@@ -51,22 +51,25 @@ export const deleteTacticTool = (_client: Scope3ApiClient) => ({
 
     try {
       const bigQueryService = new TacticBigQueryService();
-      
+
       // First verify the tactic exists and get its details
-      const existingTactic = await bigQueryService.getTactic(args.tacticId, apiKey);
+      const existingTactic = await bigQueryService.getTactic(
+        args.tacticId,
+        apiKey,
+      );
       if (!existingTactic) {
         throw new Error(`Tactic with ID ${args.tacticId} not found`);
       }
 
       // Store tactic details for response
       const tacticDetails = {
-        id: existingTactic.id,
-        name: existingTactic.name,
-        campaignId: existingTactic.campaign_id,
         budgetAmount: existingTactic.budget_amount,
         budgetCurrency: existingTactic.budget_currency,
-        status: existingTactic.status,
+        campaignId: existingTactic.campaign_id,
         cpm: existingTactic.total_cpm,
+        id: existingTactic.id,
+        name: existingTactic.name,
+        status: existingTactic.status,
       };
 
       // Perform the deletion (mark as inactive)
@@ -103,7 +106,7 @@ export const deleteTacticTool = (_client: Scope3ApiClient) => ({
       summary += `• **Budget Reallocation:** Consider redistributing the freed budget to other tactics\n`;
       summary += `• **Campaign Review:** Use campaign_get to review remaining tactics\n`;
       summary += `• **Performance Analysis:** Review why this tactic was deleted for future optimization\n`;
-      
+
       if (tacticDetails.status === "active") {
         summary += `• **⚠️ Active Tactic Deleted:** Monitor campaign performance for delivery impact\n`;
       }
@@ -116,7 +119,6 @@ export const deleteTacticTool = (_client: Scope3ApiClient) => ({
 
       return createMCPResponse({
         data: {
-          tacticId: args.tacticId,
           deletedTactic: tacticDetails,
           impact: {
             budgetFreed: tacticDetails.budgetAmount,
@@ -124,6 +126,7 @@ export const deleteTacticTool = (_client: Scope3ApiClient) => ({
             projectedImpressionsLost: projectedImpressions,
             wasActive: tacticDetails.status === "active",
           },
+          tacticId: args.tacticId,
           timestamp: new Date().toISOString(),
         },
         message: summary,
@@ -138,7 +141,7 @@ export const deleteTacticTool = (_client: Scope3ApiClient) => ({
 
   name: "tactic_delete",
   parameters: z.object({
-    tacticId: z.string().describe("ID of the tactic to delete"),
     confirm: z.boolean().describe("Must be set to true to confirm deletion"),
+    tacticId: z.string().describe("ID of the tactic to delete"),
   }),
 });

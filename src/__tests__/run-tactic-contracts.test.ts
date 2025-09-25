@@ -5,14 +5,14 @@
  * This file shows how the same behavioral tests can validate any backend.
  */
 
-import { testTacticRepositoryContract } from "./contracts/tactic-repository.contract.test.js";
 import { TacticRepositoryTestDouble } from "../test-doubles/tactic-repository-test-double.js";
+import { testTacticRepositoryContract } from "./contracts/tactic-repository.contract.test.js";
 
 describe("Tactic Repository Contracts", () => {
   describe("Test Double Implementation", () => {
     // Share the same test double instance across repository factory and setup
-    let sharedTestDouble: TacticRepositoryTestDouble | null = null;
-    
+    let sharedTestDouble: null | TacticRepositoryTestDouble = null;
+
     testTacticRepositoryContract(
       // Repository factory - return the shared instance
       () => {
@@ -27,7 +27,7 @@ describe("Tactic Repository Contracts", () => {
         if (!sharedTestDouble) {
           sharedTestDouble = new TacticRepositoryTestDouble();
         }
-        
+
         const validApiKey = "contract_test_api_key";
         const invalidApiKey = "invalid_contract_key";
 
@@ -36,12 +36,13 @@ describe("Tactic Repository Contracts", () => {
 
         // Set up prebid test data for contract testing
         const orgId = "contract_test_org_prebid";
-        const { campaignIds, salesAgentIds } = sharedTestDouble.setupPrebidTestData(
-          orgId,
-          2, // 2 sales agents
-          2, // 2 campaigns per agent  
-          3, // 3 tactics per campaign
-        );
+        const { campaignIds, salesAgentIds } =
+          sharedTestDouble.setupPrebidTestData(
+            orgId,
+            2, // 2 sales agents
+            2, // 2 campaigns per agent
+            3, // 3 tactics per campaign
+          );
 
         return {
           campaignId: campaignIds[0],
@@ -116,7 +117,7 @@ describe("Prebid Integration Contract Tests", () => {
       // Publisher 1: 2 sales agents, 3 campaigns, 4 tactics each
       testDouble.setupPrebidTestData(publisherOrg1, 2, 3, 4);
 
-      // Publisher 2: 1 sales agent, 2 campaigns, 5 tactics each  
+      // Publisher 2: 1 sales agent, 2 campaigns, 5 tactics each
       testDouble.setupPrebidTestData(publisherOrg2, 1, 2, 5);
 
       // Test both publishers get separate results
@@ -127,17 +128,17 @@ describe("Prebid Integration Contract Tests", () => {
       expect(segments1.length).toBeGreaterThan(0);
       expect(segments1.length).toBeLessThanOrEqual(24); // Max possible unique segments
 
-      // Publisher 2 should have segments (1×2×5 = 10 tactics, each with unique segments)  
+      // Publisher 2 should have segments (1×2×5 = 10 tactics, each with unique segments)
       expect(segments2.length).toBeGreaterThan(0);
       expect(segments2.length).toBeLessThanOrEqual(10); // Max possible unique segments
 
       // Verify segments are properly formatted
-      segments1.forEach(segment => {
+      segments1.forEach((segment) => {
         expect(segment.axe_include_segment).toMatch(/^axe_/);
         expect(segment.max_cpm).toBeGreaterThan(0);
       });
 
-      segments2.forEach(segment => {
+      segments2.forEach((segment) => {
         expect(segment.axe_include_segment).toMatch(/^axe_/);
         expect(segment.max_cpm).toBeGreaterThan(0);
       });
@@ -149,30 +150,35 @@ describe("Prebid Integration Contract Tests", () => {
     it("should validate campaign status filtering in prebid query", async () => {
       const orgId = "status_test_org";
       const validApiKey = "status_test_key";
-      
+
       testDouble.addValidApiKey(validApiKey);
 
       // Create test data: 1 sales agent, 3 campaigns, 2 tactics each = 6 tactics total
-      const { campaignIds: _campaignIds } = testDouble.setupPrebidTestData(orgId, 1, 3, 2);
+      const { campaignIds: _campaignIds } = testDouble.setupPrebidTestData(
+        orgId,
+        1,
+        3,
+        2,
+      );
 
       // Get initial segments (should include all active campaigns)
       const initialSegments = await testDouble.getPrebidSegments(orgId);
       expect(initialSegments.length).toBeGreaterThan(0);
-      
-      // Note: The current test double implementation doesn't provide a method to 
+
+      // Note: The current test double implementation doesn't provide a method to
       // deactivate campaigns, so we test the filtering logic conceptually.
       // In a real implementation, you would:
-      // 1. Mark one campaign as inactive 
+      // 1. Mark one campaign as inactive
       // 2. Verify that tactics from that campaign don't appear in segments
-      
+
       // Verify that segments come from valid active campaigns
-      initialSegments.forEach(segment => {
+      initialSegments.forEach((segment) => {
         expect(segment.axe_include_segment).toMatch(/^axe_/);
         expect(segment.max_cpm).toBeGreaterThan(0);
       });
-      
+
       // The getPrebidSegments method should only return segments from:
-      // - Active sales agents (orgId matches and status = "active")  
+      // - Active sales agents (orgId matches and status = "active")
       // - Active tactics (status = "active" and has axeIncludeSegment)
       // - Active campaigns (status = "active" and within date range if specified)
       expect(Array.isArray(initialSegments)).toBe(true);
@@ -181,11 +187,16 @@ describe("Prebid Integration Contract Tests", () => {
     it("should demonstrate max CPM aggregation behavior", async () => {
       const orgId = "max_cpm_aggregation_org";
       const validApiKey = "max_cpm_test_key";
-      
+
       testDouble.addValidApiKey(validApiKey);
 
       // Set up test data with multiple tactics
-      const { campaignIds, salesAgentIds } = testDouble.setupPrebidTestData(orgId, 1, 1, 3);
+      const { campaignIds, salesAgentIds } = testDouble.setupPrebidTestData(
+        orgId,
+        1,
+        1,
+        3,
+      );
 
       // The setupPrebidTestData creates tactics with random CPMs between 5-15
       // Get the segments to see the aggregation behavior
@@ -193,18 +204,20 @@ describe("Prebid Integration Contract Tests", () => {
 
       // Should have segments from the created tactics
       expect(segments.length).toBeGreaterThan(0);
-      
+
       // Each segment should have a valid CPM
-      segments.forEach(segment => {
+      segments.forEach((segment) => {
         expect(segment.axe_include_segment).toMatch(/^axe_/);
         expect(segment.max_cpm).toBeGreaterThanOrEqual(5.0); // Min CPM from setupPrebidTestData
-        expect(segment.max_cpm).toBeLessThanOrEqual(15.0);   // Max CPM from setupPrebidTestData
+        expect(segment.max_cpm).toBeLessThanOrEqual(15.0); // Max CPM from setupPrebidTestData
       });
 
       // Segments should be sorted by CPM descending (highest first)
       if (segments.length > 1) {
         for (let i = 1; i < segments.length; i++) {
-          expect(segments[i - 1].max_cpm).toBeGreaterThanOrEqual(segments[i].max_cpm);
+          expect(segments[i - 1].max_cpm).toBeGreaterThanOrEqual(
+            segments[i].max_cpm,
+          );
         }
       }
 
@@ -222,9 +235,9 @@ describe("Prebid Integration Contract Tests", () => {
       );
 
       const updatedSegments = await testDouble.getPrebidSegments(orgId);
-      
+
       // Should now include a segment with the higher CPM
-      const maxCpm = Math.max(...updatedSegments.map(s => s.max_cpm));
+      const maxCpm = Math.max(...updatedSegments.map((s) => s.max_cpm));
       expect(maxCpm).toBeGreaterThanOrEqual(20.0);
     });
   });

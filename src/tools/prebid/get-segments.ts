@@ -44,9 +44,9 @@ export const getPrebidSegmentsTool = () => ({
       }
 
       // Format for prebid integration
-      const prebidResponse = segments.map(segment => ({
-        segment: segment.axe_include_segment,
+      const prebidResponse = segments.map((segment) => ({
         maxCpm: segment.max_cpm,
+        segment: segment.axe_include_segment,
       }));
 
       let summary = `🎯 **AXE Segments for Publisher ${args.orgId}**\n\n`;
@@ -76,7 +76,7 @@ export const getPrebidSegmentsTool = () => ({
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const issues = error.issues.map(issue => issue.message).join(", ");
+        const issues = error.issues.map((issue) => issue.message).join(", ");
         throw new Error(`Validation error: ${issues}`);
       }
 

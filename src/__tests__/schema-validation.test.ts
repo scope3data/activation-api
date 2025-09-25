@@ -1,16 +1,16 @@
 import { readFileSync } from "fs";
+import { buildSchema, GraphQLError, parse, validate } from "graphql";
 import { join } from "path";
-import { buildSchema, validate, parse, GraphQLError } from "graphql";
 
 import * as brandAgentQueries from "../client/queries/brand-agents.js";
 
 /**
  * GraphQL Schema Validation Test Suite
- * 
+ *
  * This test suite validates that all client-side GraphQL queries and mutations
  * are compatible with the actual backend GraphQL schema. It prevents the
  * deployment of client code that references non-existent operations.
- * 
+ *
  * Key Benefits:
  * - Catches schema mismatches before deployment
  * - Validates query/mutation syntax and field existence
@@ -24,12 +24,15 @@ describe("GraphQL Schema Validation", () => {
   beforeAll(() => {
     try {
       // Load the actual GraphQL schema file
-      const schemaPath = join(process.cwd(), "scope3-backend@current--#@!api!@#.graphql");
+      const schemaPath = join(
+        process.cwd(),
+        "scope3-backend@current--#@!api!@#.graphql",
+      );
       const schemaSDL = readFileSync(schemaPath, "utf-8");
       schema = buildSchema(schemaSDL);
     } catch (error) {
       throw new Error(
-        `Failed to load GraphQL schema: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to load GraphQL schema: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   });
@@ -40,7 +43,7 @@ describe("GraphQL Schema Validation", () => {
   function validateGraphQLOperation(
     operation: string,
     operationName: string,
-    operationType: "query" | "mutation"
+    operationType: "mutation" | "query",
   ): void {
     let document;
 
@@ -48,19 +51,22 @@ describe("GraphQL Schema Validation", () => {
       document = parse(operation);
     } catch (parseError) {
       throw new Error(
-        `Parse error in ${operationName}: ${parseError instanceof Error ? parseError.message : String(parseError)}`
+        `Parse error in ${operationName}: ${parseError instanceof Error ? parseError.message : String(parseError)}`,
       );
     }
 
     const errors = validate(schema, document);
 
     if (errors.length > 0) {
-      const errorMessages = errors.map((error: GraphQLError) => 
-        `- ${error.message} (line ${error.locations?.[0]?.line})`
-      ).join("\n");
+      const errorMessages = errors
+        .map(
+          (error: GraphQLError) =>
+            `- ${error.message} (line ${error.locations?.[0]?.line})`,
+        )
+        .join("\n");
 
       throw new Error(
-        `Schema validation failed for ${operationType} "${operationName}":\n${errorMessages}\n\nOperation:\n${operation}`
+        `Schema validation failed for ${operationType} "${operationName}":\n${errorMessages}\n\nOperation:\n${operation}`,
       );
     }
   }
@@ -70,27 +76,27 @@ describe("GraphQL Schema Validation", () => {
       // These operations are expected by the MCP tools but don't exist in the GraphQL schema
       const missingTacticOperations = [
         "createTactic",
-        "updateTactic", 
+        "updateTactic",
         "deleteTactic",
         "tactic",
         "tactics",
         "tacticPerformance",
         "optimizationRecommendations",
         "discoverProducts",
-        "budgetAllocationSummary"
+        "budgetAllocationSummary",
       ];
 
       // Document that these operations are missing for future implementation
       expect(missingTacticOperations).toEqual([
         "createTactic",
-        "updateTactic", 
+        "updateTactic",
         "deleteTactic",
         "tactic",
         "tactics",
         "tacticPerformance",
         "optimizationRecommendations",
         "discoverProducts",
-        "budgetAllocationSummary"
+        "budgetAllocationSummary",
       ]);
     });
 
@@ -112,7 +118,7 @@ describe("GraphQL Schema Validation", () => {
     });
 
     it.skip("GET_TACTIC_QUERY validation (operation not in schema)", () => {
-      // This test is skipped because tactic doesn't exist in the schema  
+      // This test is skipped because tactic doesn't exist in the schema
     });
 
     it.skip("GET_TACTIC_PERFORMANCE_QUERY validation (operation not in schema)", () => {
@@ -135,15 +141,29 @@ describe("GraphQL Schema Validation", () => {
   describe("Brand Agent Operations", () => {
     it("should validate all brand agent queries against schema", () => {
       const queries = [
-        { query: brandAgentQueries.LIST_BRAND_AGENTS_QUERY, name: "LIST_BRAND_AGENTS_QUERY" },
-        { query: brandAgentQueries.GET_BRAND_AGENT_QUERY, name: "GET_BRAND_AGENT_QUERY" },
-        { query: brandAgentQueries.CREATE_BRAND_AGENT_MUTATION, name: "CREATE_BRAND_AGENT_MUTATION" },
-        { query: brandAgentQueries.UPDATE_BRAND_AGENT_MUTATION, name: "UPDATE_BRAND_AGENT_MUTATION" },
+        {
+          name: "LIST_BRAND_AGENTS_QUERY",
+          query: brandAgentQueries.LIST_BRAND_AGENTS_QUERY,
+        },
+        {
+          name: "GET_BRAND_AGENT_QUERY",
+          query: brandAgentQueries.GET_BRAND_AGENT_QUERY,
+        },
+        {
+          name: "CREATE_BRAND_AGENT_MUTATION",
+          query: brandAgentQueries.CREATE_BRAND_AGENT_MUTATION,
+        },
+        {
+          name: "UPDATE_BRAND_AGENT_MUTATION",
+          query: brandAgentQueries.UPDATE_BRAND_AGENT_MUTATION,
+        },
       ];
 
-      queries.forEach(({ query, name }) => {
+      queries.forEach(({ name, query }) => {
         expect(() => {
-          const operationType = name.includes("MUTATION") ? "mutation" : "query";
+          const operationType = name.includes("MUTATION")
+            ? "mutation"
+            : "query";
           validateGraphQLOperation(query, name, operationType);
         }).not.toThrow();
       });
@@ -161,7 +181,7 @@ describe("GraphQL Schema Validation", () => {
     it.skip("should validate standard campaign CRUD operations (not implemented)", () => {
       // These standard campaign operations are not implemented in campaigns.ts:
       // - LIST_CAMPAIGNS_QUERY
-      // - GET_CAMPAIGN_QUERY  
+      // - GET_CAMPAIGN_QUERY
       // - CREATE_CAMPAIGN_MUTATION
       // - UPDATE_CAMPAIGN_MUTATION
       //
@@ -172,7 +192,7 @@ describe("GraphQL Schema Validation", () => {
 
 /**
  * Schema Compatibility Test Suite
- * 
+ *
  * Tests that validate the structure and compatibility of specific operations
  * that are critical to the application functionality.
  */
@@ -180,7 +200,10 @@ describe("Schema Compatibility", () => {
   let schema: ReturnType<typeof buildSchema>;
 
   beforeAll(() => {
-    const schemaPath = join(process.cwd(), "scope3-backend@current--#@!api!@#.graphql");
+    const schemaPath = join(
+      process.cwd(),
+      "scope3-backend@current--#@!api!@#.graphql",
+    );
     const schemaSDL = readFileSync(schemaPath, "utf-8");
     schema = buildSchema(schemaSDL);
   });
@@ -188,23 +211,23 @@ describe("Schema Compatibility", () => {
   describe("Available Mutations", () => {
     it("should list all available mutation operations", () => {
       const mutationType = schema.getType("Mutation");
-      
+
       if (!mutationType || !("getFields" in mutationType)) {
         throw new Error("Mutation type not found in schema");
       }
 
       const mutations = Object.keys(mutationType.getFields());
-      
+
       // Log available mutations for debugging
       console.log("Available mutations in schema:");
-      mutations.sort().forEach(mutation => {
+      mutations.sort().forEach((mutation) => {
         console.log(`  - ${mutation}`);
       });
 
       // Verify that expected mutations exist
       expect(mutations).toContain("createCampaign");
       expect(mutations).toContain("updateCampaign");
-      
+
       // Document missing tactic mutations
       expect(mutations).not.toContain("createTactic");
       expect(mutations).not.toContain("updateTactic");
@@ -215,23 +238,23 @@ describe("Schema Compatibility", () => {
   describe("Available Queries", () => {
     it("should list all available query operations", () => {
       const queryType = schema.getType("Query");
-      
+
       if (!queryType || !("getFields" in queryType)) {
         throw new Error("Query type not found in schema");
       }
 
       const queries = Object.keys(queryType.getFields());
-      
+
       // Log available queries for debugging
       console.log("Available queries in schema:");
-      queries.sort().forEach(query => {
+      queries.sort().forEach((query) => {
         console.log(`  - ${query}`);
       });
 
       // Verify that expected queries exist
       expect(queries).toContain("agents"); // Should be 'agents', not 'brandAgents'
       expect(queries).toContain("campaigns");
-      
+
       // Document missing tactic queries
       expect(queries).not.toContain("tactic");
       expect(queries).not.toContain("tactics");
@@ -255,7 +278,7 @@ describe("Schema Compatibility", () => {
         const document = parse(testQuery);
         const errors = validate(schema, document);
         if (errors.length > 0) {
-          throw new Error(errors.map(e => e.message).join(", "));
+          throw new Error(errors.map((e) => e.message).join(", "));
         }
       }).not.toThrow();
     });
@@ -275,7 +298,7 @@ describe("Schema Compatibility", () => {
         const document = parse(testQuery);
         const errors = validate(schema, document);
         if (errors.length > 0) {
-          throw new Error(errors.map(e => e.message).join(", "));
+          throw new Error(errors.map((e) => e.message).join(", "));
         }
       }).toThrow(/Cannot query field/);
     });
