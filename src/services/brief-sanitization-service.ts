@@ -10,45 +10,28 @@ export interface SanitizedBriefResult {
 
 export class BriefSanitizationService {
   /**
-   * Create a budget allocation range description for sales agents
-   * This provides context about possible allocation without exposing full campaign budget
+   * Format allocation amount for publishers
+   * The caller determines what allocation information to share with publishers
    */
-  createAllocationRangeContext(
-    tacticBudgetAmount: number,
-    _campaignBudgetTotal?: number,
-  ): string {
-    // Create allocation range tiers based on tactic budget
-    let allocationTier: string;
-    let suggestedRange: string;
+  formatAllocation(allocationAmount: number, currency = "USD"): string {
+    const formatter = new Intl.NumberFormat("en-US", {
+      currency: currency,
+      maximumFractionDigits: 0,
+      style: "currency",
+    });
 
-    if (tacticBudgetAmount < 1000) {
-      allocationTier = "Small allocation";
-      suggestedRange = "under $1K";
-    } else if (tacticBudgetAmount < 5000) {
-      allocationTier = "Medium allocation";
-      suggestedRange = "$1K-$5K range";
-    } else if (tacticBudgetAmount < 25000) {
-      allocationTier = "Large allocation";
-      suggestedRange = "$5K-$25K range";
-    } else if (tacticBudgetAmount < 100000) {
-      allocationTier = "Enterprise allocation";
-      suggestedRange = "$25K-$100K range";
-    } else {
-      allocationTier = "Premium allocation";
-      suggestedRange = "substantial budget";
-    }
-
-    return `${allocationTier} (${suggestedRange}) - please provide competitive pricing and premium inventory access.`;
+    return formatter.format(allocationAmount);
   }
 
   /**
    * Sanitize a campaign brief by removing budget, price, and financial information
-   * while preserving targeting context and campaign objectives
+   * while preserving targeting context and campaign objectives.
+   * Optionally append caller's specified allocation context.
    */
   async sanitizeBrief(
     originalBrief: string,
-    _tacticBudgetAmount?: number,
-    _campaignBudgetTotal?: number,
+    allocationAmount?: number,
+    currency = "USD",
   ): Promise<SanitizedBriefResult> {
     try {
       // List of financial terms and patterns to identify and remove
@@ -95,16 +78,13 @@ export class BriefSanitizationService {
       let sanitizedBrief = originalBrief;
       const removedElements: string[] = [];
 
-      // Apply financial pattern removal
+      // Remove financial patterns entirely (no placeholders)
       for (const pattern of financialPatterns) {
         const matches = sanitizedBrief.match(pattern);
         if (matches) {
           for (const match of matches) {
             removedElements.push(`Financial reference: "${match}"`);
-            sanitizedBrief = sanitizedBrief.replace(
-              pattern,
-              "[budget details removed for sales agent privacy]",
-            );
+            sanitizedBrief = sanitizedBrief.replace(pattern, "");
           }
         }
       }
@@ -120,18 +100,31 @@ export class BriefSanitizationService {
         }
       }
 
-      // Clean up multiple spaces and empty sentences
+      // Clean up sentences with removed financial information
       sanitizedBrief = sanitizedBrief
+        // Remove incomplete phrases that would be left after financial removal
+        .replace(/Budget:\s+total\s+with\s+a\s+daily\s+cap\./g, "")
+        .replace(/with\s+a\s+spend\s+allocation\./g, ".")
+        .replace(/up\s+to\s+CPM\s+for/g, "for")
+        .replace(/between\s+-\s+/g, "")
+        .replace(/\s+and\s+strong\./g, ".")
+        .replace(/\s+is\s+key\s+for\s+this\s+campaign\./g, ".")
+        .replace(/with\s+a\s+focus\s+on\s+and\s+strong\./g, ".")
+        .replace(/\s+CPM\s+under\./g, ".")
+        // General cleanup
         .replace(/\s+/g, " ") // Multiple spaces to single space
         .replace(/\.\s*\./g, ".") // Double periods
         .replace(/,\s*,/g, ",") // Double commas
         .replace(/\s+([.!?])/g, "$1") // Space before punctuation
         .replace(/^\s+|\s+$/g, ""); // Trim
 
-      // Add context preservation note if budget information was removed
-      if (removedElements.length > 0) {
-        sanitizedBrief +=
-          "\n\nNote: This is a sanitized version of the campaign brief with budget and pricing information removed for privacy. The targeting and creative requirements remain unchanged.";
+      // Add caller's specified allocation if provided
+      if (allocationAmount !== undefined && allocationAmount > 0) {
+        const formattedAllocation = this.formatAllocation(
+          allocationAmount,
+          currency,
+        );
+        sanitizedBrief += `\n\nAllocation: ${formattedAllocation}`;
       }
 
       // Determine confidence and context preservation

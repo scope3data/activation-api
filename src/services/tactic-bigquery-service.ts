@@ -14,6 +14,7 @@ import {
   type MediaBuyResult,
 } from "./adcp-media-buy-service.js";
 import { AuthenticationService } from "./auth-service.js";
+import { BriefSanitizationService } from "./brief-sanitization-service.js";
 
 export interface PrebidSegment {
   axe_include_segment: string;
@@ -181,17 +182,30 @@ export class TacticBigQueryService {
 
       if (salesAgent) {
         // Get sanitized brief from campaign for sales agent privacy
-        const sanitizedBrief = await this.getCampaignSanitizedBrief(
+        let sanitizedBrief = await this.getCampaignSanitizedBrief(
           data.campaignId,
           apiToken,
         );
 
-        // Execute media buy with sanitized brief (no budget/price information)
+        // Add allocation amount to the brief for this specific tactic
+        const briefSanitizer = new BriefSanitizationService();
+        const formattedAllocation = briefSanitizer.formatAllocation(
+          data.budgetAllocation.amount,
+          data.budgetAllocation.currency,
+        );
+
+        if (sanitizedBrief) {
+          sanitizedBrief += `\n\nAllocation: ${formattedAllocation}`;
+        } else {
+          // Fallback if no campaign brief available
+          sanitizedBrief = `Tactic for ${data.name}\n\nAllocation: ${formattedAllocation}`;
+        }
+
+        // Execute media buy with sanitized brief plus allocation context
         mediaBuyResult = await mediaBuyService.executeMediaBuy(
           tacticRecord,
           salesAgent,
-          sanitizedBrief ||
-            `Tactic for ${data.name} - budget details managed separately`,
+          sanitizedBrief,
           customerId,
         );
 

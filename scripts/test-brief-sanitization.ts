@@ -49,8 +49,8 @@ async function testBriefSanitization() {
     try {
       const result = await sanitizer.sanitizeBrief(
         testCase.brief,
-        25000,
-        100000,
+        25000, // allocation amount caller wants to share
+        "USD",
       );
 
       console.log(`✅ Sanitized Brief: "${result.sanitized_brief}"`);
@@ -86,26 +86,22 @@ async function testBriefSanitization() {
     console.log(`${"─".repeat(80)}\n`);
   }
 
-  // Test allocation range context
-  console.log("💰 Testing Allocation Range Context\n");
+  // Test allocation context (caller-specified amounts)
+  console.log("💰 Testing Allocation Context\n");
 
   const allocationTests = [
-    { amount: 500, expected: "Small allocation" },
-    { amount: 2500, expected: "Medium allocation" },
-    { amount: 15000, expected: "Large allocation" },
-    { amount: 75000, expected: "Enterprise allocation" },
-    { amount: 150000, expected: "Premium allocation" },
+    { amount: 500, currency: "USD" },
+    { amount: 2500, currency: "USD" },
+    { amount: 15000, currency: "USD" },
+    { amount: 75000, currency: "EUR" },
+    { amount: 150000, currency: "USD" },
   ];
 
   for (const test of allocationTests) {
-    const context = sanitizer.createAllocationRangeContext(test.amount, 200000);
-    console.log(`💵 $${test.amount.toLocaleString()}: ${context}`);
-
-    if (context.includes(test.expected)) {
-      console.log(`✅ Correct tier: ${test.expected}`);
-    } else {
-      console.log(`❌ Expected "${test.expected}" but got different tier`);
-    }
+    const formatted = sanitizer.formatAllocation(test.amount, test.currency);
+    console.log(
+      `💵 ${test.currency} ${test.amount.toLocaleString()}: Allocation: ${formatted}`,
+    );
     console.log();
   }
 
