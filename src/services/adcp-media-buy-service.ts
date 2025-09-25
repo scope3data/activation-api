@@ -162,9 +162,7 @@ export class AdCPMediaBuyService {
       return null;
     }
 
-    // For now, return the first available agent
-    // TODO: In the future, we could implement publisher-specific routing
-    // based on publisher_id or other criteria
+    // Return the first available agent (publisher-specific routing can be added later)
     return availableAgents[0];
   }
 
@@ -199,7 +197,7 @@ export class AdCPMediaBuyService {
    * Generate webhook URL for tactic status updates
    */
   private generateWebhookUrl(tacticId: string): string {
-    // TODO: Make this configurable based on environment
+    // Use configurable base URL with fallback to production endpoint
     const baseUrl =
       process.env.WEBHOOK_BASE_URL || "https://api.agentic.scope3.com";
     return `${baseUrl}/webhooks/media-buy/${tacticId}`;
