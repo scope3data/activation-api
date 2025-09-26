@@ -1436,6 +1436,19 @@ export class Scope3ApiClient {
     return result.data.agents;
   }
 
+  /**
+   * Get the BigQuery instance for metrics collection
+   */
+  getBigQuery() {
+    // For now, we'll access the BigQuery instance through the auth service
+    // This assumes the auth service has a public getter, which we may need to add
+    if (this.authService && "bigquery" in this.authService) {
+      return (this.authService as unknown as { bigquery: BigQuery }).bigquery;
+    }
+    // Fallback to creating a new BigQuery instance
+    return new BigQuery();
+  }
+
   async getBrandAgent(apiKey: string, id: string): Promise<BrandAgent> {
     // GraphQL first - get core brand agent data
     const response = await fetch(this.graphqlUrl, {
@@ -1547,6 +1560,8 @@ export class Scope3ApiClient {
     return this.getBrandAgentCampaign(apiKey, campaignId);
   }
 
+  // Inventory Option Management Methods
+
   /**
    * Get all creatives assigned to a specific campaign with performance data
    */
@@ -1599,8 +1614,6 @@ export class Scope3ApiClient {
       result.data?.campaignDeliveryData || { dailyDeliveries: [], summary: {} }
     );
   }
-
-  // Inventory Option Management Methods
 
   async getCampaignTactics(
     apiKey: string,
@@ -1798,6 +1811,8 @@ export class Scope3ApiClient {
     return mockSeats;
   }
 
+  // Inventory Option Management Methods
+
   // Get optimization recommendations
   async getOptimizationRecommendations(
     apiKey: string,
@@ -1864,8 +1879,6 @@ export class Scope3ApiClient {
   }> {
     return this.productDiscovery.getRecommendedProducts(apiKey, params);
   }
-
-  // Inventory Option Management Methods
 
   /**
    * Get list of registered sales agents for format discovery
@@ -2231,6 +2244,10 @@ export class Scope3ApiClient {
     return result.data.brandAgentCreatives;
   }
 
+  // ========================================
+  // CREATIVE MANAGEMENT METHODS (MCP Orchestration + REST)
+  // ========================================
+
   // List Brand Agent PMPs (stubbed until backend ready)
   async listBrandAgentPMPs(
     apiKey: string,
@@ -2242,10 +2259,6 @@ export class Scope3ApiClient {
     // Return empty array for now
     return [];
   }
-
-  // ========================================
-  // CREATIVE MANAGEMENT METHODS (MCP Orchestration + REST)
-  // ========================================
 
   async listBrandAgents(
     apiKey: string,
@@ -3147,6 +3160,10 @@ export class Scope3ApiClient {
     return brandAgent;
   }
 
+  // ========================================
+  // PMP (PRIVATE MARKETPLACE) METHODS
+  // ========================================
+
   async updateBrandAgentCampaign(
     apiKey: string,
     id: string,
@@ -3171,10 +3188,6 @@ export class Scope3ApiClient {
       apiKey,
     );
   }
-
-  // ========================================
-  // PMP (PRIVATE MARKETPLACE) METHODS
-  // ========================================
 
   async updateBrandAgentCreative(
     apiKey: string,
@@ -3367,6 +3380,11 @@ export class Scope3ApiClient {
     return result.data.updateBrandStory;
   }
 
+  // Removed parseCreativePrompt - AI generation handled by creative agents
+  // Removed detectFileFormat - handled by REST upload layer
+
+  // Custom Signal Definition Management Methods
+
   /**
    * Update existing creative
    */
@@ -3431,11 +3449,6 @@ export class Scope3ApiClient {
       );
     }
   }
-
-  // Removed parseCreativePrompt - AI generation handled by creative agents
-  // Removed detectFileFormat - handled by REST upload layer
-
-  // Custom Signal Definition Management Methods
 
   async updateCustomSignal(
     apiKey: string,
@@ -3554,6 +3567,10 @@ export class Scope3ApiClient {
     return result.data.updateOneStrategy;
   }
 
+  // ============================================================================
+  // HELPER METHODS FOR TYPE CONVERSIONS
+  // ============================================================================
+
   // Update tactic
   async updateTactic(
     apiKey: string,
@@ -3597,10 +3614,6 @@ export class Scope3ApiClient {
 
     return result.data.updateTactic;
   }
-
-  // ============================================================================
-  // HELPER METHODS FOR TYPE CONVERSIONS
-  // ============================================================================
 
   async validateApiKey(
     apiKey: string,

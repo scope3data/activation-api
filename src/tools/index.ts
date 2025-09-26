@@ -45,6 +45,9 @@ import { creativeUpdateTool } from "./creatives/update.js";
 import { getDSPSeatsTool } from "./dsp/get-seats.js";
 // Formats
 import { listCreativeFormatsTool } from "./formats/list.js";
+// Metrics
+import { refreshPlatformMetricsTool } from "./metrics/refresh-platform-metrics.js";
+import { showAgenticMetricsTool } from "./metrics/show-agentic-metrics.js";
 // PMPs
 import { createPMPTool } from "./pmps/create.js";
 import { listPMPsTool } from "./pmps/list.js";
@@ -89,6 +92,10 @@ import { registerWebhookTool } from "./webhooks/register.js";
 export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   // Authentication
   server.addTool(checkAuthTool(client));
+
+  // Metrics
+  server.addTool(showAgenticMetricsTool(client));
+  server.addTool(refreshPlatformMetricsTool(client));
 
   // Brand Agents (Core)
   server.addTool(createBrandAgentTool(client));
