@@ -270,22 +270,10 @@ describe("signals/list", () => {
   });
 
   it("should handle missing API key", async () => {
-    // Ensure no environment variable is set
-    const originalApiKey = process.env.SCOPE3_API_KEY;
-    delete process.env.SCOPE3_API_KEY;
-
-    try {
-      const result = await tool.execute({}, {});
-
-      expectErrorResponse(result, "Authentication required");
-      expect(result).toContain("AUTHENTICATION_FAILED");
-      expect(mockScope3Client.listCustomSignals).not.toHaveBeenCalled();
-    } finally {
-      // Restore original value
-      if (originalApiKey) {
-        process.env.SCOPE3_API_KEY = originalApiKey;
-      }
-    }
+    await expect(tool.execute({}, {})).rejects.toThrow(
+      "Authentication required. Please provide valid API key in headers (x-scope3-api-key or Authorization: Bearer).",
+    );
+    expect(mockScope3Client.listCustomSignals).not.toHaveBeenCalled();
   });
 
   it("should handle API errors", async () => {
@@ -304,29 +292,24 @@ describe("signals/list", () => {
     expect(result).toContain("SERVICE_UNAVAILABLE");
   });
 
-  it("should use environment variable when no session API key", async () => {
-    const originalEnv = process.env.SCOPE3_API_KEY;
-    process.env.SCOPE3_API_KEY = "env_api_key";
-
+  it("should use session API key when provided", async () => {
     mockScope3Client.listCustomSignals.mockResolvedValueOnce({
       signals: [],
       total: 0,
     });
 
-    try {
-      const result = await tool.execute({}, {});
+    const result = await tool.execute({}, {
+      session: { customerId: 123, scope3ApiKey: "session_api_key" },
+    });
 
-      SignalValidators.validateListResponse(result, 0);
+    SignalValidators.validateListResponse(result, 0);
 
-      expect(mockScope3Client.listCustomSignals).toHaveBeenCalledWith(
-        "env_api_key",
-        {
-          channel: undefined,
-          region: undefined,
-        },
-      );
-    } finally {
-      process.env.SCOPE3_API_KEY = originalEnv;
-    }
+    expect(mockScope3Client.listCustomSignals).toHaveBeenCalledWith(
+      "session_api_key",
+      {
+        channel: undefined,
+        region: undefined,
+      },
+    );
   });
 });

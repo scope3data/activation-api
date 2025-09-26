@@ -101,22 +101,10 @@ describe("signals/get-partner-seats", () => {
   });
 
   it("should handle missing API key", async () => {
-    // Ensure no environment variable is set
-    const originalApiKey = process.env.SCOPE3_API_KEY;
-    delete process.env.SCOPE3_API_KEY;
-
-    try {
-      const result = await tool.execute({}, {});
-
-      expectErrorResponse(result, "Authentication required");
-      expect(result).toContain("SCOPE3_API_KEY");
-      expect(mockCustomSignalsClient.getPartnerSeats).not.toHaveBeenCalled();
-    } finally {
-      // Restore original value
-      if (originalApiKey) {
-        process.env.SCOPE3_API_KEY = originalApiKey;
-      }
-    }
+    await expect(tool.execute({}, {})).rejects.toThrow(
+      "Authentication required. Please provide valid API key in headers (x-scope3-api-key or Authorization: Bearer).",
+    );
+    expect(mockCustomSignalsClient.getPartnerSeats).not.toHaveBeenCalled();
   });
 
   it("should handle empty seats response", async () => {
@@ -153,23 +141,18 @@ describe("signals/get-partner-seats", () => {
     expect(result).toContain("Service temporarily unavailable");
   });
 
-  it("should use environment variable if no session API key", async () => {
-    const originalEnv = process.env.SCOPE3_API_KEY;
-    process.env.SCOPE3_API_KEY = "env_api_key";
-
+  it("should use session API key when provided", async () => {
     mockCustomSignalsClient.getPartnerSeats.mockResolvedValueOnce([]);
 
-    try {
-      const result = await tool.execute({}, {});
+    const result = await tool.execute({}, {
+      session: { customerId: 123, scope3ApiKey: "session_api_key" },
+    });
 
-      expectListResponse(result, 0);
+    expectListResponse(result, 0);
 
-      expect(mockCustomSignalsClient.getPartnerSeats).toHaveBeenCalledWith(
-        mockScope3Client,
-        "env_api_key",
-      );
-    } finally {
-      process.env.SCOPE3_API_KEY = originalEnv;
-    }
+    expect(mockCustomSignalsClient.getPartnerSeats).toHaveBeenCalledWith(
+      mockScope3Client,
+      "session_api_key",
+    );
   });
 });

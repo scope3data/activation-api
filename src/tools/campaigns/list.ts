@@ -64,7 +64,7 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
 
       // For now, use the basic method with brandAgentId
       const campaigns = await client.listBrandAgentCampaigns(
-        _customerId,
+        _apiKey,
         args.brandAgentId || "",
       );
 

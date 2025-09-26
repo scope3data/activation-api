@@ -215,7 +215,7 @@ describe("brand-agent/create Tool", () => {
         tool.execute(brandAgentFixtures.createInput(), {
           session: { customerId: 123, scope3ApiKey: "test-api-key" },
         }),
-      ).rejects.toThrow("Authentication required");
+      ).rejects.toThrow("Authentication required. Please provide valid API key in headers (x-scope3-api-key or Authorization: Bearer).");
     });
 
     it("should handle validation errors from API", async () => {
@@ -270,16 +270,15 @@ describe("brand-agent/create Tool", () => {
       );
     });
 
-    it("should fall back to environment variable", async () => {
+    it("should use session API key when provided", async () => {
       serviceLevelScenarios.successfulCreate(mockClient);
-      process.env.SCOPE3_API_KEY = "env_key_create";
 
       await tool.execute(brandAgentFixtures.createInput(), {
         session: { customerId: 123, scope3ApiKey: "test-api-key" },
       });
 
       expect(mockClient.createBrandAgent).toHaveBeenCalledWith(
-        "env_key_create",
+        "test-api-key",
         expect.any(Object),
       );
     });

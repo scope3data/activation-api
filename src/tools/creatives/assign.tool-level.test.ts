@@ -121,7 +121,7 @@ describe("creativeAssignTool", () => {
             },
             { session: {} },
           ),
-        ).rejects.toThrow("Authentication required");
+        ).rejects.toThrow("Authentication required. Please provide valid API key in headers (x-scope3-api-key or Authorization: Bearer).");
       } finally {
         if (originalEnv) {
           process.env.SCOPE3_API_KEY = originalEnv;
@@ -453,7 +453,7 @@ describe("creativeUnassignTool", () => {
             },
             { session: {} },
           ),
-        ).rejects.toThrow("Authentication required");
+        ).rejects.toThrow("Authentication required. Please provide valid API key in headers (x-scope3-api-key or Authorization: Bearer).");
       } finally {
         if (originalEnv) {
           process.env.SCOPE3_API_KEY = originalEnv;

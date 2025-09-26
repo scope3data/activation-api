@@ -197,7 +197,7 @@ describe("brand-agents/core/update", () => {
     try {
       await expect(
         tool.execute({ brandAgentId: "123", name: "New Name" }, {}),
-      ).rejects.toThrow("Authentication required");
+      ).rejects.toThrow("Authentication required. Please provide valid API key in headers (x-scope3-api-key or Authorization: Bearer).");
 
       expect(mockClient.updateBrandAgent).not.toHaveBeenCalled();
     } finally {
@@ -208,10 +208,7 @@ describe("brand-agents/core/update", () => {
     }
   });
 
-  it("should use environment variable when no session API key", async () => {
-    const originalEnv = process.env.SCOPE3_API_KEY;
-    process.env.SCOPE3_API_KEY = "env_api_key";
-
+  it("should use session API key when provided", async () => {
     const mockUpdatedBrandAgent = {
       createdAt: new Date("2024-01-01T00:00:00Z"),
       customerId: 456,
@@ -223,22 +220,20 @@ describe("brand-agents/core/update", () => {
 
     mockClient.updateBrandAgent.mockResolvedValueOnce(mockUpdatedBrandAgent);
 
-    try {
-      const result = await tool.execute(
-        { brandAgentId: "123", name: "Updated Name" },
-        {},
-      );
+    const result = await tool.execute(
+      { brandAgentId: "123", name: "Updated Name" },
+      {
+        session: { customerId: 123, scope3ApiKey: "session_api_key" },
+      },
+    );
 
-      BrandAgentValidators.validateGetResponse(result);
+    BrandAgentValidators.validateGetResponse(result);
 
-      expect(mockClient.updateBrandAgent).toHaveBeenCalledWith(
-        "env_api_key",
-        "123",
-        { name: "Updated Name" },
-      );
-    } finally {
-      process.env.SCOPE3_API_KEY = originalEnv;
-    }
+    expect(mockClient.updateBrandAgent).toHaveBeenCalledWith(
+      "session_api_key",
+      "123",
+      { name: "Updated Name" },
+    );
   });
 
   it("should handle tacticSeedDataCoop disabled", async () => {

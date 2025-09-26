@@ -112,10 +112,7 @@ describe("brand-agents/core/get", () => {
     }
   });
 
-  it("should use environment variable when no session API key", async () => {
-    const originalEnv = process.env.SCOPE3_API_KEY;
-    process.env.SCOPE3_API_KEY = "env_api_key";
-
+  it("should use session API key when provided", async () => {
     const mockBrandAgent = {
       createdAt: new Date("2024-01-01T00:00:00Z"),
       customerId: 456,
@@ -127,18 +124,16 @@ describe("brand-agents/core/get", () => {
 
     mockClient.getBrandAgent.mockResolvedValueOnce(mockBrandAgent);
 
-    try {
-      const result = await tool.execute({ brandAgentId: "123" }, {});
+    const result = await tool.execute({ brandAgentId: "123" }, {
+      session: { customerId: 123, scope3ApiKey: "session_api_key" },
+    });
 
-      BrandAgentValidators.validateGetResponse(result);
+    BrandAgentValidators.validateGetResponse(result);
 
-      expect(mockClient.getBrandAgent).toHaveBeenCalledWith(
-        "env_api_key",
-        "123",
-      );
-    } finally {
-      process.env.SCOPE3_API_KEY = originalEnv;
-    }
+    expect(mockClient.getBrandAgent).toHaveBeenCalledWith(
+      "session_api_key",
+      "123",
+    );
   });
 
   it("should handle brand agent without description", async () => {
