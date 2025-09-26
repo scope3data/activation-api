@@ -233,10 +233,29 @@ export interface ListSyntheticAudiencesParams {
   brandAgentId: string;
 }
 
+// Logging interface for FastMCP
+export interface MCPLogger {
+  debug: (message: string, data?: SerializableValue) => void;
+  error: (message: string, data?: SerializableValue) => void;
+  info: (message: string, data?: SerializableValue) => void;
+  warn: (message: string, data?: SerializableValue) => void;
+}
+
 export interface MCPToolAnnotations {
   openWorldHint?: boolean;
   readOnlyHint?: boolean;
   title: string;
+}
+
+// MCP tool execution context (compatible with FastMCP)
+export interface MCPToolExecuteContext {
+  log?: MCPLogger;
+  reportProgress?: (progress: Progress) => Promise<void>;
+  session?: {
+    customerId?: number;
+    scope3ApiKey?: string;
+    userId?: string;
+  };
 }
 
 // Progress reporting interface for FastMCP
@@ -249,35 +268,6 @@ export interface Progress {
    * The total amount of progress to be made. This can be omitted for indeterminate progress.
    */
   total?: number;
-}
-
-// Serializable value type for FastMCP logging
-export type SerializableValue =
-  | string
-  | number
-  | boolean
-  | null
-  | undefined
-  | SerializableValue[]
-  | { [key: string]: SerializableValue };
-
-// Logging interface for FastMCP
-export interface MCPLogger {
-  debug: (message: string, data?: SerializableValue) => void;
-  error: (message: string, data?: SerializableValue) => void;
-  info: (message: string, data?: SerializableValue) => void;
-  warn: (message: string, data?: SerializableValue) => void;
-}
-
-// MCP tool execution context (compatible with FastMCP)
-export interface MCPToolExecuteContext {
-  session?: {
-    customerId?: number;
-    scope3ApiKey?: string;
-    userId?: string;
-  };
-  reportProgress?: (progress: Progress) => Promise<void>;
-  log?: MCPLogger;
 }
 
 // Scoring Outcome MCP parameter types
@@ -323,6 +313,16 @@ export interface RegisterWebhookParams {
     maxRetries?: number;
   };
 }
+
+// Serializable value type for FastMCP logging
+export type SerializableValue =
+  | { [key: string]: SerializableValue }
+  | boolean
+  | null
+  | number
+  | SerializableValue[]
+  | string
+  | undefined;
 
 // Response interface for better typing (tools return JSON strings for Claude Desktop compatibility)
 export interface ToolResponse {

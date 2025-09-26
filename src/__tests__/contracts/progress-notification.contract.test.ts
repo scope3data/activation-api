@@ -10,25 +10,50 @@ import type { MCPToolExecuteContext } from "../../types/mcp.js";
  * Any MCP context test double should implement this for validation
  */
 export interface TestableProgressContext extends MCPToolExecuteContext {
-  // Test-specific methods for validation
-  getProgressCalls?: () => Array<{
-    progress: number;
-    total?: number;
-    timestamp: number;
-  }>;
   getLogCalls?: () => Array<{
     level: string;
     message: string;
     timestamp: number;
   }>;
   getLogMessages?: () => string[];
-  verifyProgressSequence?: () => { isValid: boolean; violations: string[] };
+  // Test-specific methods for validation
+  getProgressCalls?: () => Array<{
+    progress: number;
+    timestamp: number;
+    total?: number;
+  }>;
+  getSummary?: () => {
+    logCalls: number;
+    logLevels: { debug: number; error: number; info: number; warn: number };
+    progressCalls: number;
+    progressRange: { final: number; max: number; min: number } | null;
+  };
+  reset?: () => void;
   verifyPhaseMessages?: (phases: string[]) => {
     found: boolean;
     missing: string[];
   };
-  getSummary?: () => any;
-  reset?: () => void;
+  verifyProgressSequence?: () => { isValid: boolean; violations: string[] };
+}
+
+/**
+ * Convenience function for testing specific progress scenarios
+ */
+export async function simulateProgressScenario(
+  context: TestableProgressContext,
+  scenario: {
+    phases: Array<{ message: string; progress: number; total?: number }>;
+  },
+) {
+  for (const phase of scenario.phases) {
+    context.log?.info(phase.message);
+    if (context.reportProgress) {
+      await context.reportProgress({
+        progress: phase.progress,
+        total: phase.total,
+      });
+    }
+  }
 }
 
 /**
@@ -295,14 +320,14 @@ export function testProgressNotificationContract(
         const summary = context.getSummary();
         expect(summary).toEqual(
           expect.objectContaining({
-            progressCalls: expect.any(Number),
             logCalls: expect.any(Number),
             logLevels: expect.objectContaining({
+              debug: expect.any(Number),
+              error: expect.any(Number),
               info: expect.any(Number),
               warn: expect.any(Number),
-              error: expect.any(Number),
-              debug: expect.any(Number),
             }),
+            progressCalls: expect.any(Number),
           }),
         );
       });
@@ -326,11 +351,12 @@ export function testProgressNotificationContract(
       it("should handle context without progress capability", () => {
         // This test verifies that tools gracefully handle missing capabilities
         const noProgressContext = { ...context };
-        delete (noProgressContext as any).reportProgress;
+        delete (noProgressContext as unknown as Record<string, unknown>)
+          .reportProgress;
 
         // Should not throw error when progress capability is missing
         expect(() => {
-          (noProgressContext as any).reportProgress?.({
+          (noProgressContext as TestableProgressContext).reportProgress?.({
             progress: 1,
             total: 2,
           });
@@ -339,11 +365,11 @@ export function testProgressNotificationContract(
 
       it("should handle context without logging capability", () => {
         const noLogContext = { ...context };
-        delete (noLogContext as any).log;
+        delete (noLogContext as unknown as Record<string, unknown>).log;
 
         // Should not throw error when logging capability is missing
         expect(() => {
-          (noLogContext as any).log?.info("Test message");
+          (noLogContext as TestableProgressContext).log?.info?.("Test message");
         }).not.toThrow();
       });
     });
@@ -351,37 +377,14 @@ export function testProgressNotificationContract(
 }
 
 /**
- * Convenience function for testing specific progress scenarios
- */
-export async function simulateProgressScenario(
-  context: TestableProgressContext,
-  scenario: {
-    phases: Array<{ message: string; progress: number; total?: number }>;
-  },
-) {
-  for (const phase of scenario.phases) {
-    context.log?.info(phase.message);
-    if (context.reportProgress) {
-      await context.reportProgress({
-        progress: phase.progress,
-        total: phase.total,
-      });
-    }
-  }
-}
-
-/**
  * Predefined test scenarios for common use cases
  */
 export const progressScenarios = {
-  singleAgent: {
+  indeterminateProgress: {
     phases: [
-      {
-        message: "🔍 Discovering available sales agents...",
-        progress: 0,
-        total: 1,
-      },
-      { message: "📦 Agent responded with products", progress: 1, total: 1 },
+      { message: "🔍 Starting discovery...", progress: 0 },
+      { message: "📦 Processing responses...", progress: 1 },
+      { message: "🎉 Discovery completed", progress: 2 },
     ],
   },
   multipleAgents: {
@@ -396,11 +399,14 @@ export const progressScenarios = {
       { message: "⚠️ Third agent failed", progress: 3, total: 3 },
     ],
   },
-  indeterminateProgress: {
+  singleAgent: {
     phases: [
-      { message: "🔍 Starting discovery...", progress: 0 },
-      { message: "📦 Processing responses...", progress: 1 },
-      { message: "🎉 Discovery completed", progress: 2 },
+      {
+        message: "🔍 Discovering available sales agents...",
+        progress: 0,
+        total: 1,
+      },
+      { message: "📦 Agent responded with products", progress: 1, total: 1 },
     ],
   },
 };

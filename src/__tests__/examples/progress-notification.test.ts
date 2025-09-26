@@ -3,12 +3,13 @@
  * This validates that our MCPContextTestDouble correctly implements the contract
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+
 import { MCPContextTestDouble } from "../../test-doubles/mcp-context-test-double.js";
 import {
-  testProgressNotificationContract,
   progressScenarios,
   simulateProgressScenario,
+  testProgressNotificationContract,
 } from "../contracts/progress-notification.contract.test.js";
 
 describe("Progress Notification Contract Validation", () => {
@@ -31,7 +32,6 @@ describe("Progress Notification Contract Validation", () => {
 
       const summary = context.getSummary();
       expect(summary).toEqual({
-        progressCalls: 2,
         logCalls: 3,
         logLevels: {
           debug: 0,
@@ -39,10 +39,11 @@ describe("Progress Notification Contract Validation", () => {
           info: 1,
           warn: 1,
         },
+        progressCalls: 2,
         progressRange: {
-          min: 1,
-          max: 3,
           final: 3,
+          max: 3,
+          min: 1,
         },
       });
     });

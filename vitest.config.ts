@@ -101,7 +101,13 @@ export default defineConfig({
     },
 
     environment: "node",
-    exclude: ["node_modules/**", "dist/**", "**/*.d.ts"],
+    exclude: [
+      "node_modules/**",
+      "dist/**",
+      "**/*.d.ts",
+      // Exclude contract test files - they are libraries, not direct test suites
+      "src/__tests__/contracts/**/*.contract.test.ts",
+    ],
 
     // Global test configuration
     globals: true,

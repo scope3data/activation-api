@@ -1,10 +1,13 @@
 import { z } from "zod";
 
+import type { SalesAgent } from "../../services/bigquery-service.js";
 import type {
   ADCPGetProductsRequest,
+  ADCPGetProductsResponse,
+  ADCPProduct,
   AggregatedProductsResponse,
 } from "../../types/adcp.js";
-import type { MCPToolExecuteContext, Progress } from "../../types/mcp.js";
+import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
 import { BigQueryService } from "../../services/bigquery-service.js";
 import { MCPClientService } from "../../services/mcp-client-service.js";
@@ -145,7 +148,10 @@ export const getProductsTool = () => ({
       let completedCount = 0;
       const progressUpdates: string[] = [];
 
-      const trackProgress = async (agent: any, promise: Promise<any>) => {
+      const trackProgress = async (
+        agent: SalesAgent,
+        promise: Promise<ADCPGetProductsResponse>,
+      ) => {
         try {
           const result = await promise;
           completedCount++;
@@ -192,12 +198,12 @@ export const getProductsTool = () => ({
       const results = await Promise.allSettled(agentPromises);
 
       // Process results
-      const successful: any[] = [];
-      const failed: { agent: any; error: string }[] = [];
+      const successful: ADCPGetProductsResponse[] = [];
+      const failed: { agent: SalesAgent; error: string }[] = [];
 
       results.forEach((result) => {
         if (result.status === "fulfilled") {
-          if (result.value.success) {
+          if (result.value.success && result.value.response) {
             successful.push(result.value.response);
           } else {
             failed.push({
@@ -208,7 +214,14 @@ export const getProductsTool = () => ({
         } else {
           // This shouldn't happen since we're catching errors in trackProgress
           failed.push({
-            agent: { name: "Unknown" },
+            agent: {
+              agent_uri: "",
+              auth_token: "",
+              customer_id: "",
+              name: "Unknown",
+              principal_id: "",
+              protocol: "",
+            },
             error: result.reason?.message || "Promise rejected",
           });
         }
@@ -224,7 +237,7 @@ export const getProductsTool = () => ({
 
       // Aggregate products from all successful responses
       const allProducts = successful.flatMap((response) =>
-        response.products.map((product: any) => ({
+        response.products.map((product: ADCPProduct) => ({
           ...product,
           // Add source information to each product
           source_agent: response.sales_agent.name,
@@ -362,7 +375,7 @@ export const getProductsTool = () => ({
           if (agentResponse.products.length > 0) {
             agentResponse.products
               .slice(0, 5)
-              .forEach((product: any, index: number) => {
+              .forEach((product: ADCPProduct, index: number) => {
                 summary += `${index + 1}. **${product.name}**`;
                 if (product.publisher_name)
                   summary += ` (${product.publisher_name})`;
