@@ -163,17 +163,53 @@ export const createTacticTool = (_client: Scope3ApiClient) => ({
       );
       summary += `• **Projected Impressions:** ~${projectedImpressions.toLocaleString()}\n\n`;
 
-      // Status and metadata
-      summary += `### ℹ️ **Status**\n`;
+      // Status and metadata with media buy information
+      summary += `### ℹ️ **Status & Media Buy**\n`;
       summary += `• **Tactic ID:** ${tactic.id}\n`;
       summary += `• **Status:** ${tactic.status}\n`;
+
+      // Add media buy status information
+      const statusIcon =
+        {
+          active: "🟢",
+          draft: "⚪",
+          failed: "🔴",
+          pending_approval: "🟡",
+        }[tactic.status as string] || "❓";
+
+      summary += `• **Media Buy:** ${statusIcon} `;
+
+      if (tactic.status === "active") {
+        summary += `Live and spending money!\n`;
+      } else if (tactic.status === "pending_approval") {
+        summary += `Submitted to sales agent, awaiting approval\n`;
+      } else if (tactic.status === "failed") {
+        summary += `Failed to execute media buy - check error details\n`;
+      } else {
+        summary += `Draft - media buy not yet submitted\n`;
+      }
+
       summary += `• **Created:** ${new Date(tactic.createdAt).toLocaleString()}\n\n`;
 
-      // Next steps and recommendations
+      // Next steps based on actual status
       summary += `### 📋 **Next Steps**\n`;
-      summary += `• Review and activate the tactic when ready\n`;
-      summary += `• Monitor performance using analyze_tactic_performance\n`;
-      summary += `• Adjust budget allocation with adjust_tactic_allocation as needed\n`;
+
+      if (tactic.status === "active") {
+        summary += `• ✅ **Media buy is live!** Money is being spent\n`;
+        summary += `• Monitor performance using tactic_list\n`;
+        summary += `• Track spend and impressions via reporting\n`;
+      } else if (tactic.status === "pending_approval") {
+        summary += `• ⏳ **Awaiting approval** from sales agent\n`;
+        summary += `• You'll receive a webhook notification when approved/rejected\n`;
+        summary += `• Use tactic_list to check current status\n`;
+      } else if (tactic.status === "failed") {
+        summary += `• 🔴 **Media buy failed** - review error details\n`;
+        summary += `• Check if sales agent is properly configured\n`;
+        summary += `• Consider trying a different publisher or product\n`;
+      } else {
+        summary += `• Review tactic configuration\n`;
+        summary += `• Use tactic_list to check status updates\n`;
+      }
 
       if (!tactic.signalId) {
         summary += `• ⚠️ Consider adding a signal ID for better targeting effectiveness\n`;
@@ -186,7 +222,16 @@ export const createTacticTool = (_client: Scope3ApiClient) => ({
         summary += `• ⚠️ Signal cost is high relative to base CPM - review cost-effectiveness\n`;
       }
 
-      summary += `\n✨ **Tactic is ready for campaign activation!**`;
+      // Status-specific closing message
+      if (tactic.status === "active") {
+        summary += `\n💰 **Your media buy is live and spending!**`;
+      } else if (tactic.status === "pending_approval") {
+        summary += `\n⏳ **Media buy submitted - awaiting approval**`;
+      } else if (tactic.status === "failed") {
+        summary += `\n🔴 **Media buy failed - please review and retry**`;
+      } else {
+        summary += `\n✨ **Tactic created - ready for media buy execution**`;
+      }
 
       return createMCPResponse({
         data: {
