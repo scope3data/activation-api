@@ -2,6 +2,11 @@ import type { FastMCP } from "fastmcp";
 
 import type { Scope3ApiClient } from "../client/scope3-client.js";
 
+// Assets
+import { assetsAddTool } from "./assets/add.js";
+import { assetsAnalyticsTool } from "./assets/analytics.js";
+import { assetsListUploadsTool } from "./assets/list-uploads.js";
+import { assetsUploadTool } from "./assets/upload.js";
 // Audiences
 // Authentication
 import { checkAuthTool } from "./auth/check.js";
@@ -194,12 +199,20 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(getDSPSeatsTool(client)); // dsp/get-seats
 
   // Assets
+  server.addTool(assetsAddTool(client)); // assets/add
+  server.addTool(assetsUploadTool()); // assets/upload
+  server.addTool(assetsListUploadsTool()); // assets/list-uploads
+  server.addTool(assetsAnalyticsTool()); // assets/analytics
 };
 
 // Export individual tools for testing
 export {
   activateSignalTool,
   // Asset Management
+  assetsAddTool,
+  assetsAnalyticsTool,
+  assetsListUploadsTool,
+  assetsUploadTool,
   // Campaigns
   // Authentication
   checkAuthTool,

@@ -40,18 +40,62 @@ graph LR
 ### Asset Requirements
 
 <Warning>
-**Important**: All creative assets must be uploaded to a public CDN where we can access them. You provide URLs to your assets when creating creatives.
+**Important**: Creative assets must be accessible via public URLs. You can either host them on your own CDN or use our MCP asset upload tools for automatic hosting.
 </Warning>
 
-```json
-{
-  "creative": {
-    "url": "https://cdn.yourbrand.com/video.mp4",
-    "headline": "Your Product",
-    "cta": "Learn More"
-  }
-}
-```
+**Two Asset Hosting Options**:
+
+<Tabs>
+  <Tab title="Your CDN">
+    **Host assets on your infrastructure**
+    
+    ```json
+    {
+      "creative": {
+        "url": "https://cdn.yourbrand.com/video.mp4",
+        "headline": "Your Product", 
+        "cta": "Learn More"
+      }
+    }
+    ```
+    
+    **Requirements**: Assets must be publicly accessible with HTTPS URLs
+  </Tab>
+  
+  <Tab title="MCP Asset Upload">
+    **Use our MCP tools for automated hosting**
+    
+    ```javascript
+    // 1. Upload assets via MCP tools
+    const upload = await client.callTool({
+      name: "assets_upload",
+      arguments: {
+        assets: [{
+          assetType: "video",
+          base64Data: videoBase64, // No data URI prefix
+          contentType: "video/mp4",
+          filename: "product-demo.mp4",
+          metadata: { buyerAgentId: "ba_123" }
+        }]
+      }
+    });
+    
+    // 2. Use returned public URL in creative
+    const creative = await createCreative({
+      brandAgentId: "ba_123",
+      name: "Product Demo",
+      url: upload.assets[0].publicUrl, // Auto-generated public URL
+      formatId: "adcp_ctv_standard_30s"
+    });
+    ```
+    
+    **Benefits**: 
+    - Automatic file validation and size checking
+    - Hierarchical organization by brand agent
+    - Built-in CDN distribution
+    - **File Size Limits**: Image (10MB), Video (100MB), Audio (50MB), Logo (5MB), Font (2MB)
+  </Tab>
+</Tabs>
 
 ## Core Creative Concepts
 
@@ -327,60 +371,96 @@ The platform automatically optimizes creative delivery based on performance:
 
 <CardGroup cols={2}>
   <Card title="Format Discovery" href="/api-reference/format/list" icon="shapes">
-    `GET /creative-formats` - Discover available formats and specs
+    `list_creative_formats` - Discover available formats and specs via MCP
+  </Card>
+  
+  <Card title="Asset Upload" href="/api-reference/assets_upload" icon="upload">
+    `assets_upload` - Upload creative assets to GCS with validation via MCP
   </Card>
   
   <Card title="Asset Management" href="/api-reference/assets_add" icon="folder">
-    `POST /assets` - Manage reusable asset library
+    `assets_add` - Add assets to brand agent library via MCP
   </Card>
   
   <Card title="Publisher Sync" href="/api-reference/creative/sync-publishers" icon="sync">
-    `POST /creative/sync` - Sync to publisher platforms
+    `sync_creative_to_publishers` - Sync creatives to publisher platforms via MCP
   </Card>
   
   <Card title="Approval Status" href="/api-reference/creative_approval_status" icon="check">
-    `GET /creative/approval` - Check publisher approval status
+    `get_creative_approval_status` - Check publisher approval status via MCP
+  </Card>
+  
+  <Card title="Asset Analytics" href="/api-reference/assets_analytics" icon="chart-line">
+    `assets_analytics` - View upload statistics and storage insights via MCP
   </Card>
 </CardGroup>
 
 ## Common Patterns
 
-### Multi-Format Campaign Launch
+### Multi-Format Campaign Launch with MCP Asset Upload
 
 ```javascript
-// 1. Create video creative for CTV
+// 1. Upload assets via MCP tools first
+const assetUpload = await client.callTool({
+  name: "assets_upload",
+  arguments: {
+    assets: [
+      {
+        assetType: "video",
+        base64Data: videoBase64Data, // 30s hero video
+        contentType: "video/mp4",
+        filename: "hero-30s.mp4",
+        metadata: { buyerAgentId: "ba_brand_123", tags: ["hero", "ctv"] }
+      },
+      {
+        assetType: "image", 
+        base64Data: bannerBase64Data, // Display banner
+        contentType: "image/jpeg",
+        filename: "banner-300x250.jpg",
+        metadata: { buyerAgentId: "ba_brand_123", tags: ["banner", "display"] }
+      },
+      {
+        assetType: "image",
+        base64Data: nativeBase64Data, // Native hero image
+        contentType: "image/jpeg", 
+        filename: "native-hero.jpg",
+        metadata: { buyerAgentId: "ba_brand_123", tags: ["native", "content"] }
+      }
+    ]
+  }
+});
+
+// 2. Create creatives using uploaded asset URLs
 const videoCreative = await createCreative({
   brandAgentId: "ba_brand_123",
   name: "Hero Video - 30s",
   type: "video",
-  url: "https://cdn.brand.com/hero-30s.mp4"
+  url: assetUpload.assets[0].publicUrl // Auto-generated GCS URL
 });
 
-// 2. Create display creative for retargeting
 const displayCreative = await createCreative({
-  brandAgentId: "ba_brand_123",
+  brandAgentId: "ba_brand_123", 
   name: "Product Banner Set",
   type: "image",
-  url: "https://cdn.brand.com/banner-300x250.jpg"
+  url: assetUpload.assets[1].publicUrl
 });
 
-// 3. Create native creative for content sites
 const nativeCreative = await createCreative({
   brandAgentId: "ba_brand_123",
-  name: "Sponsored Story",
+  name: "Sponsored Story", 
   type: "native",
   headline: "Discover Our Latest Innovation",
   body: "Learn how our products can transform...",
-  url: "https://cdn.brand.com/native-hero.jpg"
+  url: assetUpload.assets[2].publicUrl
 });
 
-// 4. Launch campaign with all creatives
+// 3. Launch campaign with all creatives
 const campaign = await createCampaign({
   brandAgentId: "ba_brand_123",
   name: "Q4 Integrated Campaign",
   creativeIds: [
     videoCreative.id,
-    displayCreative.id,
+    displayCreative.id, 
     nativeCreative.id
   ],
   budget: { total: 100000, currency: "USD" }
