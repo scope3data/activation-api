@@ -98,7 +98,7 @@ describe("brand-agent/create Tool", () => {
 
       // Verify client was called correctly
       expect(mockClient.createBrandAgent).toHaveBeenCalledWith(
-        serviceTestData.validApiKey,
+        "test-api-key",
         input,
       );
     });
@@ -122,7 +122,7 @@ describe("brand-agent/create Tool", () => {
       expect(response.data!.brandAgent.id).toBe(mockCreated.id);
       expect(response.data!.brandAgent.name).toBe(mockCreated.name);
       expect(mockClient.createBrandAgent).toHaveBeenCalledWith(
-        serviceTestData.validApiKey,
+        "test-api-key",
         minimalInput,
       );
     });
@@ -209,11 +209,9 @@ describe("brand-agent/create Tool", () => {
 
   describe("Error Handling", () => {
     it("should handle authentication errors", async () => {
-      delete process.env.SCOPE3_API_KEY;
-
       await expect(
         tool.execute(brandAgentFixtures.createInput(), {
-          session: { customerId: 123, scope3ApiKey: "test-api-key" },
+          session: { customerId: 123 }, // Missing scope3ApiKey
         }),
       ).rejects.toThrow(
         "Authentication required. Please provide valid API key in headers (x-scope3-api-key or Authorization: Bearer).",
@@ -355,7 +353,7 @@ describe("brand-agent/create Tool", () => {
       expect(response.data).toBeDefined();
       expect(response.data!.brandAgent).toMatchObject(fullInput);
       expect(mockClient.createBrandAgent).toHaveBeenCalledWith(
-        serviceTestData.validApiKey,
+        "test-api-key",
         fullInput,
       );
     });

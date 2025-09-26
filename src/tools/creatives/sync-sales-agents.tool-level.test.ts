@@ -160,7 +160,7 @@ describe("creativeSyncSalesAgentsTool", () => {
             { session: {} },
           ),
         ).rejects.toThrow(
-          "Authentication required. Please provide valid API key in headers (x-scope3-api-key or Authorization: Bearer).",
+          "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
         );
       } finally {
         // Restore original env value
