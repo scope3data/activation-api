@@ -381,21 +381,21 @@ describe("brand-agent/create Tool", () => {
             advertiserDomains: ["concurrent1.com"],
             name: "Concurrent Brand 1",
           },
-          {},
+          { session: { customerId: 123, scope3ApiKey: "test-api-key" } },
         ),
         tool.execute(
           {
             advertiserDomains: ["concurrent2.com"],
             name: "Concurrent Brand 2",
           },
-          {},
+          { session: { customerId: 123, scope3ApiKey: "test-api-key" } },
         ),
         tool.execute(
           {
             advertiserDomains: ["concurrent3.com"],
             name: "Concurrent Brand 3",
           },
-          {},
+          { session: { customerId: 123, scope3ApiKey: "test-api-key" } },
         ),
       ];
 
