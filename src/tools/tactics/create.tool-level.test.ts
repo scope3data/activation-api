@@ -145,7 +145,7 @@ describe("create_tactic Tool", () => {
 
       const contextWithAuth = {
         ...mockContext,
-        session: { scope3ApiKey: "test_api_key" },
+        session: { customerId: 123, scope3ApiKey: "test_api_key" },
       };
 
       const result = await createTactic.execute(
@@ -171,63 +171,32 @@ describe("create_tactic Tool", () => {
       );
     });
 
-    it("should accept API key from environment", async () => {
-      // Clear any session API key to ensure environment variable is used
+    it("should require session authentication (no environment fallback)", async () => {
+      // Clear session to test that environment variables are not used as fallback
       mockContext.session = undefined;
       process.env.SCOPE3_API_KEY = "env_api_key";
 
-      const mockTactic: Tactic = {
-        brandStoryId: "story_123",
-        budgetAllocation: { amount: 1000, currency: "USD", pacing: "even" },
-        campaignId: "campaign_123",
-        createdAt: new Date("2024-01-01T00:00:00Z"),
-        description: undefined,
-        effectivePricing: { cpm: 5.0, currency: "USD", totalCpm: 5.0 },
-        id: "tactic_env_123",
-        mediaProduct: {
-          basePricing: { fixedCpm: 5.0, model: "fixed_cpm" as const },
-          createdAt: new Date("2024-01-01T00:00:00Z"),
-          deliveryType: "guaranteed" as const,
-          description: "Test media product",
-          formats: ["display" as const],
-          id: "media_123",
-          inventoryType: "premium" as const,
-          name: "Test Media Product",
-          productId: "prod_123",
-          publisherId: "sales_agent_789",
-          publisherName: "Test Publisher",
-          updatedAt: new Date("2024-01-01T00:00:00Z"),
-        },
-        name: "Env Test Tactic",
-        signalId: undefined,
-        status: "active",
-        updatedAt: new Date("2024-01-01T00:00:00Z"),
-      };
-
-      mockBigQueryService.createTactic.mockResolvedValue(mockTactic);
-
-      const result = await createTactic.execute(
-        {
-          brandStoryId: "story_123",
-          budgetAllocation: {
-            amount: 1000,
-            currency: "USD",
-            pacing: "even",
+      await expect(
+        createTactic.execute(
+          {
+            brandStoryId: "story_123",
+            budgetAllocation: {
+              amount: 1000,
+              currency: "USD", 
+              pacing: "even",
+            },
+            campaignId: "campaign_123",
+            cpm: 5.0,
+            mediaProductId: "media_123",
+            name: "Test Tactic",
           },
-          campaignId: "campaign_123",
-          cpm: 5.0,
-          mediaProductId: "media_123",
-          name: "Env Test Tactic",
-        },
-        mockContext,
-      );
+          mockContext,
+        ),
+      ).rejects.toThrow(/authentication required/i);
 
-      expect(result).toContain("✅ **Tactic Created Successfully!**");
-      expect(mockBigQueryService.createTactic).toHaveBeenCalledWith(
-        expect.any(Object),
-        "env_api_key",
-      );
-
+      // Verify BigQuery service was never called
+      expect(mockBigQueryService.createTactic).not.toHaveBeenCalled();
+      
       delete process.env.SCOPE3_API_KEY;
     });
   });
@@ -249,7 +218,7 @@ describe("create_tactic Tool", () => {
     const contextWithAuth = {
       request: { method: "tools/call", params: {} },
       server: {} as Record<string, unknown>,
-      session: { scope3ApiKey: "test_api_key" },
+      session: { customerId: 123, scope3ApiKey: "test_api_key" },
     };
 
     beforeEach(() => {
@@ -378,7 +347,7 @@ describe("create_tactic Tool", () => {
     const contextWithAuth = {
       request: { method: "tools/call", params: {} },
       server: {} as Record<string, unknown>,
-      session: { scope3ApiKey: "test_api_key" },
+      session: { customerId: 123, scope3ApiKey: "test_api_key" },
     };
 
     it("should store tactic in BigQuery for prebid integration", async () => {
@@ -491,7 +460,7 @@ describe("create_tactic Tool", () => {
     const contextWithAuth = {
       request: { method: "tools/call", params: {} },
       server: {} as Record<string, unknown>,
-      session: { scope3ApiKey: "test_api_key" },
+      session: { customerId: 123, scope3ApiKey: "test_api_key" },
     };
 
     beforeEach(() => {

@@ -48,7 +48,7 @@ describe("brand-agents/core/update", () => {
         name: "Updated Brand Agent",
       },
       {
-        session: { scope3ApiKey: "test_api_key" },
+        session: { customerId: 123, scope3ApiKey: "test_api_key" },
       },
     );
 
@@ -108,7 +108,7 @@ describe("brand-agents/core/update", () => {
         tacticSeedDataCoop: true,
       },
       {
-        session: { scope3ApiKey: "test_api_key" },
+        session: { customerId: 123, scope3ApiKey: "test_api_key" },
       },
     );
 
@@ -150,7 +150,7 @@ describe("brand-agents/core/update", () => {
     const result = await tool.execute(
       { brandAgentId: "123" },
       {
-        session: { scope3ApiKey: "test_api_key" },
+        session: { customerId: 123, scope3ApiKey: "test_api_key" },
       },
     );
 
@@ -177,7 +177,7 @@ describe("brand-agents/core/update", () => {
           name: "New Name",
         },
         {
-          session: { scope3ApiKey: "test_api_key" },
+          session: { customerId: 123, scope3ApiKey: "test_api_key" },
         },
       ),
     ).rejects.toThrow("Failed to update brand agent: Brand agent not found");
@@ -259,7 +259,7 @@ describe("brand-agents/core/update", () => {
         tacticSeedDataCoop: false,
       },
       {
-        session: { scope3ApiKey: "test_api_key" },
+        session: { customerId: 123, scope3ApiKey: "test_api_key" },
       },
     );
 

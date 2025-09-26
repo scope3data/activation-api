@@ -61,7 +61,7 @@ describe("brand-agent/list Tool", () => {
   describe("Authentication", () => {
     it("should use session API key when available", async () => {
       serviceLevelScenarios.successfulList(mockClient);
-      const context = { session: { scope3ApiKey: "session_key" } };
+      const context = { session: { customerId: 123, scope3ApiKey: "session_key" } };
 
       await tool.execute({}, context);
 

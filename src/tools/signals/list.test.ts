@@ -70,7 +70,7 @@ describe("signals/list", () => {
     const result = await tool.execute(
       {},
       {
-        session: { scope3ApiKey: "test_api_key" },
+        session: { customerId: 123, scope3ApiKey: "test_api_key" },
       },
     );
 
@@ -132,7 +132,7 @@ describe("signals/list", () => {
         region: "eu-west-1",
       },
       {
-        session: { scope3ApiKey: "test_api_key" },
+        session: { customerId: 123, scope3ApiKey: "test_api_key" },
       },
     );
 
@@ -178,7 +178,7 @@ describe("signals/list", () => {
         seatId: "seat_123",
       },
       {
-        session: { scope3ApiKey: "test_api_key" },
+        session: { customerId: 123, scope3ApiKey: "test_api_key" },
       },
     );
 
@@ -207,7 +207,7 @@ describe("signals/list", () => {
         region: "eu-west-1",
       },
       {
-        session: { scope3ApiKey: "test_api_key" },
+        session: { customerId: 123, scope3ApiKey: "test_api_key" },
       },
     );
 
@@ -257,7 +257,7 @@ describe("signals/list", () => {
     const result = await tool.execute(
       {},
       {
-        session: { scope3ApiKey: "test_api_key" },
+        session: { customerId: 123, scope3ApiKey: "test_api_key" },
       },
     );
 
@@ -296,7 +296,7 @@ describe("signals/list", () => {
     const result = await tool.execute(
       {},
       {
-        session: { scope3ApiKey: "test_api_key" },
+        session: { customerId: 123, scope3ApiKey: "test_api_key" },
       },
     );
 

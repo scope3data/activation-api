@@ -45,7 +45,7 @@ describe("brand-agents/core/get", () => {
     const result = await tool.execute(
       { brandAgentId: "123" },
       {
-        session: { scope3ApiKey: "test_api_key" },
+        session: { customerId: 123, scope3ApiKey: "test_api_key" },
       },
     );
 
@@ -82,7 +82,7 @@ describe("brand-agents/core/get", () => {
       tool.execute(
         { brandAgentId: "nonexistent" },
         {
-          session: { scope3ApiKey: "test_api_key" },
+          session: { customerId: 123, scope3ApiKey: "test_api_key" },
         },
       ),
     ).rejects.toThrow("Failed to fetch brand agent: Brand agent not found");
@@ -156,7 +156,7 @@ describe("brand-agents/core/get", () => {
     const result = await tool.execute(
       { brandAgentId: "123" },
       {
-        session: { scope3ApiKey: "test_api_key" },
+        session: { customerId: 123, scope3ApiKey: "test_api_key" },
       },
     );
 

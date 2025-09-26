@@ -64,7 +64,7 @@ describe("signals/get-partner-seats", () => {
     const result = await tool.execute(
       {},
       {
-        session: { scope3ApiKey: "test_api_key" },
+        session: { customerId: 123, scope3ApiKey: "test_api_key" },
       },
     );
 
@@ -125,7 +125,7 @@ describe("signals/get-partner-seats", () => {
     const result = await tool.execute(
       {},
       {
-        session: { scope3ApiKey: "test_api_key" },
+        session: { customerId: 123, scope3ApiKey: "test_api_key" },
       },
     );
 
@@ -145,7 +145,7 @@ describe("signals/get-partner-seats", () => {
     const result = await tool.execute(
       {},
       {
-        session: { scope3ApiKey: "test_api_key" },
+        session: { customerId: 123, scope3ApiKey: "test_api_key" },
       },
     );
 
