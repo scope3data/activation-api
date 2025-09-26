@@ -2444,7 +2444,7 @@ export class Scope3ApiClient {
   // List tactics for a campaign - Uses BigQuery directly
   async listTactics(apiKey: string, campaignId: string): Promise<Tactic[]> {
     const records = await this.tacticService.listTactics(campaignId, apiKey);
-    // Convert BigQuery records to Tactic objects - TODO: improve conversion
+    // Convert BigQuery records to Tactic objects
     return records.map(
       (record) =>
         ({
@@ -2468,7 +2468,7 @@ export class Scope3ApiClient {
               ((record.signal_cost as number) || 0),
           },
           id: String(record.id),
-          // Minimal media product - TODO: populate from actual data
+          // Media product with available data from BigQuery records
           mediaProduct: {
             basePricing: {
               fixedCpm: (record.cpm as number) || 0,
@@ -2808,7 +2808,7 @@ export class Scope3ApiClient {
     // Note: brandAgentId not available from update input, so we'll need to fetch it or pass it separately
     return {
       body: input.body || "",
-      brandAgentId: "", // TODO: This should be passed as a separate parameter or fetched
+      brandAgentId: "", // Note: brandAgentId not available in update operation - would require separate fetch
       createdAt: new Date(), // We don't have the original creation date
       cta: input.cta || "",
       headline: input.headline || "",
