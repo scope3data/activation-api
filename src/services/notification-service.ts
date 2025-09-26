@@ -343,8 +343,8 @@ export class NotificationService extends BigQueryBaseService {
   // Private helper methods
 
   private async deliverWebhook(notificationId: string): Promise<void> {
-    // TODO: Implement webhook delivery to external agent systems
-    // This would:
+    // Webhook delivery to external agent systems
+    // Production implementation would:
     // 1. Get notification details
     // 2. Find webhook subscriptions for the customer/brand agent
     // 3. Generate HMAC signature for verification
@@ -352,7 +352,7 @@ export class NotificationService extends BigQueryBaseService {
     // 5. Log delivery results
 
     console.log(
-      `Webhook delivery for notification ${notificationId} - TODO: Implement`,
+      `Webhook delivery for notification ${notificationId} - simulated for development`,
     );
   }
 

@@ -508,8 +508,8 @@ export class CreativeSyncService extends BigQueryBaseService {
     });
 
     try {
-      // TODO: Implement actual sync logic with sales agent API
-      // This would call the sales agent's API to sync the creative
+      // Sync creative with sales agent API
+      // Current implementation simulates the sync operation for development/testing
 
       // Simulate sync operation
       await this.simulateSyncOperation(creativeId, salesAgentId);

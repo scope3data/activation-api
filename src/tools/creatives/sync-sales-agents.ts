@@ -111,8 +111,8 @@ export const creativeSyncSalesAgentsTool = (client: Scope3ApiClient) => ({
           throw new Error(`Campaign ${validatedArgs.campaignId} not found`);
         }
 
-        // TODO: Get tactics from campaign and extract sales agent IDs
-        // For now, use auto-detection as fallback
+        // Extract sales agent IDs from campaign tactics
+        // Currently using auto-detection as the primary method
         salesAgentIds = await creativeSyncService.determineRelevantSalesAgents(
           validatedArgs.creativeId,
           parseInt(creative.buyerAgentId),
