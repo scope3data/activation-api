@@ -5,13 +5,15 @@ import type { MCPToolExecuteContext } from "../../types/mcp.js";
 import type { CreativeSyncStatus } from "../../types/notifications.js";
 
 import { CreativeValidators } from "../../__tests__/utils/structured-response-helpers.js";
+import { AuthenticationService } from "../../services/auth-service.js";
+import { CreativeSyncService } from "../../services/creative-sync-service.js";
 import { creativeGetTool } from "./get.js";
 
 const mockClient = {
   getCreative: vi.fn(),
 } as unknown as Scope3ApiClient;
 
-// Mock the BigQuery and service dependencies
+// Mock the service dependencies
 vi.mock("@google-cloud/bigquery", () => {
   return {
     BigQuery: vi.fn().mockImplementation(() => ({
@@ -20,30 +22,8 @@ vi.mock("@google-cloud/bigquery", () => {
   };
 });
 
-vi.mock("../../services/auth-service.js", () => {
-  return {
-    AuthenticationService: vi.fn().mockImplementation(() => ({
-      getCustomerIdFromToken: vi.fn().mockResolvedValue(1),
-      resolveCustomerContext: vi.fn().mockResolvedValue({
-        clientId: "test-client-id",
-        company: "Test Company",
-        customerId: 1,
-        permissions: ["full_access"],
-      }),
-    })),
-  };
-});
-
-// Mock at module level first
-const mockSyncService = {
-  getCreativeSyncStatus: vi.fn().mockResolvedValue([]),
-};
-
-vi.mock("../../services/creative-sync-service.js", () => {
-  return {
-    CreativeSyncService: vi.fn().mockImplementation(() => mockSyncService),
-  };
-});
+vi.mock("../../services/auth-service.js");
+vi.mock("../../services/creative-sync-service.js");
 
 const mockContext: MCPToolExecuteContext = {
   session: {
@@ -118,12 +98,37 @@ const sampleSyncStatus: CreativeSyncStatus[] = [
 describe("creativeGetTool", () => {
   const tool = creativeGetTool(mockClient);
 
+  // Mock service instances
+  const mockCreativeSyncService = {
+    getCreativeSyncStatus: vi.fn(),
+  };
+
+  const mockAuthService = {
+    getCustomerIdFromToken: vi.fn().mockResolvedValue(1),
+    resolveCustomerContext: vi.fn().mockResolvedValue({
+      clientId: "test-client-id",
+      company: "Test Company",
+      customerId: 1,
+      permissions: ["full_access"],
+    }),
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
 
+    // Setup service mocks
+    vi.mocked(CreativeSyncService).mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      () => mockCreativeSyncService as any,
+    );
+    vi.mocked(AuthenticationService).mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      () => mockAuthService as any,
+    );
+
     // Reset mocks to default behavior
     mockClient.getCreative = vi.fn().mockResolvedValue(sampleCreativeResponse);
-    mockSyncService.getCreativeSyncStatus = vi.fn().mockResolvedValue([]);
+    mockCreativeSyncService.getCreativeSyncStatus.mockResolvedValue([]);
   });
 
   describe("tool metadata", () => {
@@ -213,9 +218,9 @@ describe("creativeGetTool", () => {
 
     it("should include sync status information when available", async () => {
       // Update the mock to return sync status data
-      mockSyncService.getCreativeSyncStatus = vi
-        .fn()
-        .mockResolvedValue(sampleSyncStatus);
+      mockCreativeSyncService.getCreativeSyncStatus.mockResolvedValue(
+        sampleSyncStatus,
+      );
 
       const result = await tool.execute(
         {
@@ -225,6 +230,12 @@ describe("creativeGetTool", () => {
       );
 
       const parsedResult = JSON.parse(result);
+
+      // Verify mock was called
+      expect(
+        mockCreativeSyncService.getCreativeSyncStatus,
+      ).toHaveBeenCalledWith("creative_123");
+
       expect(parsedResult.message).toContain("Sales Agent Sync Status");
       expect(parsedResult.message).toContain("Test Sales Agent 1");
       expect(parsedResult.message).toContain("Approved: 1");
@@ -241,9 +252,9 @@ describe("creativeGetTool", () => {
 
     it("should handle sync status errors gracefully", async () => {
       // Update the mock to throw an error
-      mockSyncService.getCreativeSyncStatus = vi
-        .fn()
-        .mockRejectedValue(new Error("BigQuery connection failed"));
+      mockCreativeSyncService.getCreativeSyncStatus.mockRejectedValue(
+        new Error("BigQuery connection failed"),
+      );
 
       const result = await tool.execute(
         {

@@ -4,7 +4,15 @@ import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
 import { CampaignValidators } from "../../__tests__/utils/structured-response-helpers.js";
+import { AuthenticationService } from "../../services/auth-service.js";
+import { CreativeSyncService } from "../../services/creative-sync-service.js";
+import { NotificationService } from "../../services/notification-service.js";
 import { listCampaignsTool } from "./list.js";
+
+// Mock the service dependencies
+vi.mock("../../services/auth-service.js");
+vi.mock("../../services/creative-sync-service.js");
+vi.mock("../../services/notification-service.js");
 
 const mockClient = {
   listBrandAgentCampaigns: vi.fn(),
@@ -54,8 +62,38 @@ const sampleCampaignResponse = [
 describe("listCampaignsTool", () => {
   const tool = listCampaignsTool(mockClient);
 
+  // Mock service instances
+  const mockAuthService = {
+    getCustomerIdFromToken: vi.fn().mockResolvedValue(1),
+  };
+
+  const mockCreativeSyncService = {
+    // Add any methods if needed
+  };
+
+  const mockNotificationService = {
+    getCampaignNotifications: vi.fn().mockResolvedValue([]),
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // Setup service mocks
+    vi.mocked(AuthenticationService).mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      () => mockAuthService as any,
+    );
+    vi.mocked(CreativeSyncService).mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      () => mockCreativeSyncService as any,
+    );
+    vi.mocked(NotificationService).mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      () => mockNotificationService as any,
+    );
+
+    // Reset mock return values
+    mockAuthService.getCustomerIdFromToken.mockResolvedValue(1);
   });
 
   describe("tool metadata", () => {
@@ -143,8 +181,8 @@ describe("listCampaignsTool", () => {
 
       const parsedResult = JSON.parse(result);
       expect(parsedResult.message).toContain("Found 1 campaigns");
-      expect(parsedResult.message).toContain("Budget: $10,000");
-      expect(parsedResult.message).toContain("Spend: $450");
+      expect(parsedResult.message).toContain("**Budget**: $10,000");
+      expect(parsedResult.message).toContain("**Spend**: $450");
     });
 
     it("should include filter information in structured data", async () => {
@@ -180,6 +218,16 @@ describe("listCampaignsTool", () => {
 
       const parsedResult = JSON.parse(result);
       expect(parsedResult.data.summary).toEqual({
+        healthSummary: {
+          critical: 0,
+          healthy: 0,
+          unknown: 0,
+          warning: 1,
+        },
+        notificationSummary: {
+          campaignsWithNotifications: 0,
+          totalUnread: 0,
+        },
         statusCounts: {
           delivering: 1,
         },

@@ -94,6 +94,13 @@ describe("creativeUpdateTool", () => {
     mockClient.updateCreative = vi
       .fn()
       .mockResolvedValue(sampleUpdatedCreativeResponse);
+
+    // Default sync service mock return values
+    mockCreativeSyncService.getCreativeSyncStatus.mockResolvedValue([]);
+    mockCreativeSyncService.syncCreativeToSalesAgents.mockResolvedValue({
+      failed: [],
+      success: [],
+    });
   });
 
   describe("tool metadata", () => {

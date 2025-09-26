@@ -379,3 +379,12 @@ export function testCreativeSyncRepositoryContract(
     });
   });
 }
+
+import { CreativeSyncRepositoryTestDouble } from "../../test-doubles/creative-sync-repository-test-double.js";
+
+// Contract validation using test double
+describe("Creative Sync Repository Contract Validation", () => {
+  testCreativeSyncRepositoryContract(
+    () => new CreativeSyncRepositoryTestDouble(),
+  );
+});

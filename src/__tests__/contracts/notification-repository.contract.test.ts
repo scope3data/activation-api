@@ -489,3 +489,12 @@ export function testNotificationRepositoryContract(
     });
   });
 }
+
+import { NotificationRepositoryTestDouble } from "../../test-doubles/notification-repository-test-double.js";
+
+// Contract validation using test double
+describe("Notification Repository Contract Validation", () => {
+  testNotificationRepositoryContract(
+    () => new NotificationRepositoryTestDouble(),
+  );
+});
