@@ -82,20 +82,20 @@ export abstract class BigQueryBaseService {
   }
 
   /**
-   * Resolve customer ID from API token (with authentication service)
+   * Resolve customer ID from API token (SECURITY: fails hard if unable to resolve)
    */
   protected async resolveCustomerId(apiToken?: string): Promise<number> {
     if (!apiToken) {
-      return 1; // Default fallback
+      throw new Error("API token is required for customer ID resolution");
     }
 
-    try {
-      const customerId =
-        await this.authService.getCustomerIdFromToken(apiToken);
-      return customerId || 1; // Fallback to customer 1 if resolution fails
-    } catch (error) {
-      console.warn("Failed to resolve customer ID from token:", error);
-      return 1; // Fallback to customer 1
+    const customerId = await this.authService.getCustomerIdFromToken(apiToken);
+    if (!customerId) {
+      throw new Error(
+        "Unable to determine customer ID from API key - invalid or unauthorized token",
+      );
     }
+
+    return customerId;
   }
 }

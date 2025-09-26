@@ -8,6 +8,7 @@ import type {
 import type { DataExportResponse } from "../../types/reporting.js";
 
 import { TacticBigQueryService } from "../../services/tactic-bigquery-service.js";
+import { requireSessionAuth } from "../../utils/auth.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const exportDataTool = (client: Scope3ApiClient) => ({
@@ -26,18 +27,8 @@ export const exportDataTool = (client: Scope3ApiClient) => ({
     args: ExportCampaignDataParams,
     context: MCPToolExecuteContext,
   ): Promise<string> => {
-    // Check session context first, then fall back to environment variable
-    let apiKey = context.session?.scope3ApiKey;
-
-    if (!apiKey) {
-      apiKey = process.env.SCOPE3_API_KEY;
-    }
-
-    if (!apiKey) {
-      throw new Error(
-        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
-      );
-    }
+    // Universal session authentication check
+    const { apiKey, customerId: _customerId } = requireSessionAuth(context);
 
     try {
       // Validate date range
@@ -53,7 +44,7 @@ export const exportDataTool = (client: Scope3ApiClient) => ({
 
       if (!campaignIds.length && args.brandAgentId) {
         const campaigns = await client.listBrandAgentCampaigns(
-          apiKey,
+          _customerId,
           args.brandAgentId,
         );
         campaignIds = campaigns.map((c) => c.id);

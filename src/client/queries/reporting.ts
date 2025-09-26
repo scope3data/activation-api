@@ -1,36 +1,6 @@
 // GraphQL queries for reporting operations
 
-// Campaign delivery data
-export const GET_CAMPAIGN_DELIVERY_DATA_QUERY = `
-  query GetCampaignDeliveryData($campaignId: ID!, $startDate: String!, $endDate: String!) {
-    campaignDeliveryData(campaignId: $campaignId, startDate: $startDate, endDate: $endDate) {
-      campaignId
-      dailyDeliveries {
-        date
-        tacticId
-        spend
-        currency
-        deliveryUnit
-        unitsDelivered
-        currentPrice
-        signalBreakdown
-        storyBreakdown
-        publisherBreakdown
-        lastUpdated
-      }
-      summary {
-        totalSpend
-        totalImpressions
-        averageCpm
-        pacing {
-          status
-          budgetUtilized
-          projectedCompletion
-        }
-      }
-    }
-  }
-`;
+// Campaign delivery data - REMOVED: This was a fake GraphQL stub that doesn't exist in the backend
 
 // Tactic breakdown
 export const GET_TACTIC_BREAKDOWN_QUERY = `
@@ -49,34 +19,7 @@ export const GET_TACTIC_BREAKDOWN_QUERY = `
   }
 `;
 
-// Scoring outcomes
-export const GET_SCORING_OUTCOMES_QUERY = `
-  query GetScoringOutcomes($campaignId: ID!, $startDate: String!, $endDate: String!) {
-    scoringOutcomes(campaignId: $campaignId, startDate: $startDate, endDate: $endDate) {
-      id
-      externalId
-      campaignId
-      tacticId
-      creativeId
-      signals
-      stories
-      exposureRange {
-        start
-        end
-      }
-      performanceIndex
-      scoring {
-        immediate
-        delayed
-        components
-        confidence
-      }
-      source
-      timestamp
-      receivedAt
-    }
-  }
-`;
+// Scoring outcomes - REMOVED: This was a fake GraphQL stub that doesn't exist in the backend
 
 // Campaign tactics
 export const GET_CAMPAIGN_TACTICS_QUERY = `
@@ -122,19 +65,7 @@ export const GET_TACTIC_PERFORMANCE_QUERY = `
   }
 `;
 
-// Budget allocations
-export const GET_BUDGET_ALLOCATIONS_QUERY = `
-  query GetBudgetAllocations($campaignId: ID!, $startDate: String!, $endDate: String!) {
-    budgetAllocations(campaignId: $campaignId, startDate: $startDate, endDate: $endDate) {
-      campaignId
-      tacticId
-      date
-      allocatedBudget
-      utilizedBudget
-      utilizationRate
-    }
-  }
-`;
+// Budget allocations - REMOVED: This was a fake GraphQL stub that doesn't exist in the backend
 
 // Webhook subscription mutations
 export const CREATE_WEBHOOK_SUBSCRIPTION_MUTATION = `
@@ -210,23 +141,7 @@ export const DELETE_WEBHOOK_SUBSCRIPTION_MUTATION = `
   }
 `;
 
-// Create scoring outcome
-export const CREATE_SCORING_OUTCOME_MUTATION = `
-  mutation CreateScoringOutcome($input: ScoringOutcomeInput!) {
-    createScoringOutcome(input: $input) {
-      id
-      campaignId
-      tacticId
-      exposureRange {
-        start
-        end
-      }
-      performanceIndex
-      timestamp
-      receivedAt
-    }
-  }
-`;
+// Create scoring outcome - REMOVED: This was a fake GraphQL stub that doesn't exist in the backend
 
 // Get brand agent campaign with delivery summary
 export const GET_BRAND_AGENT_CAMPAIGN_WITH_DELIVERY_QUERY = `

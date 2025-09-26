@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
+import { requireSessionAuth } from "../../utils/auth.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 /**
@@ -30,17 +31,8 @@ export const creativeAssignTool = (client: Scope3ApiClient) => ({
     context: MCPToolExecuteContext,
   ): Promise<string> => {
     // Check authentication
-    let apiKey = context.session?.scope3ApiKey;
-
-    if (!apiKey) {
-      apiKey = process.env.SCOPE3_API_KEY;
-    }
-
-    if (!apiKey) {
-      throw new Error(
-        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
-      );
-    }
+    // Universal session authentication check
+    const { apiKey, customerId: _customerId } = requireSessionAuth(context);
 
     try {
       // Assign creative to campaign with buyer agent validation
@@ -145,18 +137,8 @@ export const creativeUnassignTool = (client: Scope3ApiClient) => ({
     },
     context: MCPToolExecuteContext,
   ): Promise<string> => {
-    // Check authentication
-    let apiKey = context.session?.scope3ApiKey;
-
-    if (!apiKey) {
-      apiKey = process.env.SCOPE3_API_KEY;
-    }
-
-    if (!apiKey) {
-      throw new Error(
-        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
-      );
-    }
+    // Universal session authentication check
+    const { apiKey, customerId: _customerId } = requireSessionAuth(context);
 
     try {
       const result = await client.unassignCreativeFromCampaign(

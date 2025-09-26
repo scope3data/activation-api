@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
+import { requireSessionAuth } from "../../utils/auth.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const getDSPSeatsTool = (client: Scope3ApiClient) =>
@@ -20,18 +21,8 @@ export const getDSPSeatsTool = (client: Scope3ApiClient) =>
       { dsp, search_term }: { dsp: string; search_term?: string },
       context: MCPToolExecuteContext,
     ) => {
-      // Check session context first, then fall back to environment variable
-      let apiKey = context.session?.scope3ApiKey;
-
-      if (!apiKey) {
-        apiKey = process.env.SCOPE3_API_KEY;
-      }
-
-      if (!apiKey) {
-        throw new Error(
-          "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
-        );
-      }
+      // Universal session authentication check
+      const { apiKey, customerId: _customerId } = requireSessionAuth(context);
 
       try {
         const seats = await client.getDSPSeats(apiKey, dsp, search_term);
