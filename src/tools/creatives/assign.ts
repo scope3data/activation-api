@@ -1,8 +1,12 @@
+import { BigQuery } from "@google-cloud/bigquery";
 import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
+import { AuthenticationService } from "../../services/auth-service.js";
+import { CreativeSyncService } from "../../services/creative-sync-service.js";
+import { NotificationService } from "../../services/notification-service.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 /**
@@ -52,6 +56,26 @@ export const creativeAssignTool = (client: Scope3ApiClient) => ({
       );
 
       if (result.success) {
+        // Trigger automatic sync to sales agents used by this campaign
+        try {
+          const authService = new AuthenticationService(new BigQuery());
+          const creativeSyncService = new CreativeSyncService(authService);
+          const notificationService = new NotificationService(authService);
+          creativeSyncService.setNotificationService(notificationService);
+
+          // Trigger sync in background - don't wait for completion
+          creativeSyncService
+            .onCreativeAssignedToCampaign(args.creativeId, args.campaignId)
+            .catch((syncError) => {
+              console.warn(
+                `Background sync failed for creative ${args.creativeId} in campaign ${args.campaignId}:`,
+                syncError,
+              );
+            });
+        } catch (syncError) {
+          console.warn("Failed to initialize sync services:", syncError);
+          // Don't fail the assignment if sync setup fails
+        }
         const response = `✅ **Creative assigned successfully!**
 
 📋 **Assignment Details**
@@ -69,6 +93,11 @@ export const creativeAssignTool = (client: Scope3ApiClient) => ({
 • Campaign targeting and budget will apply to this creative
 • Performance metrics will be tracked for this creative-campaign pair
 • You can assign the same creative to multiple campaigns
+
+🔄 **Automatic Sync in Progress:**
+• Creative is being automatically synced to sales agents used by this campaign
+• Format-compatible sales agents will receive the creative for approval
+• You'll receive notifications if any sync issues occur
 
 🔄 **[STUB]** Assignment will be processed by AdCP publishers:
 • Validation of buyer agent ownership

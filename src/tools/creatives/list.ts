@@ -139,6 +139,43 @@ ${
           output += `   📊 Campaigns: Not assigned to any campaigns\n`;
         }
 
+        // Show sync status summary if available
+        if (
+          creative.syncStatusSummary &&
+          creative.syncStatusSummary.totalRelevantAgents > 0
+        ) {
+          const summary = creative.syncStatusSummary;
+          const healthEmoji =
+            summary.approved === summary.totalRelevantAgents
+              ? "✅"
+              : summary.approved > 0
+                ? "⚠️"
+                : "❌";
+          output += `   🔄 Sales Agent Sync: ${healthEmoji} ${summary.approved}/${summary.totalRelevantAgents} approved`;
+          if (summary.rejected > 0) {
+            output += ` (${summary.rejected} rejected)`;
+          }
+          if (summary.pending > 0) {
+            output += ` (${summary.pending} pending)`;
+          }
+          output += `\n`;
+        } else if (
+          creative.salesAgentSyncStatus &&
+          creative.salesAgentSyncStatus.length > 0
+        ) {
+          // Fallback to individual sync status if summary not available
+          const _synced = creative.salesAgentSyncStatus.filter(
+            (s) => s.status === "synced",
+          ).length;
+          const total = creative.salesAgentSyncStatus.length;
+          const approved = creative.salesAgentSyncStatus.filter(
+            (s) => s.approvalStatus === "approved",
+          ).length;
+          const healthEmoji =
+            approved === total ? "✅" : approved > 0 ? "⚠️" : "❌";
+          output += `   🔄 Sales Agent Sync: ${healthEmoji} ${approved}/${total} approved\n`;
+        }
+
         // Show key metadata
         if (creative.targetAudience) {
           output += `   👥 Audience: ${creative.targetAudience.substring(0, 50)}${creative.targetAudience.length > 50 ? "..." : ""}\n`;
