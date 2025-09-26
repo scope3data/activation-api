@@ -49,6 +49,24 @@ export interface BrandAgentCampaign {
   };
   createdAt: Date;
   creativeIds: string[];
+  // NEW: Creative sync health status for this campaign
+  creativeSyncHealth?: {
+    issues?: Array<{
+      creativeId: string;
+      creativeName: string;
+      issue: string;
+      salesAgentName: string;
+      suggestedAction: string;
+    }>;
+    status: "critical" | "healthy" | "warning";
+    summary: {
+      creativesFullySynced: number;
+      creativesNotSynced: number;
+      creativesPartiallySynced: number;
+      creativesWithIssues: number;
+    };
+  };
+
   // NEW: Summary delivery status (always included, lightweight)
   deliverySummary?: {
     // Active alerts
@@ -75,9 +93,15 @@ export interface BrandAgentCampaign {
   };
 
   endDate?: Date;
-
   id: string;
   name: string;
+
+  // NEW: Notification summary for this campaign
+  notifications?: {
+    types: import("./notifications.js").NotificationEventType[];
+    unread: number;
+  };
+
   // NEW: Integrated notification thresholds
   notificationThresholds?: {
     delivery?: {
@@ -100,7 +124,6 @@ export interface BrandAgentCampaign {
   outcomeScoreWindowDays?: number;
 
   prompt: string;
-
   // Scoring weights configuration
   scoringWeights?: {
     affinity: number; // Weight for brand story affinity score (0-1)
@@ -110,6 +133,7 @@ export interface BrandAgentCampaign {
 
   // Campaign scheduling (UTC timestamps)
   startDate?: Date;
+
   status: string;
 
   // Inventory management configuration

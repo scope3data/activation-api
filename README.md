@@ -120,10 +120,12 @@ Connect to the server endpoint with proper authentication headers.
 
 - **Brand Agent Management** - Create advertiser accounts
 - **Campaign Management** - Launch and optimize campaigns (BigQuery backend)
-- **Creative Management** - Upload and manage ad creatives (BigQuery backend)
-- **Tactic Management** - Configure targeting and budget allocation
+- **Creative Management** - Upload and manage ad creatives with automated sync (BigQuery backend)
+- **Creative Sync System** - Automatic creative distribution to sales agents with smart format matching
+- **Tactic Management** - Configure targeting and budget allocation with auto-sync integration
 - **Product Discovery** - Distributed inventory via MCP agent network
-- **Reporting & Analytics** - Campaign performance insights
+- **Notification Framework** - Real-time campaign health and sync status alerts
+- **Reporting & Analytics** - Campaign performance insights with sync health tracking
 
 ## Support
 

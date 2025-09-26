@@ -115,6 +115,37 @@ All MCP tools should follow these patterns:
 - Follow resource ownership model (brand agents own campaigns/creatives)
 - Support both create/update patterns for assignments
 
+### ADCP Integration
+
+**CRITICAL: Always use the `@adcp/client` library for ADCP operations**
+
+- **Use `ADCPProductDiscoveryService`**: For product discovery, use the service layer that wraps `ADCPMultiAgentClient`
+- **Never manually call MCP tools**: The ADCP client library handles MCP protocol details internally
+- **No custom MCP clients**: Don't create custom MCP client services - use the established ADCP patterns
+- **Service initialization patterns**:
+  - Database-scoped: `ADCPProductDiscoveryService.fromDatabase(customerId)`
+  - Environment fallback: `ADCPProductDiscoveryService.fromEnv(config)`
+- **Parameter handling**: Pass parameters directly to ADCP service - don't wrap in MCP-specific formats
+
+**Anti-patterns to avoid**:
+
+- ❌ Manual `client.callTool()` with ADCP requests
+- ❌ Wrapping parameters in `{ req: request }` objects
+- ❌ Custom MCP client services for ADCP operations
+- ❌ Manual progress tracking and Promise.allSettled for agent calls
+
+**Correct pattern**:
+
+```typescript
+// ✅ Use ADCP service
+const adcpService = await ADCPProductDiscoveryService.fromDatabase(customerId);
+const result = await adcpService.discoverProducts(query);
+
+// ❌ Don't do manual MCP calls
+const client = new Client(...);
+const result = await client.callTool({ arguments: request, name: "get_products" });
+```
+
 ### BigQuery Integration
 
 - **Hybrid Routing**: Always try BigQuery first, fall back to GraphQL on failure

@@ -183,6 +183,85 @@ CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.tactics` (
 PARTITION BY DATE(created_at)
 CLUSTER BY sales_agent_id, campaign_id, status;
 
+-- 11. Notifications (simplified agent-actionable notifications)
+CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.notifications` (
+  id STRING NOT NULL,
+  type STRING NOT NULL, -- resource.action format (e.g., 'creative.sync_failed')
+  customer_id INT64 NOT NULL,
+  brand_agent_id INT64,
+  
+  -- Simple JSON with IDs needed for action and human-readable message
+  data JSON, -- {creativeId?, campaignId?, salesAgentId?, tacticId?, message, reason?}
+  
+  -- Status tracking
+  read BOOLEAN DEFAULT FALSE,
+  acknowledged BOOLEAN DEFAULT FALSE,
+  
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
+)
+PARTITION BY DATE(created_at)
+CLUSTER BY customer_id, brand_agent_id, type;
+
+-- 12. Creative Sync Status (tracks sync state per creative/sales agent)
+CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.creative_sync_status` (
+  id STRING NOT NULL,
+  creative_id STRING NOT NULL,
+  sales_agent_id STRING NOT NULL,
+  brand_agent_id INT64 NOT NULL,
+  
+  -- Sync tracking
+  sync_status STRING, -- 'pending', 'syncing', 'synced', 'failed', 'not_applicable'
+  sync_attempts INT64 DEFAULT 0,
+  last_sync_attempt TIMESTAMP,
+  sync_error STRING,
+  
+  -- Approval tracking
+  approval_status STRING, -- 'pending', 'approved', 'rejected', 'changes_requested', 'auto_approved'
+  approval_date TIMESTAMP,
+  rejection_reason STRING,
+  requested_changes ARRAY<STRING>,
+  auto_approved BOOLEAN DEFAULT FALSE,
+  
+  -- Context tracking
+  initially_synced_for_tactic_id STRING, -- Which tactic first triggered sync
+  last_campaign_context STRING, -- Most recent campaign context
+  
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
+)
+PARTITION BY DATE(created_at)
+CLUSTER BY creative_id, sales_agent_id, brand_agent_id;
+
+-- 13. Sales Agent Capabilities (format compatibility for smart sync)
+CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.sales_agent_capabilities` (
+  sales_agent_id STRING NOT NULL,
+  
+  -- Format support
+  supports_video BOOLEAN DEFAULT FALSE,
+  supports_display BOOLEAN DEFAULT TRUE,
+  supports_audio BOOLEAN DEFAULT FALSE,
+  supports_native BOOLEAN DEFAULT FALSE,
+  supports_ctv BOOLEAN DEFAULT FALSE,
+  
+  -- Auto-approval formats (formats that don't need manual review)
+  auto_approval_formats ARRAY<STRING>,
+  
+  -- Technical constraints
+  max_video_duration_seconds INT64,
+  max_file_size_mb FLOAT64,
+  supported_video_codecs ARRAY<STRING>,
+  supported_image_formats ARRAY<STRING>,
+  
+  -- Discovery metadata
+  discovered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
+  last_verified TIMESTAMP,
+  verification_method STRING, -- 'manual', 'api_discovery', 'inferred'
+  
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
+)
+CLUSTER BY sales_agent_id;
+
 -- NOTE: For existing table migrations, use the separate bigquery-migrations.sql script
 -- BigQuery doesn't support ADD COLUMN with DEFAULT values in a single statement
 -- The migrations are handled in scripts/bigquery-migrations.sql

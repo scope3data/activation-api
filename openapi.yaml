@@ -1721,17 +1721,19 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
-  /creative-sync-publishers:
+  /creative-sync-sales-agents:
     post:
-      description: Sync a creative to one or more publishers for approval. Can be used for pre-approval
-        before campaign launch or when inventory is selected. Publishers may auto-approve standard
-        formats or require manual review.
-      operationId: creative_sync_publishers
-      summary: Sync Creative to Publishers
+      description: Sync a creative to sales agents using smart auto-detection or manual specification.
+        Features intelligent format matching (video creatives only sync to video-capable agents) and
+        recent activity analysis (30-60 day lookback). Provides detailed sync status and actionable
+        next steps. Requires authentication.
+      operationId: creative_sync_sales_agents
+      summary: Sync Creative to Sales Agents
       tags:
-        - Creatives
+        - Creative Assets
       x-llm-hints:
-        - Use this tool when user wants to sync a creative to one or more publishers for approval
+        - Use this tool when user wants to sync a creative to sales agents using smart
+          auto-detection or manual specification
       requestBody:
         content:
           application/json:
@@ -1740,25 +1742,7 @@ paths:
                 summary: Basic example
                 value: {}
             schema:
-              properties:
-                campaignId:
-                  type: string
-                  description: Campaign ID if syncing for specific campaign
-                creativeId:
-                  type: string
-                  description: ID of the creative to sync
-                preApproval:
-                  type: boolean
-                  description: "Request pre-approval before campaign launch (default: false)"
-                publisherIds:
-                  items:
-                    type: string
-                  type: array
-                  description: Array of publisher IDs to sync to
-              required:
-                - creativeId
-                - publisherIds
-              type: object
+              type: string
         required: true
       responses:
         "200":
@@ -2921,31 +2905,21 @@ paths:
               properties:
                 brief:
                   type: string
-                  description: Natural language description of campaign requirements
+                  description: "Optional: Natural language description of campaign requirements"
                 customer_id:
                   type: string
-                  description: Filter to sales agents for a specific customer ID
+                  description: "Optional: Filter to sales agents for a specific customer ID"
                 delivery_type:
                   type: string
                   description: Filter by delivery guarantee type
-                format_ids:
-                  items:
-                    type: string
-                  type: array
-                  description: Specific format IDs to filter by
-                format_types:
-                  items:
-                    type: string
-                  type: array
-                  description: Format categories to include
                 formats:
                   items:
                     type: string
                   type: array
-                  description: Specific format types (e.g., ['video', 'display'])
-                is_fixed_price:
-                  type: boolean
-                  description: Filter for fixed pricing vs auction
+                  description: Specific creative formats to search for
+                inventory_type:
+                  type: string
+                  description: Type of inventory placement
                 max_cpm:
                   type: number
                   description: Maximum CPM price filter
@@ -2960,9 +2934,6 @@ paths:
                     type: string
                   type: array
                   description: Specific publisher IDs to search within
-                standard_formats_only:
-                  type: boolean
-                  description: Restrict to standard format types only
               required:
                 - promoted_offering
               type: object

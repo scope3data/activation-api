@@ -39,7 +39,7 @@ import { creativeDeleteTool } from "./creatives/delete.js";
 import { creativeGetTool } from "./creatives/get.js";
 import { creativeListTool } from "./creatives/list.js";
 import { creativeReviseTool } from "./creatives/revise.js";
-import { creativeSyncPublishersTool } from "./creatives/sync-publishers.js";
+import { creativeSyncSalesAgentsTool } from "./creatives/sync-sales-agents.js";
 import { creativeUpdateTool } from "./creatives/update.js";
 // DSP
 import { getDSPSeatsTool } from "./dsp/get-seats.js";
@@ -115,7 +115,7 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(creativeAssignTool(client)); // creative/assign
   server.addTool(creativeUnassignTool(client)); // creative/unassign
   server.addTool(creativeReviseTool(client)); // creative/revise
-  server.addTool(creativeSyncPublishersTool(client)); // creative/sync_publishers
+  server.addTool(creativeSyncSalesAgentsTool(client)); // creative/sync_sales_agents
 
   // Brand Stories (formerly Synthetic Audiences)
   server.addTool(createBrandAgentBrandStoryTool(client)); // brand-story/create
@@ -217,7 +217,7 @@ export {
   creativeGetTool,
   creativeListTool,
   creativeReviseTool,
-  creativeSyncPublishersTool,
+  creativeSyncSalesAgentsTool,
   creativeUnassignTool,
   creativeUpdateTool,
   deleteBrandAgentBrandStoryTool,

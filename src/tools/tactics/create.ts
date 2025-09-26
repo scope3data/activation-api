@@ -1,8 +1,12 @@
+import { BigQuery } from "@google-cloud/bigquery";
 import { z } from "zod";
 
 import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
+import { AuthenticationService } from "../../services/auth-service.js";
+import { CreativeSyncService } from "../../services/creative-sync-service.js";
+import { NotificationService } from "../../services/notification-service.js";
 import { TacticBigQueryService } from "../../services/tactic-bigquery-service.js";
 import { requireSessionAuth } from "../../utils/auth.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
@@ -68,6 +72,36 @@ export const createTacticTool = (_client: Scope3ApiClient) => ({
 
       const bigQueryService = new TacticBigQueryService();
       const tactic = await bigQueryService.createTactic(tacticInput, apiKey);
+
+      // Trigger automatic sync of campaign creatives to this new tactic's sales agent
+      try {
+        const authService = new AuthenticationService(new BigQuery());
+        const creativeSyncService = new CreativeSyncService(authService);
+        const notificationService = new NotificationService(authService);
+        creativeSyncService.setNotificationService(notificationService);
+
+        // Get sales agent ID from the media product (assuming it's available in the response)
+        const salesAgentId =
+          tactic.mediaProduct?.publisherId || tactic.salesAgentId;
+
+        if (salesAgentId) {
+          // Trigger sync in background - don't wait for completion
+          creativeSyncService
+            .onTacticCreated(tactic.id, validatedArgs.campaignId, salesAgentId)
+            .catch((syncError) => {
+              console.warn(
+                `Background creative sync failed for new tactic ${tactic.id}:`,
+                syncError,
+              );
+            });
+        }
+      } catch (syncError) {
+        console.warn(
+          "Failed to initialize sync services for tactic creation:",
+          syncError,
+        );
+        // Don't fail tactic creation if sync setup fails
+      }
 
       let summary = `✅ **Tactic Created Successfully!**\n\n`;
 
@@ -201,6 +235,12 @@ export const createTacticTool = (_client: Scope3ApiClient) => ({
         summary += `• Review tactic configuration\n`;
         summary += `• Use tactic_list to check status updates\n`;
       }
+
+      // Add info about automatic creative sync
+      summary += `\n🔄 **Automatic Creative Sync:**\n`;
+      summary += `• Campaign creatives are being synced to this tactic's sales agent\n`;
+      summary += `• Only format-compatible creatives will be synced\n`;
+      summary += `• You'll receive notifications if any sync issues occur\n`;
 
       if (!tactic.signalId) {
         summary += `• ⚠️ Consider adding a signal ID for better targeting effectiveness\n`;
