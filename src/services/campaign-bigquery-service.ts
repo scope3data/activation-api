@@ -3,7 +3,7 @@ import { BigQuery } from "@google-cloud/bigquery";
 import type { BrandAgent, BrandAgentCampaign } from "../types/brand-agent.js";
 import type { Creative } from "../types/creative.js";
 
-import { BigQueryConfig } from "../utils/config.js";
+import { BigQueryConfig as _BigQueryConfig } from "../utils/config.js";
 import { AuthenticationService } from "./auth-service.js";
 import { BriefSanitizationService } from "./brief-sanitization-service.js";
 
@@ -580,9 +580,11 @@ export class CampaignBigQueryService {
     brandAgentId: string,
     status?: string,
     apiToken?: string,
+    customerId?: number,
   ): Promise<BrandAgentCampaign[]> {
-    // Resolve customer ID for security
-    const customerId = await this.resolveCustomerId(apiToken);
+    // Use provided customer ID or resolve from API token (backward compatibility)
+    const resolvedCustomerId =
+      customerId ?? (await this.resolveCustomerId(apiToken));
 
     let query = `
       SELECT 
@@ -603,7 +605,7 @@ export class CampaignBigQueryService {
 
     const params: Record<string, unknown> = {
       brandAgentId: parseInt(brandAgentId, 10), // Convert to INT64 to match schema
-      customerId: Number(customerId),
+      customerId: Number(resolvedCustomerId),
     };
 
     if (status) {
@@ -1074,17 +1076,21 @@ export class CampaignBigQueryService {
   }
 
   /**
-   * Helper method to resolve customer ID from token or use fallback
+   * Helper method to resolve customer ID from token (SECURITY: fails hard if unable to resolve)
    */
   private async resolveCustomerId(apiToken?: string): Promise<number> {
-    if (apiToken) {
-      const customerId =
-        await this.authService.getCustomerIdFromToken(apiToken);
-      if (customerId) {
-        return customerId;
-      }
+    if (!apiToken) {
+      throw new Error("API token is required for customer ID resolution");
     }
-    return BigQueryConfig.DEFAULT_CUSTOMER_ID;
+
+    const customerId = await this.authService.getCustomerIdFromToken(apiToken);
+    if (!customerId) {
+      throw new Error(
+        "Unable to determine customer ID from API key - invalid or unauthorized token",
+      );
+    }
+
+    return customerId;
   }
 
   // ============================================================================

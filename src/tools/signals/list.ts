@@ -7,8 +7,9 @@ import type {
 } from "../../types/mcp.js";
 
 import { CustomSignalsClient } from "../../services/custom-signals-client.js";
+import { requireSessionAuth } from "../../utils/auth.js";
 import {
-  createAuthErrorResponse,
+  createAuthErrorResponse as _createAuthErrorResponse,
   createErrorResponse,
   createMCPResponse,
 } from "../../utils/error-handling.js";
@@ -29,16 +30,8 @@ export const listCustomSignalsTool = (client: Scope3ApiClient) => ({
     args: ListCustomSignalsParams,
     context: MCPToolExecuteContext,
   ): Promise<string> => {
-    // Check session context first, then fall back to environment variable
-    let apiKey = context.session?.scope3ApiKey;
-
-    if (!apiKey) {
-      apiKey = process.env.SCOPE3_API_KEY;
-    }
-
-    if (!apiKey) {
-      return createAuthErrorResponse();
-    }
+    // Universal session authentication check
+    const { apiKey, customerId: _customerId } = requireSessionAuth(context);
 
     try {
       // Use seat-aware filtering if seatId is provided or if we need multi-seat view

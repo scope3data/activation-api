@@ -20,8 +20,8 @@ export const PostHogConfig = {
 
 /**
  * BigQuery service configuration constants
+ * NOTE: All BigQuery operations require explicit customer ID resolution - no defaults for security
  */
 export const BigQueryConfig = {
-  /** Default customer ID when authentication cannot determine the customer */
-  DEFAULT_CUSTOMER_ID: 1,
+  // Removed DEFAULT_CUSTOMER_ID - all operations must explicitly resolve customer ID
 } as const;

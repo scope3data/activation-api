@@ -114,10 +114,14 @@ const server = new FastMCP<FastMCPSessionAuth>({
         event: "auth_success",
       });
 
+      // Resolve customer ID for session caching (prevents repeated lookups)
+      const customerId = await authService.getCustomerIdFromToken(apiKey);
+
       // Trigger async preload for this customer (fire-and-forget)
       preloadService.triggerPreload(apiKey);
 
       return {
+        customerId: customerId || undefined, // Cache customer ID in session (convert null to undefined)
         scope3ApiKey: apiKey,
       };
     } catch (error) {

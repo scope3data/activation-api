@@ -4,7 +4,6 @@ import { brandAgentFixtures } from "../../../__tests__/fixtures/brand-agent-fixt
 import {
   createMockScope3ApiClient,
   serviceLevelScenarios,
-  serviceTestData,
 } from "../../../__tests__/setup/service-level-mocks.js";
 import {
   BrandAgentValidators,
@@ -61,56 +60,38 @@ describe("brand-agent/list Tool", () => {
   describe("Authentication", () => {
     it("should use session API key when available", async () => {
       serviceLevelScenarios.successfulList(mockClient);
-      const context = { session: { scope3ApiKey: "session_key" } };
+      const context = {
+        session: { customerId: 123, scope3ApiKey: "session_key" },
+      };
 
       await tool.execute({}, context);
 
       expect(mockClient.listBrandAgents).toHaveBeenCalledWith(
         "session_key",
         undefined,
+        123,
       );
     });
 
-    it("should fall back to environment API key", async () => {
-      serviceLevelScenarios.successfulList(mockClient);
-      const originalEnv = process.env.SCOPE3_API_KEY;
-      process.env.SCOPE3_API_KEY = "env_key";
-
-      try {
-        await tool.execute({}, {});
-        expect(mockClient.listBrandAgents).toHaveBeenCalledWith(
-          "env_key",
-          undefined,
-        );
-      } finally {
-        if (originalEnv !== undefined) {
-          process.env.SCOPE3_API_KEY = originalEnv;
-        } else {
-          delete process.env.SCOPE3_API_KEY;
-        }
-      }
+    it("should require session authentication", async () => {
+      await expect(
+        tool.execute({}, { session: { customerId: 123 } }), // Missing scope3ApiKey
+      ).rejects.toThrow(
+        "Authentication required. Please provide valid API key in headers (x-scope3-api-key or Authorization: Bearer).",
+      );
     });
 
-    it("should throw error when no API key available", async () => {
-      const originalEnv = process.env.SCOPE3_API_KEY;
-      delete process.env.SCOPE3_API_KEY;
-
-      try {
-        await expect(tool.execute({}, {})).rejects.toThrow(
-          "Authentication required. Please set the SCOPE3_API_KEY",
-        );
-      } finally {
-        if (originalEnv !== undefined) {
-          process.env.SCOPE3_API_KEY = originalEnv;
-        }
-      }
+    it("should throw error when no session provided", async () => {
+      await expect(tool.execute({}, {})).rejects.toThrow(
+        "Authentication required. Please provide valid API key in headers (x-scope3-api-key or Authorization: Bearer).",
+      );
     });
   });
 
   describe("Successful Responses", () => {
-    beforeEach(() => {
-      process.env.SCOPE3_API_KEY = serviceTestData.validApiKey;
-    });
+    const mockContext = {
+      session: { customerId: 123, scope3ApiKey: "test-api-key" },
+    };
 
     it("should return structured response with multiple brand agents", async () => {
       // Setup mock to return multiple agents
@@ -124,7 +105,7 @@ describe("brand-agent/list Tool", () => {
       ];
       mockClient.listBrandAgents.mockResolvedValue(mockAgents);
 
-      const result = await tool.execute({}, {});
+      const result = await tool.execute({}, mockContext);
 
       // Validate structured response format
       const response = BrandAgentValidators.validateListResponse(result, 2);
@@ -152,7 +133,7 @@ describe("brand-agent/list Tool", () => {
       const mockAgents = [brandAgentFixtures.enhancedBrandAgent()];
       mockClient.listBrandAgents.mockResolvedValue(mockAgents);
 
-      const result = await tool.execute({}, {});
+      const result = await tool.execute({}, mockContext);
 
       const response = BrandAgentValidators.validateListResponse(result, 1);
 
@@ -167,7 +148,7 @@ describe("brand-agent/list Tool", () => {
     it("should return structured response with no brand agents", async () => {
       mockClient.listBrandAgents.mockResolvedValue([]);
 
-      const result = await tool.execute({}, {});
+      const result = await tool.execute({}, mockContext);
 
       const response = BrandAgentValidators.validateListResponse(result, 0);
 
@@ -187,7 +168,7 @@ describe("brand-agent/list Tool", () => {
       };
       mockClient.listBrandAgents.mockResolvedValue([mockAgent]);
 
-      const result = await tool.execute({}, {});
+      const result = await tool.execute({}, mockContext);
 
       const response = expectLegacyCompatibleResponse(result);
 
@@ -202,26 +183,31 @@ describe("brand-agent/list Tool", () => {
   });
 
   describe("Filtering", () => {
+    const mockContext = {
+      session: { customerId: 123, scope3ApiKey: "test-api-key" },
+    };
+
     beforeEach(() => {
-      process.env.SCOPE3_API_KEY = serviceTestData.validApiKey;
       serviceLevelScenarios.successfulList(mockClient);
     });
 
     it("should apply name filter correctly", async () => {
-      await tool.execute({ where: { name: "Test Brand" } }, {});
+      await tool.execute({ where: { name: "Test Brand" } }, mockContext);
 
       expect(mockClient.listBrandAgents).toHaveBeenCalledWith(
-        serviceTestData.validApiKey,
+        "test-api-key",
         { name: { contains: "Test Brand" } },
+        123,
       );
     });
 
     it("should apply customer ID filter correctly", async () => {
-      await tool.execute({ where: { customerId: 12345 } }, {});
+      await tool.execute({ where: { customerId: 12345 } }, mockContext);
 
       expect(mockClient.listBrandAgents).toHaveBeenCalledWith(
-        serviceTestData.validApiKey,
+        "test-api-key",
         { customerId: { equals: 12345 } },
+        123,
       );
     });
 
@@ -230,38 +216,40 @@ describe("brand-agent/list Tool", () => {
         {
           where: { customerId: 12345, name: "Test" },
         },
-        {},
+        mockContext,
       );
 
       expect(mockClient.listBrandAgents).toHaveBeenCalledWith(
-        serviceTestData.validApiKey,
+        "test-api-key",
         {
           customerId: { equals: 12345 },
           name: { contains: "Test" },
         },
+        123,
       );
     });
 
     it("should handle undefined filters", async () => {
-      await tool.execute({}, {});
+      await tool.execute({}, mockContext);
 
       expect(mockClient.listBrandAgents).toHaveBeenCalledWith(
-        serviceTestData.validApiKey,
+        "test-api-key",
         undefined,
+        123,
       );
     });
   });
 
   describe("Error Handling", () => {
-    beforeEach(() => {
-      process.env.SCOPE3_API_KEY = serviceTestData.validApiKey;
-    });
+    const mockContext = {
+      session: { customerId: 123, scope3ApiKey: "test-api-key" },
+    };
 
     it("should handle service errors gracefully", async () => {
       const errorMessage = "GraphQL error: Service unavailable";
       mockClient.listBrandAgents.mockRejectedValue(new Error(errorMessage));
 
-      await expect(tool.execute({}, {})).rejects.toThrow(
+      await expect(tool.execute({}, mockContext)).rejects.toThrow(
         "Failed to fetch brand agents: GraphQL error: Service unavailable",
       );
     });
@@ -269,7 +257,7 @@ describe("brand-agent/list Tool", () => {
     it("should handle authentication errors", async () => {
       serviceLevelScenarios.authenticationError(mockClient);
 
-      await expect(tool.execute({}, {})).rejects.toThrow(
+      await expect(tool.execute({}, mockContext)).rejects.toThrow(
         "Failed to fetch brand agents: Authentication failed",
       );
     });
@@ -278,21 +266,21 @@ describe("brand-agent/list Tool", () => {
       const networkError = new Error("Network timeout");
       mockClient.listBrandAgents.mockRejectedValue(networkError);
 
-      await expect(tool.execute({}, {})).rejects.toThrow(
+      await expect(tool.execute({}, mockContext)).rejects.toThrow(
         "Failed to fetch brand agents: Network timeout",
       );
     });
   });
 
   describe("Response Format Validation", () => {
-    beforeEach(() => {
-      process.env.SCOPE3_API_KEY = serviceTestData.validApiKey;
-    });
+    const mockContext = {
+      session: { customerId: 123, scope3ApiKey: "test-api-key" },
+    };
 
     it("should always return valid JSON", async () => {
       serviceLevelScenarios.successfulList(mockClient);
 
-      const result = await tool.execute({}, {});
+      const result = await tool.execute({}, mockContext);
 
       expect(() => JSON.parse(result)).not.toThrow();
     });
@@ -300,7 +288,7 @@ describe("brand-agent/list Tool", () => {
     it("should maintain backwards compatibility", async () => {
       serviceLevelScenarios.successfulList(mockClient);
 
-      const result = await tool.execute({}, {});
+      const result = await tool.execute({}, mockContext);
       const response = expectLegacyCompatibleResponse(result);
 
       // Legacy clients should still work - they'll get message and success
@@ -315,7 +303,7 @@ describe("brand-agent/list Tool", () => {
       const mockAgents = [brandAgentFixtures.enhancedBrandAgent()];
       mockClient.listBrandAgents.mockResolvedValue(mockAgents);
 
-      const result = await tool.execute({}, {});
+      const result = await tool.execute({}, mockContext);
       const response = JSON.parse(result);
 
       // API consumers can use structured data - note dates are serialized as strings
@@ -330,9 +318,9 @@ describe("brand-agent/list Tool", () => {
   });
 
   describe("Performance", () => {
-    beforeEach(() => {
-      process.env.SCOPE3_API_KEY = serviceTestData.validApiKey;
-    });
+    const mockContext = {
+      session: { customerId: 123, scope3ApiKey: "test-api-key" },
+    };
 
     it("should handle large result sets efficiently", async () => {
       // Create a large mock result set
@@ -344,7 +332,7 @@ describe("brand-agent/list Tool", () => {
       mockClient.listBrandAgents.mockResolvedValue(largeAgentList);
 
       const startTime = Date.now();
-      const result = await tool.execute({}, {});
+      const result = await tool.execute({}, mockContext);
       const duration = Date.now() - startTime;
 
       const response = BrandAgentValidators.validateListResponse(result, 100);

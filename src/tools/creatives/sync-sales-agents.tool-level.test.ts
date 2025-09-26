@@ -159,7 +159,9 @@ describe("creativeSyncSalesAgentsTool", () => {
             },
             { session: {} },
           ),
-        ).rejects.toThrow("Authentication required");
+        ).rejects.toThrow(
+          "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
+        );
       } finally {
         // Restore original env value
         if (originalEnv) {

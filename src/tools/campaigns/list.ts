@@ -7,6 +7,7 @@ import type { MCPToolExecuteContext } from "../../types/mcp.js";
 import { AuthenticationService } from "../../services/auth-service.js";
 import { CreativeSyncService } from "../../services/creative-sync-service.js";
 import { NotificationService } from "../../services/notification-service.js";
+import { requireSessionAuth } from "../../utils/auth.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const listCampaignsTool = (client: Scope3ApiClient) => ({
@@ -45,18 +46,9 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
     },
     context: MCPToolExecuteContext,
   ): Promise<string> => {
-    // Check session context first, then fall back to environment variable
-    let apiKey = context.session?.scope3ApiKey;
-
-    if (!apiKey) {
-      apiKey = process.env.SCOPE3_API_KEY;
-    }
-
-    if (!apiKey) {
-      throw new Error(
-        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
-      );
-    }
+    // Universal session authentication check
+    const { apiKey: _apiKey, customerId: _customerId } =
+      requireSessionAuth(context);
 
     try {
       // Initialize services for sync health and notifications
@@ -65,14 +57,14 @@ export const listCampaignsTool = (client: Scope3ApiClient) => ({
       const notificationService = new NotificationService(authService);
 
       // Get customer info from auth service
-      const customerId = await authService.getCustomerIdFromToken(apiKey);
+      const customerId = await authService.getCustomerIdFromToken(_apiKey);
       if (!customerId) {
         throw new Error("Unable to determine customer ID from API key");
       }
 
       // For now, use the basic method with brandAgentId
       const campaigns = await client.listBrandAgentCampaigns(
-        apiKey,
+        _customerId,
         args.brandAgentId || "",
       );
 

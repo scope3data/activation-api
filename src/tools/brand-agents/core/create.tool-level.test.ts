@@ -78,7 +78,9 @@ describe("brand-agent/create Tool", () => {
       mockClient.createBrandAgent.mockResolvedValue(mockCreated);
 
       const input = brandAgentFixtures.createInput();
-      const result = await tool.execute(input, {});
+      const result = await tool.execute(input, {
+        session: { customerId: 123, scope3ApiKey: "test-api-key" },
+      });
 
       // Validate structured response format
       const response = BrandAgentValidators.validateCreateResponse(result);
@@ -96,7 +98,7 @@ describe("brand-agent/create Tool", () => {
 
       // Verify client was called correctly
       expect(mockClient.createBrandAgent).toHaveBeenCalledWith(
-        serviceTestData.validApiKey,
+        "test-api-key",
         input,
       );
     });
@@ -109,7 +111,9 @@ describe("brand-agent/create Tool", () => {
         advertiserDomains: ["minimal.com"],
         name: "Minimal Brand",
       };
-      const result = await tool.execute(minimalInput, {});
+      const result = await tool.execute(minimalInput, {
+        session: { customerId: 123, scope3ApiKey: "test-api-key" },
+      });
 
       const response = BrandAgentValidators.validateCreateResponse(result);
 
@@ -118,7 +122,7 @@ describe("brand-agent/create Tool", () => {
       expect(response.data!.brandAgent.id).toBe(mockCreated.id);
       expect(response.data!.brandAgent.name).toBe(mockCreated.name);
       expect(mockClient.createBrandAgent).toHaveBeenCalledWith(
-        serviceTestData.validApiKey,
+        "test-api-key",
         minimalInput,
       );
     });
@@ -133,7 +137,9 @@ describe("brand-agent/create Tool", () => {
       };
       mockClient.createBrandAgent.mockResolvedValue(mockCreated);
 
-      const result = await tool.execute(brandAgentFixtures.createInput(), {});
+      const result = await tool.execute(brandAgentFixtures.createInput(), {
+        session: { customerId: 123, scope3ApiKey: "test-api-key" },
+      });
       const response = expectLegacyCompatibleResponse(result);
 
       // Should include key creation details
@@ -148,7 +154,9 @@ describe("brand-agent/create Tool", () => {
         brandAgentFixtures.enhancedBrandAgent(),
       );
 
-      const result = await tool.execute(brandAgentFixtures.createInput(), {});
+      const result = await tool.execute(brandAgentFixtures.createInput(), {
+        session: { customerId: 123, scope3ApiKey: "test-api-key" },
+      });
       const response = expectLegacyCompatibleResponse(result);
 
       // Should suggest what to do next
@@ -201,11 +209,13 @@ describe("brand-agent/create Tool", () => {
 
   describe("Error Handling", () => {
     it("should handle authentication errors", async () => {
-      delete process.env.SCOPE3_API_KEY;
-
       await expect(
-        tool.execute(brandAgentFixtures.createInput(), {}),
-      ).rejects.toThrow("Authentication required");
+        tool.execute(brandAgentFixtures.createInput(), {
+          session: { customerId: 123 }, // Missing scope3ApiKey
+        }),
+      ).rejects.toThrow(
+        "Authentication required. Please provide valid API key in headers (x-scope3-api-key or Authorization: Bearer).",
+      );
     });
 
     it("should handle validation errors from API", async () => {
@@ -213,7 +223,9 @@ describe("brand-agent/create Tool", () => {
       mockClient.createBrandAgent.mockRejectedValue(validationError);
 
       await expect(
-        tool.execute(brandAgentFixtures.createInput(), {}),
+        tool.execute(brandAgentFixtures.createInput(), {
+          session: { customerId: 123, scope3ApiKey: "test-api-key" },
+        }),
       ).rejects.toThrow(
         "Failed to create brand agent: Invalid request parameters or query",
       );
@@ -223,7 +235,9 @@ describe("brand-agent/create Tool", () => {
       serviceLevelScenarios.serviceUnavailable(mockClient);
 
       await expect(
-        tool.execute(brandAgentFixtures.createInput(), {}),
+        tool.execute(brandAgentFixtures.createInput(), {
+          session: { customerId: 123, scope3ApiKey: "test-api-key" },
+        }),
       ).rejects.toThrow(
         "Failed to create brand agent: External service temporarily unavailable",
       );
@@ -234,7 +248,9 @@ describe("brand-agent/create Tool", () => {
       mockClient.createBrandAgent.mockRejectedValue(networkError);
 
       await expect(
-        tool.execute(brandAgentFixtures.createInput(), {}),
+        tool.execute(brandAgentFixtures.createInput(), {
+          session: { customerId: 123, scope3ApiKey: "test-api-key" },
+        }),
       ).rejects.toThrow("Failed to create brand agent: Network timeout");
     });
   });
@@ -242,7 +258,9 @@ describe("brand-agent/create Tool", () => {
   describe("Authentication Context", () => {
     it("should prioritize session API key", async () => {
       serviceLevelScenarios.successfulCreate(mockClient);
-      const context = { session: { scope3ApiKey: "session_key_create" } };
+      const context = {
+        session: { customerId: 123, scope3ApiKey: "session_key_create" },
+      };
 
       await tool.execute(brandAgentFixtures.createInput(), context);
 
@@ -252,14 +270,15 @@ describe("brand-agent/create Tool", () => {
       );
     });
 
-    it("should fall back to environment variable", async () => {
+    it("should use session API key when provided", async () => {
       serviceLevelScenarios.successfulCreate(mockClient);
-      process.env.SCOPE3_API_KEY = "env_key_create";
 
-      await tool.execute(brandAgentFixtures.createInput(), {});
+      await tool.execute(brandAgentFixtures.createInput(), {
+        session: { customerId: 123, scope3ApiKey: "test-api-key" },
+      });
 
       expect(mockClient.createBrandAgent).toHaveBeenCalledWith(
-        "env_key_create",
+        "test-api-key",
         expect.any(Object),
       );
     });
@@ -271,13 +290,17 @@ describe("brand-agent/create Tool", () => {
     });
 
     it("should return valid JSON", async () => {
-      const result = await tool.execute(brandAgentFixtures.createInput(), {});
+      const result = await tool.execute(brandAgentFixtures.createInput(), {
+        session: { customerId: 123, scope3ApiKey: "test-api-key" },
+      });
 
       expect(() => JSON.parse(result)).not.toThrow();
     });
 
     it("should maintain backwards compatibility", async () => {
-      const result = await tool.execute(brandAgentFixtures.createInput(), {});
+      const result = await tool.execute(brandAgentFixtures.createInput(), {
+        session: { customerId: 123, scope3ApiKey: "test-api-key" },
+      });
       const response = expectLegacyCompatibleResponse(result);
 
       // Legacy fields should be present
@@ -292,7 +315,9 @@ describe("brand-agent/create Tool", () => {
       const mockCreated = brandAgentFixtures.enhancedBrandAgent();
       mockClient.createBrandAgent.mockResolvedValue(mockCreated);
 
-      const result = await tool.execute(brandAgentFixtures.createInput(), {});
+      const result = await tool.execute(brandAgentFixtures.createInput(), {
+        session: { customerId: 123, scope3ApiKey: "test-api-key" },
+      });
       const response = JSON.parse(result);
 
       // API consumers can access the created object via brandAgent wrapper
@@ -320,13 +345,15 @@ describe("brand-agent/create Tool", () => {
       };
       mockClient.createBrandAgent.mockResolvedValue(mockCreated);
 
-      const result = await tool.execute(fullInput, {});
+      const result = await tool.execute(fullInput, {
+        session: { customerId: 123, scope3ApiKey: "test-api-key" },
+      });
       const response = BrandAgentValidators.validateCreateResponse(result);
 
       expect(response.data).toBeDefined();
       expect(response.data!.brandAgent).toMatchObject(fullInput);
       expect(mockClient.createBrandAgent).toHaveBeenCalledWith(
-        serviceTestData.validApiKey,
+        "test-api-key",
         fullInput,
       );
     });
@@ -353,21 +380,21 @@ describe("brand-agent/create Tool", () => {
             advertiserDomains: ["concurrent1.com"],
             name: "Concurrent Brand 1",
           },
-          {},
+          { session: { customerId: 123, scope3ApiKey: "test-api-key" } },
         ),
         tool.execute(
           {
             advertiserDomains: ["concurrent2.com"],
             name: "Concurrent Brand 2",
           },
-          {},
+          { session: { customerId: 123, scope3ApiKey: "test-api-key" } },
         ),
         tool.execute(
           {
             advertiserDomains: ["concurrent3.com"],
             name: "Concurrent Brand 3",
           },
-          {},
+          { session: { customerId: 123, scope3ApiKey: "test-api-key" } },
         ),
       ];
 

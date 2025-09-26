@@ -4,6 +4,7 @@ import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
 import { SalesAgentService } from "../../services/sales-agent-service.js";
+import { requireSessionAuth } from "../../utils/auth.js";
 import {
   createAuthErrorResponse,
   createErrorResponse,
@@ -29,16 +30,8 @@ export const listSalesAgentsTool = (client: Scope3ApiClient) => ({
     },
     context: MCPToolExecuteContext,
   ): Promise<string> => {
-    // Check session context first, then fall back to environment variable
-    let apiKey = context.session?.scope3ApiKey;
-
-    if (!apiKey) {
-      apiKey = process.env.SCOPE3_API_KEY;
-    }
-
-    if (!apiKey) {
-      return createAuthErrorResponse();
-    }
+    // Universal session authentication check
+    const { apiKey, customerId: _customerId } = requireSessionAuth(context);
 
     try {
       // Get customer ID from auth service

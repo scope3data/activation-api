@@ -7,6 +7,7 @@ import type { CreativeSyncStatus } from "../../types/notifications.js";
 
 import { AuthenticationService } from "../../services/auth-service.js";
 import { CreativeSyncService } from "../../services/creative-sync-service.js";
+import { requireSessionAuth } from "../../utils/auth.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const creativeGetTool = (client: Scope3ApiClient) => ({
@@ -25,18 +26,8 @@ export const creativeGetTool = (client: Scope3ApiClient) => ({
     args: { creativeId: string },
     context: MCPToolExecuteContext,
   ): Promise<string> => {
-    // Check session context first, then fall back to environment variable
-    let apiKey = context.session?.scope3ApiKey;
-
-    if (!apiKey) {
-      apiKey = process.env.SCOPE3_API_KEY;
-    }
-
-    if (!apiKey) {
-      throw new Error(
-        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
-      );
-    }
+    // Universal session authentication check
+    const { apiKey, customerId: _customerId } = requireSessionAuth(context);
 
     try {
       const creative = await client.getCreative(apiKey, args.creativeId);

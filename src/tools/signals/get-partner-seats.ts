@@ -4,8 +4,9 @@ import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
 import { CustomSignalsClient } from "../../services/custom-signals-client.js";
+import { requireSessionAuth } from "../../utils/auth.js";
 import {
-  createAuthErrorResponse,
+  createAuthErrorResponse as _createAuthErrorResponse,
   createErrorResponse,
   createMCPResponse,
 } from "../../utils/error-handling.js";
@@ -22,16 +23,8 @@ export const getPartnerSeatsTool = (client: Scope3ApiClient) => ({
     params: Record<string, never>,
     context: MCPToolExecuteContext,
   ): Promise<string> => {
-    // Check session context first, then fall back to environment variable
-    let apiKey = context.session?.scope3ApiKey;
-
-    if (!apiKey) {
-      apiKey = process.env.SCOPE3_API_KEY;
-    }
-
-    if (!apiKey) {
-      return createAuthErrorResponse();
-    }
+    // Universal session authentication check
+    const { apiKey, customerId: _customerId } = requireSessionAuth(context);
 
     try {
       const customSignalsClient = new CustomSignalsClient();

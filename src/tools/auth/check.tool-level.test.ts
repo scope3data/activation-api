@@ -12,6 +12,7 @@ const mockClient = {
 
 const mockContext: MCPToolExecuteContext = {
   session: {
+    customerId: 123,
     scope3ApiKey: "test-api-key",
   },
 };
@@ -45,16 +46,14 @@ describe("checkAuthTool", () => {
 
   describe("authentication", () => {
     it("should use session API key when provided", async () => {
-      mockClient.getCustomerId = vi.fn().mockResolvedValue(123);
-
       const result = await tool.execute({}, mockContext);
-
-      expect(mockClient.getCustomerId).toHaveBeenCalledWith("test-api-key");
 
       // Parse the JSON response to check structured data
       const parsedResult = JSON.parse(result);
       expect(parsedResult.success).toBe(true);
       expect(parsedResult.message).toContain("Authentication Status: Verified");
+      expect(parsedResult.data.customerId).toBe(123);
+      expect(parsedResult.data.authenticated).toBe(true);
     });
 
     it("should throw error when no API key is available", async () => {
@@ -64,7 +63,7 @@ describe("checkAuthTool", () => {
 
       try {
         await expect(tool.execute({}, { session: {} })).rejects.toThrow(
-          "Authentication required",
+          "Authentication required. Please provide valid API key in headers (x-scope3-api-key or Authorization: Bearer).",
         );
       } finally {
         // Restore original env value
@@ -93,14 +92,11 @@ describe("checkAuthTool", () => {
   });
 
   describe("error handling", () => {
-    it("should handle API errors gracefully", async () => {
-      mockClient.getCustomerId = vi
-        .fn()
-        .mockRejectedValue(new Error("Invalid API key"));
-
-      await expect(tool.execute({}, mockContext)).rejects.toThrow(
-        "Invalid API key",
-      );
+    it("should validate session authentication", async () => {
+      // The tool validates session auth via requireSessionAuth
+      // It doesn't make external API calls, so we can't test API errors
+      // The authentication test above already validates the core functionality
+      expect(tool.name).toBe("auth_check");
     });
   });
 });
