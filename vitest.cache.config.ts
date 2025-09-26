@@ -21,10 +21,7 @@ export default defineConfig({
     // Better cleanup and isolation
     clearMocks: true,
 
-    // Coverage configuration
-    // Strategy: Focus on business logic layers that survive backend infrastructure changes
-    // Exclude: GraphQL/BigQuery client code (temporary infrastructure, changing to different backend)
-    // Include: MCP tools (core business logic), utils (reusable logic), server orchestration, caching system
+    // Coverage configuration focused only on caching system
     coverage: {
       exclude: [
         "src/**/*.{test,spec}.ts",
@@ -43,18 +40,21 @@ export default defineConfig({
         "src/test-doubles/**",
         "src/contracts/**",
       ],
-      include: ["src/**/*.ts"],
+      include: [
+        // Only include cache-related files for coverage
+        "src/services/cache/**/*.ts",
+      ],
       provider: "v8",
       reporter: ["text", "html", "json"],
       thresholds: {
-        // Focus coverage on business logic layers that survive backend changes
+        // Focus coverage only on cache system files
         global: {
-          branches: 25,
-          functions: 25,
-          lines: 25,
-          statements: 25,
+          branches: 70,
+          functions: 80,
+          lines: 70,
+          statements: 70,
         },
-        // Realistic thresholds for caching system (based on current coverage)
+        // Realistic thresholds based on current cache system coverage
         "src/services/cache/cached-bigquery.ts": {
           branches: 70,
           functions: 80,
@@ -66,26 +66,6 @@ export default defineConfig({
           functions: 95,
           lines: 90,
           statements: 90,
-        },
-        // Higher thresholds only for tested tools to prevent regression
-        "src/tools/signals/get-partner-seats.ts": {
-          branches: 95,
-          functions: 95,
-          lines: 95,
-          statements: 95,
-        },
-        "src/tools/signals/list.ts": {
-          branches: 90,
-          functions: 90,
-          lines: 90,
-          statements: 90,
-        },
-        // Moderate thresholds for reusable utilities
-        "src/utils/error-handling.ts": {
-          branches: 50,
-          functions: 50,
-          lines: 65,
-          statements: 65,
         },
       },
     },
@@ -107,8 +87,8 @@ export default defineConfig({
     globals: true,
 
     hookTimeout: 5000, // 5 seconds for setup/teardown
-    // Test file patterns
-    include: ["src/**/*.{test,spec}.ts", "src/__tests__/**/*.test.ts"],
+    // Test file patterns - only cache tests
+    include: ["src/__tests__/caching/**/*.test.ts"],
     // Test isolation
     isolate: true,
 

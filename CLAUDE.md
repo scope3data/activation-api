@@ -48,8 +48,42 @@ The server uses a **GraphQL-primary with BigQuery enhancement approach**:
 - `campaign_creatives` - Campaign-creative assignment mapping
 - `campaign_brand_stories` - Campaign-brand story assignment mapping
 
+#### Caching Layer
+
+The server implements a comprehensive in-memory caching system to reduce BigQuery costs and improve response times:
+
+**Architecture**:
+
+- **Transparent Caching**: Drop-in replacement for BigQuery with same interface
+- **TTL-Based Invalidation**: Configurable time-to-live for different data types
+- **Race Condition Prevention**: Promise deduplication prevents duplicate queries
+- **Customer Scoping**: Cache keys include customer identification for isolation
+- **Background Preloading**: Common queries preloaded on customer authentication
+
+**Cache Configuration** (`src/server.ts`):
+
+```typescript
+const cacheConfig = {
+  ttl: {
+    brandAgents: 300000, // 5 minutes - static advertiser data
+    campaigns: 120000, // 2 minutes - config data (no delivery metrics)
+    creatives: 300000, // 5 minutes - asset metadata
+    default: 60000, // 1 minute - general queries
+  },
+};
+```
+
+**Performance Characteristics**:
+
+- **Cache Hits**: ~100% speed improvement (sub-millisecond response)
+- **Memory Management**: Automatic cleanup on TTL expiration
+- **Hit Rate Tracking**: Monitoring for cache effectiveness
+- **Pattern Invalidation**: Clear related entries on updates
+
 #### Key Services
 
+- **CachedBigQuery** (`src/services/cache/cached-bigquery.ts`) - In-memory caching wrapper for BigQuery
+- **PreloadService** (`src/services/cache/preload-service.ts`) - Background preloading of common queries
 - **CampaignBigQueryService** (`src/services/campaign-bigquery-service.ts`) - CRUD operations for BigQuery entities
 - **BrandAgentService** (`src/services/brand-agent-service.ts`) - BigQuery extensions for brand agents
 - **Scope3ApiClient** (`src/client/scope3-client.ts`) - GraphQL-primary with BigQuery enhancement
@@ -89,6 +123,15 @@ All MCP tools should follow these patterns:
 - **Schema Changes**: Update both BigQuery tables and TypeScript interfaces
 - **Setup Scripts**: Use `scripts/create-bigquery-tables.sql` for table creation
 - **Testing**: Use `scripts/test-bigquery-integration.ts` for integration validation
+
+### Caching Integration
+
+- **Dependency Injection**: Services accept optional BigQuery instance for transparent caching
+- **Fire-and-Forget Preloading**: Triggered on customer authentication, doesn't block responses
+- **Cache Key Strategy**: Base64-encoded JSON with customer and query parameters
+- **Invalidation Patterns**: Pattern-based cache clearing for updates (e.g., `brand_agent:123:*`)
+- **Contract Compliance**: CachedBigQuery implements CacheService interface for testing
+- **Environment Configuration**: TTL values configurable via environment variables
 
 ## Mintlify Documentation Standards
 
@@ -305,40 +348,9 @@ export class CampaignRepositoryTestDouble implements CampaignRepository {
 ### Test Levels
 
 1. **Contract Tests** (`src/__tests__/contracts/*.contract.test.ts`) - Validate service interfaces and behavior
-2. **Tool-Level Tests** (`*-tool-level.test.ts`) - Test complete MCP tool execution
-3. **Schema Validation Tests** (`schema-validation.test.ts`) - Prevent GraphQL client-server mismatches
+2. **Caching Tests** (`src/__tests__/caching/*.test.ts`) - Cache behavior, TTL handling, race conditions
+3. **Tool-Level Tests** (`*-tool-level.test.ts`) - Test complete MCP tool execution
 4. **Integration Tests** (`test-*.js`) - End-to-end validation with real backends (for verification)
-
-### GraphQL Schema Validation Strategy
-
-**Problem Solved**: Client code calling GraphQL mutations that don't exist in the backend schema, leading to runtime failures.
-
-**Solution**: Multi-layered testing approach with static schema validation, contract testing, and CI integration.
-
-**Implementation**:
-
-1. **Static Schema Validation** (`src/__tests__/schema-validation.test.ts`)
-   - Validates all client GraphQL operations against actual backend schema
-   - Uses GraphQL validation engine to check field existence and type compatibility
-   - Reports specific errors with line numbers and suggestions
-
-2. **Schema Validation Script** (`scripts/validate-graphql-schema.ts`)
-   - CLI tool for development and CI integration
-   - Scans TypeScript files for GraphQL operations
-   - Provides detailed error reports with suggestions
-
-3. **Prevention Strategy**:
-   - Pre-commit hooks run schema validation automatically
-   - CI/CD fails builds if schema mismatches detected
-   - Clear error messages with actionable suggestions
-
-**Key Commands**:
-
-```bash
-npm run validate:schema        # Check all operations
-npm run validate:schema:show   # See available operations
-npm test -- schema             # Run schema validation tests
-```
 
 ### Running Contract Tests
 
@@ -368,6 +380,28 @@ describe("Campaign Repository Contract Validation", () => {
 // testCampaignRepositoryContract(() => new PostgreSQLCampaignRepository());
 ```
 
+**Cache Testing Pattern:**
+
+```typescript
+// src/__tests__/caching/cached-bigquery.test.ts
+import { CachedBigQuery } from "../../services/cache/cached-bigquery";
+import { testCacheServiceContract } from "../contracts/cache-service.contract.test";
+
+describe("CachedBigQuery Contract Compliance", () => {
+  testCacheServiceContract(() => new CachedBigQuery(mockConfig, cacheConfig));
+});
+
+describe("Cache Behavior", () => {
+  it("should prevent race conditions with identical queries", async () => {
+    // Test Promise deduplication
+  });
+
+  it("should respect TTL for different data types", async () => {
+    // Test TTL-based invalidation
+  });
+});
+```
+
 ### Before Committing
 
 - Run linters and formatters
@@ -381,8 +415,13 @@ describe("Campaign Repository Contract Validation", () => {
 ```bash
 npm test                                    # Run all tests
 npm test -- contracts                      # Contract tests with test doubles (fast)
+npm test -- caching                        # Cache system tests (unit + integration)
 npm test -- tool-level                     # Tool-level integration tests
 npm test -- --coverage                     # With coverage report
+
+# Cache-specific testing
+npm run test:cache                         # Cache unit tests only
+npm run test:integration                   # Integration tests with mocked BigQuery
 ```
 
 ### Documentation Testing

@@ -146,7 +146,13 @@ export interface Tactic {
   salesAgentId?: string; // Sales agent handling this tactic
   signalId?: string; // Simplified targeting - optional signal ID
   // Status and performance
-  status: "active" | "completed" | "draft" | "paused";
+  status:
+    | "active"
+    | "completed"
+    | "draft"
+    | "failed"
+    | "paused"
+    | "pending_approval";
 
   // Our targeting layer (legacy complex targeting)
   targeting?: TargetingStrategy;
@@ -212,7 +218,13 @@ export interface TacticUpdateInput {
   budgetAllocation?: Partial<BudgetAllocation>;
   description?: string;
   name?: string;
-  status?: "active" | "completed" | "draft" | "paused";
+  status?:
+    | "active"
+    | "completed"
+    | "draft"
+    | "failed"
+    | "paused"
+    | "pending_approval";
   targeting?: Partial<TargetingStrategy>;
 }
 

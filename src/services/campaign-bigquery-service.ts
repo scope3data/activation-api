@@ -5,6 +5,7 @@ import type { Creative } from "../types/creative.js";
 
 import { BigQueryConfig } from "../utils/config.js";
 import { AuthenticationService } from "./auth-service.js";
+import { BriefSanitizationService } from "./brief-sanitization-service.js";
 
 export class CampaignBigQueryService {
   private agentTableRef: string;
@@ -17,8 +18,11 @@ export class CampaignBigQueryService {
     projectId: string = "bok-playground",
     dataset: string = "agenticapi",
     agentTableRef: string = "swift-catfish-337215.postgres_datastream.public_agent",
+    bigquery?: BigQuery, // Optional injection point for cached BigQuery
   ) {
-    this.bigquery = new BigQuery({ location: "us-central1", projectId });
+    // Use injected BigQuery instance or create a new one
+    this.bigquery =
+      bigquery || new BigQuery({ location: "us-central1", projectId });
     this.projectId = projectId;
     this.dataset = dataset;
     this.agentTableRef = agentTableRef;
@@ -109,10 +113,31 @@ export class CampaignBigQueryService {
     const campaignId = `campaign_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
     const customerId = await this.resolveCustomerId(apiToken);
 
+    // Generate sanitized brief for sales agent privacy
+    let sanitizedBrief: null | string = null;
+    if (data.prompt) {
+      try {
+        const sanitizationService = new BriefSanitizationService();
+        const result = await sanitizationService.sanitizeBrief(
+          data.prompt,
+          undefined, // No allocation amount at campaign creation time
+          "USD", // Default currency
+        );
+        sanitizedBrief = result.sanitized_brief;
+      } catch (error) {
+        console.warn(
+          `Failed to sanitize campaign brief for ${campaignId}:`,
+          error,
+        );
+        // Continue without sanitized brief rather than failing campaign creation
+        sanitizedBrief = null;
+      }
+    }
+
     const query = `
       INSERT INTO \`${this.projectId}.${this.dataset}.campaigns\`
-      (id, brand_agent_id, customer_id, name, prompt, status, budget_total, budget_currency, budget_daily_cap, budget_pacing, scoring_weights, outcome_score_window_days, start_date, end_date)
-      VALUES (@id, @brandAgentId, @customerId, @name, @prompt, @status, @budgetTotal, @budgetCurrency, @budgetDailyCap, @budgetPacing, PARSE_JSON(@scoringWeights), @outcomeScoreWindowDays, @startDate, @endDate)
+      (id, brand_agent_id, customer_id, name, prompt, sanitized_brief, status, budget_total, budget_currency, budget_daily_cap, budget_pacing, scoring_weights, outcome_score_window_days, start_date, end_date)
+      VALUES (@id, @brandAgentId, @customerId, @name, @prompt, @sanitizedBrief, @status, @budgetTotal, @budgetCurrency, @budgetDailyCap, @budgetPacing, PARSE_JSON(@scoringWeights), @outcomeScoreWindowDays, @startDate, @endDate)
     `;
 
     await this.bigquery.query({
@@ -128,6 +153,7 @@ export class CampaignBigQueryService {
         name: data.name,
         outcomeScoreWindowDays: data.outcomeScoreWindowDays || 7,
         prompt: data.prompt || null,
+        sanitizedBrief,
         scoringWeights: data.scoringWeights
           ? JSON.stringify(data.scoringWeights)
           : null,
@@ -147,6 +173,7 @@ export class CampaignBigQueryService {
         name: "STRING",
         outcomeScoreWindowDays: "INT64",
         prompt: "STRING",
+        sanitizedBrief: "STRING",
         scoringWeights: "STRING",
         startDate: "TIMESTAMP",
         status: "STRING",

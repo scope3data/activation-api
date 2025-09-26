@@ -1,0 +1,258 @@
+name: Cache System Tests
+
+on:
+  push:
+    branches: [main, caching]
+    paths:
+      - "src/services/cache/**"
+      - "src/__tests__/caching/**"
+      - "src/__tests__/contracts/**"
+      - "src/test-doubles/**"
+      - "src/contracts/**"
+      - "test-*.js"
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/services/cache/**"
+      - "src/__tests__/caching/**"
+      - "src/__tests__/contracts/**"
+      - "src/test-doubles/**"
+      - "src/contracts/**"
+      - "test-*.js"
+
+jobs:
+  cache-unit-tests:
+    runs-on: ubuntu-latest
+    name: Cache Unit Tests
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run cache contract tests
+        run: npm run test:cache
+
+      - name: Run contract validation tests
+        run: npm run test:contracts
+
+      - name: Generate coverage report
+        run: npm run test:coverage:cache
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        if: always()
+        with:
+          file: ./coverage/coverage-final.json
+          flags: cache-tests
+          name: cache-coverage
+
+  cache-integration-tests:
+    runs-on: ubuntu-latest
+    name: Cache Integration Tests
+
+    # Only run integration tests if unit tests pass
+    needs: cache-unit-tests
+
+    # Skip integration tests on PRs (they require secrets)
+    if: github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Run integration tests (with mocked BigQuery)
+        run: |
+          # Set test environment variables
+          export SCOPE3_API_KEY="test-api-key-for-ci"
+          export NODE_ENV="test"
+
+          # Run integration tests
+          timeout 60 npm run test:integration || {
+            echo "Integration tests timed out or failed"
+            exit 1
+          }
+        env:
+          # Mock environment for CI
+          NODE_ENV: test
+
+  performance-benchmarks:
+    runs-on: ubuntu-latest
+    name: Cache Performance Benchmarks
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Run cache performance benchmarks
+        run: |
+          node -e "
+          const { CacheServiceTestDouble } = require('./dist/test-doubles/cache-service-test-double.js');
+
+          async function benchmark() {
+            const cache = new CacheServiceTestDouble({ executionDelay: 100 });
+            const query = { query: 'SELECT * FROM test', params: {} };
+            
+            // Warm up
+            await cache.query(query);
+            
+            // Measure cache hit performance
+            const iterations = 1000;
+            const start = Date.now();
+            
+            for (let i = 0; i < iterations; i++) {
+              await cache.query(query);
+            }
+            
+            const duration = Date.now() - start;
+            const avgTime = duration / iterations;
+            
+            console.log(\`Cache Performance Benchmark:\`);
+            console.log(\`  Iterations: \${iterations}\`);
+            console.log(\`  Total time: \${duration}ms\`);
+            console.log(\`  Average time per query: \${avgTime.toFixed(2)}ms\`);
+            console.log(\`  Queries per second: \${(1000 / avgTime).toFixed(0)}\`);
+            
+            const stats = cache.getCacheStats();
+            console.log(\`  Cache hit rate: \${(stats.hitRate * 100).toFixed(1)}%\`);
+            console.log(\`  Memory usage: \${stats.memoryUsage.toFixed(2)} MB\`);
+            
+            // Performance assertions
+            if (avgTime > 50) {
+              console.error('FAIL: Cache hits are too slow (> 50ms)');
+              process.exit(1);
+            }
+            
+            if (stats.hitRate < 0.90) {
+              console.error('FAIL: Cache hit rate is too low (< 90%)');
+              process.exit(1);
+            }
+            
+            console.log('✅ Performance benchmarks passed');
+          }
+
+          benchmark().catch(err => {
+            console.error('Benchmark failed:', err);
+            process.exit(1);
+          });
+          "
+
+  cache-stress-tests:
+    runs-on: ubuntu-latest
+    name: Cache Stress Tests
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Run cache stress tests
+        run: |
+          node -e "
+          const { CacheServiceTestDouble } = require('./dist/test-doubles/cache-service-test-double.js');
+
+          async function stressTest() {
+            const cache = new CacheServiceTestDouble({ executionDelay: 50 });
+            
+            console.log('Starting cache stress test...');
+            
+            // Test 1: High concurrency with identical queries
+            console.log('Test 1: Concurrent identical queries');
+            const identicalQuery = { query: 'SELECT expensive_operation()', params: {} };
+            const identicalPromises = Array(100).fill().map(() => cache.query(identicalQuery));
+            await Promise.all(identicalPromises);
+            
+            let stats = cache.getCacheStats();
+            console.log(\`  Cache entries: \${stats.size}\`);
+            console.log(\`  Hit rate: \${(stats.hitRate * 100).toFixed(1)}%\`);
+            
+            // Test 2: Memory pressure with many different queries
+            console.log('Test 2: Memory pressure test');
+            const memoryPromises = Array(1000).fill().map((_, i) => 
+              cache.query({ query: \`SELECT * FROM table_\${i}\`, params: { id: i } })
+            );
+            await Promise.all(memoryPromises);
+            
+            stats = cache.getCacheStats();
+            console.log(\`  Cache entries: \${stats.size}\`);
+            console.log(\`  Memory usage: \${stats.memoryUsage.toFixed(2)} MB\`);
+            
+            // Test 3: Mixed workload
+            console.log('Test 3: Mixed workload');
+            const mixedPromises = [];
+            for (let i = 0; i < 500; i++) {
+              const queryType = i % 3;
+              if (queryType === 0) {
+                // Repeated query (should hit cache)
+                mixedPromises.push(cache.query({ query: 'SELECT repeated', params: {} }));
+              } else if (queryType === 1) {
+                // Unique query (cache miss)
+                mixedPromises.push(cache.query({ query: \`SELECT unique_\${i}\`, params: {} }));
+              } else {
+                // Parameterized query with pattern
+                mixedPromises.push(cache.query({ 
+                  query: 'SELECT * FROM users WHERE category = @cat', 
+                  params: { cat: i % 10 } 
+                }));
+              }
+            }
+            await Promise.all(mixedPromises);
+            
+            stats = cache.getCacheStats();
+            console.log(\`  Final cache entries: \${stats.size}\`);
+            console.log(\`  Final hit rate: \${(stats.hitRate * 100).toFixed(1)}%\`);
+            console.log(\`  Final memory usage: \${stats.memoryUsage.toFixed(2)} MB\`);
+            
+            // Assertions
+            if (stats.memoryUsage > 50) {
+              console.error('FAIL: Memory usage too high (> 50 MB)');
+              process.exit(1);
+            }
+            
+            console.log('✅ Stress tests completed successfully');
+          }
+
+          stressTest().catch(err => {
+            console.error('Stress test failed:', err);
+            process.exit(1);
+          });
+          "

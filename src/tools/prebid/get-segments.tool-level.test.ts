@@ -32,7 +32,13 @@ describe("get_prebid_segments Tool", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockService = new MockedTacticBigQueryService();
+
+    // Create a proper mock service instance
+    mockService = {
+      getPrebidSegments: vi.fn(),
+    };
+
+    // Configure the mocked constructor to return our mock service
     MockedTacticBigQueryService.mockImplementation(() => mockService);
 
     mockContext = {
