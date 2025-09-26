@@ -92,7 +92,9 @@ describe("createPMPTool", () => {
             },
             { session: {} },
           ),
-        ).rejects.toThrow("Authentication required. Please provide valid API key in headers (x-scope3-api-key or Authorization: Bearer).");
+        ).rejects.toThrow(
+          "Authentication required. Please provide valid API key in headers (x-scope3-api-key or Authorization: Bearer).",
+        );
       } finally {
         // Restore original env value
         if (originalEnv) {

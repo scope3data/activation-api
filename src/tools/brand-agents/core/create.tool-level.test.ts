@@ -215,7 +215,9 @@ describe("brand-agent/create Tool", () => {
         tool.execute(brandAgentFixtures.createInput(), {
           session: { customerId: 123, scope3ApiKey: "test-api-key" },
         }),
-      ).rejects.toThrow("Authentication required. Please provide valid API key in headers (x-scope3-api-key or Authorization: Bearer).");
+      ).rejects.toThrow(
+        "Authentication required. Please provide valid API key in headers (x-scope3-api-key or Authorization: Bearer).",
+      );
     });
 
     it("should handle validation errors from API", async () => {

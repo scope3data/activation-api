@@ -144,9 +144,12 @@ describe("signals/get-partner-seats", () => {
   it("should use session API key when provided", async () => {
     mockCustomSignalsClient.getPartnerSeats.mockResolvedValueOnce([]);
 
-    const result = await tool.execute({}, {
-      session: { customerId: 123, scope3ApiKey: "session_api_key" },
-    });
+    const result = await tool.execute(
+      {},
+      {
+        session: { customerId: 123, scope3ApiKey: "session_api_key" },
+      },
+    );
 
     expectListResponse(result, 0);
 

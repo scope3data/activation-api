@@ -298,9 +298,12 @@ describe("signals/list", () => {
       total: 0,
     });
 
-    const result = await tool.execute({}, {
-      session: { customerId: 123, scope3ApiKey: "session_api_key" },
-    });
+    const result = await tool.execute(
+      {},
+      {
+        session: { customerId: 123, scope3ApiKey: "session_api_key" },
+      },
+    );
 
     SignalValidators.validateListResponse(result, 0);
 

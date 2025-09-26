@@ -124,9 +124,12 @@ describe("brand-agents/core/get", () => {
 
     mockClient.getBrandAgent.mockResolvedValueOnce(mockBrandAgent);
 
-    const result = await tool.execute({ brandAgentId: "123" }, {
-      session: { customerId: 123, scope3ApiKey: "session_api_key" },
-    });
+    const result = await tool.execute(
+      { brandAgentId: "123" },
+      {
+        session: { customerId: 123, scope3ApiKey: "session_api_key" },
+      },
+    );
 
     BrandAgentValidators.validateGetResponse(result);
 

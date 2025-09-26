@@ -197,7 +197,9 @@ describe("brand-agents/core/update", () => {
     try {
       await expect(
         tool.execute({ brandAgentId: "123", name: "New Name" }, {}),
-      ).rejects.toThrow("Authentication required. Please provide valid API key in headers (x-scope3-api-key or Authorization: Bearer).");
+      ).rejects.toThrow(
+        "Authentication required. Please provide valid API key in headers (x-scope3-api-key or Authorization: Bearer).",
+      );
 
       expect(mockClient.updateBrandAgent).not.toHaveBeenCalled();
     } finally {
