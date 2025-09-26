@@ -12,6 +12,7 @@ const mockClient = {
 
 const mockContext: MCPToolExecuteContext = {
   session: {
+    customerId: 123,
     scope3ApiKey: "test-api-key",
   },
 };
@@ -85,7 +86,9 @@ describe("deleteBrandAgentTool", () => {
             },
             { session: {} },
           ),
-        ).rejects.toThrow("Authentication required");
+        ).rejects.toThrow(
+          "Authentication required. Please provide valid API key in headers (x-scope3-api-key or Authorization: Bearer).",
+        );
       } finally {
         // Restore original env value
         if (originalEnv) {

@@ -7,6 +7,7 @@ import {
   getTargetingDimensionsMap,
   transformTargetingProfiles,
 } from "../../client/transformers/targeting.js";
+import { requireSessionAuth } from "../../utils/auth.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const createCampaignLegacyTool = (client: Scope3ApiClient) => ({
@@ -25,18 +26,8 @@ export const createCampaignLegacyTool = (client: Scope3ApiClient) => ({
     args: { name: string; prompt: string },
     context: MCPToolExecuteContext,
   ): Promise<string> => {
-    // Check session context first, then fall back to environment variable
-    let apiKey = context.session?.scope3ApiKey;
-
-    if (!apiKey) {
-      apiKey = process.env.SCOPE3_API_KEY;
-    }
-
-    if (!apiKey) {
-      throw new Error(
-        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
-      );
-    }
+    // Universal session authentication check
+    const { apiKey, customerId: _customerId } = requireSessionAuth(context);
 
     try {
       // Step 1: Parse the strategy prompt
@@ -45,8 +36,7 @@ export const createCampaignLegacyTool = (client: Scope3ApiClient) => ({
         strategyType: "INTELLIGENT_PMPS",
       });
 
-      // Step 2: Get customer ID for targeting profile creation
-      const customerId = await client.getCustomerId(apiKey);
+      // Step 2: Customer ID already available from session auth
 
       // Step 3: Create the strategy
       const strategy = await client.createStrategy(apiKey, {
@@ -73,7 +63,7 @@ export const createCampaignLegacyTool = (client: Scope3ApiClient) => ({
               anyOf: (bitmapProfile.anyOfItems || []).map((item) =>
                 item.id.toString(),
               ),
-              customerId: customerId.toString(),
+              customerId: _customerId.toString(),
               dimensionName: bitmapProfile.dimensionName,
               noneOf: (bitmapProfile.noneOfItems || []).map((item) =>
                 item.id.toString(),
@@ -156,8 +146,8 @@ export const createCampaignLegacyTool = (client: Scope3ApiClient) => ({
             strategyType: "INTELLIGENT_PMPS",
           },
           metadata: {
+            _customerId,
             campaignType: "legacy",
-            customerId,
             dimensionsMapSize: Object.keys(dimensionsMap).length,
             isReadyForActivation: true,
             strategyId: strategy.id,

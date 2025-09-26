@@ -112,8 +112,10 @@ export function testGraphQLClientContract(
         const agents = await client.listBrandAgents(options.apiKey);
 
         if (agents.length > 0) {
+          // Get customer ID from API key for the campaign listing
+          const customerId = await client.getCustomerId(options.apiKey);
           const campaigns = await client.listBrandAgentCampaigns(
-            options.apiKey,
+            customerId,
             agents[0].id,
           );
 
@@ -140,8 +142,10 @@ export function testGraphQLClientContract(
         const agents = await client.listBrandAgents(options.apiKey);
 
         if (agents.length > 0) {
+          // Get customer ID from API key for the campaign listing
+          const customerId = await client.getCustomerId(options.apiKey);
           const campaigns = await client.listBrandAgentCampaigns(
-            options.apiKey,
+            customerId,
             agents[0].id,
           );
 
@@ -259,6 +263,12 @@ describe("GraphQL Client Integration", () => {
 describe("GraphQL Client Contract Validation", () => {
   // Create a mock client that implements the expected interface
   class MockGraphQLClient extends Scope3ApiClient {
+    // Mock mapping of API keys to customer IDs for testing
+    private mockCustomerIds = new Map<string, number>([
+      ["invalid_key_12345", 99999], // Invalid but has a customer ID
+      ["test_api_key_123", 12345],
+    ]);
+
     async createTactic(_apiKey: string, _input: unknown): Promise<Tactic> {
       throw new Error("Field 'createTactic' doesn't exist on type 'Mutation'");
     }
@@ -278,6 +288,14 @@ describe("GraphQL Client Contract Validation", () => {
       };
     }
 
+    async getCustomerId(apiKey: string): Promise<number> {
+      const customerId = this.mockCustomerIds.get(apiKey);
+      if (!customerId) {
+        throw new Error("Invalid API key");
+      }
+      return customerId;
+    }
+
     async getTactic(
       _apiKey: string,
       _tacticId: string,
@@ -286,7 +304,7 @@ describe("GraphQL Client Contract Validation", () => {
     }
 
     async listBrandAgentCampaigns(
-      apiKey: string,
+      customerId: number,
       brandAgentId: string,
       _status?: string,
     ): Promise<BrandAgentCampaign[]> {
@@ -305,7 +323,11 @@ describe("GraphQL Client Contract Validation", () => {
       ];
     }
 
-    async listBrandAgents(apiKey: string, _where?: unknown) {
+    async listBrandAgents(
+      apiKey: string,
+      _where?: unknown,
+      _customerId?: number,
+    ) {
       if (apiKey === "invalid_key_12345") {
         throw new Error("Unauthorized");
       }

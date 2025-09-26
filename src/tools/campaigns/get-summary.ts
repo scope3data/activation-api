@@ -18,6 +18,7 @@ import type {
 } from "../../types/reporting.js";
 
 import { TacticBigQueryService } from "../../services/tactic-bigquery-service.js";
+import { requireSessionAuth } from "../../utils/auth.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const getCampaignSummaryTool = (client: Scope3ApiClient) => ({
@@ -36,18 +37,8 @@ export const getCampaignSummaryTool = (client: Scope3ApiClient) => ({
     args: GetCampaignSummaryParams,
     context: MCPToolExecuteContext,
   ): Promise<string> => {
-    // Check session context first, then fall back to environment variable
-    let apiKey = context.session?.scope3ApiKey;
-
-    if (!apiKey) {
-      apiKey = process.env.SCOPE3_API_KEY;
-    }
-
-    if (!apiKey) {
-      throw new Error(
-        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
-      );
-    }
+    // Universal session authentication check
+    const { apiKey, customerId: _customerId } = requireSessionAuth(context);
 
     try {
       // Get campaign with delivery summary

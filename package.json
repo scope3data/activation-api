@@ -24,8 +24,6 @@
     "docs:validate:api-links": "node scripts/validate-api-links-local.js",
     "docs:validate:openapi": "npx mintlify openapi-check openapi.yaml",
     "setup:bigquery": "tsx scripts/setup-bigquery-signals.ts",
-    "validate:schema": "tsx scripts/validate-graphql-schema.ts",
-    "validate:schema:show": "tsx scripts/validate-graphql-schema.ts --show-operations",
     "prebuild": "npm run generate:openapi",
     "prepare": "husky",
     "postinstall": "npm run build"

@@ -1,4 +1,26 @@
-import type { FastMCPSessionAuth } from "../types/mcp.js";
+import type {
+  FastMCPSessionAuth,
+  MCPToolExecuteContext,
+} from "../types/mcp.js";
+
+/**
+ * Universal session authentication check for MCP tools
+ * Extracts and validates customer ID and API key from session
+ */
+export const requireSessionAuth = (
+  context: MCPToolExecuteContext,
+): { apiKey: string; customerId: number } => {
+  const customerId = context.session?.customerId;
+  const apiKey = context.session?.scope3ApiKey;
+
+  if (!customerId || !apiKey) {
+    throw new Error(
+      "Authentication required. Please provide valid API key in headers (x-scope3-api-key or Authorization: Bearer).",
+    );
+  }
+
+  return { apiKey, customerId };
+};
 
 export const getAuthContext = (request?: {
   headers?: Record<string, string>;

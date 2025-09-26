@@ -13,6 +13,7 @@ import {
 } from "../../client/transformers/targeting.js";
 import { OptimizationInterpreter } from "../../services/optimization-interpreter.js";
 import { TacticBigQueryService } from "../../services/tactic-bigquery-service.js";
+import { requireSessionAuth } from "../../utils/auth.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const updateCampaignTool = (client: Scope3ApiClient) => ({
@@ -31,18 +32,8 @@ export const updateCampaignTool = (client: Scope3ApiClient) => ({
     args: UpdateCampaignParams,
     context: MCPToolExecuteContext,
   ): Promise<string> => {
-    // Check session context first, then fall back to environment variable
-    let apiKey = context.session?.scope3ApiKey;
-
-    if (!apiKey) {
-      apiKey = process.env.SCOPE3_API_KEY;
-    }
-
-    if (!apiKey) {
-      throw new Error(
-        "Authentication required. Please set the SCOPE3_API_KEY environment variable or provide via headers.",
-      );
-    }
+    // Universal session authentication check
+    const { apiKey, customerId: _customerId } = requireSessionAuth(context);
 
     try {
       let summary = `✅ Campaign ${args.name ? `"${args.name}"` : args.campaignId} updated successfully\n\n`;
@@ -86,8 +77,7 @@ export const updateCampaignTool = (client: Scope3ApiClient) => ({
           strategyType: "INTELLIGENT_PMPS",
         });
 
-        // Get customer ID for targeting profile operations
-        const customerId = await client.getCustomerId(apiKey);
+        // Customer ID already available from session auth
 
         // Update the strategy with new information
         await client.updateOneStrategy(apiKey, {
@@ -114,7 +104,7 @@ export const updateCampaignTool = (client: Scope3ApiClient) => ({
                 anyOf: (bitmapProfile.anyOfItems || []).map((item) =>
                   item.id.toString(),
                 ),
-                customerId: customerId.toString(),
+                customerId: _customerId.toString(),
                 dimensionName: bitmapProfile.dimensionName,
                 noneOf: (bitmapProfile.noneOfItems || []).map((item) =>
                   item.id.toString(),
