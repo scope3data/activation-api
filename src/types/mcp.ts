@@ -239,6 +239,36 @@ export interface MCPToolAnnotations {
   title: string;
 }
 
+// Progress reporting interface for FastMCP
+export interface Progress {
+  /**
+   * The progress thus far. This should increase every time progress is made, even if the total is unknown.
+   */
+  progress: number;
+  /**
+   * The total amount of progress to be made. This can be omitted for indeterminate progress.
+   */
+  total?: number;
+}
+
+// Serializable value type for FastMCP logging
+export type SerializableValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | SerializableValue[]
+  | { [key: string]: SerializableValue };
+
+// Logging interface for FastMCP
+export interface MCPLogger {
+  debug: (message: string, data?: SerializableValue) => void;
+  error: (message: string, data?: SerializableValue) => void;
+  info: (message: string, data?: SerializableValue) => void;
+  warn: (message: string, data?: SerializableValue) => void;
+}
+
 // MCP tool execution context (compatible with FastMCP)
 export interface MCPToolExecuteContext {
   session?: {
@@ -246,6 +276,8 @@ export interface MCPToolExecuteContext {
     scope3ApiKey?: string;
     userId?: string;
   };
+  reportProgress?: (progress: Progress) => Promise<void>;
+  log?: MCPLogger;
 }
 
 // Scoring Outcome MCP parameter types
