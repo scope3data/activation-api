@@ -28,8 +28,7 @@
     "docs:validate:openapi": "npx mintlify openapi-check openapi.yaml",
     "setup:bigquery": "tsx scripts/setup-bigquery-signals.ts",
     "prebuild": "npm run generate:openapi",
-    "prepare": "husky",
-    "postinstall": "npm run build"
+    "prepare": "husky"
   },
   "keywords": [
     "mcp",
