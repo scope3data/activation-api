@@ -139,14 +139,16 @@ Connect to the server endpoint with proper authentication headers.
 This MCP server provides specialized tools for uploading creative assets to Google Cloud Storage (GCS) and distributing them to sales agents via public URLs.
 
 **🔧 Available MCP Tools**:
+
 - `assets_upload` - Upload base64-encoded assets with automatic validation
-- `assets_list_uploads` - List uploaded assets with public URLs  
+- `assets_list_uploads` - List uploaded assets with public URLs
 - `assets_analytics` - View usage analytics and directory management
 
 **📏 File Size Limits**:
+
 - **Image**: 10MB maximum
 - **Video**: 100MB maximum
-- **Audio**: 50MB maximum  
+- **Audio**: 50MB maximum
 - **Logo**: 5MB maximum
 - **Font**: 2MB maximum
 
@@ -168,12 +170,14 @@ GOOGLE_APPLICATION_CREDENTIALS=./gcs-credentials.json
 ### GCS Setup
 
 **Automated Setup (Recommended):**
+
 ```bash
 # Run the setup script
 ./scripts/setup/setup-gcs.sh
 ```
 
 **Manual Setup:**
+
 ```bash
 # Create bucket with public read access
 export PROJECT_ID="your-project-id"
@@ -182,7 +186,7 @@ export BUCKET_NAME="scope3-creative-assets"
 gsutil mb -p $PROJECT_ID gs://$BUCKET_NAME
 gsutil iam ch allUsers:objectViewer gs://$BUCKET_NAME
 
-# Create service account  
+# Create service account
 gcloud iam service-accounts create asset-upload-service \
     --display-name="Asset Upload Service"
 
@@ -196,6 +200,7 @@ gcloud iam service-accounts keys create ./secrets/gcs-credentials.json \
 ```
 
 **🚨 For Production (Cloud Run):**
+
 - **DO NOT** store credentials in files
 - Use Cloud Run's [Secret Manager integration](https://cloud.google.com/run/docs/configuring/secrets)
 - Service account should be attached to Cloud Run service directly
@@ -203,6 +208,7 @@ gcloud iam service-accounts keys create ./secrets/gcs-credentials.json \
 ### MCP Tool Details
 
 **`assets_upload`** - Primary upload tool
+
 - Accepts base64-encoded file data (no data URI prefix)
 - Validates file type and size constraints automatically
 - Organizes assets hierarchically in GCS by customer/brand-agent
@@ -210,11 +216,13 @@ gcloud iam service-accounts keys create ./secrets/gcs-credentials.json \
 - Supports batch uploads (max 10 assets per request)
 
 **`assets_list_uploads`** - Asset inventory management
+
 - Lists all uploaded assets with metadata
 - Provides public URLs for distribution
 - Supports filtering by asset type and date ranges
 
 **`assets_analytics`** - Usage tracking
+
 - View upload statistics and storage usage
 - Directory management and organization insights
 
@@ -253,7 +261,7 @@ const result = await client.callTool({
         tags: ["hero", "banner"]
       }
     }, {
-      assetType: "video", 
+      assetType: "video",
       base64Data: "UklGRr4..." // Base64 video data
       contentType: "video/mp4",
       filename: "product-demo.mp4",
@@ -286,11 +294,12 @@ const assets = await client.callTool({
   name: "assets_list_uploads",
   arguments: {
     buyerAgentId: "123", // Optional filter
-    assetType: "image"   // Optional filter
-  }
+    assetType: "image", // Optional filter
+  },
 });
 ```
-```
+
+````
 
 ### Testing
 
@@ -298,12 +307,12 @@ const assets = await client.callTool({
 # Demo upload (simulation, no GCS required)
 node examples/test-upload-demo.js
 
-# Test real upload (requires GCS setup)  
+# Test real upload (requires GCS setup)
 node scripts/examples/integration-test.js
 
 # MCP over HTTP transport test (NOT REST API)
 node examples/test-upload-http.js
-```
+````
 
 **Important**: The HTTP test uses MCP over HTTP transport (SSE), not REST API calls. This demonstrates how MCP clients can connect over HTTP while still using the MCP protocol.
 

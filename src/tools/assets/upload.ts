@@ -2,16 +2,21 @@ import { z } from "zod";
 
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 
-import { AssetStorageService } from "../../services/asset-storage-service.js";
-import { requireSessionAuth } from "../../utils/auth.js";
-import { analytics, metrics, logger, RequestContextService } from "../../services/monitoring-service.js";
-import { validateUploadRequest } from "../../middleware/validation-middleware.js";
 import { checkUploadRateLimit } from "../../middleware/rate-limit-middleware.js";
-import { 
-  retryWithBackoff, 
-  withTimeout, 
-  circuitBreakers, 
-  serializeError 
+import { validateUploadRequest } from "../../middleware/validation-middleware.js";
+import { AssetStorageService } from "../../services/asset-storage-service.js";
+import {
+  analytics,
+  logger,
+  metrics,
+  RequestContextService,
+} from "../../services/monitoring-service.js";
+import { requireSessionAuth } from "../../utils/auth.js";
+import {
+  circuitBreakers,
+  retryWithBackoff,
+  serializeError,
+  withTimeout,
 } from "../../utils/error-handling.js";
 
 /**
@@ -52,21 +57,21 @@ export const assetsUploadTool = () => ({
     try {
       // Universal session authentication check
       const { customerId } = requireSessionAuth(context);
-      requestContext.setMetadata('customerId', customerId);
-      requestContext.setMetadata('tool_name', 'assets_upload');
-      requestContext.setMetadata('asset_count', args.assets.length);
+      requestContext.setMetadata("customerId", customerId);
+      requestContext.setMetadata("tool_name", "assets_upload");
+      requestContext.setMetadata("asset_count", args.assets.length);
 
-      logger.info('Asset upload request started', {
+      logger.info("Asset upload request started", {
+        assetCount: args.assets.length,
+        customerId: String(customerId),
         requestId: requestContext.requestId,
-        customerId,
-        assetCount: args.assets.length
       });
 
       // Input validation with enhanced error handling
       const validatedArgs = await validateUploadRequest(
-        args, 
-        requestContext.requestId, 
-        String(customerId)
+        args,
+        requestContext.requestId,
+        String(customerId),
       );
 
       // Rate limiting check
@@ -75,10 +80,10 @@ export const assetsUploadTool = () => ({
       // Track tool usage start
       analytics.trackToolUsage({
         customerId: String(customerId),
-        toolName: 'assets_upload',
-        success: true, // Initial tracking
         duration: 0,
-        requestId: requestContext.requestId
+        requestId: requestContext.requestId,
+        success: true, // Initial tracking
+        toolName: "assets_upload",
       });
 
       const storageService = new AssetStorageService();
@@ -94,7 +99,7 @@ export const assetsUploadTool = () => ({
       // Process each asset upload with enhanced error handling
       for (const asset of validatedArgs.assets) {
         const assetStartTime = Date.now();
-        
+
         try {
           // Decode base64 to get file size for validation
           const buffer = Buffer.from(asset.base64Data, "base64");
@@ -116,18 +121,18 @@ export const assetsUploadTool = () => ({
               fileSize,
               success: false,
             });
-            
+
             // Track validation failure
             analytics.trackAssetUpload({
-              customerId: String(customerId),
-              buyerAgentId: asset.metadata?.buyerAgentId,
               assetType: asset.assetType,
-              fileSize,
-              success: false,
+              buyerAgentId: asset.metadata?.buyerAgentId,
+              customerId: String(customerId),
               duration: Date.now() - assetStartTime,
-              requestId: requestContext.requestId
+              fileSize,
+              requestId: requestContext.requestId,
+              success: false,
             });
-            
+
             continue;
           }
 
@@ -151,22 +156,22 @@ export const assetsUploadTool = () => ({
                     },
                     30000, // 30 second timeout
                     {
+                      customerId: String(customerId),
+                      operationName: "gcs_upload",
                       requestId: requestContext.requestId,
-                      customerId,
-                      operationName: 'gcs_upload'
-                    }
+                    },
                   );
                 },
-                { maxAttempts: 3, baseDelayMs: 1000 },
+                { baseDelayMs: 1000, maxAttempts: 3 },
                 {
+                  customerId: String(customerId),
+                  operationName: "asset_upload",
                   requestId: requestContext.requestId,
-                  customerId,
-                  operationName: 'asset_upload'
-                }
+                },
               );
             },
             requestContext.requestId,
-            customerId
+            String(customerId),
           );
 
           const uploadDuration = Date.now() - assetStartTime;
@@ -181,38 +186,38 @@ export const assetsUploadTool = () => ({
 
           // Track successful upload
           analytics.trackAssetUpload({
-            customerId,
-            buyerAgentId: asset.metadata?.buyerAgentId,
             assetType: asset.assetType,
-            fileSize: uploadResult.fileSize,
-            success: true,
+            buyerAgentId: asset.metadata?.buyerAgentId,
+            customerId: String(customerId),
             duration: uploadDuration,
-            requestId: requestContext.requestId
+            fileSize: uploadResult.fileSize,
+            requestId: requestContext.requestId,
+            success: true,
           });
 
           metrics.uploadAttempts.inc({
-            customer_id: customerId,
             asset_type: asset.assetType,
-            status: 'success'
+            customer_id: customerId,
+            status: "success",
           });
 
           metrics.uploadDuration.observe(
             { asset_type: asset.assetType },
-            uploadDuration / 1000
+            uploadDuration / 1000,
           );
 
-          logger.info('Asset uploaded successfully', {
-            requestId: requestContext.requestId,
-            customerId,
-            filename: asset.filename,
+          logger.info("Asset uploaded successfully", {
             assetId: uploadResult.assetId,
+            customerId: String(customerId),
+            duration: uploadDuration,
+            filename: asset.filename,
             fileSize: uploadResult.fileSize,
-            duration: uploadDuration
+            requestId: requestContext.requestId,
           });
-
         } catch (error) {
           const uploadDuration = Date.now() - assetStartTime;
-          const errorMessage = error instanceof Error ? error.message : String(error);
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
 
           results.push({
             error: errorMessage,
@@ -222,45 +227,48 @@ export const assetsUploadTool = () => ({
 
           // Track failed upload
           analytics.trackAssetUpload({
-            customerId,
-            buyerAgentId: asset.metadata?.buyerAgentId,
             assetType: asset.assetType,
-            fileSize: buffer?.length || 0,
-            success: false,
+            buyerAgentId: asset.metadata?.buyerAgentId,
+            customerId: String(customerId),
             duration: uploadDuration,
-            requestId: requestContext.requestId
+            fileSize: Buffer.from(asset.base64Data, "base64").length,
+            requestId: requestContext.requestId,
+            success: false,
           });
 
           analytics.trackError({
-            customerId,
+            context: "asset_upload",
+            customerId: String(customerId),
             error: error instanceof Error ? error : new Error(errorMessage),
-            context: 'asset_upload',
-            requestId: requestContext.requestId,
             metadata: {
-              filename: asset.filename,
               asset_type: asset.assetType,
-              file_size: buffer?.length || 0
-            }
+              file_size: Buffer.from(asset.base64Data, "base64").length,
+              filename: asset.filename,
+            },
+            requestId: requestContext.requestId,
           });
 
           metrics.uploadAttempts.inc({
-            customer_id: customerId,
             asset_type: asset.assetType,
-            status: 'error'
+            customer_id: customerId,
+            status: "error",
           });
 
           metrics.errors.inc({
-            error_type: 'upload_failed',
-            context: 'assets_upload'
+            context: "assets_upload",
+            error_type: "upload_failed",
           });
 
-          logger.error('Asset upload failed', {
-            requestId: requestContext.requestId,
-            customerId,
-            filename: asset.filename,
-            error: errorMessage,
-            duration: uploadDuration
-          });
+          logger.error(
+            "Asset upload failed",
+            error instanceof Error ? error : new Error(errorMessage),
+            {
+              customerId: String(customerId),
+              duration: uploadDuration,
+              filename: asset.filename,
+              requestId: requestContext.requestId,
+            },
+          );
         }
       }
 
@@ -328,26 +336,26 @@ Review the errors above and:
       const overallSuccess = failedCount === 0;
 
       analytics.trackToolUsage({
-        customerId,
-        toolName: 'assets_upload',
-        success: overallSuccess,
+        customerId: String(customerId),
         duration: totalDuration,
-        requestId: requestContext.requestId
+        requestId: requestContext.requestId,
+        success: overallSuccess,
+        toolName: "assets_upload",
       });
 
       metrics.toolDuration.observe(
-        { tool_name: 'assets_upload' },
-        totalDuration / 1000
+        { tool_name: "assets_upload" },
+        totalDuration / 1000,
       );
 
-      logger.info('Asset upload request completed', {
-        requestId: requestContext.requestId,
-        customerId,
-        totalAssets: results.length,
-        successCount,
+      logger.info("Asset upload request completed", {
+        customerId: String(customerId),
         failedCount,
+        overallSuccess,
+        requestId: requestContext.requestId,
+        successCount,
+        totalAssets: results.length,
         totalDuration,
-        overallSuccess
       });
 
       // Add request ID to response for debugging
@@ -356,48 +364,53 @@ Review the errors above and:
 🔍 **Request ID**: \`${requestContext.requestId}\``;
 
       return response;
-
     } catch (error) {
       const totalDuration = Date.now() - operationStartTime;
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
 
       // Track tool failure
       analytics.trackToolUsage({
-        customerId: requestContext.customerId || 'unknown',
-        toolName: 'assets_upload',
-        success: false,
+        customerId: requestContext.customerId || "unknown",
         duration: totalDuration,
+        errorType: error instanceof Error ? error.name : "Unknown",
         requestId: requestContext.requestId,
-        errorType: error instanceof Error ? error.name : 'Unknown'
+        success: false,
+        toolName: "assets_upload",
       });
 
       analytics.trackError({
+        context: "assets_upload_tool",
         customerId: requestContext.customerId,
         error: error instanceof Error ? error : new Error(errorMessage),
-        context: 'assets_upload_tool',
+        metadata: requestContext.getMetadata(),
         requestId: requestContext.requestId,
-        metadata: requestContext.getMetadata()
       });
 
       metrics.errors.inc({
-        error_type: 'tool_execution_failed',
-        context: 'assets_upload'
+        context: "assets_upload",
+        error_type: "tool_execution_failed",
       });
 
-      logger.error('Asset upload tool execution failed', {
-        requestId: requestContext.requestId,
-        customerId: requestContext.customerId,
-        error: errorMessage,
-        duration: totalDuration,
-        metadata: requestContext.getMetadata()
-      });
+      logger.error(
+        "Asset upload tool execution failed",
+        error instanceof Error ? error : new Error(errorMessage),
+        {
+          customerId: requestContext.customerId,
+          duration: totalDuration,
+          metadata: requestContext.getMetadata(),
+          requestId: requestContext.requestId,
+        },
+      );
 
       // Clean up request context
       requestContext.cleanup();
 
       // Return structured error response
       const serializedError = serializeError(error);
-      throw new Error(`Upload failed: ${serializedError.error.message} (Request ID: ${requestContext.requestId})`);
+      throw new Error(
+        `Upload failed: ${serializedError.error.message} (Request ID: ${requestContext.requestId})`,
+      );
     } finally {
       // Clean up request context
       requestContext.cleanup();

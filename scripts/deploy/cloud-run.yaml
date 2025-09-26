@@ -15,91 +15,91 @@ spec:
         run.googleapis.com/memory: "2Gi"
         run.googleapis.com/max-scale: "10"
         run.googleapis.com/min-scale: "1"
-        
+
         # Security configurations
         run.googleapis.com/execution-environment: gen2
         run.googleapis.com/network-interfaces: '[{"network":"default","subnetwork":"default"}]'
-        
+
         # Startup timeout for asset processing
         run.googleapis.com/timeout: "900s"
-        
+
     spec:
       # Service account with GCS permissions (NO credential files!)
       serviceAccountName: asset-upload-service@PROJECT_ID.iam.gserviceaccount.com
-      
+
       containerConcurrency: 100
       timeoutSeconds: 900
-      
+
       containers:
-      - image: gcr.io/PROJECT_ID/scope3-upload-assets:latest
-        
-        ports:
-        - containerPort: 3000
-          name: http1
-        
-        env:
-        # Production environment
-        - name: NODE_ENV
-          value: "production"
-        
-        # GCS configuration using Cloud Run's service account
-        - name: GCS_PROJECT_ID
-          value: "PROJECT_ID"
-        - name: GCS_BUCKET_NAME
-          value: "scope3-assets-swift-catfish"
-        
-        # NO GOOGLE_APPLICATION_CREDENTIALS - uses service account!
-        
-        # Monitoring configuration
-        - name: LOG_LEVEL
-          value: "info"
-        
-        # PostHog analytics (from Secret Manager)
-        - name: POSTHOG_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: posthog-api-key
-              key: api-key
-        
-        # Scope3 API configuration (from Secret Manager)
-        - name: SCOPE3_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: scope3-api-key
-              key: api-key
-        
-        # Cache configuration
-        - name: CACHE_TTL_BRAND_AGENTS
-          value: "300000"
-        - name: CACHE_TTL_CAMPAIGNS
-          value: "120000"
-        - name: CACHE_TTL_CREATIVES
-          value: "300000"
-        
-        # Resource requests and limits
-        resources:
-          requests:
-            cpu: "1"
-            memory: "1Gi"
-          limits:
-            cpu: "2"
-            memory: "2Gi"
-        
-        # Health and readiness probes
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 3000
-          initialDelaySeconds: 30
-          periodSeconds: 30
-          timeoutSeconds: 5
-          failureThreshold: 3
-        
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 3000
-          initialDelaySeconds: 10
-          periodSeconds: 10
-          timeoutSeconds: 3
-          failureThreshold: 2
+        - image: gcr.io/PROJECT_ID/scope3-upload-assets:latest
+
+          ports:
+            - containerPort: 3000
+              name: http1
+
+          env:
+            # Production environment
+            - name: NODE_ENV
+              value: "production"
+
+            # GCS configuration using Cloud Run's service account
+            - name: GCS_PROJECT_ID
+              value: "PROJECT_ID"
+            - name: GCS_BUCKET_NAME
+              value: "scope3-assets-swift-catfish"
+
+            # NO GOOGLE_APPLICATION_CREDENTIALS - uses service account!
+
+            # Monitoring configuration
+            - name: LOG_LEVEL
+              value: "info"
+
+            # PostHog analytics (from Secret Manager)
+            - name: POSTHOG_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: posthog-api-key
+                  key: api-key
+
+            # Scope3 API configuration (from Secret Manager)
+            - name: SCOPE3_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: scope3-api-key
+                  key: api-key
+
+            # Cache configuration
+            - name: CACHE_TTL_BRAND_AGENTS
+              value: "300000"
+            - name: CACHE_TTL_CAMPAIGNS
+              value: "120000"
+            - name: CACHE_TTL_CREATIVES
+              value: "300000"
+
+          # Resource requests and limits
+          resources:
+            requests:
+              cpu: "1"
+              memory: "1Gi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+
+          # Health and readiness probes
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 2
