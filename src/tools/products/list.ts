@@ -1,22 +1,11 @@
 import { z } from "zod";
 
-import type { SalesAgent } from "../../services/bigquery-service.js";
-import type {
-  ADCPGetProductsRequest,
-  ADCPGetProductsResponse,
-  ADCPProduct,
-  AggregatedProductsResponse,
-} from "../../types/adcp.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
+import type { ProductDiscoveryQuery } from "../../types/tactics.js";
 
-import { BigQueryService } from "../../services/bigquery-service.js";
-import { MCPClientService } from "../../services/mcp-client-service.js";
+import { ADCPProductDiscoveryService } from "../../services/adcp-product-discovery.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
 import { createLogger } from "../../utils/logging.js";
-
-// Initialize services (these could be injected via dependency injection in a more sophisticated setup)
-const bigQueryService = new BigQueryService();
-const mcpClientService = new MCPClientService();
 
 export const getProductsTool = () => ({
   annotations: {
@@ -32,18 +21,15 @@ export const getProductsTool = () => ({
 
   execute: async (
     args: {
-      brief?: string;
+      brief?: string; // Optional: Natural language campaign description
       customer_id?: string; // Optional: filter by specific customer
       delivery_type?: "guaranteed" | "non_guaranteed";
-      format_ids?: string[];
-      format_types?: string[];
-      formats?: string[];
-      is_fixed_price?: boolean;
+      formats?: ("audio" | "display" | "html5" | "native" | "video")[];
+      inventory_type?: "premium" | "run_of_site" | "targeted_package";
       max_cpm?: number;
       min_cpm?: number;
-      promoted_offering: string;
+      promoted_offering: string; // Required: Clear description of what is being promoted
       publisher_ids?: string[];
-      standard_formats_only?: boolean;
     },
     context: MCPToolExecuteContext,
   ): Promise<string> => {
@@ -58,402 +44,239 @@ export const getProductsTool = () => ({
         );
       }
 
-      // Build ADCP request
-      const adcpRequest: ADCPGetProductsRequest = {
-        brief: args.brief,
-        delivery_type: args.delivery_type,
-        format_ids: args.format_ids,
-        format_types: args.format_types,
+      // Build ProductDiscoveryQuery from args
+      const query: ProductDiscoveryQuery = {
+        campaignBrief: args.promoted_offering, // Use promoted_offering as campaign brief
+        deliveryType: args.delivery_type,
         formats: args.formats,
-        is_fixed_price: args.is_fixed_price,
-        max_cpm: args.max_cpm,
-        min_cpm: args.min_cpm,
-        promoted_offering: args.promoted_offering,
-        publisher_ids: args.publisher_ids,
-        standard_formats_only: args.standard_formats_only,
+        inventoryType: args.inventory_type,
+        maxCpm: args.max_cpm,
+        minCpm: args.min_cpm,
+        publisherIds: args.publisher_ids,
       };
 
-      // Remove undefined values
-      Object.keys(adcpRequest).forEach((key) => {
-        if (adcpRequest[key] === undefined) {
-          delete adcpRequest[key];
-        }
-      });
+      // Initialize ADCP Product Discovery Service
+      context.log?.info("🔍 Initializing ADCP product discovery...");
+      let adcpService: ADCPProductDiscoveryService;
 
-      // Phase 1: Fetch sales agents
-      context.log?.info("🔍 Discovering available sales agents...");
-      logger.logInfo("Fetching sales agents", {
-        customer_id: args.customer_id,
-      });
-      let salesAgents;
       try {
         if (args.customer_id) {
-          salesAgents = await bigQueryService.getSalesAgentsByCustomer(
-            args.customer_id,
+          adcpService = await ADCPProductDiscoveryService.fromDatabase(
+            parseInt(args.customer_id, 10),
           );
         } else {
-          salesAgents = await bigQueryService.getMCPSalesAgents();
+          // Fallback to environment configuration
+          adcpService = ADCPProductDiscoveryService.fromEnv({ debug: false });
         }
+
+        const availableAgents = adcpService.getAvailableAgents();
         context.log?.info(
-          `✅ Found ${salesAgents.length} available sales agents`,
+          `✅ Found ${availableAgents.length} available sales agents`,
         );
-        logger.logInfo("Sales agents fetched", { count: salesAgents.length });
+        logger.logInfo("ADCP service initialized", {
+          agentCount: availableAgents.length,
+          customerFiltered: !!args.customer_id,
+        });
+
+        if (availableAgents.length === 0) {
+          const message = args.customer_id
+            ? `🔍 **No Sales Agents Found for Customer ${args.customer_id}**\n\nNo ADCP-enabled sales agents found for the specified customer.`
+            : `🔍 **No Sales Agents Found**\n\nNo ADCP-enabled sales agents are currently available.`;
+
+          return createMCPResponse({
+            data: {
+              agentsQueried: 0,
+              customerId: args.customer_id,
+              failedAgents: 0,
+              products: [],
+              query: args.promoted_offering,
+              successfulAgents: 0,
+              totalProducts: 0,
+            },
+            message,
+            success: true,
+          });
+        }
       } catch (error) {
-        context.log?.error("❌ Failed to fetch sales agents");
+        context.log?.error("❌ Failed to initialize ADCP service");
         logger.logToolError(error, {
-          context: "fetching_sales_agents",
+          context: "adcp_initialization",
           startTime,
         });
         throw new Error(
-          `Failed to query sales agents from BigQuery: ${error instanceof Error ? error.message : String(error)}`,
+          `Failed to initialize ADCP product discovery: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
 
-      if (salesAgents.length === 0) {
-        const message = args.customer_id
-          ? `🔍 **No Sales Agents Found for Customer ${args.customer_id}**\n\nNo MCP-enabled sales agents found for the specified customer.`
-          : `🔍 **No Sales Agents Found**\n\nNo MCP-enabled sales agents are currently available.`;
-
-        return createMCPResponse({
-          data: {
-            agentsQueried: 0,
-            customerId: args.customer_id,
-            failedAgents: 0,
-            products: [],
-            query: args.promoted_offering,
-            successfulAgents: 0,
-            totalProducts: 0,
-          },
-          message,
-          success: true,
-        });
-      }
-
-      // Phase 2: Query sales agents for products
+      // Discover products using ADCP service
+      const availableAgents = adcpService.getAvailableAgents();
       context.log?.info(
-        `🚀 Querying ${salesAgents.length} sales agents for "${args.promoted_offering}"`,
+        `🚀 Querying ${availableAgents.length} sales agents for "${args.promoted_offering}"`,
       );
-      logger.logInfo("Querying sales agents for products", {
-        agent_count: salesAgents.length,
-        promoted_offering: args.promoted_offering,
+      logger.logInfo("Starting ADCP product discovery", {
+        agentCount: availableAgents.length,
+        promotedOffering: args.promoted_offering,
       });
 
       // Report initial progress
       await context.reportProgress?.({
         progress: 0,
-        total: salesAgents.length,
+        total: availableAgents.length,
       });
 
-      // Create individual promises to track progress
-      let completedCount = 0;
-      const progressUpdates: string[] = [];
+      // Execute product discovery via ADCP service
+      const discoveryResult = await adcpService.discoverProducts(query);
 
-      const trackProgress = async (
-        agent: SalesAgent,
-        promise: Promise<ADCPGetProductsResponse>,
-      ) => {
-        try {
-          const result = await promise;
-          completedCount++;
-          const progressMessage = `✅ ${agent.name} responded with ${result.products?.length || 0} products`;
-          progressUpdates.push(progressMessage);
-
-          // Log successful agent response
-          context.log?.info(
-            `📦 ${agent.name}: Found ${result.products?.length || 0} products`,
-          );
-
-          await context.reportProgress?.({
-            progress: completedCount,
-            total: salesAgents.length,
-          });
-          return { agent, response: result, success: true };
-        } catch (error) {
-          completedCount++;
-          const errorMessage = `❌ ${agent.name} failed: ${error instanceof Error ? error.message : String(error)}`;
-          progressUpdates.push(errorMessage);
-
-          // Log failed agent response
-          context.log?.warn(
-            `⚠️ ${agent.name}: ${error instanceof Error ? error.message : String(error)}`,
-          );
-
-          await context.reportProgress?.({
-            progress: completedCount,
-            total: salesAgents.length,
-          });
-          return {
-            agent,
-            error: error instanceof Error ? error.message : String(error),
-            success: false,
-          };
-        }
-      };
-
-      const agentPromises = salesAgents.map(async (agent) => {
-        const promise = mcpClientService.callGetProducts(agent, adcpRequest);
-        return trackProgress(agent, promise);
+      // Report completion
+      await context.reportProgress?.({
+        progress: availableAgents.length,
+        total: availableAgents.length,
       });
-
-      const results = await Promise.allSettled(agentPromises);
 
       // Process results
-      const successful: ADCPGetProductsResponse[] = [];
-      const failed: { agent: SalesAgent; error: string }[] = [];
+      const { agentResults, products } = discoveryResult;
+      const successfulAgents = agentResults.filter((r) => r.success).length;
+      const failedAgents = agentResults.filter((r) => !r.success).length;
 
-      results.forEach((result) => {
-        if (result.status === "fulfilled") {
-          if (result.value.success && result.value.response) {
-            successful.push(result.value.response);
-          } else {
-            failed.push({
-              agent: result.value.agent,
-              error: result.value.error || "Unknown error",
-            });
-          }
-        } else {
-          // This shouldn't happen since we're catching errors in trackProgress
-          failed.push({
-            agent: {
-              agent_uri: "",
-              auth_token: "",
-              customer_id: "",
-              name: "Unknown",
-              principal_id: "",
-              protocol: "",
-            },
-            error: result.reason?.message || "Promise rejected",
-          });
-        }
+      // Log results
+      logger.logInfo("ADCP product discovery completed", {
+        agentsQueried: agentResults.length,
+        failedAgents,
+        successfulAgents,
+        totalProducts: products.length,
       });
 
-      // Phase 3: Process and aggregate results
-      context.log?.info(
-        `🔄 Processing results from ${successful.length} successful agents...`,
-      );
-
-      // Log detailed results
-      logger.logSalesAgentResults({ failed, successful });
-
-      // Aggregate products from all successful responses
-      const allProducts = successful.flatMap((response) =>
-        response.products.map((product: ADCPProduct) => ({
-          ...product,
-          // Add source information to each product
-          source_agent: response.sales_agent.name,
-          source_agent_id: response.sales_agent.principal_id,
-        })),
-      );
-
       // Calculate summary statistics
-      const guaranteedProducts = allProducts.filter(
-        (p) => p.delivery_type === "guaranteed",
+      const guaranteedProducts = products.filter(
+        (p) => p.deliveryType === "guaranteed",
       ).length;
-      const nonGuaranteedProducts = allProducts.filter(
-        (p) => p.delivery_type === "non_guaranteed",
+      const nonGuaranteedProducts = products.filter(
+        (p) => p.deliveryType === "non_guaranteed",
       ).length;
       const uniquePublishers = new Set(
-        allProducts
-          .filter((p) => p.publisher_name)
-          .map((p) => p.publisher_name),
+        products.map((p) => p.publisherName).filter(Boolean),
       ).size;
       const availableFormats = Array.from(
-        new Set(allProducts.flatMap((p) => p.formats || [])),
+        new Set(products.flatMap((p) => p.formats || [])),
       );
 
       // Calculate price statistics
-      const cpmPrices = allProducts
-        .map(
-          (p) =>
-            p.pricing?.cpm ||
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (p.pricing as any)?.fixed_cpm ||
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (p.pricing as any)?.target_cpm,
-        )
+      const cpmPrices = products
+        .map((p) => p.basePricing?.targetCpm || p.basePricing?.fixedCpm)
         .filter(Boolean) as number[];
 
       const priceRange =
         cpmPrices.length > 0
           ? {
-              avg_cpm: cpmPrices.reduce((a, b) => a + b, 0) / cpmPrices.length,
-              max_cpm: Math.max(...cpmPrices),
-              min_cpm: Math.min(...cpmPrices),
+              avgCpm: cpmPrices.reduce((a, b) => a + b, 0) / cpmPrices.length,
+              maxCpm: Math.max(...cpmPrices),
+              minCpm: Math.min(...cpmPrices),
             }
           : undefined;
 
       const duration = Date.now() - startTime;
 
-      // Phase 4: Generate final summary
-      context.log?.info(
-        `📊 Generating summary for ${allProducts.length} total products...`,
-      );
-
-      // Build response
-      const _response: AggregatedProductsResponse = {
-        agent_responses: successful,
-        failed_agents: failed.length,
-        failures: failed.map((f) => ({
-          agent_name: f.agent.name,
-          error: f.error,
-          principal_id: f.agent.principal_id,
-        })),
-        message: `Found ${allProducts.length} products from ${successful.length} sales agents`,
-        products: allProducts,
-        successful_agents: successful.length,
-        summary: {
-          formats_available: availableFormats,
-          guaranteed_products: guaranteedProducts,
-          non_guaranteed_products: nonGuaranteedProducts,
-          price_range: priceRange,
-          unique_publishers: uniquePublishers,
-        },
-        total_agents_queried: salesAgents.length,
-        total_products: allProducts.length,
-      };
-
-      // Format human-readable response
+      // Generate human-readable summary
       let summary = `🛒 **Product Discovery Results**\n\n`;
       summary += `**Query:** "${args.promoted_offering}"${args.brief ? ` - ${args.brief}` : ""}\n\n`;
 
-      // Show progress updates if we have them
-      if (progressUpdates.length > 0) {
-        summary += `## 🚀 **Discovery Progress**\n`;
-        progressUpdates.forEach((update) => {
-          summary += `${update}\n`;
-        });
-        summary += `\n`;
-      }
+      summary += `## 🚀 **Discovery Progress**\n`;
+      agentResults.forEach((result) => {
+        if (result.success) {
+          summary += `✅ ${result.agentName} found ${result.productCount} products\n`;
+        } else {
+          summary += `❌ ${result.agentName} failed: ${result.error}\n`;
+        }
+      });
 
-      summary += `## 📊 **Summary**\n`;
-      summary += `• **Total Products:** ${allProducts.length}\n`;
-      summary += `• **Sales Agents Queried:** ${salesAgents.length}\n`;
-      summary += `• **Successful Responses:** ${successful.length}\n`;
-      if (failed.length > 0) {
-        summary += `• **Failed Responses:** ${failed.length}\n`;
-      }
+      summary += `\n## 📊 **Summary**\n`;
+      summary += `• **Total Products:** ${products.length}\n`;
+      summary += `• **Sales Agents Queried:** ${agentResults.length}\n`;
+      summary += `• **Successful Responses:** ${successfulAgents}\n`;
+      summary += `• **Failed Responses:** ${failedAgents}\n`;
       summary += `• **Unique Publishers:** ${uniquePublishers}\n`;
       summary += `• **Guaranteed Products:** ${guaranteedProducts}\n`;
       summary += `• **Non-Guaranteed Products:** ${nonGuaranteedProducts}\n`;
-
-      if (priceRange) {
-        summary += `• **Price Range:** $${priceRange.min_cpm.toFixed(2)} - $${priceRange.max_cpm.toFixed(2)} CPM\n`;
-        summary += `• **Average CPM:** $${priceRange.avg_cpm.toFixed(2)}\n`;
-      }
+      summary += `• **Query Duration:** ${duration}ms\n`;
 
       if (availableFormats.length > 0) {
         summary += `• **Available Formats:** ${availableFormats.join(", ")}\n`;
       }
 
-      summary += `• **Query Duration:** ${duration}ms\n\n`;
+      if (priceRange) {
+        summary += `• **Price Range:** $${priceRange.minCpm.toFixed(2)} - $${priceRange.maxCpm.toFixed(2)} CPM (avg: $${priceRange.avgCpm.toFixed(2)})\n`;
+      }
 
-      // Phase 5: Discovery completed
-      context.log?.info(
-        `🎉 Product discovery completed! Found ${allProducts.length} products from ${successful.length}/${salesAgents.length} agents (${duration}ms)`,
-      );
+      // Add failed queries section if any
+      const failures = agentResults.filter((r) => !r.success);
+      if (failures.length > 0) {
+        summary += `\n## ⚠️ **Failed Queries**\n\n`;
+        failures.forEach((failure) => {
+          summary += `• **${failure.agentName}:** ${failure.error}\n`;
+        });
+      }
+
+      summary += `\n**Next Steps:**\n`;
+      summary += `• Review product details and pricing\n`;
+      summary += `• Filter results by delivery type or format if needed\n`;
+      summary += `• Contact specific sales agents for detailed proposals\n`;
+      summary += `• Consider using create_inventory_option to set up targeting strategies\n`;
 
       // Log successful completion
       logger.logToolSuccess({
         metadata: {
-          failed_agents: failed.length,
-          successful_agents: successful.length,
-          total_products: allProducts.length,
-          unique_publishers: uniquePublishers,
+          agentsQueried: agentResults.length,
+          duration,
+          failedAgents,
+          productsFound: products.length,
+          successfulAgents,
         },
-        resultSummary: `Found ${allProducts.length} products from ${successful.length}/${salesAgents.length} agents`,
+        resultSummary: `Found ${products.length} products from ${successfulAgents}/${agentResults.length} agents (${duration}ms)`,
         startTime,
       });
 
-      // Group products by sales agent for display
-      if (successful.length > 0) {
-        summary += `## 🏪 **Products by Sales Agent**\n\n`;
-
-        successful.forEach((agentResponse) => {
-          summary += `### 🤖 **${agentResponse.sales_agent.name}**\n`;
-          summary += `${agentResponse.products.length} products found\n\n`;
-
-          if (agentResponse.products.length > 0) {
-            agentResponse.products
-              .slice(0, 5)
-              .forEach((product: ADCPProduct, index: number) => {
-                summary += `${index + 1}. **${product.name}**`;
-                if (product.publisher_name)
-                  summary += ` (${product.publisher_name})`;
-                summary += `\n`;
-
-                if (product.description) {
-                  summary += `   ${product.description}\n`;
-                }
-
-                if (
-                  product.pricing &&
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  (product.pricing.cpm || (product.pricing as any)?.fixed_cpm)
-                ) {
-                  const cpm =
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    product.pricing.cpm || (product.pricing as any)?.fixed_cpm;
-                  summary += `   💰 $${cpm?.toFixed(2)} CPM\n`;
-                }
-
-                if (product.formats?.length) {
-                  summary += `   📺 ${product.formats.join(", ")}\n`;
-                }
-
-                summary += `\n`;
-              });
-
-            if (agentResponse.products.length > 5) {
-              summary += `   ... and ${agentResponse.products.length - 5} more products\n\n`;
-            }
-          }
-
-          summary += `---\n\n`;
-        });
-      }
-
-      // Show any failures
-      if (failed.length > 0) {
-        summary += `## ⚠️ **Failed Queries**\n\n`;
-        failed.forEach((failure) => {
-          summary += `• **${failure.agent.name}:** ${failure.error}\n`;
-        });
-        summary += `\n`;
-      }
-
-      summary += `**Next Steps:**\n`;
-      summary += `• Review product details and pricing\n`;
-      summary += `• Filter results by delivery type or format if needed\n`;
-      summary += `• Contact specific sales agents for detailed proposals\n`;
-      summary += `• Consider using create_inventory_option to set up targeting strategies`;
-
       return createMCPResponse({
         data: {
-          agentResponses: successful,
-          agentsQueried: salesAgents.length,
-          brief: args.brief,
+          agentResponses: agentResults,
+          agentsQueried: agentResults.length,
           duration,
-          failedAgents: failed.length,
-          failures: failed.map((f) => ({
-            agentName: f.agent.name,
-            error: f.error,
-            principalId: f.agent.principal_id,
+          failedAgents,
+          failures: failures.map((f) => ({
+            agentName: f.agentName,
+            error: f.error || "Unknown error",
+            principalId: f.agentId,
           })),
           filters: {
-            customer_id: args.customer_id,
-            delivery_type: args.delivery_type,
-            format_ids: args.format_ids,
-            format_types: args.format_types,
+            deliveryType: args.delivery_type,
             formats: args.formats,
-            is_fixed_price: args.is_fixed_price,
-            max_cpm: args.max_cpm,
-            min_cpm: args.min_cpm,
-            publisher_ids: args.publisher_ids,
-            standard_formats_only: args.standard_formats_only,
+            inventoryType: args.inventory_type,
+            maxCpm: args.max_cpm,
+            minCpm: args.min_cpm,
+            publisherIds: args.publisher_ids,
           },
-          products: allProducts,
+          products: products.map((p) => ({
+            ...p,
+            created_at: p.createdAt.toISOString(),
+            delivery_type: p.deliveryType,
+            description: p.description,
+            formats: p.formats,
+            // Convert back to the expected format for the response
+            id: p.id,
+            inventory_type: p.inventoryType,
+            name: p.name,
+            pricing: {
+              fixed_cpm: p.basePricing.fixedCpm,
+              floor_cpm: p.basePricing.floorCpm,
+              model: p.basePricing.model,
+              target_cpm: p.basePricing.targetCpm,
+            },
+            publisher_id: p.publisherId,
+            publisher_name: p.publisherName,
+            supported_targeting: p.supportedTargeting,
+            updated_at: p.updatedAt.toISOString(),
+          })),
           query: args.promoted_offering,
-          successfulAgents: successful.length,
+          successfulAgents,
           summary: {
             availableFormats,
             guaranteedProducts,
@@ -461,7 +284,7 @@ export const getProductsTool = () => ({
             priceRange,
             uniquePublishers,
           },
-          totalProducts: allProducts.length,
+          totalProducts: products.length,
         },
         message: summary,
         success: true,
@@ -471,9 +294,6 @@ export const getProductsTool = () => ({
       throw new Error(
         `Failed to discover products from sales agents: ${error instanceof Error ? error.message : String(error)}`,
       );
-    } finally {
-      // Clean up MCP connections (optional, could be done on process exit)
-      // await mcpClientService.closeAll();
     }
   },
 
@@ -482,31 +302,25 @@ export const getProductsTool = () => ({
     brief: z
       .string()
       .optional()
-      .describe("Natural language description of campaign requirements"),
+      .describe(
+        "Optional: Natural language description of campaign requirements",
+      ),
     customer_id: z
       .string()
       .optional()
-      .describe("Filter to sales agents for a specific customer ID"),
+      .describe("Optional: Filter to sales agents for a specific customer ID"),
     delivery_type: z
       .enum(["guaranteed", "non_guaranteed"])
       .optional()
       .describe("Filter by delivery guarantee type"),
-    format_ids: z
-      .array(z.string())
-      .optional()
-      .describe("Specific format IDs to filter by"),
-    format_types: z
-      .array(z.string())
-      .optional()
-      .describe("Format categories to include"),
     formats: z
-      .array(z.string())
+      .array(z.enum(["audio", "display", "html5", "native", "video"]))
       .optional()
-      .describe("Specific format types (e.g., ['video', 'display'])"),
-    is_fixed_price: z
-      .boolean()
+      .describe("Specific creative formats to search for"),
+    inventory_type: z
+      .enum(["premium", "run_of_site", "targeted_package"])
       .optional()
-      .describe("Filter for fixed pricing vs auction"),
+      .describe("Type of inventory placement"),
     max_cpm: z.number().optional().describe("Maximum CPM price filter"),
     min_cpm: z.number().optional().describe("Minimum CPM price filter"),
     promoted_offering: z
@@ -519,9 +333,5 @@ export const getProductsTool = () => ({
       .array(z.string())
       .optional()
       .describe("Specific publisher IDs to search within"),
-    standard_formats_only: z
-      .boolean()
-      .optional()
-      .describe("Restrict to standard format types only"),
   }),
 });
