@@ -190,27 +190,11 @@ components:
       type: http
 info:
   description: >-
-    **Model Context Protocol (MCP) Server for Agentic Advertising Campaigns**
-    
-    
-    This documentation describes the MCP tools provided by the Scope3 Campaign API server.
-    This is NOT a REST API - it's an MCP server that provides tools for AI agents to manage
-    advertising campaigns via the Model Context Protocol.
-    
-    
-    **Important**: All operations are performed via MCP tool calls, not HTTP requests.
-    This OpenAPI specification is auto-generated for documentation purposes only.
+    API for managing agentic advertising campaigns executed via AdCP using Scope3 media quality,
+    synthetic audience, cross-publisher frequency capping, custom signals integration, and
+    intelligent allocation.
 
 
-    ## MCP Integration
-
-    Connect to this server using any MCP client:
-    
-    - **Claude Desktop**: Add to claude_desktop_config.json
-    - **Custom Clients**: Use `@modelcontextprotocol/sdk` 
-    - **HTTP Transport**: Available via Server-Sent Events (SSE)
-    
-    
     ## Key Concepts
 
     - **Brand Agent**: Your advertiser account - the top-level container for campaigns, creatives,
@@ -271,21 +255,18 @@ info:
     automatically.
 
 
-    ## Getting Started with MCP Tools
+    ## Getting Started
 
-    1. **Setup MCP Connection**: Connect your AI client to this MCP server
+    1. Create a Brand Agent (your advertiser account)
 
-    2. **Create Brand Agent**: Use `create_brand_agent` tool
+    2. Upload Creative assets to the shared library
 
-    3. **Upload Assets**: Use `assets_upload` tool for creative files with automatic validation:
-       - Image: 10MB max | Video: 100MB max | Audio: 50MB max | Logo: 5MB max | Font: 2MB max
+    3. Create Campaigns using natural language prompts
 
-    4. **Create Campaigns**: Use `create_campaign` tool with natural language prompts
-
-    5. **Monitor Performance**: Use reporting tools for AI-powered optimization insights
+    4. Monitor AI-powered optimization and performance
 
 
-    For detailed guides, see our [documentation](https://docs.agentic.scope3.com).
+    For detailed guides, see our [documentation](https://docs.scope3.com).
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
@@ -625,10 +606,8 @@ paths:
   /assets-upload:
     post:
       description: Upload creative assets (images, videos, audio, logos, fonts) directly to Google Cloud
-        Storage via MCP tool. Accepts base64-encoded file data (no data URI prefix) and returns 
-        public URLs for distribution. Automatic validation enforces file size limits - Image (10MB), 
-        Video (100MB), Audio (50MB), Logo (5MB), Font (2MB). Files are organized hierarchically 
-        by customer and brand agent ID.
+        Storage. Accepts base64-encoded file data and returns public URLs for distribution to sales
+        agents. Assets are automatically validated for type and size constraints.
       operationId: assets_upload
       summary: Upload Creative Assets to GCS
       tags:
