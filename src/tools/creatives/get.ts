@@ -5,9 +5,9 @@ import type { Scope3ApiClient } from "../../client/scope3-client.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 import type { CreativeSyncStatus } from "../../types/notifications.js";
 
-import { requireSessionAuth } from "../../utils/auth.js";
 import { AuthenticationService } from "../../services/auth-service.js";
 import { CreativeSyncService } from "../../services/creative-sync-service.js";
+import { requireSessionAuth } from "../../utils/auth.js";
 import { createMCPResponse } from "../../utils/error-handling.js";
 
 export const creativeGetTool = (client: Scope3ApiClient) => ({
