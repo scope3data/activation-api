@@ -11,6 +11,7 @@ const mockClient = {
 
 const mockContext: MCPToolExecuteContext = {
   session: {
+    customerId: 123,
     scope3ApiKey: "test-api-key",
   },
 };

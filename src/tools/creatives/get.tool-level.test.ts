@@ -27,6 +27,7 @@ vi.mock("../../services/creative-sync-service.js");
 
 const mockContext: MCPToolExecuteContext = {
   session: {
+    customerId: 123,
     scope3ApiKey: "test-api-key",
   },
 };
