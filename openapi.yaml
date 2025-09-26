@@ -2905,31 +2905,21 @@ paths:
               properties:
                 brief:
                   type: string
-                  description: Natural language description of campaign requirements
+                  description: "Optional: Natural language description of campaign requirements"
                 customer_id:
                   type: string
-                  description: Filter to sales agents for a specific customer ID
+                  description: "Optional: Filter to sales agents for a specific customer ID"
                 delivery_type:
                   type: string
                   description: Filter by delivery guarantee type
-                format_ids:
-                  items:
-                    type: string
-                  type: array
-                  description: Specific format IDs to filter by
-                format_types:
-                  items:
-                    type: string
-                  type: array
-                  description: Format categories to include
                 formats:
                   items:
                     type: string
                   type: array
-                  description: Specific format types (e.g., ['video', 'display'])
-                is_fixed_price:
-                  type: boolean
-                  description: Filter for fixed pricing vs auction
+                  description: Specific creative formats to search for
+                inventory_type:
+                  type: string
+                  description: Type of inventory placement
                 max_cpm:
                   type: number
                   description: Maximum CPM price filter
@@ -2944,9 +2934,6 @@ paths:
                     type: string
                   type: array
                   description: Specific publisher IDs to search within
-                standard_formats_only:
-                  type: boolean
-                  description: Restrict to standard format types only
               required:
                 - promoted_offering
               type: object
