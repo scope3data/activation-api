@@ -1,7 +1,10 @@
 import { z } from "zod";
 
+import type { SalesAgent } from "../../services/bigquery-service.js";
 import type {
   ADCPGetProductsRequest,
+  ADCPGetProductsResponse,
+  ADCPProduct,
   AggregatedProductsResponse,
 } from "../../types/adcp.js";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
@@ -77,7 +80,8 @@ export const getProductsTool = () => ({
         }
       });
 
-      // Get sales agents from BigQuery
+      // Phase 1: Fetch sales agents
+      context.log?.info("🔍 Discovering available sales agents...");
       logger.logInfo("Fetching sales agents", {
         customer_id: args.customer_id,
       });
@@ -90,8 +94,12 @@ export const getProductsTool = () => ({
         } else {
           salesAgents = await bigQueryService.getMCPSalesAgents();
         }
+        context.log?.info(
+          `✅ Found ${salesAgents.length} available sales agents`,
+        );
         logger.logInfo("Sales agents fetched", { count: salesAgents.length });
       } catch (error) {
+        context.log?.error("❌ Failed to fetch sales agents");
         logger.logToolError(error, {
           context: "fetching_sales_agents",
           startTime,
@@ -121,23 +129,115 @@ export const getProductsTool = () => ({
         });
       }
 
-      // Call get_products on all sales agents concurrently
+      // Phase 2: Query sales agents for products
+      context.log?.info(
+        `🚀 Querying ${salesAgents.length} sales agents for "${args.promoted_offering}"`,
+      );
       logger.logInfo("Querying sales agents for products", {
         agent_count: salesAgents.length,
         promoted_offering: args.promoted_offering,
       });
-      const { failed, successful } =
-        await mcpClientService.callGetProductsMultiple(
-          salesAgents,
-          adcpRequest,
-        );
+
+      // Report initial progress
+      await context.reportProgress?.({
+        progress: 0,
+        total: salesAgents.length,
+      });
+
+      // Create individual promises to track progress
+      let completedCount = 0;
+      const progressUpdates: string[] = [];
+
+      const trackProgress = async (
+        agent: SalesAgent,
+        promise: Promise<ADCPGetProductsResponse>,
+      ) => {
+        try {
+          const result = await promise;
+          completedCount++;
+          const progressMessage = `✅ ${agent.name} responded with ${result.products?.length || 0} products`;
+          progressUpdates.push(progressMessage);
+
+          // Log successful agent response
+          context.log?.info(
+            `📦 ${agent.name}: Found ${result.products?.length || 0} products`,
+          );
+
+          await context.reportProgress?.({
+            progress: completedCount,
+            total: salesAgents.length,
+          });
+          return { agent, response: result, success: true };
+        } catch (error) {
+          completedCount++;
+          const errorMessage = `❌ ${agent.name} failed: ${error instanceof Error ? error.message : String(error)}`;
+          progressUpdates.push(errorMessage);
+
+          // Log failed agent response
+          context.log?.warn(
+            `⚠️ ${agent.name}: ${error instanceof Error ? error.message : String(error)}`,
+          );
+
+          await context.reportProgress?.({
+            progress: completedCount,
+            total: salesAgents.length,
+          });
+          return {
+            agent,
+            error: error instanceof Error ? error.message : String(error),
+            success: false,
+          };
+        }
+      };
+
+      const agentPromises = salesAgents.map(async (agent) => {
+        const promise = mcpClientService.callGetProducts(agent, adcpRequest);
+        return trackProgress(agent, promise);
+      });
+
+      const results = await Promise.allSettled(agentPromises);
+
+      // Process results
+      const successful: ADCPGetProductsResponse[] = [];
+      const failed: { agent: SalesAgent; error: string }[] = [];
+
+      results.forEach((result) => {
+        if (result.status === "fulfilled") {
+          if (result.value.success && result.value.response) {
+            successful.push(result.value.response);
+          } else {
+            failed.push({
+              agent: result.value.agent,
+              error: result.value.error || "Unknown error",
+            });
+          }
+        } else {
+          // This shouldn't happen since we're catching errors in trackProgress
+          failed.push({
+            agent: {
+              agent_uri: "",
+              auth_token: "",
+              customer_id: "",
+              name: "Unknown",
+              principal_id: "",
+              protocol: "",
+            },
+            error: result.reason?.message || "Promise rejected",
+          });
+        }
+      });
+
+      // Phase 3: Process and aggregate results
+      context.log?.info(
+        `🔄 Processing results from ${successful.length} successful agents...`,
+      );
 
       // Log detailed results
       logger.logSalesAgentResults({ failed, successful });
 
       // Aggregate products from all successful responses
       const allProducts = successful.flatMap((response) =>
-        response.products.map((product) => ({
+        response.products.map((product: ADCPProduct) => ({
           ...product,
           // Add source information to each product
           source_agent: response.sales_agent.name,
@@ -184,6 +284,11 @@ export const getProductsTool = () => ({
 
       const duration = Date.now() - startTime;
 
+      // Phase 4: Generate final summary
+      context.log?.info(
+        `📊 Generating summary for ${allProducts.length} total products...`,
+      );
+
       // Build response
       const _response: AggregatedProductsResponse = {
         agent_responses: successful,
@@ -211,6 +316,15 @@ export const getProductsTool = () => ({
       let summary = `🛒 **Product Discovery Results**\n\n`;
       summary += `**Query:** "${args.promoted_offering}"${args.brief ? ` - ${args.brief}` : ""}\n\n`;
 
+      // Show progress updates if we have them
+      if (progressUpdates.length > 0) {
+        summary += `## 🚀 **Discovery Progress**\n`;
+        progressUpdates.forEach((update) => {
+          summary += `${update}\n`;
+        });
+        summary += `\n`;
+      }
+
       summary += `## 📊 **Summary**\n`;
       summary += `• **Total Products:** ${allProducts.length}\n`;
       summary += `• **Sales Agents Queried:** ${salesAgents.length}\n`;
@@ -233,6 +347,11 @@ export const getProductsTool = () => ({
 
       summary += `• **Query Duration:** ${duration}ms\n\n`;
 
+      // Phase 5: Discovery completed
+      context.log?.info(
+        `🎉 Product discovery completed! Found ${allProducts.length} products from ${successful.length}/${salesAgents.length} agents (${duration}ms)`,
+      );
+
       // Log successful completion
       logger.logToolSuccess({
         metadata: {
@@ -254,33 +373,35 @@ export const getProductsTool = () => ({
           summary += `${agentResponse.products.length} products found\n\n`;
 
           if (agentResponse.products.length > 0) {
-            agentResponse.products.slice(0, 5).forEach((product, index) => {
-              summary += `${index + 1}. **${product.name}**`;
-              if (product.publisher_name)
-                summary += ` (${product.publisher_name})`;
-              summary += `\n`;
+            agentResponse.products
+              .slice(0, 5)
+              .forEach((product: ADCPProduct, index: number) => {
+                summary += `${index + 1}. **${product.name}**`;
+                if (product.publisher_name)
+                  summary += ` (${product.publisher_name})`;
+                summary += `\n`;
 
-              if (product.description) {
-                summary += `   ${product.description}\n`;
-              }
+                if (product.description) {
+                  summary += `   ${product.description}\n`;
+                }
 
-              if (
-                product.pricing &&
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (product.pricing.cpm || (product.pricing as any)?.fixed_cpm)
-              ) {
-                const cpm =
+                if (
+                  product.pricing &&
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  product.pricing.cpm || (product.pricing as any)?.fixed_cpm;
-                summary += `   💰 $${cpm?.toFixed(2)} CPM\n`;
-              }
+                  (product.pricing.cpm || (product.pricing as any)?.fixed_cpm)
+                ) {
+                  const cpm =
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    product.pricing.cpm || (product.pricing as any)?.fixed_cpm;
+                  summary += `   💰 $${cpm?.toFixed(2)} CPM\n`;
+                }
 
-              if (product.formats?.length) {
-                summary += `   📺 ${product.formats.join(", ")}\n`;
-              }
+                if (product.formats?.length) {
+                  summary += `   📺 ${product.formats.join(", ")}\n`;
+                }
 
-              summary += `\n`;
-            });
+                summary += `\n`;
+              });
 
             if (agentResponse.products.length > 5) {
               summary += `   ... and ${agentResponse.products.length - 5} more products\n\n`;
