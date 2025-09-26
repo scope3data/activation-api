@@ -182,7 +182,7 @@ describe("create_tactic Tool", () => {
             brandStoryId: "story_123",
             budgetAllocation: {
               amount: 1000,
-              currency: "USD", 
+              currency: "USD",
               pacing: "even",
             },
             campaignId: "campaign_123",
@@ -196,7 +196,7 @@ describe("create_tactic Tool", () => {
 
       // Verify BigQuery service was never called
       expect(mockBigQueryService.createTactic).not.toHaveBeenCalled();
-      
+
       delete process.env.SCOPE3_API_KEY;
     });
   });
