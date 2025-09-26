@@ -105,8 +105,8 @@ export default defineConfig({
       "node_modules/**",
       "dist/**",
       "**/*.d.ts",
-      // Exclude contract test files - they are libraries, not direct test suites
-      "src/__tests__/contracts/**/*.contract.test.ts",
+      // Exclude contract definition files - they are libraries, not direct test suites
+      "src/__tests__/contracts/**/*.contracts.ts",
     ],
 
     // Global test configuration

@@ -10,7 +10,7 @@ import {
   progressScenarios,
   simulateProgressScenario,
   testProgressNotificationContract,
-} from "../contracts/progress-notification.contract.test.js";
+} from "../contracts/progress-notification.contracts.js";
 
 describe("Progress Notification Contract Validation", () => {
   // Test that our test double implements the contract correctly
