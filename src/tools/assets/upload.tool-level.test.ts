@@ -16,11 +16,25 @@ vi.mock("../../utils/auth.js", () => ({
   requireSessionAuth: vi.fn(),
 }));
 
+// Mock the AssetStorageService at the top level
+vi.mock("../../services/asset-storage-service.js", () => ({
+  AssetStorageService: vi.fn(),
+}));
+
+// Mock validation middleware
+vi.mock("../../middleware/validation-middleware.js", () => ({
+  validateUploadRequest: vi.fn(),
+}));
+
 describe("Assets Upload Tool", () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockStorageService: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockRequireSessionAuth: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let MockAssetStorageService: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let mockValidateUploadRequest: any;
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -34,16 +48,28 @@ describe("Assets Upload Tool", () => {
       customerId: 123,
     });
 
-    // Create a mock storage service
+    // Create a mock storage service instance
     mockStorageService = {
       uploadAsset: vi.fn(),
       validateAsset: vi.fn(),
     };
 
-    // Mock the AssetStorageService constructor to return our mock
-    vi.doMock("../../services/asset-storage-service.js", () => ({
-      AssetStorageService: vi.fn(() => mockStorageService),
-    }));
+    // Setup the AssetStorageService constructor mock
+    MockAssetStorageService = vi.mocked(
+      (await import("../../services/asset-storage-service.js"))
+        .AssetStorageService,
+    );
+    MockAssetStorageService.mockImplementation(() => mockStorageService);
+
+    // Setup validation middleware mock
+    mockValidateUploadRequest = vi.mocked(
+      (await import("../../middleware/validation-middleware.js"))
+        .validateUploadRequest,
+    );
+    // Default to pass-through the input args for most tests
+    mockValidateUploadRequest.mockImplementation((args) =>
+      Promise.resolve(args),
+    );
   });
 
   it("should upload single asset successfully", async () => {
