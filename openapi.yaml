@@ -2467,6 +2467,68 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /signals-get-accessible-accounts:
+    post:
+      description: Get customer accounts that your provider account can manage signals/segments for
+      operationId: signals_get_accessible_accounts
+      summary: Get Accessible Accounts
+      tags:
+        - Signals
+      x-llm-hints:
+        - Use this tool when user wants to get customer accounts that your provider account can
+          manage signals/segments for
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties: {}
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /brand-agent-get:
     post:
       description: Get detailed information about a specific brand agent (advertiser account) by ID.
@@ -2715,68 +2777,6 @@ paths:
                   description: Optional search term to filter seats by name
               required:
                 - dsp
-              type: object
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              examples:
-                success:
-                  summary: Successful operation
-                  value:
-                    data: {}
-                    message: Operation completed successfully
-                    success: true
-              schema:
-                properties:
-                  data:
-                    type: object
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                type: object
-          description: Successful response
-        "400":
-          content:
-            application/json:
-              schema:
-                properties:
-                  details:
-                    type: object
-                  error:
-                    type: string
-                type: object
-          description: Bad request
-        "401":
-          content:
-            application/json:
-              schema:
-                properties:
-                  error:
-                    type: string
-                type: object
-          description: Unauthorized
-  /signals-get-partner-seats:
-    post:
-      description: Get brand agent seats (advertisers) accessible to your API key
-      operationId: signals_get_partner_seats
-      summary: Get Partner Seats
-      tags:
-        - Signals
-      x-llm-hints:
-        - Use this tool when user wants to get brand agent seats (advertisers) accessible to your
-          api key
-      requestBody:
-        content:
-          application/json:
-            examples:
-              basic:
-                summary: Basic example
-                value: {}
-            schema:
-              properties: {}
               type: object
         required: true
       responses:

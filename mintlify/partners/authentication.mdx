@@ -6,7 +6,7 @@ icon: "key"
 
 ## Overview
 
-Partners and agent integrations require authentication to access platform resources. This guide covers API key setup and seat access discovery for multi-seat management.
+Partners and agent integrations require authentication to access platform resources. This guide covers API key setup and customer account discovery for multi-account management.
 
 ## API Key Setup
 
@@ -21,16 +21,16 @@ Authorization: Bearer YOUR_API_KEY
 - Get your Scope3 API key: [Get one here](https://scope3.com/integrate/api-keys)
 - Use HTTPS only - never send keys over HTTP
 - Store keys securely and rotate regularly
-- Each API key provides access to specific seats based on your partner configuration
+- Provider API keys provide access to specific customer accounts based on your partner configuration
 </Warning>
 
-## Discovering Accessible Seats
+## Discovering Manageable Customer Accounts
 
-### Check Seat Access
+### Check Customer Access
 
 **MCP Tool**: `signals/get-partner-seats`
 
-Use this tool to discover which brand agent seats your API key can access:
+Use this tool to discover which customer accounts your provider API key can manage data for:
 
 ```json
 {
@@ -40,30 +40,30 @@ Use this tool to discover which brand agent seats your API key can access:
 ```
 
 **Response includes:**
-- Seat ID and display name
-- Brand agent information
-- Access permissions and scope
-- Last activity date
+- Customer account ID and display name
+- Seat identifier for API operations
+- Access granted through provider-customer relationships
+- Management permissions scope
 
-### Using Seat Information
+### Using Customer Account Information
 
-Once you know which seats you can access, you can:
+Once you know which customer accounts you can manage, you can:
 
-**Filter operations by seat:**
+**Filter operations by customer account:**
 ```json
 {
   "tool": "signals/list",
   "parameters": {
-    "seatId": "seat_abc123"
+    "seatId": "seat_123"
   }
 }
 ```
 
-**Access seat-specific resources:**
-- Signals and segments
-- Campaign data
-- Performance metrics
-- Configuration settings
+**Manage customer-specific resources:**
+- Customer signals and segments
+- Campaign configurations
+- Performance data access
+- Account-level settings
 
 ## Authentication Scopes
 
@@ -87,11 +87,11 @@ Partner API keys provide different access levels:
 - Set up webhook endpoints
 - Access audit logs
 
-## Multi-Seat Operations
+## Multi-Customer Operations
 
-When working across multiple seats, operations automatically scope to your accessible seats:
+When working across multiple customer accounts, operations automatically scope to your manageable accounts:
 
-**List all segments across seats:**
+**List all segments across customer accounts:**
 ```json
 {
   "tool": "signals/list",
@@ -99,12 +99,13 @@ When working across multiple seats, operations automatically scope to your acces
 }
 ```
 
-**Results include seat information:**
-- `seatId` - Unique seat identifier
-- `seatName` - Human-readable seat name  
+**Results include customer account information:**
+- `seatId` - Unique seat identifier for API operations
+- `seatName` - Customer account display name  
+- `customerId` - Internal customer account ID
 - Standard resource metadata
 
-This enables you to understand which seat owns each resource and manage targeting at the seat level.
+This enables you to understand which customer account owns each resource and manage data at the account level.
 
 ## Error Handling
 
@@ -122,15 +123,15 @@ This enables you to understand which seat owns each resource and manage targetin
 ```json
 {
   "error": "forbidden", 
-  "message": "API key does not have access to requested seat"
+  "message": "Provider account does not have access to requested customer account"
 }
 ```
 
-### Seat Not Found
+### Customer Account Not Found
 ```json
 {
-  "error": "seat_not_found",
-  "message": "Seat 'seat_xyz' not found or not accessible"
+  "error": "customer_not_found",
+  "message": "Customer account 'seat_xyz' not found or not manageable"
 }
 ```
 

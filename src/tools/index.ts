@@ -76,7 +76,7 @@ import { updateSignalsAgentTool } from "./signals-agents/update.js";
 // Signals
 import { createCustomSignalTool } from "./signals/create.js";
 import { deleteCustomSignalTool } from "./signals/delete.js";
-import { getPartnerSeatsTool } from "./signals/get-partner-seats.js";
+import { getAccessibleAccountsTool } from "./signals/get-accessible-accounts.js";
 import { getCustomSignalTool } from "./signals/get.js";
 import { listCustomSignalsTool } from "./signals/list.js";
 import { updateCustomSignalTool } from "./signals/update.js";
@@ -159,7 +159,7 @@ export const registerTools = (server: FastMCP, client: Scope3ApiClient) => {
   server.addTool(listCustomSignalsTool(client)); // signal/list
   server.addTool(updateCustomSignalTool(client)); // signal/update
   server.addTool(deleteCustomSignalTool(client)); // signal/delete
-  server.addTool(getPartnerSeatsTool(client)); // signals/get-partner-seats
+  server.addTool(getAccessibleAccountsTool(client)); // signals/get-accessible-accounts
 
   // Signals Agents
   server.addTool(registerSignalsAgentTool(client)); // signals-agent/register
@@ -235,12 +235,12 @@ export {
   deleteCustomSignalTool,
   deleteTacticTool,
   exportDataTool,
+  getAccessibleAccountsTool,
   getBrandAgentTool,
   getCampaignSummaryTool,
   getCustomSignalTool,
   // DSP
   getDSPSeatsTool,
-  getPartnerSeatsTool,
   // Prebid
   getPrebidSegmentsTool,
   // Products
