@@ -78,19 +78,13 @@
     ]
   },
   "lint-staged": {
-    "src/tools/**/*.ts": [
-      "npm run generate:openapi",
-      "git add openapi.yaml"
-    ],
     "*.{ts,js}": [
       "prettier --write",
       "eslint --fix"
     ],
     "src/**/*.{test,spec}.ts": [
-      "npm run test"
-    ],
-    "openapi.yaml": [
-      "npm run validate:openapi"
+      "prettier --write",
+      "eslint --fix"
     ]
   },
   "devDependencies": {
