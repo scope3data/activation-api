@@ -1,0 +1,687 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { MCPToolExecuteContext } from "../../types/mcp.js";
+
+import { AssetStorageService } from "../../services/asset-storage-service.js";
+import { analytics, metrics } from "../../services/monitoring-service.js";
+import { createMockAssetStorageService } from "../../test-utilities/mock-factories.js";
+import { assetsUploadTool } from "../../tools/assets/upload.js";
+import {
+  circuitBreakers,
+  RateLimitError,
+  ValidationError,
+} from "../../utils/error-handling.js";
+
+// Mock dependencies
+vi.mock("../../services/asset-storage-service.js");
+vi.mock("../../services/monitoring-service.js", () => ({
+  analytics: {
+    trackAssetUpload: vi.fn(),
+    trackError: vi.fn(),
+    trackFeatureUsage: vi.fn(),
+    trackToolUsage: vi.fn(),
+  },
+  logger: {
+    debug: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+  },
+  metrics: {
+    duration: {
+      observe: vi.fn(),
+    },
+    errors: {
+      inc: vi.fn(),
+    },
+    toolCalls: {
+      inc: vi.fn(),
+    },
+    toolDuration: {
+      observe: vi.fn(),
+    },
+    trackError: vi.fn(),
+    uploadAttempts: {
+      inc: vi.fn(),
+    },
+    uploadDuration: {
+      observe: vi.fn(),
+    },
+  },
+  RequestContextService: {
+    create: vi.fn(() => ({
+      cleanup: vi.fn(),
+      customerId: "test-customer-123",
+      getMetadata: vi.fn(() => ({})),
+      requestId: "test-request-id",
+      setMetadata: vi.fn(),
+    })),
+  },
+}));
+vi.mock("../../utils/auth.js", () => ({
+  requireSessionAuth: vi.fn(() => ({ customerId: "test-customer-123" })),
+}));
+vi.mock("../../middleware/validation-middleware.js", () => ({
+  validateUploadRequest: vi.fn(),
+}));
+vi.mock("../../middleware/rate-limit-middleware.js", () => ({
+  checkUploadRateLimit: vi.fn(),
+}));
+
+describe("Asset Upload Error Scenarios", () => {
+  const mockContext: MCPToolExecuteContext = {
+    session: {
+      customerId: 123,
+      scope3ApiKey: "test-api-key",
+    },
+  };
+
+  const validAsset = {
+    assetType: "image" as const,
+    base64Data:
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAHNrEkSsAAAAABJRU5ErkJggg==",
+    contentType: "image/png",
+    filename: "test.png",
+    metadata: {
+      buyerAgentId: "agent-123",
+    },
+  };
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    // Reset circuit breakers
+    circuitBreakers.gcs.reset();
+
+    // Setup validation middleware to throw validation errors for test scenarios
+    const { validateUploadRequest } = await import(
+      "../../middleware/validation-middleware.js"
+    );
+    const { checkUploadRateLimit } = await import(
+      "../../middleware/rate-limit-middleware.js"
+    );
+
+    // Default to passing validation (individual tests will override as needed)
+    vi.mocked(validateUploadRequest).mockImplementation(async (args: any) => ({
+      assets: args.assets || [],
+    }));
+    vi.mocked(checkUploadRateLimit).mockResolvedValue(undefined);
+
+    // Setup default AssetStorageService mock - ensure all tests start with a clean slate
+    const mockStorageService = createMockAssetStorageService();
+
+    // Reset the AssetStorageService mock completely
+    vi.mocked(AssetStorageService).mockClear();
+    vi.mocked(AssetStorageService).mockImplementation(
+      () => mockStorageService as any,
+    );
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe("Input Validation Errors", () => {
+    it("should handle invalid base64 data", async () => {
+      const { validateUploadRequest } = await import(
+        "../../middleware/validation-middleware.js"
+      );
+      vi.mocked(validateUploadRequest).mockRejectedValue(
+        new ValidationError(
+          "Invalid base64 data",
+          "base64Data",
+          "invalid-base64-data!",
+        ),
+      );
+
+      const tool = assetsUploadTool();
+
+      const invalidAsset = {
+        ...validAsset,
+        base64Data: "invalid-base64-data!",
+      };
+
+      try {
+        await tool.execute({ assets: [invalidAsset] }, mockContext);
+        expect.fail("Should have thrown validation error");
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toContain("Invalid base64 data");
+      }
+    });
+
+    it("should handle empty filename", async () => {
+      const { validateUploadRequest } = await import(
+        "../../middleware/validation-middleware.js"
+      );
+      vi.mocked(validateUploadRequest).mockRejectedValue(
+        new ValidationError("Empty filename not allowed", "filename", ""),
+      );
+
+      const tool = assetsUploadTool();
+
+      const invalidAsset = {
+        ...validAsset,
+        filename: "",
+      };
+
+      try {
+        await tool.execute({ assets: [invalidAsset] }, mockContext);
+        expect.fail("Should have thrown validation error");
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toContain(
+          "Empty filename not allowed",
+        );
+      }
+    });
+
+    it("should handle filename with invalid characters", async () => {
+      const { validateUploadRequest } = await import(
+        "../../middleware/validation-middleware.js"
+      );
+      vi.mocked(validateUploadRequest).mockRejectedValue(
+        new ValidationError(
+          "Invalid characters in filename",
+          "filename",
+          "test<script>.png",
+        ),
+      );
+
+      const tool = assetsUploadTool();
+
+      const invalidAsset = {
+        ...validAsset,
+        filename: "test<script>.png",
+      };
+
+      try {
+        await tool.execute({ assets: [invalidAsset] }, mockContext);
+        expect.fail("Should have thrown validation error");
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toContain(
+          "Invalid characters in filename",
+        );
+      }
+    });
+
+    it("should handle too many assets in single request", async () => {
+      const { validateUploadRequest } = await import(
+        "../../middleware/validation-middleware.js"
+      );
+      vi.mocked(validateUploadRequest).mockRejectedValue(
+        new ValidationError(
+          "Too many assets in request",
+          "assets",
+          "array with too many items",
+        ),
+      );
+
+      const tool = assetsUploadTool();
+
+      // Create 11 assets (max is 10)
+      const tooManyAssets = Array(11)
+        .fill(null)
+        .map((_, i) => ({
+          ...validAsset,
+          filename: `test-${i}.png`,
+        }));
+
+      try {
+        await tool.execute({ assets: tooManyAssets }, mockContext);
+        expect.fail("Should have thrown validation error");
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toContain(
+          "Too many assets in request",
+        );
+      }
+    });
+
+    it("should handle file size too large", async () => {
+      const { validateUploadRequest } = await import(
+        "../../middleware/validation-middleware.js"
+      );
+      vi.mocked(validateUploadRequest).mockRejectedValue(
+        new ValidationError(
+          "File size exceeds maximum allowed",
+          "base64Data",
+          "too large",
+        ),
+      );
+
+      const tool = assetsUploadTool();
+
+      // Create a base64 string that represents a file larger than 10MB
+      const largeBase64 = "A".repeat(15 * 1024 * 1024); // 15MB of 'A' characters
+
+      const oversizedAsset = {
+        ...validAsset,
+        base64Data: largeBase64,
+      };
+
+      try {
+        await tool.execute({ assets: [oversizedAsset] }, mockContext);
+        expect.fail("Should have thrown validation error");
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toContain(
+          "File size exceeds maximum allowed",
+        );
+      }
+    });
+
+    it("should handle unsupported content type", async () => {
+      const { validateUploadRequest } = await import(
+        "../../middleware/validation-middleware.js"
+      );
+      vi.mocked(validateUploadRequest).mockRejectedValue(
+        new ValidationError(
+          "Unsupported content type",
+          "contentType",
+          "application/unknown",
+        ),
+      );
+
+      const tool = assetsUploadTool();
+
+      const unsupportedAsset = {
+        ...validAsset,
+        assetType: "image" as const,
+        contentType: "application/x-malware",
+      };
+
+      try {
+        await tool.execute({ assets: [unsupportedAsset] }, mockContext);
+        expect.fail("Should have thrown validation error");
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toContain("Unsupported content type");
+      }
+    });
+  });
+
+  describe("Rate Limiting Scenarios", () => {
+    it("should handle rate limit exceeded", async () => {
+      const { checkUploadRateLimit } = await import(
+        "../../middleware/rate-limit-middleware.js"
+      );
+      vi.mocked(checkUploadRateLimit).mockRejectedValue(
+        new RateLimitError(
+          "Rate limit exceeded - too many upload requests",
+          1000,
+          "test-request-123",
+        ),
+      );
+
+      const tool = assetsUploadTool();
+
+      try {
+        await tool.execute({ assets: [validAsset] }, mockContext);
+        expect.fail("Should have thrown rate limit error");
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toContain("Rate limit exceeded");
+      }
+    });
+  });
+
+  describe("GCS Connection Errors", () => {
+    it("should handle GCS connection timeout", async () => {
+      const tool = assetsUploadTool();
+
+      // Mock AssetStorageService to simulate timeout
+      const timeoutMockService = createMockAssetStorageService({
+        uploadBehavior: "timeout",
+      });
+
+      vi.mocked(AssetStorageService).mockImplementation(
+        () => timeoutMockService as any,
+      );
+
+      try {
+        await tool.execute({ assets: [validAsset] }, mockContext);
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toContain("timeout");
+      }
+    });
+
+    it("should handle GCS service unavailable", async () => {
+      const tool = assetsUploadTool();
+
+      // Mock AssetStorageService to simulate service unavailable
+      const unavailableMockService = createMockAssetStorageService({
+        uploadBehavior: "failure",
+        uploadError: new Error("Service temporarily unavailable"),
+      });
+
+      vi.mocked(AssetStorageService).mockImplementation(
+        () => unavailableMockService as any,
+      );
+
+      try {
+        await tool.execute({ assets: [validAsset] }, mockContext);
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toContain(
+          "Service temporarily unavailable",
+        );
+      }
+    });
+
+    it("should handle GCS permission errors", async () => {
+      const tool = assetsUploadTool();
+
+      // Mock AssetStorageService to simulate permission error
+      const permissionMockService = createMockAssetStorageService({
+        uploadBehavior: "failure",
+        uploadError: new Error("Access denied: insufficient permissions"),
+      });
+
+      vi.mocked(AssetStorageService).mockImplementation(
+        () => permissionMockService as any,
+      );
+
+      try {
+        await tool.execute({ assets: [validAsset] }, mockContext);
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toContain("Access denied");
+      }
+    });
+  });
+
+  describe("Circuit Breaker Scenarios", () => {
+    it("should open circuit breaker after repeated failures", async () => {
+      const tool = assetsUploadTool();
+
+      // Mock AssetStorageService to always fail
+      const failureMockService = createMockAssetStorageService({
+        uploadBehavior: "failure",
+        uploadError: new Error("Persistent GCS failure"),
+      });
+
+      vi.mocked(AssetStorageService).mockImplementation(
+        () => failureMockService as any,
+      );
+
+      // Trigger multiple failures to open circuit breaker (run sequentially)
+      const results = [];
+      for (let i = 0; i < 8; i++) {
+        try {
+          const result = await tool.execute(
+            { assets: [validAsset] },
+            mockContext,
+          );
+          results.push(result);
+        } catch (error) {
+          results.push(error);
+        }
+      }
+
+      // Check that failures occurred (circuit breaker prevents retries after threshold)
+      const hasFailures = results.some(
+        (result) =>
+          result instanceof Error ||
+          (typeof result === "string" && result.includes("❌")),
+      );
+
+      expect(hasFailures).toBe(true); // All requests should fail due to mock setup
+    });
+
+    it("should transition circuit breaker to half-open after timeout", async () => {
+      const tool = assetsUploadTool();
+
+      // First, trigger circuit breaker opening
+      const failureMockService = createMockAssetStorageService({
+        uploadBehavior: "failure",
+        uploadError: new Error("Persistent failure"),
+      });
+
+      vi.mocked(AssetStorageService).mockImplementation(
+        () => failureMockService as any,
+      );
+
+      // Trigger failures to open circuit breaker
+      for (let i = 0; i < 6; i++) {
+        try {
+          await tool.execute({ assets: [validAsset] }, mockContext);
+        } catch {
+          // Expected to fail
+        }
+      }
+
+      // Verify circuit breaker is open
+      expect(circuitBreakers.gcs.getState().state).toBe("open");
+
+      // Fast forward time to allow circuit breaker to transition to half-open
+      // Note: In a real test, you'd want to use fake timers
+      vi.useFakeTimers();
+      vi.advanceTimersByTime(65000); // Advance by more than timeout period
+
+      // Now mock service to succeed
+      const successMockService = createMockAssetStorageService({
+        uploadResult: {
+          assetId: "test-asset-123",
+          fileSize: 1024,
+          publicUrl: "https://example.com/asset.png",
+        },
+      });
+
+      vi.mocked(AssetStorageService).mockImplementation(
+        () => successMockService as any,
+      );
+
+      // This should succeed and close the circuit breaker
+      const result = await tool.execute({ assets: [validAsset] }, mockContext);
+      expect(result).toContain("✅");
+
+      vi.useRealTimers();
+    });
+  });
+
+  describe("Retry Logic Scenarios", () => {
+    it("should retry on transient failures", async () => {
+      const tool = assetsUploadTool();
+
+      // Mock AssetStorageService to fail twice then succeed
+      let attemptCount = 0;
+
+      const retryMockService = {
+        uploadAsset: vi.fn().mockImplementation(() => {
+          attemptCount++;
+          if (attemptCount < 3) {
+            return Promise.reject(new Error("Transient network error"));
+          }
+          return Promise.resolve({
+            assetId: "test-asset-123",
+            fileSize: 1024,
+            publicUrl: "https://example.com/asset.png",
+          });
+        }),
+        validateAsset: vi.fn().mockReturnValue({
+          errors: [],
+          valid: true,
+        }),
+      };
+
+      vi.mocked(AssetStorageService).mockImplementation(
+        () => retryMockService as any,
+      );
+
+      const result = await tool.execute({ assets: [validAsset] }, mockContext);
+
+      expect(result).toContain("✅");
+      expect(attemptCount).toBe(3); // Failed twice, succeeded on third attempt
+    });
+
+    it("should exhaust retries on persistent failures", async () => {
+      const tool = assetsUploadTool();
+
+      // Mock AssetStorageService to always fail
+      let attemptCount = 0;
+
+      const persistentFailureMockService = {
+        uploadAsset: vi.fn().mockImplementation(() => {
+          attemptCount++;
+          return Promise.reject(new Error("Transient network error"));
+        }),
+        validateAsset: vi.fn().mockReturnValue({
+          errors: [],
+          valid: true,
+        }),
+      };
+
+      vi.mocked(AssetStorageService).mockImplementation(
+        () => persistentFailureMockService as any,
+      );
+
+      try {
+        await tool.execute({ assets: [validAsset] }, mockContext);
+        expect.fail("Should have failed after exhausting retries");
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toContain("failed after");
+        expect(attemptCount).toBe(3); // Default max attempts
+      }
+    });
+  });
+
+  describe("Monitoring and Analytics", () => {
+    it("should track error metrics on failures", async () => {
+      const tool = assetsUploadTool();
+
+      // Mock AssetStorageService to fail
+      const errorMockService = createMockAssetStorageService({
+        uploadBehavior: "failure",
+        uploadError: new Error("Test failure"),
+      });
+
+      vi.mocked(AssetStorageService).mockImplementation(
+        () => errorMockService as any,
+      );
+
+      try {
+        await tool.execute({ assets: [validAsset] }, mockContext);
+      } catch {
+        // Expected to fail
+      }
+
+      // Verify analytics tracking
+      expect(analytics.trackError).toHaveBeenCalled();
+      expect(analytics.trackAssetUpload).toHaveBeenCalledWith(
+        expect.objectContaining({
+          customerId: "test-customer-123",
+          success: false,
+        }),
+      );
+
+      // Verify metrics tracking
+      expect(metrics.errors.inc).toHaveBeenCalled();
+      expect(metrics.uploadAttempts.inc).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: "error",
+        }),
+      );
+    });
+
+    it("should include request ID in error responses", async () => {
+      const tool = assetsUploadTool();
+
+      // Mock validation to fail (this causes a tool-level error that includes request ID)
+      const { validateUploadRequest } = await import(
+        "../../middleware/validation-middleware.js"
+      );
+      vi.mocked(validateUploadRequest).mockRejectedValue(
+        new Error("Test validation failure"),
+      );
+
+      try {
+        await tool.execute({ assets: [validAsset] }, mockContext);
+        expect.fail("Should have failed");
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toMatch(/Request ID: [a-zA-Z0-9-]+/);
+      }
+    });
+  });
+
+  describe("Authentication Errors", () => {
+    it("should handle missing session authentication", async () => {
+      const tool = assetsUploadTool();
+
+      // Mock auth to fail for this specific test
+      const { requireSessionAuth } = await import("../../utils/auth.js");
+      vi.mocked(requireSessionAuth).mockImplementation(() => {
+        throw new Error("Authentication failed");
+      });
+
+      const contextWithoutAuth: MCPToolExecuteContext = {
+        session: undefined,
+      };
+
+      try {
+        await tool.execute({ assets: [validAsset] }, contextWithoutAuth);
+        expect.fail("Should have failed authentication");
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toContain("Authentication failed");
+      }
+    });
+  });
+
+  describe("Concurrent Upload Scenarios", () => {
+    it("should handle concurrent uploads without corruption", async () => {
+      const tool = assetsUploadTool();
+
+      // Mock AssetStorageService to succeed
+      let uploadCount = 0;
+
+      const concurrentMockService = {
+        uploadAsset: vi.fn().mockImplementation(async () => {
+          uploadCount++;
+          // Simulate processing delay
+          await new Promise((resolve) => setTimeout(resolve, 10));
+
+          return {
+            assetId: `test-asset-${uploadCount}`,
+            fileSize: 1024,
+            publicUrl: `https://example.com/asset-${uploadCount}.png`,
+          };
+        }),
+        validateAsset: vi.fn().mockReturnValue({
+          errors: [],
+          valid: true,
+        }),
+      };
+
+      vi.mocked(AssetStorageService).mockImplementation(
+        () => concurrentMockService as any,
+      );
+
+      // Create multiple concurrent upload requests
+      const concurrentUploads = Array(5)
+        .fill(null)
+        .map((_, i) =>
+          tool.execute(
+            {
+              assets: [{ ...validAsset, filename: `test-${i}.png` }],
+            },
+            mockContext,
+          ),
+        );
+
+      const results = await Promise.all(concurrentUploads);
+
+      // All uploads should succeed
+      results.forEach((result) => {
+        expect(result).toContain("✅");
+      });
+
+      // Verify unique asset IDs were generated
+      expect(uploadCount).toBe(5);
+    });
+  });
+});

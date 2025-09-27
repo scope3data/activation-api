@@ -42,7 +42,15 @@ pnpm-debug.log*
 *.tmp
 *.temp
 
+# Test assets (should not be committed)
+*.jpg
+*.png
+*.gif
+*.mp4
+*.pdf
+
 # Documentation validation temporary files
 broken_links_report.txt
 current_broken_links.txt
-*.backup
+*.backupsecrets/
+gcs-credentials.json

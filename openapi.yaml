@@ -346,6 +346,367 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /assets-add:
+    post:
+      description: Add assets to a buyer agent's library by referencing external URLs, REST upload IDs, or
+        existing CDN URLs. This is orchestration only - actual file uploads happen via REST API.
+        Assets can then be used in creatives via asset IDs.
+      operationId: assets_add
+      summary: Add Assets (Reference Management)
+      tags:
+        - System
+      x-llm-hints:
+        - Use this tool when user wants to add assets to a buyer agent's library by referencing
+          external urls, rest upload ids, or existing cdn urls
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                assets:
+                  items:
+                    properties:
+                      metadata:
+                        properties:
+                          dimensions:
+                            properties:
+                              height:
+                                type: number
+                              width:
+                                type: number
+                            required:
+                              - height
+                              - width
+                            type: object
+                            description: Dimensions for visual assets
+                          duration:
+                            type: number
+                            description: Duration in seconds for video/audio
+                          fileSize:
+                            type: number
+                            description: File size in bytes
+                          tags:
+                            items:
+                              type: string
+                            type: array
+                            description: Tags for organization
+                        type: object
+                        description: Optional metadata for the asset
+                      name:
+                        type: string
+                        description: Human-readable name for the asset
+                      source:
+                        type: string
+                      type:
+                        type: string
+                        description: Type of asset
+                    required:
+                      - name
+                      - source
+                      - type
+                    type: object
+                  type: array
+                  description: Array of assets to add
+                buyerAgentId:
+                  type: string
+                  description: The buyer agent that will own these assets
+              required:
+                - assets
+                - buyerAgentId
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /assets-analytics:
+    post:
+      description: Get asset usage analytics by customer and brand agent. Shows asset counts, storage
+        usage, and activity patterns. Useful for understanding usage patterns and identifying
+        inactive customers/brand agents for cleanup.
+      operationId: assets_analytics
+      summary: Asset Usage Analytics
+      tags:
+        - Assets
+      x-llm-hints:
+        - Use this tool when user wants to get asset usage analytics by customer and brand agent
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                customerId:
+                  type: string
+                  description: Specific customer ID (required for brand-agents scope)
+                includeInactive:
+                  type: string
+                  description: Include inactive customers/brand agents in results
+                scope:
+                  type: string
+                  description: "Analytics scope: customers (all customers) or brand-agents (for specific customer)"
+              required:
+                - includeInactive
+                - scope
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /assets-list-uploads:
+    post:
+      description: List creative assets uploaded to Google Cloud Storage. Shows asset metadata, public
+        URLs, and organization details. Can filter by buyer agent.
+      operationId: assets_list_uploads
+      summary: List Uploaded Assets from GCS
+      tags:
+        - Assets
+      x-llm-hints:
+        - Use this tool when user wants to list creative assets uploaded to google cloud storage
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                assetType:
+                  type: string
+                  description: Filter assets by type
+                buyerAgentId:
+                  type: string
+                  description: Filter assets by buyer agent ID
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /assets-upload:
+    post:
+      description: Upload creative assets (images, videos, audio, logos, fonts) directly to Google Cloud
+        Storage. Accepts base64-encoded file data and returns public URLs for distribution to sales
+        agents. Assets are automatically validated for type and size constraints.
+      operationId: assets_upload
+      summary: Upload Creative Assets to GCS
+      tags:
+        - Assets
+      x-llm-hints:
+        - Use this tool when user wants to upload creative assets (images, videos, audio, logos,
+          fonts) directly to google cloud storage
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              properties:
+                assets:
+                  items:
+                    properties:
+                      assetType:
+                        type: string
+                        description: Type of creative asset
+                      base64Data:
+                        type: string
+                        description: Base64-encoded file data (without data URI prefix)
+                      contentType:
+                        type: string
+                        description: MIME type of the file (e.g., 'image/jpeg', 'video/mp4')
+                      filename:
+                        type: string
+                        description: Original filename including extension
+                      metadata:
+                        properties:
+                          buyerAgentId:
+                            type: string
+                            description: Buyer agent that will own this asset
+                          creativeId:
+                            type: string
+                            description: Creative this asset belongs to
+                          tags:
+                            items:
+                              type: string
+                            type: array
+                            description: Tags for organizing assets
+                        type: object
+                        description: Optional metadata for the asset
+                    required:
+                      - assetType
+                      - base64Data
+                      - contentType
+                      - filename
+                    type: object
+                  type: array
+                  description: Array of assets to upload (max 10 per request)
+              required:
+                - assets
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /auth-check:
     post:
       description: Check the authentication status of the current API key and return user information.

@@ -1,0 +1,66 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+
+# Development files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Secrets and credentials
+secrets/
+gcs-credentials.json
+*.pem
+*.key
+
+# Testing
+coverage/
+.nyc_output/
+test-results/
+
+# Examples and demos
+examples/
+scripts/examples/
+
+# Documentation
+docs/
+mintlify/
+*.md
+!README.md
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Cache
+.cache/
+cache/
+
+# Build artifacts (keep dist/)
+src/
+tsconfig.json
+vitest.config.ts
+eslint.config.ts
+
+# Temporary files
+tmp/
+temp/
+
+# Husky
+.husky/

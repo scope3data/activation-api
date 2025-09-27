@@ -10,6 +10,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
 import type { Tactic } from "../../types/tactics.js";
 
+// Mock BigQuery
+vi.mock("@google-cloud/bigquery", () => ({
+  BigQuery: vi.fn().mockImplementation(() => ({})),
+}));
+
 // Mock the TacticBigQueryService
 vi.mock("../../services/tactic-bigquery-service.js", () => ({
   TacticBigQueryService: vi.fn().mockImplementation(() => ({
