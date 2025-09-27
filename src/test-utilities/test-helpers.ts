@@ -227,7 +227,7 @@ export async function setupTestEnvironment(
       assetStorage = createMockAssetStorageService();
       break;
     default:
-      assetStorage = createMockAssetStorageService(customMocks.assetStorage);
+      assetStorage = createMockAssetStorageService();
   }
 
   // Set up module mocks

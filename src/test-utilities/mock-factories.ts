@@ -34,15 +34,23 @@ export interface MockAnalytics {
 }
 
 export interface MockAssetStorageService {
-  deleteAsset?: MockedFunction<(...args: unknown[]) => Promise<void>>;
-  getAssetMetadata?: MockedFunction<
+  bucketName: string;
+  storage: unknown;
+  deleteAsset: MockedFunction<(...args: unknown[]) => Promise<boolean>>;
+  deleteBrandAgentAssets: MockedFunction<(...args: unknown[]) => Promise<{ deletedCount: number; errors: string[] }>>;
+  deleteCustomerAssets: MockedFunction<(...args: unknown[]) => Promise<{ deletedCount: number; errors: string[] }>>;
+  getAssetMetadata: MockedFunction<
     (...args: unknown[]) => Promise<Record<string, unknown>>
   >;
-  listAssets?: MockedFunction<(...args: unknown[]) => Promise<unknown[]>>;
+  listAssets: MockedFunction<(...args: unknown[]) => Promise<unknown[]>>;
+  listBrandAgents: MockedFunction<(...args: unknown[]) => Promise<unknown[]>>;
+  listCustomers: MockedFunction<(...args: unknown[]) => Promise<unknown[]>>;
   uploadAsset: MockedFunction<
     (...args: unknown[]) => Promise<AssetUploadResult>
   >;
   validateAsset: MockedFunction<(...args: unknown[]) => AssetValidationResult>;
+  findAssetFile?: MockedFunction<(...args: unknown[]) => Promise<string | null>>;
+  getFileExtension?: MockedFunction<(...args: unknown[]) => string>;
 }
 
 export interface MockAuthService {
@@ -211,13 +219,21 @@ export function createMockAssetStorageService(
   }
 
   return {
-    deleteAsset: vi.fn().mockResolvedValue(undefined),
+    bucketName: "test-bucket",
+    storage: {},
+    deleteAsset: vi.fn().mockResolvedValue(true),
+    deleteBrandAgentAssets: vi.fn().mockResolvedValue({ deletedCount: 0, errors: [] }),
+    deleteCustomerAssets: vi.fn().mockResolvedValue({ deletedCount: 0, errors: [] }),
     getAssetMetadata: vi
       .fn()
       .mockResolvedValue({ id: "test-asset", metadata: {} }),
     listAssets: vi.fn().mockResolvedValue([]),
+    listBrandAgents: vi.fn().mockResolvedValue([]),
+    listCustomers: vi.fn().mockResolvedValue([]),
     uploadAsset,
     validateAsset: vi.fn().mockReturnValue(validationResult),
+    findAssetFile: vi.fn().mockResolvedValue("test-file.jpg"),
+    getFileExtension: vi.fn().mockReturnValue(".jpg"),
   };
 }
 
