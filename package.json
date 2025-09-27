@@ -19,6 +19,7 @@
     "test:coverage:cache": "vitest run --coverage --config vitest.cache.config.ts",
     "format": "prettier --write . && eslint --fix .",
     "generate:openapi": "tsx scripts/generate-openapi.ts",
+    "check:openapi": "echo '⚠️  Please run: npm run generate:openapi after modifying tools to keep OpenAPI spec current'",
     "validate:openapi": "node scripts/validate-openapi.js",
     "ci:local": "bash scripts/ci-check.sh",
     "docs:dev": "npx mintlify dev",
@@ -78,6 +79,11 @@
     ]
   },
   "lint-staged": {
+    "src/tools/**/*.ts": [
+      "echo 'Tool modified - please run: npm run generate:openapi'",
+      "prettier --write",
+      "eslint --fix"
+    ],
     "*.{ts,js}": [
       "prettier --write",
       "eslint --fix"
