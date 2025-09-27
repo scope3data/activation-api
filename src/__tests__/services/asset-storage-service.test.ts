@@ -270,8 +270,8 @@ describe("AssetStorageService", () => {
       // Mock getFiles to respect prefix filtering
       mockBucket.getFiles.mockImplementation(({ prefix }) => {
         const allFiles = [mockFile1, mockFile2];
-        const filteredFiles = prefix 
-          ? allFiles.filter(file => file.name.startsWith(prefix))
+        const filteredFiles = prefix
+          ? allFiles.filter((file) => file.name.startsWith(prefix))
           : allFiles;
         return Promise.resolve([filteredFiles]);
       });
