@@ -35,22 +35,28 @@ export interface MockAnalytics {
 
 export interface MockAssetStorageService {
   bucketName: string;
-  storage: unknown;
   deleteAsset: MockedFunction<(...args: unknown[]) => Promise<boolean>>;
-  deleteBrandAgentAssets: MockedFunction<(...args: unknown[]) => Promise<{ deletedCount: number; errors: string[] }>>;
-  deleteCustomerAssets: MockedFunction<(...args: unknown[]) => Promise<{ deletedCount: number; errors: string[] }>>;
+  deleteBrandAgentAssets: MockedFunction<
+    (...args: unknown[]) => Promise<{ deletedCount: number; errors: string[] }>
+  >;
+  deleteCustomerAssets: MockedFunction<
+    (...args: unknown[]) => Promise<{ deletedCount: number; errors: string[] }>
+  >;
+  findAssetFile?: MockedFunction<
+    (...args: unknown[]) => Promise<null | string>
+  >;
   getAssetMetadata: MockedFunction<
     (...args: unknown[]) => Promise<Record<string, unknown>>
   >;
+  getFileExtension?: MockedFunction<(...args: unknown[]) => string>;
   listAssets: MockedFunction<(...args: unknown[]) => Promise<unknown[]>>;
   listBrandAgents: MockedFunction<(...args: unknown[]) => Promise<unknown[]>>;
   listCustomers: MockedFunction<(...args: unknown[]) => Promise<unknown[]>>;
+  storage: unknown;
   uploadAsset: MockedFunction<
     (...args: unknown[]) => Promise<AssetUploadResult>
   >;
   validateAsset: MockedFunction<(...args: unknown[]) => AssetValidationResult>;
-  findAssetFile?: MockedFunction<(...args: unknown[]) => Promise<string | null>>;
-  getFileExtension?: MockedFunction<(...args: unknown[]) => string>;
 }
 
 export interface MockAuthService {
@@ -220,20 +226,24 @@ export function createMockAssetStorageService(
 
   return {
     bucketName: "test-bucket",
-    storage: {},
     deleteAsset: vi.fn().mockResolvedValue(true),
-    deleteBrandAgentAssets: vi.fn().mockResolvedValue({ deletedCount: 0, errors: [] }),
-    deleteCustomerAssets: vi.fn().mockResolvedValue({ deletedCount: 0, errors: [] }),
+    deleteBrandAgentAssets: vi
+      .fn()
+      .mockResolvedValue({ deletedCount: 0, errors: [] }),
+    deleteCustomerAssets: vi
+      .fn()
+      .mockResolvedValue({ deletedCount: 0, errors: [] }),
+    findAssetFile: vi.fn().mockResolvedValue("test-file.jpg"),
     getAssetMetadata: vi
       .fn()
       .mockResolvedValue({ id: "test-asset", metadata: {} }),
+    getFileExtension: vi.fn().mockReturnValue(".jpg"),
     listAssets: vi.fn().mockResolvedValue([]),
     listBrandAgents: vi.fn().mockResolvedValue([]),
     listCustomers: vi.fn().mockResolvedValue([]),
+    storage: {},
     uploadAsset,
     validateAsset: vi.fn().mockReturnValue(validationResult),
-    findAssetFile: vi.fn().mockResolvedValue("test-file.jpg"),
-    getFileExtension: vi.fn().mockReturnValue(".jpg"),
   };
 }
 

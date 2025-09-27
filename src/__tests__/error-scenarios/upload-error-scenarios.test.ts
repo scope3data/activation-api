@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { MCPToolExecuteContext } from "../../types/mcp.js";
@@ -101,7 +102,9 @@ describe("Asset Upload Error Scenarios", () => {
     );
 
     // Default to passing validation (individual tests will override as needed)
-    vi.mocked(validateUploadRequest).mockImplementation(async (args: any) => ({ assets: args.assets || [] }));
+    vi.mocked(validateUploadRequest).mockImplementation(async (args: any) => ({
+      assets: args.assets || [],
+    }));
     vi.mocked(checkUploadRateLimit).mockResolvedValue(undefined);
 
     // Setup default AssetStorageService mock - ensure all tests start with a clean slate
@@ -109,7 +112,9 @@ describe("Asset Upload Error Scenarios", () => {
 
     // Reset the AssetStorageService mock completely
     vi.mocked(AssetStorageService).mockClear();
-    vi.mocked(AssetStorageService).mockImplementation(() => mockStorageService as any);
+    vi.mocked(AssetStorageService).mockImplementation(
+      () => mockStorageService as any,
+    );
   });
 
   afterEach(() => {
@@ -303,7 +308,11 @@ describe("Asset Upload Error Scenarios", () => {
         "../../middleware/rate-limit-middleware.js"
       );
       vi.mocked(checkUploadRateLimit).mockRejectedValue(
-        new RateLimitError("Rate limit exceeded - too many upload requests", 1000, "test-request-123"),
+        new RateLimitError(
+          "Rate limit exceeded - too many upload requests",
+          1000,
+          "test-request-123",
+        ),
       );
 
       const tool = assetsUploadTool();
@@ -324,7 +333,7 @@ describe("Asset Upload Error Scenarios", () => {
 
       // Mock AssetStorageService to simulate timeout
       const timeoutMockService = createMockAssetStorageService({
-        uploadBehavior: "timeout"
+        uploadBehavior: "timeout",
       });
 
       vi.mocked(AssetStorageService).mockImplementation(
@@ -345,7 +354,7 @@ describe("Asset Upload Error Scenarios", () => {
       // Mock AssetStorageService to simulate service unavailable
       const unavailableMockService = createMockAssetStorageService({
         uploadBehavior: "failure",
-        uploadError: new Error("Service temporarily unavailable")
+        uploadError: new Error("Service temporarily unavailable"),
       });
 
       vi.mocked(AssetStorageService).mockImplementation(
@@ -368,7 +377,7 @@ describe("Asset Upload Error Scenarios", () => {
       // Mock AssetStorageService to simulate permission error
       const permissionMockService = createMockAssetStorageService({
         uploadBehavior: "failure",
-        uploadError: new Error("Access denied: insufficient permissions")
+        uploadError: new Error("Access denied: insufficient permissions"),
       });
 
       vi.mocked(AssetStorageService).mockImplementation(
@@ -391,7 +400,7 @@ describe("Asset Upload Error Scenarios", () => {
       // Mock AssetStorageService to always fail
       const failureMockService = createMockAssetStorageService({
         uploadBehavior: "failure",
-        uploadError: new Error("Persistent GCS failure")
+        uploadError: new Error("Persistent GCS failure"),
       });
 
       vi.mocked(AssetStorageService).mockImplementation(
@@ -428,7 +437,7 @@ describe("Asset Upload Error Scenarios", () => {
       // First, trigger circuit breaker opening
       const failureMockService = createMockAssetStorageService({
         uploadBehavior: "failure",
-        uploadError: new Error("Persistent failure")
+        uploadError: new Error("Persistent failure"),
       });
 
       vi.mocked(AssetStorageService).mockImplementation(
@@ -458,7 +467,7 @@ describe("Asset Upload Error Scenarios", () => {
           assetId: "test-asset-123",
           fileSize: 1024,
           publicUrl: "https://example.com/asset.png",
-        }
+        },
       });
 
       vi.mocked(AssetStorageService).mockImplementation(
@@ -498,7 +507,9 @@ describe("Asset Upload Error Scenarios", () => {
         }),
       };
 
-      vi.mocked(AssetStorageService).mockImplementation(() => retryMockService as any);
+      vi.mocked(AssetStorageService).mockImplementation(
+        () => retryMockService as any,
+      );
 
       const result = await tool.execute({ assets: [validAsset] }, mockContext);
 
@@ -545,10 +556,12 @@ describe("Asset Upload Error Scenarios", () => {
       // Mock AssetStorageService to fail
       const errorMockService = createMockAssetStorageService({
         uploadBehavior: "failure",
-        uploadError: new Error("Test failure")
+        uploadError: new Error("Test failure"),
       });
 
-      vi.mocked(AssetStorageService).mockImplementation(() => errorMockService as any);
+      vi.mocked(AssetStorageService).mockImplementation(
+        () => errorMockService as any,
+      );
 
       try {
         await tool.execute({ assets: [validAsset] }, mockContext);
