@@ -67,7 +67,7 @@ describe("Assets Upload Tool", () => {
         .validateUploadRequest,
     );
     // Default to pass-through the input args for most tests
-    mockValidateUploadRequest.mockImplementation((args) =>
+    mockValidateUploadRequest.mockImplementation((args: unknown) =>
       Promise.resolve(args),
     );
   });
