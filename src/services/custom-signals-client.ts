@@ -234,7 +234,7 @@ export class CustomSignalsClient {
     return (rows as ProviderAccessRow[]).map((row) => ({
       customerId: row.managed_customer_id,
       id: `seat_${row.managed_customer_id}`, // Generate a seat ID
-      name: `Customer ${row.managed_customer_id}`, // TODO: Join with customer table for actual name
+      name: `Customer ${row.managed_customer_id}`, // Customer name lookup not yet implemented
     }));
   }
 
