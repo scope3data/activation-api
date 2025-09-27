@@ -185,21 +185,56 @@ export class CustomSignalsClient {
   }
 
   /**
-   * Get partner visibility - list brand agents (seats) accessible to an API key
+   * Get partner seats - list customer accounts that a provider can manage
    */
   async getPartnerSeats(
-    scope3Client: Scope3ApiClient,
+    _scope3Client: Scope3ApiClient,
     apiKey: string,
   ): Promise<Array<{ customerId: number; id: string; name: string }>> {
     await this.ensureInitialized();
 
-    // Use the provided scope3 client to get brand agents
-    const brandAgents = await scope3Client.listBrandAgents(apiKey);
+    if (!this.storageService) {
+      throw new Error("BigQuery storage service not available");
+    }
 
-    return brandAgents.map((agent) => ({
-      customerId: agent.customerId,
-      id: agent.id,
-      name: agent.name,
+    // Get the provider's customer ID from their API key
+    const providerCustomerId =
+      await this.authService.getCustomerIdFromToken(apiKey);
+    if (!providerCustomerId) {
+      throw new Error("Invalid API key or customer not found");
+    }
+
+    // Query the provider_customer_access table to find managed customers
+    const query = `
+      SELECT 
+        pca.managed_customer_id,
+        pca.access_type,
+        pca.status
+      FROM \`bok-playground.agenticapi.provider_customer_access\` pca
+      WHERE pca.provider_customer_id = @providerCustomerId
+        AND pca.status = 'active'
+        AND (pca.expires_at IS NULL OR pca.expires_at > CURRENT_TIMESTAMP())
+      ORDER BY pca.granted_at DESC
+    `;
+
+    // Use direct BigQuery instance for provider access queries
+    const bigquery = new BigQuery();
+    const [rows] = await bigquery.query({
+      params: { providerCustomerId },
+      query,
+    });
+
+    // Map results to expected format with proper typing
+    interface ProviderAccessRow {
+      access_type: string;
+      managed_customer_id: number;
+      status: string;
+    }
+
+    return (rows as ProviderAccessRow[]).map((row) => ({
+      customerId: row.managed_customer_id,
+      id: `seat_${row.managed_customer_id}`, // Generate a seat ID
+      name: `Customer ${row.managed_customer_id}`, // Customer name lookup not yet implemented
     }));
   }
 

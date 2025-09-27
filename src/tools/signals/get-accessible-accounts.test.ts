@@ -7,7 +7,7 @@ import {
 } from "../../__tests__/utils/structured-response-helpers.js";
 import { Scope3ApiClient } from "../../client/scope3-client.js";
 import { CustomSignalsClient } from "../../services/custom-signals-client.js";
-import { getPartnerSeatsTool } from "./get-partner-seats.js";
+import { getAccessibleAccountsTool } from "./get-accessible-accounts.js";
 
 // Mock the dependencies
 vi.mock("../../client/scope3-client.js", () => ({
@@ -20,12 +20,12 @@ vi.mock("../../services/custom-signals-client.js", () => ({
   })),
 }));
 
-describe("signals/get-partner-seats", () => {
+describe("signals/get-accessible-accounts", () => {
   let mockScope3Client: Scope3ApiClient;
   let mockCustomSignalsClient: {
     getPartnerSeats: ReturnType<typeof vi.fn>;
   };
-  let tool: ReturnType<typeof getPartnerSeatsTool>;
+  let tool: ReturnType<typeof getAccessibleAccountsTool>;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -42,11 +42,11 @@ describe("signals/get-partner-seats", () => {
         mockCustomSignalsClient as Partial<CustomSignalsClient> as CustomSignalsClient,
     );
 
-    tool = getPartnerSeatsTool(mockScope3Client);
+    tool = getAccessibleAccountsTool(mockScope3Client);
   });
 
-  it("should return partner seats on successful request", async () => {
-    const mockSeats = [
+  it("should return accessible accounts on successful request", async () => {
+    const mockAccounts = [
       {
         customerId: 123,
         id: "seat_1",
@@ -59,7 +59,7 @@ describe("signals/get-partner-seats", () => {
       },
     ];
 
-    mockCustomSignalsClient.getPartnerSeats.mockResolvedValueOnce(mockSeats);
+    mockCustomSignalsClient.getPartnerSeats.mockResolvedValueOnce(mockAccounts);
 
     const result = await tool.execute(
       {},
@@ -72,21 +72,21 @@ describe("signals/get-partner-seats", () => {
     const parsedResponse = expectListResponse(
       result,
       2,
-      (seat: Record<string, unknown>) => {
-        expect(seat).toHaveProperty("id");
-        expect(seat).toHaveProperty("name");
-        expect(seat).toHaveProperty("customerId");
-        expect(typeof seat.id).toBe("string");
-        expect(typeof seat.name).toBe("string");
-        expect(typeof seat.customerId).toBe("number");
+      (account: Record<string, unknown>) => {
+        expect(account).toHaveProperty("id");
+        expect(account).toHaveProperty("name");
+        expect(account).toHaveProperty("customerId");
+        expect(typeof account.id).toBe("string");
+        expect(typeof account.name).toBe("string");
+        expect(typeof account.customerId).toBe("number");
       },
     );
 
-    expect((parsedResponse.data! as any).seats).toHaveLength(2);
+    expect((parsedResponse.data! as any).accounts).toHaveLength(2);
     expect((parsedResponse.data! as any).count).toBe(2);
 
     // Verify message content
-    expect(result).toContain("Found 2 accessible brand agent seats");
+    expect(result).toContain("Found 2 accessible customer accounts");
     expect(result).toContain("Test Seat 1");
     expect(result).toContain("seat_1");
     expect(result).toContain("Customer ID: 123");
@@ -107,7 +107,7 @@ describe("signals/get-partner-seats", () => {
     expect(mockCustomSignalsClient.getPartnerSeats).not.toHaveBeenCalled();
   });
 
-  it("should handle empty seats response", async () => {
+  it("should handle empty accounts response", async () => {
     mockCustomSignalsClient.getPartnerSeats.mockResolvedValueOnce([]);
 
     const result = await tool.execute(
@@ -118,11 +118,11 @@ describe("signals/get-partner-seats", () => {
     );
 
     const parsedResponse = expectListResponse(result, 0);
-    expect((parsedResponse.data! as any).seats).toHaveLength(0);
+    expect((parsedResponse.data! as any).accounts).toHaveLength(0);
     expect((parsedResponse.data! as any).count).toBe(0);
 
-    expect(result).toContain("Found 0 accessible brand agent seats");
-    expect(result).toContain("No brand agent seats are accessible");
+    expect(result).toContain("Found 0 accessible customer accounts");
+    expect(result).toContain("No customer accounts are accessible");
   });
 
   it("should handle API errors", async () => {
@@ -137,7 +137,7 @@ describe("signals/get-partner-seats", () => {
       },
     );
 
-    expectErrorResponse(result, "Failed to get partner seats");
+    expectErrorResponse(result, "Failed to get accessible accounts");
     expect(result).toContain("Service temporarily unavailable");
   });
 

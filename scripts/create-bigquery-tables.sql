@@ -262,6 +262,19 @@ CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.sales_agent_capabilities` 
 )
 CLUSTER BY sales_agent_id;
 
+-- 14. Provider-Customer Access (seats that a provider can manage)
+CREATE TABLE IF NOT EXISTS `bok-playground.agenticapi.provider_customer_access` (
+  provider_customer_id INT64 NOT NULL,  -- The provider's customer ID
+  managed_customer_id INT64 NOT NULL,   -- Customer ID they can manage (the "seat")
+  access_type STRING DEFAULT 'full',    -- 'full', 'read_only', 'signals_only', etc.
+  granted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
+  granted_by STRING,                    -- Who granted this access
+  status STRING DEFAULT 'active',      -- 'active', 'revoked', 'suspended'
+  expires_at TIMESTAMP,                -- Optional expiration
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
+)
+CLUSTER BY provider_customer_id, managed_customer_id, status;
+
 -- NOTE: For existing table migrations, use the separate bigquery-migrations.sql script
 -- BigQuery doesn't support ADD COLUMN with DEFAULT values in a single statement
 -- The migrations are handled in scripts/bigquery-migrations.sql
