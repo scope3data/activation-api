@@ -260,11 +260,14 @@ export {
   listSignalsAgentsTool,
   listTacticsTool,
   provideScoringOutcomesTool,
+  // Metrics
+  refreshPlatformMetricsTool,
   registerSalesAgentTool,
   // Signals Agents
   registerSignalsAgentTool,
   // Webhooks
   registerWebhookTool,
+  showAgenticMetricsTool,
   unregisterSalesAgentTool,
   unregisterSignalsAgentTool,
   updateBrandAgentBrandStoryTool,

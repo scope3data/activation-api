@@ -4100,6 +4100,69 @@ paths:
                     type: string
                 type: object
           description: Unauthorized
+  /refresh-platform-metrics:
+    post:
+      description: Force refresh all platform metrics from their sources (BigQuery, GitHub, Slack,
+        PostHog). This updates the cached metrics data.
+      operationId: refresh_platform_metrics
+      summary: Refresh Platform Metrics
+      tags:
+        - Platform Analytics
+      x-llm-hints:
+        - Use this tool when user wants to force refresh all platform metrics from their sources
+          (bigquery, github, slack, posthog)
+        - Call this when user says 'change', 'update', 'modify', or 'edit'
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              type: string
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
   /sales-agents-register:
     post:
       description: Register a new sales agent or create an account with an existing sales agent. This
@@ -4360,6 +4423,69 @@ paths:
                 - endpoint
                 - eventTypes
               type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                success:
+                  summary: Successful operation
+                  value:
+                    data: {}
+                    message: Operation completed successfully
+                    success: true
+              schema:
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                type: object
+          description: Successful response
+        "400":
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: Unauthorized
+  /show-agentic-metrics:
+    post:
+      description: Display comprehensive metrics across the Agentic Advertising platform and ecosystem
+        including API usage, community stats, and GitHub activity
+      operationId: show_agentic_metrics
+      summary: Show Agentic Platform Metrics
+      tags:
+        - Platform Analytics
+      x-llm-hints:
+        - Use this tool when user wants to display comprehensive metrics across the agentic
+          advertising platform and ecosystem including api usage, community stats, and github
+          activity
+      requestBody:
+        content:
+          application/json:
+            examples:
+              basic:
+                summary: Basic example
+                value: {}
+            schema:
+              type: string
         required: true
       responses:
         "200":
