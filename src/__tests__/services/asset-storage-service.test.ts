@@ -9,47 +9,34 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AssetStorageService } from "../../services/asset-storage-service.js";
 
+// Create shared mock objects that will be consistent across all instances
+const mockFile = {
+  delete: vi.fn(),
+  getMetadata: vi.fn(),
+  name: "customers/customer123/brand-agents/123/assets/test-asset-id.jpg",
+  save: vi.fn(),
+};
+
+const mockBucket = {
+  file: vi.fn(() => mockFile),
+  getFiles: vi.fn(),
+};
+
+const mockStorage = {
+  bucket: vi.fn(() => mockBucket),
+};
+
 // Mock the Google Cloud Storage library
-vi.mock("@google-cloud/storage", () => {
-  const mockFile = {
-    delete: vi.fn(),
-    getMetadata: vi.fn(),
-    name: "assets/test-asset.jpg",
-    save: vi.fn(),
-  };
-
-  const mockBucket = {
-    file: vi.fn(() => mockFile),
-    getFiles: vi.fn(),
-  };
-
-  const mockStorage = {
-    bucket: vi.fn(() => mockBucket),
-  };
-
-  return {
-    Storage: vi.fn(() => mockStorage),
-  };
-});
+vi.mock("@google-cloud/storage", () => ({
+  Storage: vi.fn(() => mockStorage),
+}));
 
 describe("AssetStorageService", () => {
   let service: AssetStorageService;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let mockStorage: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let mockBucket: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let mockFile: any;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     vi.clearAllMocks();
     service = new AssetStorageService("test-bucket");
-
-    // Get references to mocked objects
-    const { Storage } = vi.mocked(await import("@google-cloud/storage"));
-    mockStorage = new Storage();
-    mockBucket = mockStorage.bucket();
-    mockFile = mockBucket.file();
   });
 
   describe("uploadAsset", () => {
@@ -211,7 +198,7 @@ describe("AssetStorageService", () => {
             timeCreated: "2024-01-01T00:00:00Z",
           },
         ]),
-        name: "assets/asset1.jpg",
+        name: "customers/customer123/brand-agents/123/assets/asset1.jpg",
       };
 
       const mockFile2 = {
@@ -228,7 +215,7 @@ describe("AssetStorageService", () => {
             timeCreated: "2024-01-02T00:00:00Z",
           },
         ]),
-        name: "assets/asset2.png",
+        name: "customers/customer123/brand-agents/123/assets/asset2.png",
       };
 
       mockBucket.getFiles.mockResolvedValue([[mockFile1, mockFile2]]);
@@ -262,7 +249,7 @@ describe("AssetStorageService", () => {
             timeCreated: "2024-01-01T00:00:00Z",
           },
         ]),
-        name: "assets/asset1.jpg",
+        name: "customers/customer123/brand-agents/123/assets/asset1.jpg",
       };
 
       const mockFile2 = {
@@ -277,10 +264,17 @@ describe("AssetStorageService", () => {
             timeCreated: "2024-01-01T00:00:00Z",
           },
         ]),
-        name: "assets/asset2.jpg",
+        name: "customers/customer123/brand-agents/456/assets/asset2.jpg",
       };
 
-      mockBucket.getFiles.mockResolvedValue([[mockFile1, mockFile2]]);
+      // Mock getFiles to respect prefix filtering
+      mockBucket.getFiles.mockImplementation(({ prefix }) => {
+        const allFiles = [mockFile1, mockFile2];
+        const filteredFiles = prefix 
+          ? allFiles.filter(file => file.name.startsWith(prefix))
+          : allFiles;
+        return Promise.resolve([filteredFiles]);
+      });
 
       const result = await service.listAssets("customer123", "123");
 
