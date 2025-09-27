@@ -26,6 +26,52 @@ vi.mock("../../middleware/validation-middleware.js", () => ({
   validateUploadRequest: vi.fn(),
 }));
 
+// Mock monitoring service
+vi.mock("../../services/monitoring-service.js", () => ({
+  analytics: {
+    trackToolUsage: vi.fn(),
+    trackError: vi.fn(),
+    trackAssetUpload: vi.fn(),
+  },
+  metrics: {
+    trackError: vi.fn(),
+    errors: {
+      inc: vi.fn(),
+    },
+    duration: {
+      observe: vi.fn(),
+    },
+    uploadAttempts: {
+      inc: vi.fn(),
+    },
+    uploadDuration: {
+      observe: vi.fn(),
+    },
+    toolDuration: {
+      observe: vi.fn(),
+    },
+  },
+  logger: {
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  },
+  RequestContextService: {
+    create: vi.fn(() => ({
+      requestId: "test-request-id",
+      cleanup: vi.fn(),
+      getMetadata: vi.fn(() => ({})),
+      setMetadata: vi.fn(),
+    })),
+  },
+}));
+
+// Mock rate limit middleware
+vi.mock("../../middleware/rate-limit-middleware.js", () => ({
+  checkUploadRateLimit: vi.fn(),
+}));
+
 describe("Assets Upload Tool", () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockStorageService: any;
@@ -38,6 +84,15 @@ describe("Assets Upload Tool", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    
+    // Ensure monitoring service mocks are properly set up
+    const { metrics, analytics } = await import("../../services/monitoring-service.js");
+    vi.mocked(metrics.uploadAttempts.inc).mockImplementation(() => {});
+    vi.mocked(metrics.uploadDuration.observe).mockImplementation(() => {});
+    vi.mocked(metrics.toolDuration.observe).mockImplementation(() => {});
+    vi.mocked(metrics.errors.inc).mockImplementation(() => {});
+    vi.mocked(analytics.trackAssetUpload).mockImplementation(() => {});
+    vi.mocked(analytics.trackError).mockImplementation(() => {});
 
     // Setup auth mock
     mockRequireSessionAuth = vi.mocked(
@@ -70,6 +125,10 @@ describe("Assets Upload Tool", () => {
     mockValidateUploadRequest.mockImplementation((args: unknown) =>
       Promise.resolve(args),
     );
+    
+    // Setup rate limit middleware mock
+    const { checkUploadRateLimit } = await import("../../middleware/rate-limit-middleware.js");
+    vi.mocked(checkUploadRateLimit).mockResolvedValue(undefined);
   });
 
   it("should upload single asset successfully", async () => {
@@ -217,8 +276,12 @@ describe("Assets Upload Tool", () => {
     );
 
     const tool = assetsUploadTool();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const context: MCPToolExecuteContext = {} as any;
+    const context: MCPToolExecuteContext = {
+      session: {
+        customerId: 123,
+        scope3ApiKey: "test-api-key",
+      },
+    };
 
     const result = await tool.execute(
       {
