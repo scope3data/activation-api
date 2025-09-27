@@ -217,23 +217,21 @@ export class CustomSignalsClient {
       ORDER BY pca.granted_at DESC
     `;
 
-    const bigquery = (
-      this.storageService as {
-        bigquery: {
-          query: (opts: {
-            params: Record<string, unknown>;
-            query: string;
-          }) => Promise<[unknown[]]>;
-        };
-      }
-    ).bigquery;
+    // Use direct BigQuery instance for provider access queries
+    const bigquery = new BigQuery();
     const [rows] = await bigquery.query({
       params: { providerCustomerId },
       query,
     });
 
-    // Map results to expected format
-    return rows.map((row: { managed_customer_id: number }) => ({
+    // Map results to expected format with proper typing
+    interface ProviderAccessRow {
+      access_type: string;
+      managed_customer_id: number;
+      status: string;
+    }
+
+    return (rows as ProviderAccessRow[]).map((row) => ({
       customerId: row.managed_customer_id,
       id: `seat_${row.managed_customer_id}`, // Generate a seat ID
       name: `Customer ${row.managed_customer_id}`, // TODO: Join with customer table for actual name
